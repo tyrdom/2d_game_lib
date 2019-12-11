@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/tianhao/RiderProjects/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {}
+    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {}
   },
   "projects": {
-    "/Users/tianhao/RiderProjects/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {
+    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/tianhao/RiderProjects/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
+        "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
         "projectName": "ty_game_lib",
-        "projectPath": "/Users/tianhao/RiderProjects/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
+        "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
         "packagesPath": "/Users/tianhao/.nuget/packages/",
-        "outputPath": "/Users/tianhao/RiderProjects/ty_game_lib/ty_game_lib/obj/",
+        "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/obj/",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"

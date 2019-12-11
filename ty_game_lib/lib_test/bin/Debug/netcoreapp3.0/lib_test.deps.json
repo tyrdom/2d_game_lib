@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.0": {
+      "lib_test/1.0.0": {
+        "dependencies": {
+          "ty_game_lib": "1.0.0"
+        },
+        "runtime": {
+          "lib_test.dll": {}
+        }
+      },
+      "ty_game_lib/1.0.0": {
+        "runtime": {
+          "ty_game_lib.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "lib_test/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ty_game_lib/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

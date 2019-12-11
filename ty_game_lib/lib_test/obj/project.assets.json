@@ -1,0 +1,84 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETCoreApp,Version=v3.0": {
+      "ty_game_lib/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.0",
+        "compile": {
+          "bin/placeholder/ty_game_lib.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ty_game_lib.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ty_game_lib/1.0.0": {
+      "type": "project",
+      "path": "../ty_game_lib/ty_game_lib.csproj",
+      "msbuildProject": "../ty_game_lib/ty_game_lib.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETCoreApp,Version=v3.0": [
+      "ty_game_lib >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/Users/tianhao/.nuget/packages/": {},
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
+      "projectName": "lib_test",
+      "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
+      "packagesPath": "/Users/tianhao/.nuget/packages/",
+      "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+      ],
+      "configFilePaths": [
+        "/Users/tianhao/.config/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "netcoreapp3.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "projectReferences": {
+            "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {
+              "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "netcoreapp3.0": {
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true
+      }
+    }
+  }
+}

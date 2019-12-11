@@ -1,10 +1,10 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
-    "projectName": "ty_game_lib",
-    "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
-    "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/obj/",
+    "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
+    "projectName": "lib_test",
+    "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
+    "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/",
     "projectStyle": "PackageReference",
     "fallbackFolders": [
       "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
@@ -17,7 +17,11 @@
     },
     "frameworks": {
       "netcoreapp3.0": {
-        "projectReferences": {}
+        "projectReferences": {
+          "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {
+            "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj"
+          }
+        }
       }
     },
     "warningProperties": {
