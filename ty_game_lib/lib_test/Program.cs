@@ -10,8 +10,11 @@ namespace lib_test
             Console.WriteLine("Hello World!");
 
             var pts = new TwoDPoint(1.5f, 1.3f);
-            Console.WriteLine(pts.X.ToString() +"  "+ pts.Y.ToString());
             
+
+            var either = new Either<int,string>(5);
+            
+            Console.WriteLine(either.left +"  "+ (either.right==null));
         }
     }
 }
