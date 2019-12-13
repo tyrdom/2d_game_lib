@@ -13,8 +13,8 @@ namespace ty_game_lib
         }
 
         public TwoDPoint[] Pts { get; }
-        
-        
+
+
         public Poly ToNotCrossPoly(Poly aPoly)
         {
             var twoDPoints = aPoly.Pts;
@@ -34,7 +34,5 @@ namespace ty_game_lib
 
             return new Poly(twoDPoints);
         }
-        
-
     }
 }

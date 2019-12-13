@@ -29,8 +29,8 @@ namespace ty_game_lib
             var cross = xLine.GetVector().Cross(aline.GetVector());
             return cross switch
             {
-                float cro when cro > 0 => Pt2LinePos.Right,
-                float cro when cro < 0 => Pt2LinePos.Left,
+                { } cro when cro > 0 => Pt2LinePos.Right,
+                { } cro when cro < 0 => Pt2LinePos.Left,
                 _ => Pt2LinePos.On
             };
         }

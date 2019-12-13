@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ty_game_lib\ty_game_lib.csproj" />
+        <ProjectReference Include="..\ty_game_lib\ty_game_lib.csproj" />
     </ItemGroup>
 
 </Project>
