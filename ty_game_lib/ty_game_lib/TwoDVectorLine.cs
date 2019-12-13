@@ -30,14 +30,14 @@ namespace ty_game_lib
         {
             var c = lineB.A;
             var d = lineB.B;
-            var getposOnLineA = A.GetposOnLine(lineB);
-            var getposOnLineB = B.GetposOnLine(lineB);
-            var getposOnLineC = c.GetposOnLine(this);
-            var getposOnLineD = d.GetposOnLine(this);
-            return getposOnLineA switch
+            var getPosOnLineA = A.GetposOnLine(lineB);
+            var getPosOnLineB = B.GetposOnLine(lineB);
+            var getPosOnLineC = c.GetposOnLine(this);
+            var getPosOnLineD = d.GetposOnLine(this);
+            return getPosOnLineA switch
             {
-                Pt2LinePos.On => getposOnLineC != getposOnLineD,
-                var posA when posA != getposOnLineB => getposOnLineC != getposOnLineD,
+                Pt2LinePos.On => getPosOnLineC != getPosOnLineD,
+                var posA when posA != getPosOnLineB => getPosOnLineC != getPosOnLineD,
                 _ => false
             };
         }
