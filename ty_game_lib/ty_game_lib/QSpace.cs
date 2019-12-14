@@ -12,6 +12,8 @@ namespace ty_game_lib
         public abstract void InsertBox(AabbBox box);
         public abstract Zone Zone { get; set; }
         public abstract List<AabbBox> AabbBoxes { get; set; }
+        public abstract void Remove(AabbBox box);
+        public abstract IEnumerable<AabbBox> TouchBy(AabbBox box);
     }
 
     public class QSpaceBranch : QSpace
@@ -41,6 +43,50 @@ namespace ty_game_lib
             RightDown = rightDown;
         }
 
+        public override void Remove(AabbBox box)
+        {
+            if (AabbBoxes.Remove(box)) return;
+
+            RightUp.Remove(box);
+            RightDown.Remove(box);
+            LeftDown.Remove(box);
+            LeftUp.Remove(box);
+        }
+
+        public override IEnumerable<AabbBox> TouchBy(AabbBox box)
+        {
+            var aabbBoxes = box.TryTouch(this.AabbBoxes);
+            var (item1, item2) = Zone.GetMids();
+            var cutTo4 = box.CutTo4(item1, item2);
+          foreach (var keyValuePair in cutTo4)
+          {
+              switch (keyValuePair.Key)
+              {
+                  case Quad.One:
+                      var touchBy = LeftUp.TouchBy(box);
+                      aabbBoxes.AddRange(touchBy);
+                      break;
+                  case Quad.Two:
+                      var boxes = RightUp.TouchBy(box);
+                      aabbBoxes.AddRange(boxes);
+                      break;
+                  case Quad.Three:
+                      var list = RightDown.TouchBy(box);
+                      aabbBoxes.AddRange(list);
+                      break;
+                  case Quad.Four:
+                      var by = LeftDown.TouchBy(box);
+                      aabbBoxes.AddRange(by);
+                      break;
+                  default:
+                      throw new ArgumentOutOfRangeException();
+              }
+          }
+
+          return aabbBoxes;
+          
+        }
+
         public override void InsertBox(AabbBox box)
         {
             var (item1, item2) = Zone.GetMids();
@@ -67,7 +113,7 @@ namespace ty_game_lib
             }
         }
 
-        public QSpaceLeaf CovToLeaf()
+        public QuadSpaceLeaf CovToLeaf()
         {
             var qSpaces = new[] {RightUp, LeftUp, LeftDown, RightDown};
             var a = AabbBoxes;
@@ -76,7 +122,7 @@ namespace ty_game_lib
                 a.AddRange(qSpace.AabbBoxes);
             }
 
-            return new QSpaceLeaf(Quad, Zone, a);
+            return new QuadSpaceLeaf(Quad, Zone, a);
         }
     }
 
@@ -118,17 +164,17 @@ namespace ty_game_lib
                    anotherZone.Down <= Down;
         }
 
-        bool Cross(Zone anotherZone)
+        public bool NotCross(Zone anotherZone)
         {
-            return !(Right < anotherZone.Left || anotherZone.Right < Left ||
-                     Up < anotherZone.Down || anotherZone.Up < Down);
+            return Right < anotherZone.Left || anotherZone.Right < Left ||
+                   Up < anotherZone.Down || anotherZone.Up < Down;
         }
     }
 
 
-    public class QSpaceLeaf : QSpace
+    public class QuadSpaceLeaf : QSpace
     {
-        public QSpaceLeaf(Quad quad, Zone zone, List<AabbBox> aabbBoxes)
+        public QuadSpaceLeaf(Quad quad, Zone zone, List<AabbBox> aabbBoxes)
         {
             Quad = quad;
             Zone = zone;
@@ -140,6 +186,14 @@ namespace ty_game_lib
 
         public sealed override List<AabbBox> AabbBoxes { get; set; }
 
+        public override void Remove(AabbBox box)
+        {
+        }
+
+        public override IEnumerable<AabbBox> TouchBy(AabbBox box)
+        {
+            return box.TryTouch(this.AabbBoxes);
+        }
 
         public override void InsertBox(AabbBox box)
         {
@@ -185,9 +239,9 @@ namespace ty_game_lib
             var zones = Zone.CutTo4(item1, item2);
 
 
-            return new QSpaceBranch(Zone, zone, new QSpaceLeaf(Quad.One, zones[0], one),
-                new QSpaceLeaf(Quad.Two, zones[1], two),
-                new QSpaceLeaf(Quad.Three, zones[2], three), new QSpaceLeaf(Quad.Four, zones[3], four));
+            return new QSpaceBranch(Zone, zone, new QuadSpaceLeaf(Quad.One, zones[0], one),
+                new QuadSpaceLeaf(Quad.Two, zones[1], two),
+                new QuadSpaceLeaf(Quad.Three, zones[2], three), new QuadSpaceLeaf(Quad.Four, zones[3], four));
         }
     }
 
@@ -202,13 +256,23 @@ namespace ty_game_lib
     public class AabbBox
     {
         Zone _zone;
-        private int Shape;
+        private readonly Shape _shape;
 
 
-        public AabbBox(Zone zone, int shape)
+        public AabbBox(Zone zone, Shape shape)
         {
             _zone = zone;
-            Shape = shape;
+            _shape = shape;
+        }
+
+        private bool IsNotTouch(AabbBox another)
+        {
+            return _zone.NotCross(another._zone);
+        }
+
+        public List<AabbBox> TryTouch(List<AabbBox> aabbBoxes)
+        {
+            return (List<AabbBox>) aabbBoxes.Where(aabbBox => !aabbBox.IsNotTouch(this));
         }
 
         public Quad? WichQ(float horizon, float vertical)
@@ -219,18 +283,17 @@ namespace ty_game_lib
                 if (_zone.Right <= vertical) return Quad.Two;
             }
 
-            if (_zone.Up <= horizon)
-            {
-                if (_zone.Left >= vertical) return Quad.Four;
-                if (_zone.Right <= vertical) return Quad.Three;
-            }
+            if (!(_zone.Up <= horizon)) return null;
+            if (_zone.Left >= vertical) return Quad.Four;
+            if (_zone.Right <= vertical) return Quad.Three;
 
             return null;
         }
 
-        public AabbBox?[] CutTo4(float horizon, float vertical)
+        public Dictionary<Quad, AabbBox?> CutTo4(float horizon, float vertical)
         {
-            var z1234 = new AabbBox?[4];
+            
+            var z1234 = new Dictionary<Quad, AabbBox?>();
             var z = _zone;
 
 
@@ -238,52 +301,52 @@ namespace ty_game_lib
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[0] = this;
+                    z1234[Quad.One] = this;
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[1] = this;
+                    z1234[Quad.Two] = this;
                 }
                 else
                 {
-                    z1234[0] = new AabbBox(new Zone(z.Up, z.Down, vertical, z.Right), Shape);
-                    z1234[1] = new AabbBox(new Zone(z.Up, z.Down, z.Left, vertical), Shape);
+                    z1234[Quad.One] = new AabbBox(new Zone(z.Up, z.Down, vertical, z.Right), _shape);
+                    z1234[Quad.Two] = new AabbBox(new Zone(z.Up, z.Down, z.Left, vertical), _shape);
                 }
             }
             else if (z.Up <= horizon)
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[3] = this;
+                    z1234[Quad.Four] = this;
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[2] = this;
+                    z1234[Quad.Three] = this;
                 }
                 else
                 {
-                    z1234[3] = new AabbBox(new Zone(z.Up, z.Down, vertical, z.Right), Shape);
-                    z1234[2] = new AabbBox(new Zone(z.Up, z.Down, z.Left, vertical), Shape);
+                    z1234[Quad.Four] = new AabbBox(new Zone(z.Up, z.Down, vertical, z.Right), _shape);
+                    z1234[Quad.Three] = new AabbBox(new Zone(z.Up, z.Down, z.Left, vertical), _shape);
                 }
             }
             else
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[0] = new AabbBox(new Zone(z.Up, horizon, z.Left, z.Right), Shape);
-                    z1234[3] = new AabbBox(new Zone(horizon, z.Down, z.Left, z.Right), Shape);
+                    z1234[Quad.One] = new AabbBox(new Zone(z.Up, horizon, z.Left, z.Right), _shape);
+                    z1234[Quad.Four] = new AabbBox(new Zone(horizon, z.Down, z.Left, z.Right), _shape);
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[1] = new AabbBox(new Zone(z.Up, horizon, z.Left, z.Right), Shape);
-                    z1234[2] = new AabbBox(new Zone(horizon, z.Down, z.Left, z.Right), Shape);
+                    z1234[Quad.Two] = new AabbBox(new Zone(z.Up, horizon, z.Left, z.Right), _shape);
+                    z1234[Quad.Three] = new AabbBox(new Zone(horizon, z.Down, z.Left, z.Right), _shape);
                 }
                 else
                 {
-                    z1234[0] = new AabbBox(new Zone(z.Up, horizon, vertical, z.Right), Shape);
-                    z1234[1] = new AabbBox(new Zone(z.Up, horizon, z.Left, vertical), Shape);
-                    z1234[2] = new AabbBox(new Zone(horizon, z.Down, z.Left, vertical), Shape);
-                    z1234[3] = new AabbBox(new Zone(horizon, z.Down, vertical, z.Right), Shape);
+                    z1234[Quad.One] = new AabbBox(new Zone(z.Up, horizon, vertical, z.Right), _shape);
+                    z1234[Quad.Two] = new AabbBox(new Zone(z.Up, horizon, z.Left, vertical), _shape);
+                    z1234[Quad.Three] = new AabbBox(new Zone(horizon, z.Down, z.Left, vertical), _shape);
+                    z1234[Quad.Four] = new AabbBox(new Zone(horizon, z.Down, vertical, z.Right), _shape);
                 }
             }
 

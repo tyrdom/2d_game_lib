@@ -43,12 +43,12 @@ namespace ty_game_lib
 
         private float Y { get; }
 
-        public TwoDVector(float x, float y)
+        public TwoDVector(TwoDPoint a, TwoDPoint b)
         {
-            X = x;
-            Y = y;
+            X = b.X-a.X;
+            Y = b.Y-a.Y;
         }
-
+ 
 
         public float Cross(TwoDVector b)
         {

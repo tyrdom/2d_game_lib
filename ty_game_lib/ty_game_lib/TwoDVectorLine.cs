@@ -1,6 +1,9 @@
+using System;
+using System.Collections;
+
 namespace ty_game_lib
 {
-    public class TwoDVectorLine
+    public class TwoDVectorLine : Shape
     {
         public TwoDVectorLine(TwoDPoint a, TwoDPoint b)
         {
@@ -15,7 +18,7 @@ namespace ty_game_lib
 
         public TwoDVector GetVector()
         {
-            return new TwoDVector(B.X - A.X, B.Y - A.Y);
+            return new TwoDVector(A,B);
         }
 
         public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB)
@@ -63,6 +66,23 @@ namespace ty_game_lib
                        Pt2LinePos.Right => getposOnLineD == Pt2LinePos.Left,
                        _ => false
                    };
+        }
+
+        public AabbBox CovToAabbBox()
+        {
+            var zone = new Zone(Math.Max(A.Y, B.Y), Math.Min(A.Y, B.Y), Math.Min(A.X, B.X), Math.Max(A.X, B.X));
+
+            return new AabbBox(zone, this);
+        }
+
+        public bool IsTouch(Round another)
+        {
+            var o = another.O;
+            var cross = new TwoDVector(A,o).Cross(new TwoDVector(o,B));
+            var aX = B.X-A.X;
+            var bY = B.Y-A.Y;
+            var x = aX*aX+bY*bY;
+            return 4 * cross * cross / x <= another.R * another.R;
         }
     }
 }
