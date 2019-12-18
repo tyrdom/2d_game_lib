@@ -1,17 +1,3 @@
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.deps.json
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.runtimeconfig.json
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.runtimeconfig.dev.json
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.dll
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.pdb
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.csprojAssemblyReference.cache
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.AssemblyInfoInputs.cache
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.AssemblyInfo.cs
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.dll
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.pdb
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/ty_game_lib.dll
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/ty_game_lib.pdb
-/Users/tianhao/RiderProjects/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.csproj.CopyComplete
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.deps.json
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/lib_test.runtimeconfig.json

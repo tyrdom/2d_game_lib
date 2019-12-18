@@ -18,9 +18,7 @@ namespace ty_game_lib
             var zone = new Zone(O.Y + R, O.Y - R, O.X - R, O.X + R);
             return new AabbBox(zone, this);
         }
-
-       
-
+        
         public bool IsTouch(Round another)
         {
             var rr = another.R + R;

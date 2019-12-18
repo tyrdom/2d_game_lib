@@ -18,14 +18,79 @@ namespace ty_game_lib
 
         public TwoDVector GetVector()
         {
-            return new TwoDVector(A,B);
+            return TwoDVector.TwoDVectorByPt(A, B);
         }
 
-        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB)
+        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB) //todo
         {
-            var getposOnLine = A.GetposOnLine(lineB);
+            var c = lineB.A;
+            var d = lineB.B;
+            var sA = A.Get2S(lineB);
+            var sB = B.Get2S(lineB);
+            var sC = c.Get2S(this);
+            var b = sA - sB;
+            var sD = b + sC;
+
+            var b1 = sC < 0 ^ sD < 0;
+            if (sA < 0f)
+            {
+                if (sB < 0f)
+                {
+                    return null;
+                }
+
+                if (sB > 0f)
+                {
+                    var a = sA / b;
+                    var ab = GetVector();
+                    return A.move(new TwoDVector(a * ab.X, b * ab.Y));
+                }
+                else
+                {
+                    if (b1)
+                    {
+                        return B;
+                    }
+                }
+            }
+            else
+            {
+                if (sA > 0f)
+                {
+                    if (sB > 0f)
+                    {
+                        return null;
+                    }
+
+                    if (sB < 0f)
+                    {
+                        var a = sA / b;
+                        var ab = GetVector();
+                        return A.move(new TwoDVector(a * ab.X, b * ab.Y));
+                    }
+                    else
+                    {
+                        if (b1)
+                        {
+                            return B;
+                        }
+                    }
+                }
+                else
+                {
+                    if (b1)
+                    {
+                        return A;
+                    }
+                }
+            }
 
             return null;
+        }
+
+        public TwoDVectorLine MoveVector(TwoDVector v)
+        {
+            return new TwoDVectorLine(A.move(v), B.move(v));
         }
 
 //        判断线段相交
@@ -78,11 +143,27 @@ namespace ty_game_lib
         public bool IsTouch(Round another)
         {
             var o = another.O;
-            var cross = new TwoDVector(A,o).Cross(new TwoDVector(o,B));
-            var aX = B.X-A.X;
-            var bY = B.Y-A.Y;
-            var x = aX*aX+bY*bY;
+            var cross = TwoDVector.TwoDVectorByPt(A, o).Cross(TwoDVector.TwoDVectorByPt(o, B));
+            var aX = B.X - A.X;
+            var bY = B.Y - A.Y;
+            var x = aX * aX + bY * bY;
             return 4 * cross * cross / x <= another.R * another.R;
+        }
+
+
+        public TwoDPoint Slide(TwoDPoint p)
+        {
+            var twoDVector = new TwoDVectorLine(A, p).GetVector();
+            var dVector = GetVector();
+            var dot = twoDVector.Dot(dVector);
+            var norm = dVector.Norm();
+            var f = dot / norm;
+            if (f < 0f)
+            {
+                return A;
+            }
+
+            return f > 1f ? B : A.move(dVector.GetUnit().Multi(f));
         }
     }
 }
