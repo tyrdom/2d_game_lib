@@ -19,10 +19,10 @@ namespace lib_test
             var either2 = new Either<int, string>("aa");
             Console.WriteLine(either.left + "  " + (either.right == null));
 
-            var aabbBoxes = new AabbPackBox?[4];
+            var aabbBoxes = new AabbBoxShape?[4];
             Console.WriteLine("!!" + aabbBoxes[0]);
 
-            var aabbBoxes2 = new List<AabbPackBox> {aabbBoxes[1]};
+            var aabbBoxes2 = new List<AabbBoxShape> {aabbBoxes[1]};
             var aabbBoxes2Count = aabbBoxes2.Count;
             Console.WriteLine(aabbBoxes2Count);
            

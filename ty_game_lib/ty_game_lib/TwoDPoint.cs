@@ -42,5 +42,7 @@ namespace ty_game_lib
         {
             return new TwoDPoint(X + v.X, Y + v.Y);
         }
+        
+       
     }
 }

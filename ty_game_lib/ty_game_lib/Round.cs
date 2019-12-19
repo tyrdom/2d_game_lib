@@ -13,10 +13,10 @@ namespace ty_game_lib
             R = r;
         }
 
-        public AabbPackBox CovToAabbPackBox()
+        public AabbBoxShape CovToAabbPackBox()
         {
             var zone = new Zone(O.Y + R, O.Y - R, O.X - R, O.X + R);
-            return new AabbPackBox(zone, this);
+            return new AabbBoxShape(zone, this);
         }
         
         public bool IsTouch(Round another)

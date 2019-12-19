@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections;
+using System.Numerics;
 
 namespace ty_game_lib
 {
@@ -134,11 +135,11 @@ namespace ty_game_lib
                    };
         }
 
-        public AabbPackBox CovToAabbPackBox()
+        public AabbBoxShape CovToAabbPackBox()
         {
             var zone = new Zone(Math.Max(A.Y, B.Y), Math.Min(A.Y, B.Y), Math.Min(A.X, B.X), Math.Max(A.X, B.X));
 
-            return new AabbPackBox(zone, this);
+            return new AabbBoxShape(zone, this);
         }
 
         public bool IsTouch(Round another)
@@ -151,6 +152,7 @@ namespace ty_game_lib
             return 4 * cross * cross / x <= another.R * another.R;
         }
 
+     
 
         public TwoDPoint Slide(TwoDPoint p)
         {
