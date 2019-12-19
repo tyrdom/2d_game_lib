@@ -53,6 +53,18 @@ namespace ty_game_lib
         {
             return MathF.Sqrt(X * X + Y * Y);
         }
+        
+        
+
+        public Quad WhichQ()
+        {
+            if (X > 0)
+            {
+                return Y > 0 ? Quad.One : Quad.Four;
+            }
+
+            return Y > 0 ? Quad.Two : Quad.Three;
+        }
     }
 
     public enum Pt2LinePos

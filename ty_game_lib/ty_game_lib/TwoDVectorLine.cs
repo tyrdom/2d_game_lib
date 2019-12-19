@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections;
 
@@ -21,7 +22,7 @@ namespace ty_game_lib
             return TwoDVector.TwoDVectorByPt(A, B);
         }
 
-        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB) //todo
+        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB) 
         {
             var c = lineB.A;
             var d = lineB.B;
@@ -133,11 +134,11 @@ namespace ty_game_lib
                    };
         }
 
-        public AabbBox CovToAabbBox()
+        public AabbPackBox CovToAabbPackBox()
         {
             var zone = new Zone(Math.Max(A.Y, B.Y), Math.Min(A.Y, B.Y), Math.Min(A.X, B.X), Math.Max(A.X, B.X));
 
-            return new AabbBox(zone, this);
+            return new AabbPackBox(zone, this);
         }
 
         public bool IsTouch(Round another)

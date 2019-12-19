@@ -1,4 +1,5 @@
-﻿﻿using System;
+﻿﻿#nullable enable
+ using System;
 using System.Collections;
 using System.Collections.Generic;
 using ty_game_lib;
@@ -15,14 +16,13 @@ namespace lib_test
 
 
             var either = new Either<int, string>(5);
-
+            var either2 = new Either<int, string>("aa");
             Console.WriteLine(either.left + "  " + (either.right == null));
 
-            var aabbBoxes = new AabbBox?[4];
+            var aabbBoxes = new AabbPackBox?[4];
             Console.WriteLine("!!" + aabbBoxes[0]);
 
-            List<AabbBox> aabbBoxes2 = new List<AabbBox>();
-            aabbBoxes2.Add(aabbBoxes[1]);
+            var aabbBoxes2 = new List<AabbPackBox> {aabbBoxes[1]};
             var aabbBoxes2Count = aabbBoxes2.Count;
             Console.WriteLine(aabbBoxes2Count);
            

@@ -43,5 +43,17 @@ namespace ty_game_lib
         {
             return right;
         }
+
+        object GetValue()
+        {
+            if (left == null)
+            {
+                return right;
+            }
+
+            {
+                return left;
+            }
+        }
     }
 }
