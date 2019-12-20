@@ -180,7 +180,7 @@ namespace ty_game_lib
             var down = MathF.Min(a.Y, b.Y);
             var right = MathF.Max(a.X, b.X);
             var left = MathF.Min(a.X, b.X);
-            var getposOnLine = b.GetposOnLine(oa);
+         
             switch (oaq)
             {
                 case Quad.One when oaq == Quad.Four:
@@ -224,12 +224,12 @@ namespace ty_game_lib
                         }
                         else if (a.Y > b.Y)
                         {
-                            var aod = new ClockwiseBalanceAngle(a, o, u);
-                            var dou = new ClockwiseBalanceAngle(u, o, d);
-                            var uob = new ClockwiseBalanceAngle(d, o, b);
-                            zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
-                            zones.Add(new ClockwiseTurning(dou, R, Last, Next).CovToAabbPackBox().Zone);
-                            zones.Add(new ClockwiseTurning(uob, R, Last, Next).CovToAabbPackBox().Zone);
+                            var aou = new ClockwiseBalanceAngle(a, o, u);
+                            var uod = new ClockwiseBalanceAngle(u, o, d);
+                            var dob = new ClockwiseBalanceAngle(d, o, b);
+                            zones.Add(new ClockwiseTurning(aou, R, Last, Next).CovToAabbPackBox().Zone);
+                            zones.Add(new ClockwiseTurning(uod, R, Last, Next).CovToAabbPackBox().Zone);
+                            zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
                         }
                         else
                         {
@@ -251,7 +251,11 @@ namespace ty_game_lib
 
 
             var aabbBoxShapes = new List<AabbBoxShape>();
-
+            foreach (var zone in zones)
+            {
+                var aabbBoxShape = new AabbBoxShape(zone,this);
+                aabbBoxShapes.Add(aabbBoxShape);
+            }
 
             return aabbBoxShapes;
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml.Xsl;
 
@@ -17,6 +18,26 @@ namespace ty_game_lib
             x[a] = t;
             return x;
         }
+
+
+        public static Zone JoinAabbZone(AabbBoxShape[] aabbBoxShapes)
+        {
+            var foo = aabbBoxShapes[0].Zone;
+            foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length))
+            {
+                foo = foo.Join(aabbBoxShapes[i].Zone);
+            }
+
+            return foo;
+        }
+        // public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
+        // {
+        //     var joinAabbZone = JoinAabbZone(aabbBoxShapes);
+        //     var qSpace = new QSpaceLeaf(Quad.One,joinAabbZone,aabbBoxShapes.ToList()).TryCovToBranch();
+        //     var count = qSpace.AabbPackBoxes.Count;
+        //     if (count<=maxLoadPerQ)
+        //         return qSpace
+        // }
     }
 
     public class Either<A, B>

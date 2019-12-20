@@ -34,9 +34,9 @@ namespace ty_game_lib
             return new TwoDVector(X / f, Y / f);
         }
 
-        public TwoDVector DicHalfPi()
+        public TwoDVector CounterClockwiseHalfPi()
         {
-            return new TwoDVector(Y, -X);
+            return new TwoDVector(-Y, X);
         }
 
         public TwoDVector Multi(float m)

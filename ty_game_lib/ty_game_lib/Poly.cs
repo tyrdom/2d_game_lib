@@ -124,8 +124,8 @@ namespace ty_game_lib
 
                 var line1 = new TwoDVectorLine(aPoint, bPoint);
                 var line2 = new TwoDVectorLine(bPoint, bPoint);
-                var unitV1 = line1.GetVector().GetUnit().DicHalfPi().Multi(r);
-                var unitV2 = line2.GetVector().GetUnit().DicHalfPi().Multi(r);
+                var unitV1 = line1.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+                var unitV2 = line2.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
 
                 var fl1 = line1.MoveVector(unitV1);
 

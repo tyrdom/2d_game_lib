@@ -9,7 +9,7 @@ namespace ty_game_lib
 {
     public abstract class QSpace
     {
-        public virtual Quad Quad { get; set; }
+        public virtual Quad TheQuad { get; set; }
         public abstract void InsertBox(AabbBoxShape boxShape);
         public abstract Zone Zone { get; set; }
         public abstract List<AabbBoxShape> AabbPackBoxes { get; set; }
@@ -19,7 +19,19 @@ namespace ty_game_lib
 
     public class QSpaceBranch : QSpace
     {
-        public sealed override Quad Quad { get; set; }
+        public QSpaceBranch(Quad quad, Zone zone, List<AabbBoxShape> aabbPackBoxes, QSpace rightUp, QSpace leftUp,
+            QSpace leftDown, QSpace rightDown)
+        {
+            TheQuad = quad;
+            Zone = zone;
+            AabbPackBoxes = aabbPackBoxes;
+            RightUp = rightUp;
+            LeftUp = leftUp;
+            LeftDown = leftDown;
+            RightDown = rightDown;
+        }
+
+        public sealed override Quad TheQuad { get; set; }
         public sealed override Zone Zone { get; set; }
 
         public sealed override List<AabbBoxShape> AabbPackBoxes { get; set; }
@@ -31,18 +43,6 @@ namespace ty_game_lib
 
         private QSpace RightDown { get; set; }
 
-
-        public QSpaceBranch(Zone zone, List<AabbBoxShape> aabbBoxes, QSpace rightUp, QSpace leftUp,
-            QSpace leftDown, QSpace rightDown
-        )
-        {
-            Zone = zone;
-            AabbPackBoxes = aabbBoxes;
-            RightUp = rightUp;
-            LeftUp = leftUp;
-            LeftDown = leftDown;
-            RightDown = rightDown;
-        }
 
         public override void Remove(AabbBoxShape boxShape)
         {
@@ -113,7 +113,7 @@ namespace ty_game_lib
             }
         }
 
-        public QuadSpaceLeaf CovToLeaf()
+        public QSpaceLeaf CovToLeaf()
         {
             var qSpaces = new[] {RightUp, LeftUp, LeftDown, RightDown};
             var a = AabbPackBoxes;
@@ -122,7 +122,7 @@ namespace ty_game_lib
                 a.AddRange(qSpace.AabbPackBoxes);
             }
 
-            return new QuadSpaceLeaf(Quad, Zone, a);
+            return new QSpaceLeaf(TheQuad, Zone, a);
         }
     }
 
@@ -181,16 +181,16 @@ namespace ty_game_lib
     }
 
 
-    public class QuadSpaceLeaf : QSpace
+    public class QSpaceLeaf : QSpace
     {
-        public QuadSpaceLeaf(Quad quad, Zone zone, List<AabbBoxShape> aabbPackPackBoxes)
+        public QSpaceLeaf(Quad quad, Zone zone, List<AabbBoxShape> aabbPackPackBoxes)
         {
-            Quad = quad;
+            TheQuad = quad;
             Zone = zone;
             AabbPackBoxes = aabbPackPackBoxes;
         }
 
-        public sealed override Quad Quad { get; set; }
+        public sealed override Quad TheQuad { get; set; }
         public sealed override Zone Zone { get; set; }
 
         public sealed override List<AabbBoxShape> AabbPackBoxes { get; set; }
@@ -217,24 +217,24 @@ namespace ty_game_lib
             var four = new List<AabbBoxShape>();
             var zone = new List<AabbBoxShape>();
             var (item1, item2) = Zone.GetMids();
-            Parallel.ForEach(AabbPackBoxes, mark =>
+            Parallel.ForEach(AabbPackBoxes, aabbBoxShape =>
                 {
-                    switch (mark.WhichQ(item1, item2))
+                    switch (aabbBoxShape.WhichQ(item1, item2))
                     {
                         case Quad.One:
-                            one.Add(mark);
+                            one.Add(aabbBoxShape);
                             break;
                         case Quad.Two:
-                            two.Add(mark);
+                            two.Add(aabbBoxShape);
                             break;
                         case Quad.Three:
-                            three.Add(mark);
+                            three.Add(aabbBoxShape);
                             break;
                         case Quad.Four:
-                            four.Add(mark);
+                            four.Add(aabbBoxShape);
                             break;
                         case null:
-                            zone.Add(mark);
+                            zone.Add(aabbBoxShape);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -242,15 +242,15 @@ namespace ty_game_lib
                 }
             );
 
-            if (zone == AabbPackBoxes) return this;
+            if (zone.Count == AabbPackBoxes.Count) return this;
 
 
             var zones = Zone.CutTo4(item1, item2);
 
 
-            return new QSpaceBranch(Zone, zone, new QuadSpaceLeaf(Quad.One, zones[0], one),
-                new QuadSpaceLeaf(Quad.Two, zones[1], two),
-                new QuadSpaceLeaf(Quad.Three, zones[2], three), new QuadSpaceLeaf(Quad.Four, zones[3], four));
+            return new QSpaceBranch(TheQuad, Zone, zone, new QSpaceLeaf(Quad.One, zones[0], one),
+                new QSpaceLeaf(Quad.Two, zones[1], two),
+                new QSpaceLeaf(Quad.Three, zones[2], three), new QSpaceLeaf(Quad.Four, zones[3], four));
         }
     }
 
@@ -266,7 +266,7 @@ namespace ty_game_lib
     {
         public Zone Zone;
         private readonly Shape _shape;
-        
+
 
         public AabbBoxShape(Zone zone, Shape shape)
         {
@@ -284,7 +284,7 @@ namespace ty_game_lib
             return (List<AabbBoxShape>) aabbBoxes.Where(aabbBox => !aabbBox.IsNotTouch(this));
         }
 
-     
+
         public Quad? WhichQ(float horizon, float vertical)
         {
             if (Zone.Down >= horizon)
