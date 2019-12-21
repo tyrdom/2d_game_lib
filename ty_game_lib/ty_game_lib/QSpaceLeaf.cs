@@ -32,6 +32,24 @@ namespace ty_game_lib
             AabbPackBoxes.Add(boxShape);
         }
 
+        public override QSpace TryCovToLimitQSpace(int limit)
+        {
+            if (AabbPackBoxes.Count <= limit)
+            {
+                return this;
+            }
+            else
+            {
+                var tryCovToBranch = TryCovToBranch();
+                return tryCovToBranch switch
+                {
+                    QSpaceBranch qSpaceBranch => qSpaceBranch.TryCovToLimitQSpace(limit),
+                    QSpaceLeaf _ => this,
+                    _ => throw new ArgumentOutOfRangeException(nameof(tryCovToBranch))
+                };
+            }
+        }
+
         public QSpace TryCovToBranch()
         {
             var one = new List<AabbBoxShape>();

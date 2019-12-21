@@ -10,23 +10,19 @@ namespace ty_game_lib
     public class Block : Shape
     {
         private float R;
-        private QSpace qSpace;
-        private AabbBoxShape[] BlockElements;
+        private QSpace QSpace;
 
 
-        public Block(float r, AabbBoxShape[] blockElements)
+        public Block(float r, QSpace qSpace)
         {
             R = r;
-            BlockElements = blockElements;
+            QSpace = qSpace;
         }
 
         bool inBlock(TwoDPoint p)
         {
             int crossCount = 0;
-            foreach (var aabbBoxShape in BlockElements)
-            {
-                var zone = aabbBoxShape.Zone;
-            }
+
 
             return false;
         }
@@ -34,7 +30,7 @@ namespace ty_game_lib
 
         public AabbBoxShape CovToAabbPackBox()
         {
-            var foo = SomeTools.JoinAabbZone(BlockElements);
+            var foo = QSpace.Zone;
 
             return new AabbBoxShape(foo, this);
         }

@@ -30,14 +30,14 @@ namespace ty_game_lib
 
             return foo;
         }
-        // public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
-        // {
-        //     var joinAabbZone = JoinAabbZone(aabbBoxShapes);
-        //     var qSpace = new QSpaceLeaf(Quad.One,joinAabbZone,aabbBoxShapes.ToList()).TryCovToBranch();
-        //     var count = qSpace.AabbPackBoxes.Count;
-        //     if (count<=maxLoadPerQ)
-        //         return qSpace
-        // }
+
+        public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
+        {
+            var joinAabbZone = JoinAabbZone(aabbBoxShapes);
+            var qSpace = new QSpaceLeaf(Quad.One, joinAabbZone, aabbBoxShapes.ToList());
+
+            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+        }
     }
 
     public class Either<A, B>

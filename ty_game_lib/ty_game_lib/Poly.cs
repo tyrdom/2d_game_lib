@@ -100,7 +100,7 @@ namespace ty_game_lib
                 .ToArray());
         }
 
-        public Block GenByPoly(float r)
+        public Block GenByPoly(float r, int limit)
         {
             var shapes = new List<Shape>();
 
@@ -177,7 +177,8 @@ namespace ty_game_lib
                     case ClockwiseTurning clockwiseTurning:
                         var last = shapes[(i - 1) % shapesCount];
                         var next = shapes[(i + 1) % shapesCount];
-                        var covToAabbPackBoxes = new ClockwiseTurning(clockwiseTurning.AOB, r, last, next).CovToVertAabbPackBoxes();
+                        var covToAabbPackBoxes = new ClockwiseTurning(clockwiseTurning.AOB, r, last, next)
+                            .CovToVertAabbPackBoxes();
                         aabbBoxShapes.AddRange(covToAabbPackBoxes);
                         break;
                     case TwoDVectorLine twoDVectorLine:
@@ -189,8 +190,9 @@ namespace ty_game_lib
                 }
             }
 
+            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), limit);
 
-            return new Block(r, aabbBoxShapes.ToArray());
+            return new Block(r, qSpaceByAabbBoxShapes);
         }
     }
 }

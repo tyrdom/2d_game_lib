@@ -13,6 +13,7 @@ namespace ty_game_lib
         public abstract List<AabbBoxShape> AabbPackBoxes { get; set; }
         public abstract void Remove(AabbBoxShape boxShape);
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
+        public abstract QSpace TryCovToLimitQSpace(int limit);
     }
 
 
