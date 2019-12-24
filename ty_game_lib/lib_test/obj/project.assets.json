@@ -27,23 +27,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/tianhao/.nuget/packages/": {},
-    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder": {}
+    "C:\\Users\\tyrdo\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
+      "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
       "projectName": "lib_test",
-      "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
-      "packagesPath": "/Users/tianhao/.nuget/packages/",
-      "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/",
+      "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
+      "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
+      "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "/Users/tianhao/.config/NuGet/NuGet.Config"
+        "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp3.0"
@@ -54,8 +50,8 @@
       "frameworks": {
         "netcoreapp3.0": {
           "projectReferences": {
-            "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj": {
-              "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj"
+            "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj": {
+              "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj"
             }
           }
         }
@@ -77,13 +73,7 @@
           "net48"
         ],
         "assetTargetFallback": true,
-        "warn": true,
-        "frameworkReferences": {
-          "Microsoft.NETCore.App": {
-            "privateAssets": "all"
-          }
-        },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+        "warn": true
       }
     }
   }

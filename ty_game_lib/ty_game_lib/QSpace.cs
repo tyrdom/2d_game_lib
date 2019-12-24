@@ -14,6 +14,7 @@ namespace ty_game_lib
         public abstract void Remove(AabbBoxShape boxShape);
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
         public abstract QSpace TryCovToLimitQSpace(int limit);
+        public abstract (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p);
     }
 
 

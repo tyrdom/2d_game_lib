@@ -84,6 +84,32 @@ namespace ty_game_lib
                 tryCovToLimitQSpace4, tryCovToLimitQSpace3);
         }
 
+        public override (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p)
+        {
+            int n = 0;
+            AabbBoxShape? shape = null;
+            foreach (var aabbBoxShape in AabbPackBoxes)
+            {
+                var zone = aabbBoxShape.Zone;
+                if (p.Y <= zone.Up && p.Y > zone.Down
+                )
+                {
+                    if (p.X <= Zone.Left)
+                    {
+                        n++;
+                    }
+                    else if (p.X > zone.Left && p.X < zone.Right)
+                    {
+                        shape = aabbBoxShape;
+                        var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(p);
+                        n = n + touchByRightShootPointInAAbbBox;
+                    }
+                }
+            }
+
+            return (n, shape);
+        }
+
         public override void InsertBox(AabbBoxShape boxShape)
         {
             var (item1, item2) = Zone.GetMid();

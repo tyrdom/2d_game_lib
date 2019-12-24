@@ -142,6 +142,21 @@ namespace ty_game_lib
             return new AabbBoxShape(zone, this);
         }
 
+        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        {
+            var twoDVector = GetVector();
+            // var f = twoDVector.X *twoDVector.Y
+            if (twoDVector.X>0 ^ twoDVector.Y>0)
+            {
+                
+            }
+            {
+                return 0;
+            }
+            
+            throw new NotImplementedException();
+        }
+
         public bool IsTouch(Round another)
         {
             var o = another.O;

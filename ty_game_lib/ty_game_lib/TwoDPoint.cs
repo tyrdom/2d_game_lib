@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 
 namespace ty_game_lib
 {
@@ -12,6 +13,33 @@ namespace ty_game_lib
 
         public readonly float X;
         public readonly float Y;
+
+        public (int, AabbBoxShape?) GenARightShootCrossAlotAabbBoxShape(Zone azone, List<AabbBoxShape> aabbBoxShapes)
+        {
+            var n = 0;
+            AabbBoxShape? aShape = null;
+
+            foreach (var aabbBoxShape in aabbBoxShapes)
+            {
+                var zone = aabbBoxShape.Zone;
+                if (Y <= zone.Up && Y > zone.Down
+                )
+                {
+                    if (X <= azone.Left)
+                    {
+                        n++;
+                    }
+                    else if (X > zone.Left && X < zone.Right)
+                    {
+                        aShape = aabbBoxShape;
+                        var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(this);
+                        n = n + touchByRightShootPointInAAbbBox;
+                    }
+                }
+            }
+
+            return (n, aShape);
+        }
 
         public (TwoDPoint, TwoDPoint) SwapPoint(TwoDPoint b)
         {
@@ -27,8 +55,6 @@ namespace ty_game_lib
 
         public Pt2LinePos GetposOnLine(TwoDVectorLine aline)
         {
-          
-
             var cross = Get2S(aline);
             return cross switch
             {
@@ -42,7 +68,5 @@ namespace ty_game_lib
         {
             return new TwoDPoint(X + v.X, Y + v.Y);
         }
-        
-       
     }
 }

@@ -50,6 +50,11 @@ namespace ty_game_lib
             }
         }
 
+        public override (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p)
+        {
+            throw new NotImplementedException();
+        }
+
         public QSpace TryCovToBranch()
         {
             var one = new List<AabbBoxShape>();

@@ -22,7 +22,7 @@ namespace ty_game_lib
         bool inBlock(TwoDPoint p)
         {
             int crossCount = 0;
-
+            
 
             return false;
         }
@@ -33,6 +33,11 @@ namespace ty_game_lib
             var foo = QSpace.Zone;
 
             return new AabbBoxShape(foo, this);
+        }
+
+        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        {
+            throw new NotImplementedException();
         }
     }
 }

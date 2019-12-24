@@ -6,7 +6,7 @@ namespace ty_game_lib
     public class AabbBoxShape
     {
         public Zone Zone;
-        private readonly Shape _shape;
+        public readonly Shape _shape;
 
 
         public AabbBoxShape(Zone zone, Shape shape)

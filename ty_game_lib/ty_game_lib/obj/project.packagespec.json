@@ -1,14 +1,11 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
+    "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj",
     "projectName": "ty_game_lib",
-    "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/ty_game_lib.csproj",
-    "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/ty_game_lib/obj/",
+    "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj",
+    "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\obj\\",
     "projectStyle": "PackageReference",
-    "fallbackFolders": [
-      "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
-    ],
     "originalTargetFrameworks": [
       "netcoreapp3.0"
     ],
@@ -37,13 +34,7 @@
         "net48"
       ],
       "assetTargetFallback": true,
-      "warn": true,
-      "frameworkReferences": {
-        "Microsoft.NETCore.App": {
-          "privateAssets": "all"
-        }
-      },
-      "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+      "warn": true
     }
   }
 }

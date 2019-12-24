@@ -160,6 +160,11 @@ namespace ty_game_lib
             return new AabbBoxShape(new Zone(up, down, left, right), this);
         }
 
+        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        {
+            throw new NotImplementedException();
+        }
+
         public List<AabbBoxShape> CovToVertAabbPackBoxes()
         {
             var zones = new List<Zone>();
