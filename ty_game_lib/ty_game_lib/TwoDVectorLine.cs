@@ -23,7 +23,7 @@ namespace ty_game_lib
             return TwoDVector.TwoDVectorByPt(A, B);
         }
 
-        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB) 
+        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB)
         {
             var c = lineB.A;
             var d = lineB.B;
@@ -146,15 +146,18 @@ namespace ty_game_lib
         {
             var twoDVector = GetVector();
             // var f = twoDVector.X *twoDVector.Y
-            if (twoDVector.X>0 ^ twoDVector.Y>0)
+            if (twoDVector.X > 0)
             {
-                
+                var getposOnLine = p.GetposOnLine(this);
+                return getposOnLine == Pt2LinePos.Left ? 1 : 0;
             }
+
+            if (!(twoDVector.X < 0)) return 0;
             {
-                return 0;
+                var getposOnLine = p.GetposOnLine((this));
+
+                return getposOnLine == Pt2LinePos.Right ? 1 : 0;
             }
-            
-            throw new NotImplementedException();
         }
 
         public bool IsTouch(Round another)
@@ -167,7 +170,6 @@ namespace ty_game_lib
             return 4 * cross * cross / x <= another.R * another.R;
         }
 
-     
 
         public TwoDPoint Slide(TwoDPoint p)
         {

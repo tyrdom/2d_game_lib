@@ -52,7 +52,7 @@ namespace ty_game_lib
 
         public override (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p)
         {
-            throw new NotImplementedException();
+            return p.GenARightShootCrossAlotAabbBoxShape(Zone,AabbPackBoxes);
         }
 
         public QSpace TryCovToBranch()

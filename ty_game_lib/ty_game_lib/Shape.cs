@@ -6,6 +6,7 @@ namespace ty_game_lib
     {
         AabbBoxShape CovToAabbPackBox();
 
-        int TouchByRightShootPointInAAbbBox(TwoDPoint p);
+        int
+            TouchByRightShootPointInAAbbBox(TwoDPoint p);
     }
 }

@@ -21,10 +21,8 @@ namespace ty_game_lib
 
         bool inBlock(TwoDPoint p)
         {
-            int crossCount = 0;
-            
-
-            return false;
+            var (item1, aabbBoxShape) = QSpace.touchWithARightShootPoint(p);
+            return item1 % 2 == 1;
         }
 
 
@@ -37,7 +35,8 @@ namespace ty_game_lib
 
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
         {
-            throw new NotImplementedException();
+            var touchWithARightShootPoint = QSpace.touchWithARightShootPoint(p);
+            return touchWithARightShootPoint.Item1;
         }
     }
 }

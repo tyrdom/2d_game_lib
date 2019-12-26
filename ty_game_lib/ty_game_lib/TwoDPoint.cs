@@ -3,6 +3,15 @@ using System.Numerics;
 
 namespace ty_game_lib
 {
+    public enum @int
+    {
+        ShortcutIn,
+        ShortcutOut,
+        Add1,
+        Add0
+    }
+
+
     public class TwoDPoint
     {
         public TwoDPoint(float x, float y)
@@ -33,7 +42,15 @@ namespace ty_game_lib
                     {
                         aShape = aabbBoxShape;
                         var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(this);
-                        n = n + touchByRightShootPointInAAbbBox;
+                        if (touchByRightShootPointInAAbbBox < 0)
+                        {
+                            return (touchByRightShootPointInAAbbBox, aShape);
+                        }
+
+                        {
+                            n += touchByRightShootPointInAAbbBox;
+                            break;
+                        }
                     }
                 }
             }

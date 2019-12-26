@@ -86,28 +86,28 @@ namespace ty_game_lib
 
         public override (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p)
         {
-            int n = 0;
-            AabbBoxShape? shape = null;
-            foreach (var aabbBoxShape in AabbPackBoxes)
+            var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
+            var (i, aabb) = p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxes);
+            foreach (var qSpace in qSpaces)
             {
-                var zone = aabbBoxShape.Zone;
-                if (p.Y <= zone.Up && p.Y > zone.Down
-                )
+                var (item1, aabbBoxShape) = qSpace.touchWithARightShootPoint(p);
+                if (aabbBoxShape != null)
                 {
-                    if (p.X <= Zone.Left)
-                    {
-                        n++;
-                    }
-                    else if (p.X > zone.Left && p.X < zone.Right)
-                    {
-                        shape = aabbBoxShape;
-                        var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(p);
-                        n = n + touchByRightShootPointInAAbbBox;
-                    }
+                    aabb = aabbBoxShape;
+                }
+
+                if (item1 < 0)
+                {
+                    i = item1;
+                    break;
+                }
+                
+                {
+                    i += item1;
                 }
             }
 
-            return (n, shape);
+            return (i, aabb);
         }
 
         public override void InsertBox(AabbBoxShape boxShape)

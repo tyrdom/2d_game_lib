@@ -162,7 +162,17 @@ namespace ty_game_lib
 
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
         {
-            throw new NotImplementedException();
+            var o = AOB.O;
+            var ox = (p.X - o.X);
+            var oy = (p.Y - o.Y);
+            if (ox * ox + oy * oy < R * R)
+            {
+                return -1;
+            }
+
+            {
+                return -2;
+            }
         }
 
         public List<AabbBoxShape> CovToVertAabbPackBoxes()
@@ -185,80 +195,76 @@ namespace ty_game_lib
             var down = MathF.Min(a.Y, b.Y);
             var right = MathF.Max(a.X, b.X);
             var left = MathF.Min(a.X, b.X);
-         
-            switch (oaq)
+
+
+            if (a.X > 0)
+
+
             {
-                case Quad.One when oaq == Quad.Four:
+                if (obq == Quad.One && obq == Quad.Four)
                 {
-                    if (obq == Quad.One && obq == Quad.Four)
+                    if (a.Y > b.Y)
                     {
-                        if (a.Y > b.Y)
-                        {
-                            zones.Add(CovToAabbPackBox().Zone);
-                        }
-                        else if (a.Y < b.Y)
-                        {
-                            var aod = new ClockwiseBalanceAngle(a, o, d);
-                            var dou = new ClockwiseBalanceAngle(d, o, u);
-                            var uob = new ClockwiseBalanceAngle(u, o, b);
-                            zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
-                            zones.Add(new ClockwiseTurning(dou, R, Last, Next).CovToAabbPackBox().Zone);
-                            zones.Add(new ClockwiseTurning(uob, R, Last, Next).CovToAabbPackBox().Zone);
-                        }
-                        else
-                        {
-                            throw new ArgumentOutOfRangeException();
-                        }
+                        zones.Add(CovToAabbPackBox().Zone);
                     }
-                    else
+                    else if (a.Y < b.Y)
                     {
                         var aod = new ClockwiseBalanceAngle(a, o, d);
-                        var dob = new ClockwiseBalanceAngle(d, o, b);
+                        var dou = new ClockwiseBalanceAngle(d, o, u);
+                        var uob = new ClockwiseBalanceAngle(u, o, b);
                         zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
-                        zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
-                    }
-
-                    break;
-                }
-                case Quad.Two when oaq == Quad.Three:
-                    if (obq == Quad.Two && obq == Quad.Three)
-                    {
-                        if (a.Y < b.Y)
-                        {
-                            zones.Add(CovToAabbPackBox().Zone);
-                        }
-                        else if (a.Y > b.Y)
-                        {
-                            var aou = new ClockwiseBalanceAngle(a, o, u);
-                            var uod = new ClockwiseBalanceAngle(u, o, d);
-                            var dob = new ClockwiseBalanceAngle(d, o, b);
-                            zones.Add(new ClockwiseTurning(aou, R, Last, Next).CovToAabbPackBox().Zone);
-                            zones.Add(new ClockwiseTurning(uod, R, Last, Next).CovToAabbPackBox().Zone);
-                            zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
-                        }
-                        else
-                        {
-                            throw new ArgumentOutOfRangeException();
-                        }
+                        zones.Add(new ClockwiseTurning(dou, R, Last, Next).CovToAabbPackBox().Zone);
+                        zones.Add(new ClockwiseTurning(uob, R, Last, Next).CovToAabbPackBox().Zone);
                     }
                     else
                     {
-                        var aod = new ClockwiseBalanceAngle(a, o, u);
-                        var dob = new ClockwiseBalanceAngle(u, o, b);
-                        zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
+                        throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else
+                {
+                    var aod = new ClockwiseBalanceAngle(a, o, d);
+                    var dob = new ClockwiseBalanceAngle(d, o, b);
+                    zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
+                    zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
+                }
+            }
+            else
+            {
+                if (obq == Quad.Two && obq == Quad.Three)
+                {
+                    if (a.Y < b.Y)
+                    {
+                        zones.Add(CovToAabbPackBox().Zone);
+                    }
+                    else if (a.Y > b.Y)
+                    {
+                        var aou = new ClockwiseBalanceAngle(a, o, u);
+                        var uod = new ClockwiseBalanceAngle(u, o, d);
+                        var dob = new ClockwiseBalanceAngle(d, o, b);
+                        zones.Add(new ClockwiseTurning(aou, R, Last, Next).CovToAabbPackBox().Zone);
+                        zones.Add(new ClockwiseTurning(uod, R, Last, Next).CovToAabbPackBox().Zone);
                         zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
                     }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else
+                {
+                    var aod = new ClockwiseBalanceAngle(a, o, u);
+                    var dob = new ClockwiseBalanceAngle(u, o, b);
+                    zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
+                    zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
+                }
             }
 
 
             var aabbBoxShapes = new List<AabbBoxShape>();
             foreach (var zone in zones)
             {
-                var aabbBoxShape = new AabbBoxShape(zone,this);
+                var aabbBoxShape = new AabbBoxShape(zone, this);
                 aabbBoxShapes.Add(aabbBoxShape);
             }
 
