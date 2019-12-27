@@ -31,7 +31,7 @@ namespace lib_test
             var poly = new Poly(twoDPoints);
             var genByPoly = poly.GenByPoly(2.5f, 3);
             var inBlock1 = genByPoly.inBlock(pt4);
-//            Console.Out.WriteLine(genByPoly.QSpace.outZones());
+            Console.Out.WriteLine(genByPoly.QSpace.outZones());
             Console.WriteLine("!!!!" + inBlock1);
         }
     }
