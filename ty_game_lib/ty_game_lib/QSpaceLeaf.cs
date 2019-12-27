@@ -52,7 +52,19 @@ namespace ty_game_lib
 
         public override (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p)
         {
-            return p.GenARightShootCrossAlotAabbBoxShape(Zone,AabbPackBoxes);
+            return p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxes);
+        }
+
+        public override string outZones()
+        {
+            string s = "";
+            foreach (var aabbBoxShape in AabbPackBoxes)
+            {
+                var zone = aabbBoxShape.Zone;
+                s += SomeTools.ZoneLog(zone) + "\n";
+            }
+
+            return s;
         }
 
         public QSpace TryCovToBranch()

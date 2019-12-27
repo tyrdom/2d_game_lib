@@ -15,6 +15,7 @@ namespace ty_game_lib
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
         public abstract QSpace TryCovToLimitQSpace(int limit);
         public abstract (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p);
+        public abstract string outZones();
     }
 
 

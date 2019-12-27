@@ -12,3 +12,17 @@
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.csproj.CopyComplete
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.dll
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/Debug/netcoreapp3.0/lib_test.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.exe
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.deps.json
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.runtimeconfig.json
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.runtimeconfig.dev.json
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\ty_game_lib.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\ty_game_lib.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.csprojAssemblyReference.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.AssemblyInfoInputs.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.AssemblyInfo.cs
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.csproj.CopyComplete
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.pdb

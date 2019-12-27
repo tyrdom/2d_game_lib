@@ -1,17 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace ty_game_lib
 {
-    public enum @int
-    {
-        ShortcutIn,
-        ShortcutOut,
-        Add1,
-        Add0
-    }
-
-
     public class TwoDPoint
     {
         public TwoDPoint(float x, float y)
@@ -31,17 +23,25 @@ namespace ty_game_lib
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
                 var zone = aabbBoxShape.Zone;
+//                Console.Out.WriteLine("XY:::" + X + "  " + Y + "\n zone：：" + SomeTools.ZoneLog(zone));
                 if (Y <= zone.Up && Y > zone.Down
                 )
                 {
-                    if (X <= azone.Left)
+//                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
+
+
+                    if (X <= zone.Left)
                     {
+//                        Console.Out.WriteLine("!@#$");
                         n++;
                     }
                     else if (X > zone.Left && X < zone.Right)
                     {
                         aShape = aabbBoxShape;
                         var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(this);
+//                        Console.Out.WriteLine("a num" + touchByRightShootPointInAAbbBox);
+//
+//                        Console.Out.WriteLine(SomeTools.ZoneLog(zone));
                         if (touchByRightShootPointInAAbbBox < 0)
                         {
                             return (touchByRightShootPointInAAbbBox, aShape);

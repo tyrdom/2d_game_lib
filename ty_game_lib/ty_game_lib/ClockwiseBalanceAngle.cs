@@ -14,5 +14,13 @@ namespace ty_game_lib
             O = o;
             B = b;
         }
+
+        public bool CheckTuring()
+        {
+            var twoDVectorLine = new TwoDVectorLine(A, O);
+            var getposOnLine = B.GetposOnLine(twoDVectorLine);
+
+            return getposOnLine != Pt2LinePos.Right;
+        }
     }
 }

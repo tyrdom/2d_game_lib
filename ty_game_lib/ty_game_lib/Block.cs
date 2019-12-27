@@ -10,7 +10,7 @@ namespace ty_game_lib
     public class Block : Shape
     {
         private float R;
-        private QSpace QSpace;
+        public QSpace QSpace;
 
 
         public Block(float r, QSpace qSpace)
@@ -19,13 +19,15 @@ namespace ty_game_lib
             QSpace = qSpace;
         }
 
-        bool inBlock(TwoDPoint p)
+        public bool inBlock(TwoDPoint p)
         {
-            var (item1, aabbBoxShape) = QSpace.touchWithARightShootPoint(p);
-            return item1 % 2 == 1;
-        }
-
-
+                   var (item1, aabbBoxShape) = QSpace.touchWithARightShootPoint(p);
+                   Console.Out.WriteLine("num::" + item1 );
+                   
+                   return (item1 % 2) != 0;
+               }
+       
+              
         public AabbBoxShape CovToAabbPackBox()
         {
             var foo = QSpace.Zone;

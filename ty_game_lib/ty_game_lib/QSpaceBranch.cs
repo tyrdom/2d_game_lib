@@ -99,15 +99,34 @@ namespace ty_game_lib
                 if (item1 < 0)
                 {
                     i = item1;
-                    break;
+                    return (i, aabb);
                 }
-                
+
                 {
                     i += item1;
                 }
             }
 
             return (i, aabb);
+        }
+
+        public override string outZones()
+        {
+            string s = "";
+            foreach (var aabbBoxShape in AabbPackBoxes)
+            {
+                var zone = aabbBoxShape.Zone;
+                s += SomeTools.ZoneLog(zone) + "\n";
+            }
+
+            var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
+            foreach (var qSpace in qSpaces)
+            {
+                var zones = qSpace.outZones();
+                s += zones + "\n";
+            }
+
+            return s;
         }
 
         public override void InsertBox(AabbBoxShape boxShape)

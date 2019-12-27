@@ -26,6 +26,14 @@ namespace ty_game_lib
         public TwoDPoint[] Pts { get; }
 
 
+        void ShowPts()
+        {
+            foreach (var twoDPoint in Pts)
+            {
+                Console.Out.WriteLine("pt:" + twoDPoint.X + "|" + twoDPoint.Y);
+            }
+        }
+
         public Poly ToNotCrossPoly()
         {
             var twoDPoints = Pts;
@@ -60,6 +68,7 @@ namespace ty_game_lib
                 f = x;
             }
 
+
             return n;
         }
 
@@ -69,8 +78,8 @@ namespace ty_game_lib
             var ptsLength = Pts.Length;
             var m = (n - 1) % ptsLength;
             var o = (n + 1) % ptsLength;
-            var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[o]);
-            var pt2LinePos = Pts[n].GetposOnLine(twoDVectorLine1);
+            var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[n]);
+            var pt2LinePos = Pts[o].GetposOnLine(twoDVectorLine1);
             return pt2LinePos switch
             {
                 Pt2LinePos.Right => true,
@@ -80,7 +89,7 @@ namespace ty_game_lib
             };
         }
 
-        public Poly startWithACovAndFlush()
+        public Poly StartWithACovAndFlush()
         {
             Poly poly;
             if (!IsFlush())
@@ -90,7 +99,7 @@ namespace ty_game_lib
             }
             else
             {
-                poly = this.ToNotCrossPoly();
+                poly = ToNotCrossPoly();
             }
 
             var n = poly.GetACovPointNum();
@@ -104,14 +113,15 @@ namespace ty_game_lib
         {
             var shapes = new List<Shape>();
 
-            var startWithACovNotFlush = startWithACovAndFlush();
-
+            var startWithACovNotFlush = StartWithACovAndFlush();
+//            startWithACovNotFlush.ShowPts();
             var pPts = startWithACovNotFlush.Pts;
             TwoDPoint? tempPoint = null;
             var skip = false;
             var pPtsLength = pPts.Length;
             foreach (var i in Enumerable.Range(0, pPtsLength))
             {
+//                Console.Out.WriteLine(i);
                 if (skip)
                 {
                     skip = false;
@@ -119,11 +129,12 @@ namespace ty_game_lib
                 }
 
                 var aPoint = pPts[i];
+//                Console.Out.WriteLine("apx:" + aPoint.X + "!" + aPoint.Y);
                 var bPoint = pPts[(i + 1) % pPtsLength];
                 var cPoint = pPts[(i + 2) % pPtsLength];
 
                 var line1 = new TwoDVectorLine(aPoint, bPoint);
-                var line2 = new TwoDVectorLine(bPoint, bPoint);
+                var line2 = new TwoDVectorLine(bPoint, cPoint);
                 var unitV1 = line1.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
                 var unitV2 = line2.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
 
@@ -134,7 +145,7 @@ namespace ty_game_lib
                 var getposOnLine = cPoint.GetposOnLine(line1);
 
                 var startP = tempPoint ?? fl1.A;
-
+//                Console.Out.WriteLine(startP.X + "|" + startP.Y);
                 switch (getposOnLine)
                 {
                     case Pt2LinePos.Right:
@@ -175,6 +186,7 @@ namespace ty_game_lib
                 switch (shape)
                 {
                     case ClockwiseTurning clockwiseTurning:
+
                         var last = shapes[(i - 1) % shapesCount];
                         var next = shapes[(i + 1) % shapesCount];
                         var covToAabbPackBoxes = new ClockwiseTurning(clockwiseTurning.AOB, r, last, next)
@@ -190,7 +202,11 @@ namespace ty_game_lib
                 }
             }
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), limit);
+            var boxShapes = aabbBoxShapes.ToArray();
+//            SomeTools.LogZones(boxShapes);
+
+            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(boxShapes, limit);
+
 
             return new Block(r, qSpaceByAabbBoxShapes);
         }

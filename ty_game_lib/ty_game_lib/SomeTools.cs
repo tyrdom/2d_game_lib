@@ -23,12 +23,30 @@ namespace ty_game_lib
         public static Zone JoinAabbZone(AabbBoxShape[] aabbBoxShapes)
         {
             var foo = aabbBoxShapes[0].Zone;
-            foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length))
+            foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length - 1))
             {
                 foo = foo.Join(aabbBoxShapes[i].Zone);
             }
 
             return foo;
+        }
+
+        public static void LogZones(AabbBoxShape[] aabbBoxShapes)
+        {
+            string s = "";
+            foreach (var aabbBoxShape in aabbBoxShapes)
+            {
+                var zone = aabbBoxShape.Zone;
+                var zoneLog = ZoneLog(zone);
+                s += zoneLog + "\n";
+            }
+
+            Console.Out.WriteLine("aabb::" + s + "::bbaa");
+        }
+
+        public static string ZoneLog(Zone zone)
+        {
+            return zone.Up + "|" + zone.Down + "|" + zone.Left + "|" + zone.Right;
         }
 
         public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)

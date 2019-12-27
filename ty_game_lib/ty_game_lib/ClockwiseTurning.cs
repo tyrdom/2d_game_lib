@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Linq;
 
 namespace ty_game_lib
 {
@@ -14,11 +15,21 @@ namespace ty_game_lib
 
         public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, Shape last, Shape next)
         {
-            AOB = aob;
+            if (aob.CheckTuring())
+            {
+                AOB = aob;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             R = r;
+
             Last = last;
             Next = next;
         }
+
 
         public ClockwiseTurning FixArBr()
         {
@@ -76,12 +87,12 @@ namespace ty_game_lib
                 switch (oaq)
                 {
                     case Quad.One:
-                        left = oLeft;
+                        right = oRight;
                         switch (obq)
                         {
                             case Quad.Two:
                                 down = oDown;
-                                right = oRight;
+                                left = oLeft;
                                 break;
                             case Quad.Three:
                                 down = oDown;
@@ -189,37 +200,17 @@ namespace ty_game_lib
             var oav = oa.GetVector();
             var ob = new TwoDVectorLine(o, b);
             var obv = ob.GetVector();
-            var oaq = oav.WhichQ();
-            var obq = obv.WhichQ();
-            var up = MathF.Max(a.Y, b.Y);
-            var down = MathF.Min(a.Y, b.Y);
-            var right = MathF.Max(a.X, b.X);
-            var left = MathF.Min(a.X, b.X);
+//            var oaq = oav.WhichQ();
+//            var obq = obv.WhichQ();
 
 
-            if (a.X > 0)
+            if (oav.X > 0)
 
 
             {
-                if (obq == Quad.One && obq == Quad.Four)
+                if (obv.X >= 0)
                 {
-                    if (a.Y > b.Y)
-                    {
-                        zones.Add(CovToAabbPackBox().Zone);
-                    }
-                    else if (a.Y < b.Y)
-                    {
-                        var aod = new ClockwiseBalanceAngle(a, o, d);
-                        var dou = new ClockwiseBalanceAngle(d, o, u);
-                        var uob = new ClockwiseBalanceAngle(u, o, b);
-                        zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
-                        zones.Add(new ClockwiseTurning(dou, R, Last, Next).CovToAabbPackBox().Zone);
-                        zones.Add(new ClockwiseTurning(uob, R, Last, Next).CovToAabbPackBox().Zone);
-                    }
-                    else
-                    {
-                        throw new ArgumentOutOfRangeException();
-                    }
+                    zones.Add(CovToAabbPackBox().Zone);
                 }
                 else
                 {
@@ -229,27 +220,11 @@ namespace ty_game_lib
                     zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
                 }
             }
-            else
+            else if (oav.X < 0)
             {
-                if (obq == Quad.Two && obq == Quad.Three)
+                if (obv.X <= 0)
                 {
-                    if (a.Y < b.Y)
-                    {
-                        zones.Add(CovToAabbPackBox().Zone);
-                    }
-                    else if (a.Y > b.Y)
-                    {
-                        var aou = new ClockwiseBalanceAngle(a, o, u);
-                        var uod = new ClockwiseBalanceAngle(u, o, d);
-                        var dob = new ClockwiseBalanceAngle(d, o, b);
-                        zones.Add(new ClockwiseTurning(aou, R, Last, Next).CovToAabbPackBox().Zone);
-                        zones.Add(new ClockwiseTurning(uod, R, Last, Next).CovToAabbPackBox().Zone);
-                        zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
-                    }
-                    else
-                    {
-                        throw new ArgumentOutOfRangeException();
-                    }
+                    zones.Add(CovToAabbPackBox().Zone);
                 }
                 else
                 {
@@ -259,16 +234,12 @@ namespace ty_game_lib
                     zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
                 }
             }
-
-
-            var aabbBoxShapes = new List<AabbBoxShape>();
-            foreach (var zone in zones)
+            else
             {
-                var aabbBoxShape = new AabbBoxShape(zone, this);
-                aabbBoxShapes.Add(aabbBoxShape);
+                zones.Add(CovToAabbPackBox().Zone);
             }
 
-            return aabbBoxShapes;
+            return zones.Select(zone => new AabbBoxShape(zone, this)).ToList();
         }
     }
 }
