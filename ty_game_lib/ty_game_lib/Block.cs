@@ -22,7 +22,8 @@ namespace ty_game_lib
         public bool InBlock(TwoDPoint p)
         {
             var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
-            Console.Out.WriteLine("num::" + item1);
+            
+//            Console.Out.WriteLine("num::" + item1);
 
             return (item1 % 2) != 0;
         }
