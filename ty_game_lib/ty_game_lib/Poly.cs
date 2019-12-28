@@ -111,7 +111,7 @@ namespace ty_game_lib
 
         public Block GenByPoly(float r, int limit)
         {
-            var shapes = new List<Shape>();
+            var shapes = new List<IShape>();
 
             var startWithACovNotFlush = StartWithACovAndFlush();
 //            startWithACovNotFlush.ShowPts();
@@ -189,7 +189,20 @@ namespace ty_game_lib
 
                         var last = shapes[(i - 1) % shapesCount];
                         var next = shapes[(i + 1) % shapesCount];
-                        var covToAabbPackBoxes = new ClockwiseTurning(clockwiseTurning.AOB, r, last, next)
+
+
+                        var a = last switch
+                        {
+                            TwoDVectorLine twoDVectorLine => twoDVectorLine,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+
+                        var b = next switch
+                        {
+                            TwoDVectorLine t => t,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+                        var covToAabbPackBoxes = new ClockwiseTurning(clockwiseTurning.AOB, r, a, b)
                             .CovToVertAabbPackBoxes();
                         aabbBoxShapes.AddRange(covToAabbPackBoxes);
                         break;

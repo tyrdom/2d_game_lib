@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ty_game_lib
 {
-    public class Round : Shape
+    public class Round : IShape
     {
         public TwoDPoint O;
         public float R;

@@ -6,10 +6,10 @@ namespace ty_game_lib
     public class AabbBoxShape
     {
         public Zone Zone;
-        public readonly Shape _shape;
+        public readonly IShape _shape;
 
 
-        public AabbBoxShape(Zone zone, Shape shape)
+        public AabbBoxShape(Zone zone, IShape shape)
         {
             Zone = zone;
             _shape = shape;

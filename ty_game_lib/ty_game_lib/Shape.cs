@@ -2,11 +2,15 @@ using System;
 
 namespace ty_game_lib
 {
-    public interface Shape
+    public interface IShape
     {
         AabbBoxShape CovToAabbPackBox();
 
-        int
-            TouchByRightShootPointInAAbbBox(TwoDPoint p);
+        int TouchByRightShootPointInAAbbBox(TwoDPoint p);
+        
+        
     }
+
+
+    
 }

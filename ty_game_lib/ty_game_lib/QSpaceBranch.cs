@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ty_game_lib
 {
@@ -10,18 +11,39 @@ namespace ty_game_lib
         {
             TheQuad = quad;
             Zone = zone;
-            AabbPackBoxes = aabbPackBoxes;
+            AabbPackBoxShapes = aabbPackBoxes;
             QuadTwo = quadTwo;
             QuadOne = quadOne;
             QuadFour = quadFour;
             QuadThree = quadThree;
         }
 
+        public override TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape)
+        {
+            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, lineInBoxShape);
+            if (a != null)
+            {
+                return a;
+            }
+
+            var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
+            foreach (var qSpace in qSpaces)
+            {
+                var twoDPoint = qSpace.GetSlidePoint(lineInBoxShape);
+                if (twoDPoint != null)
+                {
+                    return twoDPoint;
+                }
+            }
+
+            return null;
+        }
+
         public sealed override Quad? TheQuad { get; set; }
 
         public sealed override Zone Zone { get; set; }
 
-        public sealed override List<AabbBoxShape> AabbPackBoxes { get; set; }
+        public sealed override List<AabbBoxShape> AabbPackBoxShapes { get; set; }
         public QSpace QuadTwo { get; set; }
         public QSpace QuadOne { get; set; }
 
@@ -33,7 +55,7 @@ namespace ty_game_lib
 
         public override void Remove(AabbBoxShape boxShape)
         {
-            if (AabbPackBoxes.Remove(boxShape)) return;
+            if (AabbPackBoxShapes.Remove(boxShape)) return;
 
             QuadTwo.Remove(boxShape);
             QuadThree.Remove(boxShape);
@@ -43,7 +65,7 @@ namespace ty_game_lib
 
         public override IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape)
         {
-            var aabbBoxes = boxShape.TryTouch(this.AabbPackBoxes);
+            var aabbBoxes = boxShape.TryTouch(AabbPackBoxShapes);
             var (item1, item2) = Zone.GetMid();
             var cutTo4 = boxShape.CutTo4(item1, item2);
             foreach (var keyValuePair in cutTo4)
@@ -80,17 +102,17 @@ namespace ty_game_lib
             QSpace tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Zone, AabbPackBoxes, tryCovToLimitQSpace2, tryCovToLimitQSpace1,
+            return new QSpaceBranch(TheQuad, Zone, AabbPackBoxShapes, tryCovToLimitQSpace2, tryCovToLimitQSpace1,
                 tryCovToLimitQSpace4, tryCovToLimitQSpace3);
         }
 
-        public override (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p)
+        public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
         {
             var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
-            var (i, aabb) = p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxes);
+            var (i, aabb) = p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxShapes);
             foreach (var qSpace in qSpaces)
             {
-                var (item1, aabbBoxShape) = qSpace.touchWithARightShootPoint(p);
+                var (item1, aabbBoxShape) = qSpace.TouchWithARightShootPoint(p);
                 if (aabbBoxShape != null)
                 {
                     aabb = aabbBoxShape;
@@ -110,10 +132,10 @@ namespace ty_game_lib
             return (i, aabb);
         }
 
-        public override string outZones()
+        public override string OutZones()
         {
             string s = "";
-            foreach (var aabbBoxShape in AabbPackBoxes)
+            foreach (var aabbBoxShape in AabbPackBoxShapes)
             {
                 var zone = aabbBoxShape.Zone;
                 s += SomeTools.ZoneLog(zone) + "\n";
@@ -122,7 +144,7 @@ namespace ty_game_lib
             var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
             foreach (var qSpace in qSpaces)
             {
-                var zones = qSpace.outZones();
+                var zones = qSpace.OutZones();
                 s += zones + "\n";
             }
 
@@ -148,7 +170,7 @@ namespace ty_game_lib
                     QuadThree.InsertBox(boxShape);
                     break;
                 case null:
-                    AabbPackBoxes.Add(boxShape);
+                    AabbPackBoxShapes.Add(boxShape);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -158,10 +180,10 @@ namespace ty_game_lib
         public QSpaceLeaf CovToLeaf()
         {
             var qSpaces = new[] {QuadTwo, QuadOne, QuadFour, QuadThree};
-            var a = AabbPackBoxes;
+            var a = AabbPackBoxShapes;
             foreach (var qSpace in qSpaces)
             {
-                a.AddRange(qSpace.AabbPackBoxes);
+                a.AddRange(qSpace.AabbPackBoxShapes);
             }
 
             return new QSpaceLeaf(TheQuad, Zone, a);

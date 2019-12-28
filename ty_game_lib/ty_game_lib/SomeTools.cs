@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
@@ -42,6 +43,50 @@ namespace ty_game_lib
             }
 
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
+        }
+
+        public static TwoDPoint? SlideTwoDPoint(List<AabbBoxShape> aabbBoxShapes, AabbBoxShape lineInBoxShape)
+        {
+            foreach (var aabbBoxShape in aabbBoxShapes)
+            {
+                var notCross = lineInBoxShape.Zone.NotCross(aabbBoxShape.Zone);
+                if (!notCross)
+                {
+                    switch (lineInBoxShape._shape)
+                    {
+                        case TwoDVectorLine moveLine:
+                            switch (aabbBoxShape._shape)
+                            {
+                                case ClockwiseTurning blockClockwiseTurning:
+                                    var isCross = blockClockwiseTurning.IsCross(moveLine);
+                                    if (isCross)
+                                    {
+                                        var twoDPoint = blockClockwiseTurning.Slide(moveLine.B);
+                                        return twoDPoint;
+                                    }
+
+                                    break;
+                                case TwoDVectorLine blockLine:
+                                    var isCrossAnother = blockLine.SimpleIsCross(moveLine);
+                                    if (isCrossAnother)
+                                    {
+                                        var twoDPoint = blockLine.Slide(moveLine.B);
+                                        return twoDPoint;
+                                    }
+
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+
+            return null;
         }
 
         public static string ZoneLog(Zone zone)

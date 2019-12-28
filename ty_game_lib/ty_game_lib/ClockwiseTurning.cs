@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace ty_game_lib
 {
-    public class ClockwiseTurning : Shape
+    public class ClockwiseTurning : IShape
     {
         public ClockwiseBalanceAngle AOB;
         private float R;
-        private Shape Last;
-        private Shape Next;
+        private TwoDVectorLine Last;
+        private TwoDVectorLine Next;
 
 
-        public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, Shape last, Shape next)
+        public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine last, TwoDVectorLine next)
         {
             if (aob.CheckTuring())
             {
@@ -30,6 +30,90 @@ namespace ty_game_lib
             Next = next;
         }
 
+
+        public TwoDPoint Slide(TwoDPoint p)
+        {
+            var a = AOB.A;
+            var b = AOB.B;
+            var o = AOB.O;
+
+            var oa = new TwoDVectorLine(o, a);
+            var ob = new TwoDVectorLine(o, b);
+            var oaPos = p.GetposOnLine(oa);
+            var obPos = p.GetposOnLine(ob);
+
+            switch (oaPos)
+            {
+                case Pt2LinePos.Right:
+                    switch (obPos)
+                    {
+                        case Pt2LinePos.Right:
+                            return Next.Slide(p);
+                            break;
+                        case Pt2LinePos.On:
+                            return b;
+                            break;
+                        case Pt2LinePos.Left:
+                            var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R);
+                            return o.move(ovr);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    break;
+                case Pt2LinePos.On:
+                    switch (obPos)
+                    {
+                        case Pt2LinePos.Right:
+                            return Next.Slide(p);
+                            break;
+                        case Pt2LinePos.On:
+                            var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
+                                .Multi(R);
+                            return o.move(twoDVector);
+                            break;
+                        case Pt2LinePos.Left:
+                            return a;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+
+                case Pt2LinePos.Left:
+                    switch (obPos)
+                    {
+                        case Pt2LinePos.Right:
+
+                            var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
+                                .Multi(R);
+                            var m = o.move(twoDVector);
+                            var om = new TwoDVectorLine(o, m);
+                            var mPos = p.GetposOnLine(om);
+                            return mPos switch
+                            {
+                                Pt2LinePos.Right => Next.Slide(p),
+                                Pt2LinePos.On => m,
+                                Pt2LinePos.Left => Last.Slide(p),
+                                _ => throw new ArgumentOutOfRangeException()
+                            };
+
+                            break;
+                        case Pt2LinePos.On:
+                            return Last.Slide(p);
+                            break;
+                        case Pt2LinePos.Left:
+                            return Last.Slide(p);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         public ClockwiseTurning FixArBr()
         {
@@ -240,6 +324,39 @@ namespace ty_game_lib
             }
 
             return zones.Select(zone => new AabbBoxShape(zone, this)).ToList();
+        }
+
+        public bool IsCross(TwoDVectorLine twoDVectorLine)
+        {
+            var sPoint = twoDVectorLine.A;
+            var ePoint = twoDVectorLine.B;
+            var lP = Last.B;
+            var rP = Next.A;
+            var getposOnLine = sPoint.GetposOnLine(Last);
+            var pt2LinePos = sPoint.GetposOnLine(Next);
+
+            if (getposOnLine == Pt2LinePos.Left)
+            {
+                var slLine = new TwoDVectorLine(sPoint, lP);
+                var linePos = ePoint.GetposOnLine(slLine);
+                if (linePos != Pt2LinePos.Left)
+                {
+                    return false;
+                }
+            }
+
+
+            if (pt2LinePos == Pt2LinePos.Left)
+            {
+                var srLine = new TwoDVectorLine(sPoint, rP);
+                var linePos = ePoint.GetposOnLine(srLine);
+                if (linePos == Pt2LinePos.Left)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -7,15 +7,17 @@ namespace ty_game_lib
 {
     public abstract class QSpace
     {
+
+        public abstract TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape);
         public virtual Quad? TheQuad { get; set; }
         public abstract void InsertBox(AabbBoxShape boxShape);
         public abstract Zone Zone { get; set; }
-        public abstract List<AabbBoxShape> AabbPackBoxes { get; set; }
+        public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
         public abstract void Remove(AabbBoxShape boxShape);
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
         public abstract QSpace TryCovToLimitQSpace(int limit);
-        public abstract (int, AabbBoxShape?) touchWithARightShootPoint(TwoDPoint p);
-        public abstract string outZones();
+        public abstract (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
+        public abstract string OutZones();
     }
 
 

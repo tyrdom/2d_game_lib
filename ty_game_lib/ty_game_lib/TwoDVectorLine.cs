@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace ty_game_lib
 {
-    public class TwoDVectorLine : Shape
+    public class TwoDVectorLine : IShape
     {
         public TwoDVectorLine(TwoDPoint a, TwoDPoint b)
         {
@@ -110,6 +110,11 @@ namespace ty_game_lib
                 var posA when posA != getPosOnLineB => getPosOnLineC != getPosOnLineD,
                 _ => false
             };
+        }
+
+        public bool SimpleIsCross(TwoDVectorLine lineB)
+        {
+            return (A.GetposOnLine(lineB) == Pt2LinePos.Right) && (B.GetposOnLine(lineB) != Pt2LinePos.Right);
         }
 
         public bool IsCrossAnother(TwoDVectorLine lineB)
