@@ -7,7 +7,6 @@ namespace ty_game_lib
 {
     public abstract class QSpace
     {
-
         public abstract TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape);
         public virtual Quad? TheQuad { get; set; }
         public abstract void InsertBox(AabbBoxShape boxShape);
@@ -71,6 +70,13 @@ namespace ty_game_lib
             var nDown = MathF.Min(Down, another.Down);
             var nRight = MathF.Max(Right, another.Right);
             return new Zone(nUp, nDown, nLeft, nRight);
+        }
+
+        public bool IncludePt(TwoDPoint pt)
+        {
+            var x = pt.X;
+            var y = pt.Y;
+            return Up >= y && y >= Down && x >= Left && Right >= x;
         }
     }
 

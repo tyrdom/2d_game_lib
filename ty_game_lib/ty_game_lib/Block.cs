@@ -23,7 +23,7 @@ namespace ty_game_lib
         {
             var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
             
-//            Console.Out.WriteLine("num::" + item1);
+            Console.Out.WriteLine("num::" + item1);
 
             return (item1 % 2) != 0;
         }

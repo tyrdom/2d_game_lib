@@ -101,6 +101,18 @@ namespace ty_game_lib
 
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
+
+        public static void LogPt(TwoDPoint? pt)
+        {
+            if (pt==null)
+            {
+                Console.Out.WriteLine("pt:::null");
+            }
+            else
+            {
+                Console.Out.WriteLine("pt:::"+pt.X+","+pt.Y);
+            }
+        }
     }
 
     public class Either<A, B>

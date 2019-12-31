@@ -20,6 +20,7 @@ namespace ty_game_lib
             return Zone.NotCross(another.Zone);
         }
 
+        
         public List<AabbBoxShape> TryTouch(List<AabbBoxShape> aabbBoxes)
         {
             return (List<AabbBoxShape>) aabbBoxes.Where(aabbBox => !aabbBox.IsNotTouch(this));

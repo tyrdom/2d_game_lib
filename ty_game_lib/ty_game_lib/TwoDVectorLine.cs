@@ -23,10 +23,37 @@ namespace ty_game_lib
             return TwoDVector.TwoDVectorByPt(A, B);
         }
 
-        public TwoDPoint? CrossAnotherPoint(TwoDVectorLine lineB)
+
+        public bool TwoSide(TwoDVectorLine lineB)
+        {
+            var sA = A.Get2S(lineB);
+            var sB = B.Get2S(lineB);
+            return (sA > 0 && sB < 0) || (sA < 0 && sB > 0);
+        }
+
+        public TwoDPoint? CrossPoint(TwoDVectorLine lineB)
         {
             var c = lineB.A;
-            var d = lineB.B;
+
+            var sA = A.Get2S(lineB);
+            var sB = B.Get2S(lineB);
+            var sC = c.Get2S(this);
+            var b = sA - sB;
+            var sD = b + sC;
+            if (b > 0 || b < 0)
+            {
+                var a = sA / b;
+                var ab = GetVector();
+                return A.move(new TwoDVector(a * ab.X, a * ab.Y));
+            }
+
+            return null;
+        }
+
+        public TwoDPoint? CrossAnotherPointInLinesIncludeEnds(TwoDVectorLine lineB)
+        {
+            var c = lineB.A;
+
             var sA = A.Get2S(lineB);
             var sB = B.Get2S(lineB);
             var sC = c.Get2S(this);
@@ -45,7 +72,28 @@ namespace ty_game_lib
                 {
                     var a = sA / b;
                     var ab = GetVector();
-                    return A.move(new TwoDVector(a * ab.X, b * ab.Y));
+                    return A.move(new TwoDVector(a * ab.X, a * ab.Y));
+                }
+                else
+                {
+                    if (b1)
+                    {
+                        return B;
+                    }
+                }
+            }
+            else if (sA > 0f)
+            {
+                if (sB > 0f)
+                {
+                    return null;
+                }
+
+                if (sB < 0f)
+                {
+                    var a = sA / b;
+                    var ab = GetVector();
+                    return A.move(new TwoDVector(a * ab.X, a * ab.Y));
                 }
                 else
                 {
@@ -57,35 +105,12 @@ namespace ty_game_lib
             }
             else
             {
-                if (sA > 0f)
+                if (b1)
                 {
-                    if (sB > 0f)
-                    {
-                        return null;
-                    }
-
-                    if (sB < 0f)
-                    {
-                        var a = sA / b;
-                        var ab = GetVector();
-                        return A.move(new TwoDVector(a * ab.X, b * ab.Y));
-                    }
-                    else
-                    {
-                        if (b1)
-                        {
-                            return B;
-                        }
-                    }
-                }
-                else
-                {
-                    if (b1)
-                    {
-                        return A;
-                    }
+                    return A;
                 }
             }
+
 
             return null;
         }
@@ -140,10 +165,15 @@ namespace ty_game_lib
                    };
         }
 
-        public AabbBoxShape CovToAabbPackBox()
+        public Zone GenZone()
         {
             var zone = new Zone(Math.Max(A.Y, B.Y), Math.Min(A.Y, B.Y), Math.Min(A.X, B.X), Math.Max(A.X, B.X));
+            return zone;
+        }
 
+        public AabbBoxShape CovToAabbPackBox()
+        {
+            var zone = GenZone();
             return new AabbBoxShape(zone, this);
         }
 
@@ -151,18 +181,20 @@ namespace ty_game_lib
         {
             var twoDVector = GetVector();
             // var f = twoDVector.X *twoDVector.Y
-            if (twoDVector.X > 0)
+            if (twoDVector.Y > 0)
             {
                 var getposOnLine = p.GetposOnLine(this);
                 return getposOnLine == Pt2LinePos.Left ? 1 : 0;
             }
 
-            if (!(twoDVector.X < 0)) return 0;
+            if (twoDVector.Y < 0)
             {
                 var getposOnLine = p.GetposOnLine((this));
 
                 return getposOnLine == Pt2LinePos.Right ? 1 : 0;
             }
+
+            return 0;
         }
 
         public bool IsTouch(Round another)
@@ -175,6 +207,71 @@ namespace ty_game_lib
             return 4 * cross * cross / x <= another.R * another.R;
         }
 
+        public TwoDPoint Shadow(TwoDPoint p)
+        {
+            var twoDVector = new TwoDVectorLine(A, p).GetVector();
+            var dVector = GetVector();
+            var dot = twoDVector.Dot(dVector);
+            var norm = dVector.Norm();
+            var f = dot / norm;
+            return A.move(dVector.GetUnit().Multi(f));
+        }
+
+        public (TwoDPoint?, TwoDPoint?) CrossPtWithRound(Round rd)
+        {
+            var twoDPoint = Shadow(rd.O);
+            var distanceRight = DistanceRight(rd.O);
+            var rdR = rd.R * rd.R - distanceRight * distanceRight;
+            if (rdR < 0)
+            {
+                return (null, null);
+            }
+
+            var sqrt = MathF.Sqrt(rdR);
+
+            var twoDVector = GetVector().GetUnit();
+            var v1 = twoDVector.Multi(sqrt);
+            var v2 = twoDVector.Multi(-sqrt);
+            var p1 = twoDPoint.move(v1);
+            var p2 = twoDPoint.move(v2);
+            return (p1, p2);
+        }
+
+        public TwoDPoint? CrossRdOnThisLineAndNearStartP(Round rd)
+        {
+            var (item1, item2) = CrossPtWithRound(rd);
+            if (item1 == null)
+            {
+                return null;
+            }
+
+            var vector1 = new TwoDVectorLine(A, item1).GetVector();
+            var dVector = GetVector();
+            var f1 = vector1.Dot(dVector) / dVector.Norm();
+            var vector2 = new TwoDVectorLine(A, item1).GetVector();
+            var f2 = vector2.Dot(dVector) / dVector.Norm();
+            if (f1 > 0 && f1 < 1)
+            {
+                if (f2 > 0 && f2 < 1)
+                {
+                    return f1 < f2 ? item1 : item2;
+                }
+                else
+                {
+                    return item1;
+                }
+            }
+            else
+            {
+                return f2 > 0 && f2 < 1 ? item2 : null;
+            }
+        }
+
+        public float DistanceRight(TwoDPoint p)
+        {
+            var get2S = p.Get2S(this);
+            return get2S / GetVector().Norm();
+        }
 
         public TwoDPoint Slide(TwoDPoint p)
         {

@@ -9,11 +9,36 @@ namespace ty_game_lib
     {
         public ClockwiseBalanceAngle AOB;
         private float R;
-        private TwoDVectorLine Last;
-        private TwoDVectorLine Next;
+        private TwoDVectorLine? Last;
+        private TwoDVectorLine? Next;
 
+        TwoDPoint? TouchAnotherOne(ClockwiseTurning another)
+        {
+            var r1 = new Round(AOB.O,R);
+            var r2 = new Round(another.AOB.O,another.R);
+            
+        }
 
-        public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine last, TwoDVectorLine next)
+        TwoDPoint? TouchByLine(TwoDVectorLine line)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ClockwiseTurning? CutBy(IShape shape)
+        {
+            switch (shape)
+            {
+                case ClockwiseTurning clockwiseTurning:
+                    
+                    break;
+                case TwoDVectorLine twoDVectorLine:
+                    break;
+            }
+
+            throw new NotImplementedException();
+        }
+
+        public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
         {
             if (aob.CheckTuring())
             {
@@ -48,7 +73,7 @@ namespace ty_game_lib
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next.Slide(p);
+                            return Next != null ? Next.Slide(p) : b;
                             break;
                         case Pt2LinePos.On:
                             return b;
@@ -66,7 +91,7 @@ namespace ty_game_lib
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next.Slide(p);
+                            return Next != null ? Next.Slide(p) : b;
                             break;
                         case Pt2LinePos.On:
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
@@ -92,19 +117,20 @@ namespace ty_game_lib
                             var om = new TwoDVectorLine(o, m);
                             var mPos = p.GetposOnLine(om);
                             return mPos switch
-                            {
-                                Pt2LinePos.Right => Next.Slide(p),
-                                Pt2LinePos.On => m,
-                                Pt2LinePos.Left => Last.Slide(p),
-                                _ => throw new ArgumentOutOfRangeException()
-                            };
+                                {
+                                    Pt2LinePos.Right => Next != null ? Next.Slide(p) : b,
+                                    Pt2LinePos.On => m,
+                                    Pt2LinePos.Left => Last != null ? Last.Slide(p) : a,
+                                    _ => throw new ArgumentOutOfRangeException()
+                                }
+                                ;
 
                             break;
                         case Pt2LinePos.On:
-                            return Last.Slide(p);
+                            return Last != null ? Last.Slide(p) : a;
                             break;
                         case Pt2LinePos.Left:
-                            return Last.Slide(p);
+                            return Last != null ? Last.Slide(p) : a;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();

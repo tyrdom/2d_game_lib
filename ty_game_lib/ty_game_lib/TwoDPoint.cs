@@ -15,6 +15,7 @@ namespace ty_game_lib
         public readonly float X;
         public readonly float Y;
 
+        
         public (int, AabbBoxShape?) GenARightShootCrossAlotAabbBoxShape(Zone azone, List<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
@@ -39,7 +40,7 @@ namespace ty_game_lib
                     {
                         aShape = aabbBoxShape;
                         var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(this);
-//                        Console.Out.WriteLine("a num" + touchByRightShootPointInAAbbBox);
+                        Console.Out.WriteLine("a num:" + touchByRightShootPointInAAbbBox+"zone: "+ SomeTools.ZoneLog(aabbBoxShape.Zone));
 //
 //                        Console.Out.WriteLine(SomeTools.ZoneLog(zone));
                         if (touchByRightShootPointInAAbbBox < 0)

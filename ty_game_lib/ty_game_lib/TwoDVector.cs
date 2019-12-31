@@ -30,7 +30,7 @@ namespace ty_game_lib
 
         public TwoDVector GetUnit()
         {
-            var f = MathF.Sqrt(X * X + Y * Y);
+            var f = Norm();
             return new TwoDVector(X / f, Y / f);
         }
 

@@ -144,33 +144,39 @@ namespace ty_game_lib
 
                 var getposOnLine = cPoint.GetposOnLine(line1);
 
-                var startP = tempPoint ?? fl1.A;
+
 //                Console.Out.WriteLine(startP.X + "|" + startP.Y);
                 switch (getposOnLine)
                 {
                     case Pt2LinePos.Right:
 
-                        shapes.Add(new TwoDVectorLine(startP, fl1.B));
+                        shapes.Add(fl1);
 
                         var angle = new ClockwiseBalanceAngle(fl1.B, bPoint, fl2.A);
-                        var either = new ClockwiseTurning(angle, r, fl1, fl2);
-                        shapes.Add(either);
-                        tempPoint = null;
+                        var clockwiseTurning = new ClockwiseTurning(angle, r, fl1, fl2);
+                        shapes.Add(clockwiseTurning);
+
                         break;
                     case Pt2LinePos.On:
                         skip = true;
-                        shapes.Add(new TwoDVectorLine(startP, fl2.B));
+                        shapes.Add(new TwoDVectorLine(fl1.A, fl2.B));
                         break;
                     case Pt2LinePos.Left:
-                        var crossAnotherPoint = fl1.CrossAnotherPoint(fl2);
 
-                        if (crossAnotherPoint != null)
-                        {
-                            var twoDVectorLine = new TwoDVectorLine(startP, crossAnotherPoint);
-                            shapes.Add(twoDVectorLine);
-                            tempPoint = crossAnotherPoint;
-                        }
-
+                        shapes.Add(fl1);
+//                        var crossAnotherPoint = fl1.CrossAnotherPointInLinesIncludeEnds(fl2);
+//
+//                        if (crossAnotherPoint != null)
+//                        {
+//                            var twoDVectorLine = new TwoDVectorLine(startP, crossAnotherPoint);
+//                            shapes.Add(twoDVectorLine);
+//                            tempPoint = crossAnotherPoint;
+//                        }
+//                        else
+//                        {
+//                            
+//                        }
+//                        
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -183,6 +189,8 @@ namespace ty_game_lib
             foreach (var i in Enumerable.Range(0, shapesCount))
             {
                 var shape = shapes[i];
+                //todo
+                //shapesCutByOther
                 switch (shape)
                 {
                     case ClockwiseTurning clockwiseTurning:
@@ -216,7 +224,7 @@ namespace ty_game_lib
             }
 
             var boxShapes = aabbBoxShapes.ToArray();
-//            SomeTools.LogZones(boxShapes);
+            SomeTools.LogZones(boxShapes);
 
             var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(boxShapes, limit);
 
