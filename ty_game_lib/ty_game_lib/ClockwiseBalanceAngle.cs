@@ -22,5 +22,15 @@ namespace ty_game_lib
 
             return getposOnLine != Pt2LinePos.Right;
         }
+
+        public bool Cover(TwoDPoint pt)
+        {
+            var oa = new TwoDVectorLine(O, A);
+            var ob = new TwoDVectorLine(O, B);
+            var getposOnLine = pt.GetposOnLine(oa);
+            var pt2LinePos = pt.GetposOnLine(ob);
+            var b = getposOnLine == Pt2LinePos.Right && pt2LinePos == Pt2LinePos.Left;
+            return b;
+        }
     }
 }

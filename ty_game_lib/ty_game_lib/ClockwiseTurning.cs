@@ -12,11 +12,72 @@ namespace ty_game_lib
         private TwoDVectorLine? Last;
         private TwoDVectorLine? Next;
 
-        TwoDPoint? TouchAnotherOne(ClockwiseTurning another)
+        (ClockwiseTurning, ClockwiseTurning) TouchAnotherOne(ClockwiseTurning another)
         {
-            var r1 = new Round(AOB.O,R);
-            var r2 = new Round(another.AOB.O,another.R);
-            
+            var angle1 = AOB;
+            var angle2 = another.AOB;
+            var r1 = new Round(angle1.O, R);
+            var r2 = new Round(angle2.O, another.R);
+            var (pt1, pt2) = r1.GetCrossPt(r2);
+
+            if (pt1 == null)
+            {
+                return (this, another);
+            }
+
+            TwoDPoint? pp = null;
+
+            var cover1 = angle1.Cover(pt1) && angle2.Cover(pt1);
+            var cover2 = angle1.Cover(pt2) && angle2.Cover(pt2);
+            if (cover1)
+            {
+                if (cover2)
+                {
+                    var twoDVectorLine = new TwoDVectorLine(angle1.O, pt1);
+                    if (pt2.GetposOnLine(twoDVectorLine) == Pt2LinePos.Left)
+                    {
+                        pp = pt2;
+                    }
+                    else
+                    {
+                        pp = pt1;
+                    }
+                }
+                else
+                {
+                    pp = pt1;
+                }
+            }
+            else
+            {
+                if (cover2)
+                {
+                    pp = pt2;
+                }
+            }
+
+            if (pp == pt2)
+            {
+                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pt2);
+                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
+
+                var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pt2, angle2.O, angle2.B);
+                var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, R, null, Next);
+                return (clockwiseTurning, clockwiseTurning2);
+            }
+            else if (pp == pt1)
+            {
+                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pt1);
+                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
+
+                var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pt1, angle2.O, angle2.B);
+                var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, R, null, Next);
+                return (clockwiseTurning, clockwiseTurning2);
+            }
+            else
+            {
+                return (this, another);
+            }
         }
 
         TwoDPoint? TouchByLine(TwoDVectorLine line)
@@ -29,7 +90,7 @@ namespace ty_game_lib
             switch (shape)
             {
                 case ClockwiseTurning clockwiseTurning:
-                    
+
                     break;
                 case TwoDVectorLine twoDVectorLine:
                     break;
