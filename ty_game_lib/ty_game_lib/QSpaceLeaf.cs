@@ -57,7 +57,7 @@ namespace ty_game_lib
 
         public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
         {
-            return p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxShapes);
+            return p.GenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
         }
 
         public override string OutZones()
@@ -72,6 +72,12 @@ namespace ty_game_lib
             return s;
         }
 
+        public override int FastTouchWithARightShootPoint(TwoDPoint p)
+        {
+            var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
+            return i;
+        }
+
         public QSpace TryCovToBranch()
         {
             var one = new List<AabbBoxShape>();
@@ -80,7 +86,7 @@ namespace ty_game_lib
             var four = new List<AabbBoxShape>();
             var zone = new List<AabbBoxShape>();
             var (item1, item2) = Zone.GetMid();
-            AabbPackBoxShapes.ForEach( aabbBoxShape =>
+            AabbPackBoxShapes.ForEach(aabbBoxShape =>
                 {
                     var intTBoxShapes = aabbBoxShape.SplitByQuads(item1, item2);
 

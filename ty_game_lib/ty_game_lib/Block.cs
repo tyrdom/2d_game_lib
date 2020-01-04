@@ -48,5 +48,7 @@ namespace ty_game_lib
             var touchWithARightShootPoint = QSpace.TouchWithARightShootPoint(p);
             return touchWithARightShootPoint.Item1;
         }
+
+        
     }
 }

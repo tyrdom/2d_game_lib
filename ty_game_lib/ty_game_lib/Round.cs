@@ -14,6 +14,34 @@ namespace ty_game_lib
             R = r;
         }
 
+        public (float?, float?) GetX(float y)
+        {
+            var oY = y - O.Y;
+            var f = R * R - oY * oY;
+            if (f < 0)
+            {
+                return (null, null);
+            }
+
+            if (!(f > 0)) return (null, O.X);
+            var sqrt = MathF.Sqrt(f);
+            return (O.X - sqrt, O.X + sqrt);
+        }
+
+        public (float?, float?) GetY(float x)
+        {
+            var oY = x - O.X;
+            var f = R * R - oY * oY;
+            if (f < 0)
+            {
+                return (null, null);
+            }
+
+            if (!(f > 0)) return (null, O.Y);
+            var sqrt = MathF.Sqrt(f);
+            return (O.Y - sqrt, O.Y + sqrt);
+        }
+
         public AabbBoxShape CovToAabbPackBox()
         {
             var zone = new Zone(O.Y + R, O.Y - R, O.X - R, O.X + R);
@@ -24,6 +52,8 @@ namespace ty_game_lib
         {
             throw new System.NotImplementedException();
         }
+
+        
 
         public bool IsTouch(Round another)
         {

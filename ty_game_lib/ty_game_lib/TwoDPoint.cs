@@ -21,7 +21,36 @@ namespace ty_game_lib
             return zone;
         }
 
-        public (int, AabbBoxShape?) GenARightShootCrossAlotAabbBoxShape(Zone azone, List<AabbBoxShape> aabbBoxShapes)
+        public Quad WhichQ(QSpaceBranch qSpaceBranch)
+        {
+            var zone = qSpaceBranch.Zone;
+            var (h, v) = zone.GetMid();
+            var b = X <= v;
+            if (b)
+            {
+                return Y > h ? Quad.Two : Quad.Three;
+            }
+            else
+            {
+                return Y > h ? Quad.One : Quad.Four;
+            }
+        }
+
+        public int FastGenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
+        {
+            var n = 0;
+            aabbBoxShapes.ForEach(aabbBoxShape =>
+            {
+                var objZone = aabbBoxShape.Zone;
+                if (objZone.Up >= Y && objZone.Down < Y)
+                {
+                    n++;
+                }
+            });
+            return n;
+        }
+
+        public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
             AabbBoxShape? aShape = null;

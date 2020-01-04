@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ty_game_lib
@@ -106,27 +107,108 @@ namespace ty_game_lib
                 tryCovToLimitQSpace4, tryCovToLimitQSpace3);
         }
 
-        public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
-        { 
-            var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
-            var (i, aabb) = p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxShapes);
-            foreach (var qSpace in qSpaces)
+        public override int FastTouchWithARightShootPoint(TwoDPoint p)
+        {
+            var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
+
+            var qSpaces = new QSpace[] {QuadOne, QuadTwo};
+            var dqSpace = new[] {QuadThree, QuadFour};
+            var m = (Zone.Up + Zone.Down) / 2;
+            var b = p.Y > m;
+            if (b)
             {
-                var (item1, aabbBoxShape) = qSpace.TouchWithARightShootPoint(p);
-                if (aabbBoxShape != null)
-                {
-                    aabb = aabbBoxShape;
-                }
+                i += qSpaces.Sum(qSpace => qSpace.FastTouchWithARightShootPoint(p));
+            }
+            else
+            {
+                i += dqSpace.Sum(qSpace => qSpace.FastTouchWithARightShootPoint(p));
+            }
 
-                if (item1 < 0)
-                {
-                    i = item1;
-                    return (i, aabb);
-                }
+            return i;
+        }
 
-                {
-                    i += item1;
-                }
+        public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
+        {
+            var (i, aabb) = p.GenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
+            var whichQ = p.WhichQ(this);
+            switch (whichQ)
+            {
+                case Quad.One:
+                    var (item1, aabbBoxShape) = QuadOne.TouchWithARightShootPoint(p);
+                    if (aabbBoxShape != null)
+                    {
+                        aabb = aabbBoxShape;
+                    }
+
+                    if (item1 < 0)
+                    {
+                        i = item1;
+                        return (i, aabb);
+                    }
+                    else
+                    {
+                        i += item1;
+                    }
+
+                    break;
+                case Quad.Two:
+                    var (item12, aabbBoxShape2) = QuadTwo.TouchWithARightShootPoint(p);
+                    if (aabbBoxShape2 != null)
+                    {
+                        aabb = aabbBoxShape2;
+                    }
+
+                    if (item12 < 0)
+                    {
+                        i = item12;
+                        return (i, aabb);
+                    }
+                    else
+                    {
+                        i += item12;
+                        i += QuadOne.FastTouchWithARightShootPoint(p);
+                    }
+
+                    break;
+                case Quad.Three:
+                    var (item13, aabbBoxShape3) = QuadThree.TouchWithARightShootPoint(p);
+                    if (aabbBoxShape3 != null)
+                    {
+                        aabb = aabbBoxShape3;
+                    }
+
+                    if (item13 < 0)
+                    {
+                        i = item13;
+                        return (i, aabb);
+                    }
+                    else
+                    {
+                        i += item13;
+                        i += QuadFour.FastTouchWithARightShootPoint(p);
+                    }
+
+                    break;
+                case Quad.Four:
+                    var (item11, aabbBoxShape4) = QuadFour.TouchWithARightShootPoint(p);
+                    if (aabbBoxShape4 != null)
+                    {
+                        aabb = aabbBoxShape4;
+                    }
+
+                    if (item11 < 0)
+                    {
+                        i = item11;
+                        return (i, aabb);
+                    }
+                    else
+                    {
+                        i += item11;
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return (i, aabb);
