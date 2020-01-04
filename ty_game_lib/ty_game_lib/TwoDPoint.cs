@@ -44,6 +44,7 @@ namespace ty_game_lib
                 var objZone = aabbBoxShape.Zone;
                 if (objZone.Up >= Y && objZone.Down < Y)
                 {
+//                    Console.Out.WriteLine("TOUCH::"+SomeTools.ZoneLog(objZone));
                     n++;
                 }
             });
@@ -64,10 +65,9 @@ namespace ty_game_lib
                 {
 //                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
 
-
                     if (X <= zone.Left)
                     {
-//                        Console.Out.WriteLine("!@#$");
+//                        Console.Out.WriteLine("!TOUCH::"+SomeTools.ZoneLog(zone));
                         n++;
                     }
                     else if (X > zone.Left && X < zone.Right)

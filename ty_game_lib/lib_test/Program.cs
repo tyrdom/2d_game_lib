@@ -45,7 +45,7 @@ namespace lib_test
 
             var pt6 = new TwoDPoint(2.0f, -2.0f);
 
-            var ptt = new TwoDPoint(0f, -2f);
+            var ptt = new TwoDPoint(0f, 0f);
             var twoDPoints = new TwoDPoint[] {pt1, pt2, pt3, pt4, pt5, pt6};
             foreach (var twoDPoint in twoDPoints)
             {

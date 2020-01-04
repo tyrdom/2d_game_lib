@@ -25,6 +25,7 @@ namespace ty_game_lib
             
             Console.Out.WriteLine("num::" + item1);
 
+            Console.Out.WriteLine("box::" + aabbBoxShape);
             return (item1 % 2) != 0;
         }
 
