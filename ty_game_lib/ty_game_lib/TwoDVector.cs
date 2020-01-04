@@ -3,6 +3,14 @@ using System.Numerics;
 
 namespace ty_game_lib
 {
+    public enum Attitude
+    {
+        RightUp,
+        LeftUp,
+        Horizon,
+        Vertical
+    }
+
     public class TwoDVector
     {
         public float X { get; }
@@ -51,10 +59,40 @@ namespace ty_game_lib
 
         public float Norm()
         {
-            return MathF.Sqrt(X * X + Y * Y);
+            return MathF.Sqrt(SqNorm());
         }
-        
-        
+
+        public float SqNorm()
+        {
+            return X * X + Y * Y;
+        }
+
+        public bool IsAlmostRightUp()
+        {
+            var b = X >= 0 ^ Y < 0;
+            return b;
+        }
+
+        public Attitude GetAttitude()
+        {
+            if (X > 0)
+            {
+                if (Y > 0)
+                {
+                    return Attitude.RightUp;
+                }
+
+                return Y < 0 ? Attitude.LeftUp : Attitude.Vertical;
+            }
+
+            if (!(X < 0)) return Attitude.Horizon;
+            if (Y < 0)
+            {
+                return Attitude.RightUp;
+            }
+
+            return Y > 0 ? Attitude.LeftUp : Attitude.Vertical;
+        }
 
         public Quad WhichQ()
         {

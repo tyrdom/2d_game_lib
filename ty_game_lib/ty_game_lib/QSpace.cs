@@ -35,6 +35,26 @@ namespace ty_game_lib
             Right = right;
         }
 
+        public TwoDPoint RU()
+        {
+            return new TwoDPoint(Right, Up);
+        }
+
+        public TwoDPoint RD()
+        {
+            return new TwoDPoint(Right, Down);
+        }
+
+        public TwoDPoint LU()
+        {
+            return new TwoDPoint(Left, Up);
+        }
+
+        public TwoDPoint LD()
+        {
+            return new TwoDPoint(Left, Down);
+        }
+
         public (float, float) GetMid()
         {
             var horizon = (Up + Down) / 2;
@@ -61,6 +81,15 @@ namespace ty_game_lib
         {
             return Right < anotherZone.Left || anotherZone.Right < Left ||
                    Up < anotherZone.Down || anotherZone.Up < Down;
+        }
+
+        public Zone Inter(Zone another)
+        {
+            var nUp = MathF.Min(Up, another.Up);
+            var nLeft = MathF.Max(Left, another.Left);
+            var nDown = MathF.Max(Down, another.Down);
+            var nRight = MathF.Min(Right, another.Right);
+            return new Zone(nUp, nDown, nLeft, nRight);
         }
 
         public Zone Join(Zone another)

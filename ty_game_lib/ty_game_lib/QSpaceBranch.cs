@@ -107,7 +107,7 @@ namespace ty_game_lib
         }
 
         public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
-        {
+        { 
             var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
             var (i, aabb) = p.GenARightShootCrossAlotAabbBoxShape(Zone, AabbPackBoxShapes);
             foreach (var qSpace in qSpaces)

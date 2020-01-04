@@ -79,7 +79,7 @@ namespace ty_game_lib
             var m = (n - 1) % ptsLength;
             var o = (n + 1) % ptsLength;
             var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[n]);
-            var pt2LinePos = Pts[o].GetposOnLine(twoDVectorLine1);
+            var pt2LinePos = Pts[o].GetPosOnLine(twoDVectorLine1);
             return pt2LinePos switch
             {
                 Pt2LinePos.Right => true,
@@ -116,7 +116,7 @@ namespace ty_game_lib
             var startWithACovNotFlush = StartWithACovAndFlush();
 //            startWithACovNotFlush.ShowPts();
             var pPts = startWithACovNotFlush.Pts;
-            TwoDPoint? tempPoint = null;
+
             var skip = false;
             var pPtsLength = pPts.Length;
             foreach (var i in Enumerable.Range(0, pPtsLength))
@@ -142,10 +142,9 @@ namespace ty_game_lib
 
                 var fl2 = line2.MoveVector(unitV2);
 
-                var getposOnLine = cPoint.GetposOnLine(line1);
+                var getposOnLine = cPoint.GetPosOnLine(line1);
 
 
-//                Console.Out.WriteLine(startP.X + "|" + startP.Y);
                 switch (getposOnLine)
                 {
                     case Pt2LinePos.Right:
@@ -164,72 +163,50 @@ namespace ty_game_lib
                     case Pt2LinePos.Left:
 
                         shapes.Add(fl1);
-//                        var crossAnotherPoint = fl1.CrossAnotherPointInLinesIncludeEnds(fl2);
-//
-//                        if (crossAnotherPoint != null)
-//                        {
-//                            var twoDVectorLine = new TwoDVectorLine(startP, crossAnotherPoint);
-//                            shapes.Add(twoDVectorLine);
-//                            tempPoint = crossAnotherPoint;
-//                        }
-//                        else
-//                        {
-//                            
-//                        }
-//                        
+
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            var aabbBoxShapes = new List<AabbBoxShape>();
 
             var shapesCount = shapes.Count;
+
+            var resShapes = shapes;
             foreach (var i in Enumerable.Range(0, shapesCount))
             {
-                var shape = shapes[i];
-                //todo
-                //shapesCutByOther
-                switch (shape)
+                var cutShapes = SomeTools.CutShapes(i, resShapes);
+                if (cutShapes != null)
                 {
-                    case ClockwiseTurning clockwiseTurning:
-
-                        var last = shapes[(i - 1) % shapesCount];
-                        var next = shapes[(i + 1) % shapesCount];
-
-
-                        var a = last switch
-                        {
-                            TwoDVectorLine twoDVectorLine => twoDVectorLine,
-                            _ => throw new ArgumentOutOfRangeException()
-                        };
-
-                        var b = next switch
-                        {
-                            TwoDVectorLine t => t,
-                            _ => throw new ArgumentOutOfRangeException()
-                        };
-                        var covToAabbPackBoxes = new ClockwiseTurning(clockwiseTurning.AOB, r, a, b)
-                            .CovToVertAabbPackBoxes();
-                        aabbBoxShapes.AddRange(covToAabbPackBoxes);
-                        break;
-                    case TwoDVectorLine twoDVectorLine:
-                        var covToAabbPackBox = twoDVectorLine.CovToAabbPackBox();
-                        aabbBoxShapes.Add(covToAabbPackBox);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(shape));
+                    resShapes = cutShapes;
+                }
+                else
+                {
+                    break;
                 }
             }
 
-            var boxShapes = aabbBoxShapes.ToArray();
-            SomeTools.LogZones(boxShapes);
+            var aabbBoxShapes = new List<AabbBoxShape>();
+            foreach (var shape in resShapes)
+            {
+                switch (shape)
+                {
+                    case ClockwiseTurning clockwiseTurning:
+                        var covToVertAabbPackBoxes = clockwiseTurning.CovToVertAabbPackBoxes();
+                        aabbBoxShapes.AddRange(covToVertAabbPackBoxes);
+                        break;
+                    case TwoDVectorLine twoDVectorLine:
+                        var toAabbPackBox = twoDVectorLine.CovToAabbPackBox();
+                        aabbBoxShapes.Add(toAabbPackBox);
+                        break;
+                }
+            }
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(boxShapes, limit);
+            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), limit);
 
-
-            return new Block(r, qSpaceByAabbBoxShapes);
+            var block = new Block(r, qSpaceByAabbBoxShapes);
+            return block;
         }
     }
 }

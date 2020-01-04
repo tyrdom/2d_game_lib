@@ -53,10 +53,24 @@ namespace lib_test
             }
 
             var poly = new Poly(twoDPoints);
-            var genByPoly = poly.GenByPoly(5.5f, 20);
+            var genByPoly = poly.GenByPoly(2f, 3);
             var inBlock1 = genByPoly.InBlock(ptt);
-//          Console.Out.WriteLine(genByPoly.QSpace.outZones());
+            Console.Out.WriteLine(genByPoly.QSpace.OutZones());
             Console.WriteLine("!!!!" + inBlock1);
+//            -1.767767|-3.767767|3.767767|5.767767
+//                -3.767767|-4.5|2|3.767767
+//                -3.767767|-4.5|0.23223305|2
+//                -1.767767|-3.767767|-1.767767|0.23223305
+//            1.767767|-1.767767|-2.5|-1.767767
+//            2.767767|1.767767|-1.767767|-0.76776695
+//            3.5|2.767767|-0.76776695|1
+//            3.5|3.291288|1|2
+//            3.5|3.291288|2|3
+//            3.5|2.767767|3|4.767767
+//            2.767767|1.767767|4.767767|5.767767
+//            1.767767|-1.767767|5.767767|6.5
+//
+//                !!!!True
         }
     }
 }

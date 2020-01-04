@@ -15,47 +15,7 @@ namespace ty_game_lib
 
         public override TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape)
         {
-            return SomeTools.SlideTwoDPoint(AabbPackBoxShapes,lineInBoxShape);
-            foreach (var aabbBoxShape in AabbPackBoxShapes)
-            {
-                var notCross = lineInBoxShape.Zone.NotCross(aabbBoxShape.Zone);
-                if (!notCross)
-                {
-                    switch (lineInBoxShape._shape)
-                    {
-                        case TwoDVectorLine moveLine:
-                            switch (aabbBoxShape._shape)
-                            {
-                                case ClockwiseTurning blockClockwiseTurning:
-                                    var isCross = blockClockwiseTurning.IsCross(moveLine);
-                                    if (isCross)
-                                    {
-                                        var twoDPoint = blockClockwiseTurning.Slide(moveLine.B);
-                                        return twoDPoint;
-                                    }
-
-                                    break;
-                                case TwoDVectorLine blockLine:
-                                    var isCrossAnother = blockLine.SimpleIsCross(moveLine);
-                                    if (isCrossAnother)
-                                    {
-                                        var twoDPoint = blockLine.Slide(moveLine.B);
-                                        return twoDPoint;
-                                    }
-
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-            }
-
-            return null;
+            return SomeTools.SlideTwoDPoint(AabbPackBoxShapes, lineInBoxShape);
         }
 
         public sealed override Quad? TheQuad { get; set; }
@@ -120,28 +80,28 @@ namespace ty_game_lib
             var four = new List<AabbBoxShape>();
             var zone = new List<AabbBoxShape>();
             var (item1, item2) = Zone.GetMid();
-            Parallel.ForEach(AabbPackBoxShapes, aabbBoxShape =>
+            AabbPackBoxShapes.ForEach( aabbBoxShape =>
                 {
                     var intTBoxShapes = aabbBoxShape.SplitByQuads(item1, item2);
 
-                    foreach (var intTBoxShape in intTBoxShapes)
+                    foreach (var (i, aabbBoxShape1) in intTBoxShapes)
                     {
-                        switch (intTBoxShape.Key)
+                        switch (i)
                         {
                             case 0:
-                                zone.Add(intTBoxShape.Value);
+                                zone.Add(aabbBoxShape1);
                                 break;
                             case 1:
-                                one.Add(intTBoxShape.Value);
+                                one.Add(aabbBoxShape1);
                                 break;
                             case 2:
-                                two.Add(intTBoxShape.Value);
+                                two.Add(aabbBoxShape1);
                                 break;
                             case 3:
-                                three.Add(intTBoxShape.Value);
+                                three.Add(aabbBoxShape1);
                                 break;
                             case 4:
-                                four.Add(intTBoxShape.Value);
+                                four.Add(aabbBoxShape1);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();

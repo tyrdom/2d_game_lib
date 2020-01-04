@@ -15,7 +15,12 @@ namespace ty_game_lib
         public readonly float X;
         public readonly float Y;
 
-        
+        public Zone GenZone(TwoDPoint b)
+        {
+            var zone = new Zone(Math.Max(Y, b.Y), Math.Min(Y, b.Y), Math.Min(X, b.X), Math.Max(X, b.X));
+            return zone;
+        }
+
         public (int, AabbBoxShape?) GenARightShootCrossAlotAabbBoxShape(Zone azone, List<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
@@ -39,8 +44,9 @@ namespace ty_game_lib
                     else if (X > zone.Left && X < zone.Right)
                     {
                         aShape = aabbBoxShape;
-                        var touchByRightShootPointInAAbbBox = aabbBoxShape._shape.TouchByRightShootPointInAAbbBox(this);
-                        Console.Out.WriteLine("a num:" + touchByRightShootPointInAAbbBox+"zone: "+ SomeTools.ZoneLog(aabbBoxShape.Zone));
+                        var touchByRightShootPointInAAbbBox = aabbBoxShape.Shape.TouchByRightShootPointInAAbbBox(this);
+//                        Console.Out.WriteLine("a num:" + touchByRightShootPointInAAbbBox + "zone: " +
+//                                              SomeTools.ZoneLog(aabbBoxShape.Zone));
 //
 //                        Console.Out.WriteLine(SomeTools.ZoneLog(zone));
                         if (touchByRightShootPointInAAbbBox < 0)
@@ -71,7 +77,7 @@ namespace ty_game_lib
             return xLine.GetVector().Cross(aline.GetVector());
         }
 
-        public Pt2LinePos GetposOnLine(TwoDVectorLine aline)
+        public Pt2LinePos GetPosOnLine(TwoDVectorLine aline)
         {
             var cross = Get2S(aline);
             return cross switch

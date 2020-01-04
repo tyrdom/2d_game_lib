@@ -2,17 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace ty_game_lib
 {
     public class ClockwiseTurning : IShape
     {
         public ClockwiseBalanceAngle AOB;
-        private float R;
+        public float R;
         private TwoDVectorLine? Last;
-        private TwoDVectorLine? Next;
+        public TwoDVectorLine? Next;
 
-        (ClockwiseTurning, ClockwiseTurning) TouchAnotherOne(ClockwiseTurning another)
+        public (bool, ClockwiseTurning, ClockwiseTurning) TouchAnotherOne(ClockwiseTurning another)
         {
             var angle1 = AOB;
             var angle2 = another.AOB;
@@ -22,7 +23,7 @@ namespace ty_game_lib
 
             if (pt1 == null)
             {
-                return (this, another);
+                return (false, this, another);
             }
 
             TwoDPoint? pp = null;
@@ -34,13 +35,20 @@ namespace ty_game_lib
                 if (cover2)
                 {
                     var twoDVectorLine = new TwoDVectorLine(angle1.O, pt1);
-                    if (pt2.GetposOnLine(twoDVectorLine) == Pt2LinePos.Left)
+                    var line2 = new TwoDVectorLine(angle2.O, pt1);
+                    if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Left
+                        && pt2.GetPosOnLine(line2) == Pt2LinePos.Right)
                     {
                         pp = pt2;
                     }
-                    else
+                    else if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Right
+                             && pt2.GetPosOnLine(line2) == Pt2LinePos.Left)
                     {
                         pp = pt1;
+                    }
+                    else
+                    {
+                        pp = null;
                     }
                 }
                 else
@@ -56,48 +64,84 @@ namespace ty_game_lib
                 }
             }
 
-            if (pp == pt2)
+            if (pp != null)
             {
-                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pt2);
+                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pp);
                 var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
 
-                var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pt2, angle2.O, angle2.B);
+                var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pp, angle2.O, angle2.B);
                 var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, R, null, Next);
-                return (clockwiseTurning, clockwiseTurning2);
+                return (true, clockwiseTurning, clockwiseTurning2);
             }
-            else if (pp == pt1)
-            {
-                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pt1);
-                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
 
-                var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pt1, angle2.O, angle2.B);
-                var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, R, null, Next);
-                return (clockwiseTurning, clockwiseTurning2);
+            {
+                return (false, this, another);
+            }
+        }
+
+        public (bool, ClockwiseTurning, TwoDVectorLine) TouchByLine(TwoDVectorLine line)
+        {
+            var o = AOB.O;
+            var rd = new Round(o, R);
+            var dVectorLine = new TwoDVectorLine(o, line.B);
+
+            var (pt1, pt2) = line.CrossPtWithRound(rd);
+            if (pt1 == null || dVectorLine.GetVector().SqNorm() <= R * R)
+            {
+                return (false, this, line);
+            }
+
+            TwoDPoint? pp = null;
+            var cover1 = AOB.Cover(pt1) && line.GetMultiFromA(pt1) < 1 && line.GetMultiFromA(pt1) > 0;
+            var cover2 = AOB.Cover(pt2) && line.GetMultiFromA(pt2) < 1 && line.GetMultiFromA(pt2) > 0;
+            if (cover1)
+            {
+                if (cover2)
+                {
+                    var twoDVectorLine = new TwoDVectorLine(AOB.O, pt1);
+                    if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Left &&
+                        line.GetMultiFromA(pt2) > line.GetMultiFromA(pt1))
+                    {
+                        pp = pt2;
+                    }
+                    else if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Right &&
+                             line.GetMultiFromA(pt2) < line.GetMultiFromA(pt1))
+                    {
+                        pp = pt1;
+                    }
+                    else
+                    {
+                        pp = null;
+                    }
+                }
+                else
+                {
+                    pp = pt1;
+                }
             }
             else
             {
-                return (this, another);
+                if (cover2)
+                {
+                    pp = pt2;
+                }
             }
-        }
 
-        TwoDPoint? TouchByLine(TwoDVectorLine line)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ClockwiseTurning? CutBy(IShape shape)
-        {
-            switch (shape)
+            if (pp != null)
             {
-                case ClockwiseTurning clockwiseTurning:
+                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(AOB.A, AOB.O, pp);
+                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
 
-                    break;
-                case TwoDVectorLine twoDVectorLine:
-                    break;
+                var newLine = new TwoDVectorLine(pp, line.B);
+
+                return (true, clockwiseTurning, newLine);
             }
-
-            throw new NotImplementedException();
+            else
+            {
+                return (false, this, line);
+            }
         }
+
 
         public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
         {
@@ -125,8 +169,8 @@ namespace ty_game_lib
 
             var oa = new TwoDVectorLine(o, a);
             var ob = new TwoDVectorLine(o, b);
-            var oaPos = p.GetposOnLine(oa);
-            var obPos = p.GetposOnLine(ob);
+            var oaPos = p.GetPosOnLine(oa);
+            var obPos = p.GetPosOnLine(ob);
 
             switch (oaPos)
             {
@@ -176,7 +220,7 @@ namespace ty_game_lib
                                 .Multi(R);
                             var m = o.move(twoDVector);
                             var om = new TwoDVectorLine(o, m);
-                            var mPos = p.GetposOnLine(om);
+                            var mPos = p.GetPosOnLine(om);
                             return mPos switch
                                 {
                                     Pt2LinePos.Right => Next != null ? Next.Slide(p) : b,
@@ -215,131 +259,8 @@ namespace ty_game_lib
 
         public AabbBoxShape CovToAabbPackBox()
         {
-            var a = AOB.A;
-            var b = AOB.B;
-            var o = AOB.O;
-            var oa = new TwoDVectorLine(o, a);
-            var oav = oa.GetVector();
-            var ob = new TwoDVectorLine(o, b);
-            var obv = ob.GetVector();
-            var oaq = oav.WhichQ();
-            var obq = obv.WhichQ();
-            var up = MathF.Max(a.Y, b.Y);
-            var down = MathF.Min(a.Y, b.Y);
-            var right = MathF.Max(a.X, b.X);
-            var left = MathF.Min(a.X, b.X);
-
-            var oUp = o.Y + R;
-            var oDown = o.Y - R;
-            var oLeft = o.X - R;
-            var oRight = o.X + R;
-            var getposOnLine = b.GetposOnLine(oa);
-
-            if (oaq == obq)
-            {
-                switch (getposOnLine)
-                {
-                    case Pt2LinePos.Right:
-                        break;
-                    case Pt2LinePos.On:
-                        break;
-                    case Pt2LinePos.Left:
-                        up = oUp;
-                        down = oDown;
-                        left = oLeft;
-                        right = oRight;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            else
-            {
-                switch (oaq)
-                {
-                    case Quad.One:
-                        right = oRight;
-                        switch (obq)
-                        {
-                            case Quad.Two:
-                                down = oDown;
-                                left = oLeft;
-                                break;
-                            case Quad.Three:
-                                down = oDown;
-
-                                break;
-                            case Quad.Four:
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        break;
-                    case Quad.Two:
-                        up = oUp;
-                        switch (obq)
-                        {
-                            case Quad.One:
-                                break;
-
-                            case Quad.Three:
-                                left = oLeft;
-                                down = oDown;
-                                break;
-                            case Quad.Four:
-                                left = oLeft;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        break;
-                    case Quad.Three:
-                        left = oLeft;
-                        switch (obq)
-                        {
-                            case Quad.One:
-                                up = oUp;
-                                break;
-                            case Quad.Two:
-                                break;
-
-                            case Quad.Four:
-                                up = oUp;
-                                right = oRight;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        break;
-                    case Quad.Four:
-                        down = oDown;
-                        switch (obq)
-                        {
-                            case Quad.One:
-                                left = oLeft;
-                                up = oUp;
-                                break;
-                            case Quad.Two:
-                                left = oLeft;
-                                break;
-                            case Quad.Three:
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-
-            return new AabbBoxShape(new Zone(up, down, left, right), this);
+            var zone = AOB.GetZone(R);
+            return new AabbBoxShape(zone, this);
         }
 
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
@@ -357,61 +278,259 @@ namespace ty_game_lib
             }
         }
 
+
+        public (Zone?, Zone?) CutByH(float h, Zone z)
+        {
+            var round = new Round(AOB.O, R);
+            var (item1, item2) = round.GetX(h);
+
+            if (item1 == null)
+            {
+                return (null, null);
+            }
+
+
+            var b = item1.Value < z.Right && item1.Value > z.Left;
+            var b1 = item2.Value < z.Right && item2.Value > z.Left;
+
+            if (b)
+            {
+                var pt = new TwoDPoint(item1.Value, h);
+
+                if (h > AOB.O.Y)
+                {
+                    var uZone = z.RU().GenZone(pt);
+                    var dZone = pt.GenZone(z.LD());
+                    return (uZone, dZone);
+                }
+                else
+                {
+                    var uZone = z.LU().GenZone(pt);
+                    var dZone = pt.GenZone(z.RD());
+                    return (uZone, dZone);
+                }
+            }
+
+            if (!b1) return (null, null);
+            {
+                var pt = new TwoDPoint(item2.Value, h);
+
+                if (h < AOB.O.Y)
+                {
+                    var uZone = z.RU().GenZone(pt);
+                    var dZone = pt.GenZone(z.LD());
+                    return (uZone, dZone);
+                }
+                else
+                {
+                    var uZone = z.LU().GenZone(pt);
+                    var dZone = pt.GenZone(z.RD());
+                    return (uZone, dZone);
+                }
+            }
+        }
+
+        public (Zone?, Zone?) CutByV(float v, Zone z)
+        {
+            var o = AOB.O;
+            var a = AOB.A;
+            var b = AOB.B;
+            var round = new Round(o, R);
+            var (item1, item2) = round.GetY(v);
+
+            if (item1 == null)
+            {
+                return (null, null);
+            }
+
+            var b1 = item1.Value < z.Up && item1.Value > z.Down;
+            var b2 = item2.Value < z.Up && item2.Value > z.Down;
+            if (b1)
+            {
+                var pt = new TwoDPoint(v, item1.Value);
+
+                if (v > AOB.O.X)
+                {
+                    var rZone = z.RU().GenZone(pt);
+                    var lZone = pt.GenZone(z.LD());
+                    return (rZone, lZone);
+                }
+                else
+                {
+                    var lZone = z.LU().GenZone(pt);
+                    var rZone = pt.GenZone(z.RD());
+                    return (rZone, lZone);
+                }
+            }
+
+            if (b2)
+            {
+                var pt = new TwoDPoint(v, item2.Value);
+
+                if (v < AOB.O.X)
+                {
+                    var rZone = z.RU().GenZone(pt);
+                    var lZone = pt.GenZone(z.LD());
+                    return (lZone, rZone);
+                }
+                else
+                {
+                    var lZone = z.LU().GenZone(pt);
+                    var rZone = pt.GenZone(z.RD());
+                    return (lZone, rZone);
+                }
+            }
+
+            return (null, null);
+        }
+
         public List<AabbBoxShape> CovToVertAabbPackBoxes()
         {
             var zones = new List<Zone>();
-
-
             var a = AOB.A;
             var b = AOB.B;
             var o = AOB.O;
             var u = o.move(new TwoDVector(0, R));
             var d = o.move(new TwoDVector(0, -R));
+            var l = o.move(new TwoDVector(-R, 0));
+            var r = o.move(new TwoDVector(R, 0));
             var oa = new TwoDVectorLine(o, a);
             var oav = oa.GetVector();
             var ob = new TwoDVectorLine(o, b);
             var obv = ob.GetVector();
-//            var oaq = oav.WhichQ();
-//            var obq = obv.WhichQ();
+            var passU = false;
 
+            var passD
+                = false;
 
-            if (oav.X > 0)
+            var passL
+                = false;
 
-
+            var passR
+                = false;
+            if (oav.X < 0 && obv.X > 0)
             {
-                if (obv.X >= 0)
+                passU = true;
+            }
+
+            if (oav.X > 0 && obv.X < 0)
+            {
+                passD = true;
+            }
+
+            if (oav.Y < 0 && obv.Y > 0)
+            {
+                passL = true;
+            }
+
+            if (oav.Y > 0 && obv.Y < 0)
+            {
+                passR = true;
+            }
+
+            if (passU)
+            {
+                if (passR)
                 {
-                    zones.Add(CovToAabbPackBox().Zone);
+                    zones.Add(a.GenZone(u));
+                    zones.Add(u.GenZone(r));
+                    zones.Add(r.GenZone(b));
+                }
+                else if (passL)
+                {
+                    zones.Add(a.GenZone(l));
+                    zones.Add(l.GenZone(u));
+                    zones.Add(u.GenZone(b));
                 }
                 else
                 {
-                    var aod = new ClockwiseBalanceAngle(a, o, d);
-                    var dob = new ClockwiseBalanceAngle(d, o, b);
-                    zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
-                    zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
+                    zones.Add(a.GenZone(u));
+                    zones.Add(u.GenZone(b));
                 }
             }
-            else if (oav.X < 0)
+
+            else if (passR)
             {
-                if (obv.X <= 0)
+                if (passD)
                 {
-                    zones.Add(CovToAabbPackBox().Zone);
+                    zones.Add(a.GenZone(r));
+                    zones.Add(r.GenZone(d));
+                    zones.Add(d.GenZone(b));
                 }
                 else
                 {
-                    var aod = new ClockwiseBalanceAngle(a, o, u);
-                    var dob = new ClockwiseBalanceAngle(u, o, b);
-                    zones.Add(new ClockwiseTurning(aod, R, Last, Next).CovToAabbPackBox().Zone);
-                    zones.Add(new ClockwiseTurning(dob, R, Last, Next).CovToAabbPackBox().Zone);
+                    zones.Add(a.GenZone(r));
+                    zones.Add(r.GenZone(b));
                 }
             }
+
+            else if (passD)
+            {
+                if (passL)
+                {
+                    zones.Add(a.GenZone(d));
+                    zones.Add(d.GenZone(r));
+                    zones.Add(r.GenZone(b));
+                }
+                else
+                {
+                    zones.Add(a.GenZone(d));
+                    zones.Add(d.GenZone(b));
+                }
+            }
+
+            else if (passL)
+            {
+                zones.Add(a.GenZone(l));
+                zones.Add(l.GenZone(b));
+            }
+
             else
             {
-                zones.Add(CovToAabbPackBox().Zone);
+                zones.Add(a.GenZone(b));
             }
 
+//            {
+//            }
+//
+//
+//            if (oav.X > 0)
+//
+//
+//            {
+//                if (obv.X >= 0)
+//                {
+//                    zones.Add(CovToAabbPackBox().Zone);
+//                }
+//                else
+//                {
+//                    var aod = new ClockwiseBalanceAngle(a, o, d);
+//                    var dob = new ClockwiseBalanceAngle(d, o, b);
+//                    zones.Add(aod.GetZone(R));
+//                    zones.Add(dob.GetZone(R));
+//                }
+//            }
+//            else if (oav.X < 0)
+//            {
+//                if (obv.X <= 0)
+//                {
+//                    zones.Add(CovToAabbPackBox().Zone);
+//                }
+//                else
+//                {
+//                    var aod = new ClockwiseBalanceAngle(a, o, u);
+//                    var dob = new ClockwiseBalanceAngle(u, o, b);
+//                    zones.Add(aod.GetZone(R));
+//                    zones.Add(dob.GetZone(R));
+//                }
+//            }
+//            else
+//            {
+//                zones.Add(CovToAabbPackBox().Zone);
+//            }
             return zones.Select(zone => new AabbBoxShape(zone, this)).ToList();
         }
+
 
         public bool IsCross(TwoDVectorLine twoDVectorLine)
         {
@@ -419,24 +538,23 @@ namespace ty_game_lib
             var ePoint = twoDVectorLine.B;
             var lP = Last.B;
             var rP = Next.A;
-            var getposOnLine = sPoint.GetposOnLine(Last);
-            var pt2LinePos = sPoint.GetposOnLine(Next);
+            var getPosOnLine = sPoint.GetPosOnLine(Last);
 
-            if (getposOnLine == Pt2LinePos.Left)
+            var pt2LinePos = sPoint.GetPosOnLine(Next);
+            if (getPosOnLine == Pt2LinePos.Left)
             {
                 var slLine = new TwoDVectorLine(sPoint, lP);
-                var linePos = ePoint.GetposOnLine(slLine);
+                var linePos = ePoint.GetPosOnLine(slLine);
                 if (linePos != Pt2LinePos.Left)
                 {
                     return false;
                 }
             }
 
-
             if (pt2LinePos == Pt2LinePos.Left)
             {
                 var srLine = new TwoDVectorLine(sPoint, rP);
-                var linePos = ePoint.GetposOnLine(srLine);
+                var linePos = ePoint.GetPosOnLine(srLine);
                 if (linePos == Pt2LinePos.Left)
                 {
                     return false;

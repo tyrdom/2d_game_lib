@@ -52,10 +52,10 @@ namespace ty_game_lib
                 var notCross = lineInBoxShape.Zone.NotCross(aabbBoxShape.Zone);
                 if (!notCross)
                 {
-                    switch (lineInBoxShape._shape)
+                    switch (lineInBoxShape.Shape)
                     {
                         case TwoDVectorLine moveLine:
-                            switch (aabbBoxShape._shape)
+                            switch (aabbBoxShape.Shape)
                             {
                                 case ClockwiseTurning blockClockwiseTurning:
                                     var isCross = blockClockwiseTurning.IsCross(moveLine);
@@ -102,15 +102,104 @@ namespace ty_game_lib
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
+        public static List<IShape>? CutShapes(int startN, List<IShape> shapes)
+        {
+            var shapesCount = shapes.Count;
+
+            if (startN + 1 >= shapesCount)
+            {
+                return null;
+            }
+
+
+            var list = startN > 0 ? shapes.Take(startN).ToList() : new List<IShape>();
+
+            int mark = startN + 2;
+            var shape = shapes[startN];
+            var shapeT = shapes[startN + 1];
+            for (int i = startN + 1; i < shapesCount; i++)
+            {
+                var shape1 = shapes[i];
+                switch (shape)
+                {
+                    case ClockwiseTurning clockwiseTurning:
+                        switch (shape1)
+                        {
+                            case ClockwiseTurning clockwiseTurning1:
+                                var (item1, item2, item3) = clockwiseTurning.TouchAnotherOne(clockwiseTurning1);
+                                if (item1)
+                                {
+                                    shape = item2;
+                                    shapeT = item3;
+                                    mark = i + 1;
+                                }
+
+                                break;
+                            case TwoDVectorLine twoDVectorLine:
+                                var (item11, item21, item31) = clockwiseTurning.TouchByLine(twoDVectorLine);
+                                if (item11)
+                                {
+                                    shape = item21;
+                                    shapeT = item31;
+                                    mark = i + 1;
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        break;
+                    case TwoDVectorLine twoDVectorLine:
+                        switch (shape1)
+                        {
+                            case ClockwiseTurning clockwiseTurning1:
+                                var (item1, item2, item3) = twoDVectorLine.TouchByCt(clockwiseTurning1);
+                                if (item1)
+                                {
+                                    shape = item2;
+                                    shapeT = item3;
+                                    mark = i + 1;
+                                }
+
+                                break;
+                            case TwoDVectorLine twoDVectorLine1:
+                                var (item11, item21, item31) = twoDVectorLine.TouchByLine(twoDVectorLine1);
+                                if (item11)
+                                {
+                                    shape = item21;
+                                    shapeT = item31;
+                                    mark = i + 1;
+                                }
+
+                                break;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            list.Add(shape);
+            list.Add(shapeT);
+            if (mark < shapesCount)
+            {
+                list.AddRange(shapes.Skip(mark).Take(shapesCount - mark));
+            }
+
+            return list;
+        }
+
         public static void LogPt(TwoDPoint? pt)
         {
-            if (pt==null)
+            if (pt == null)
             {
                 Console.Out.WriteLine("pt:::null");
             }
             else
             {
-                Console.Out.WriteLine("pt:::"+pt.X+","+pt.Y);
+                Console.Out.WriteLine("pt:::" + pt.X + "," + pt.Y);
             }
         }
     }

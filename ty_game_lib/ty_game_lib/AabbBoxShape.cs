@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,13 +7,13 @@ namespace ty_game_lib
     public class AabbBoxShape
     {
         public Zone Zone;
-        public readonly IShape _shape;
+        public readonly IShape Shape;
 
 
         public AabbBoxShape(Zone zone, IShape shape)
         {
             Zone = zone;
-            _shape = shape;
+            Shape = shape;
         }
 
         private bool IsNotTouch(AabbBoxShape another)
@@ -20,7 +21,7 @@ namespace ty_game_lib
             return Zone.NotCross(another.Zone);
         }
 
-        
+
         public List<AabbBoxShape> TryTouch(List<AabbBoxShape> aabbBoxes)
         {
             return (List<AabbBoxShape>) aabbBoxes.Where(aabbBox => !aabbBox.IsNotTouch(this));
@@ -42,9 +43,10 @@ namespace ty_game_lib
             return null;
         }
 
-        public Dictionary<int, AabbBoxShape> SplitByQuads(float horizon, float vertical)
+        public List<(int, AabbBoxShape)> SplitByQuads(float horizon, float vertical)
         {
-            var z1234 = new Dictionary<int, AabbBoxShape>();
+//            Console.Out.WriteLine("cutBY::" + horizon + "|" + vertical);
+            var z1234 = new List<(int, AabbBoxShape)>();
             var z = Zone;
 
 
@@ -52,49 +54,185 @@ namespace ty_game_lib
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[1] = this;
+                    z1234.Add((1, this));
+//                    z1234[1] = this;
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[2] = this;
+                    z1234.Add((2, this));
                 }
                 else
                 {
-                    z1234[1] = new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), _shape);
-                    z1234[2] = new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), _shape);
+                    switch (Shape)
+                    {
+                        case ClockwiseTurning clockwiseTurning:
+//
+
+
+                            var (lZones, rZones) = clockwiseTurning.CutByV(vertical, z);
+//                            Console.Out.WriteLine("L:::" + lZones.Count);
+//                            lZones.ForEach(zzz => { Console.Out.WriteLine(SomeTools.ZoneLog(zzz)); });
+//
+//                            rZones.ForEach(zzz => { Console.Out.WriteLine(SomeTools.ZoneLog(zzz)); });
+                            if (lZones != null)
+                            {
+                                z1234.Add((2, new AabbBoxShape(lZones.Value, Shape)));
+                                z1234.Add((1, new AabbBoxShape(rZones.Value, Shape)));
+                            }
+                            else
+                            {
+                                throw new Exception("no good zone");
+                            }
+
+                            break;
+                        case TwoDVectorLine twoDVectorLine:
+                            var (item1, item2) = twoDVectorLine.CutByV(vertical, z);
+                            if (item1 != null)
+                            {
+                                var t1 = (2, new AabbBoxShape(item1.Value, Shape));
+                                var t2 = (1, new AabbBoxShape(item2.Value, Shape));
+                                z1234.Add(t1);
+                                z1234.Add(t2);
+                            }
+
+                            break;
+                        default:
+                            z1234.Add((1, new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), Shape)));
+                            z1234.Add((2, new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), Shape)));
+                            break;
+                    }
                 }
             }
             else if (z.Up <= horizon)
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[4] = this;
+                    z1234.Add((4, this));
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[3] = this;
+                    z1234.Add((3, this));
                 }
                 else
                 {
-                    z1234[4] = new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), _shape);
-                    z1234[3] = new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), _shape);
+                    switch (Shape)
+                    {
+                        case ClockwiseTurning clockwiseTurning:
+
+                            var (lZones, rZones) = clockwiseTurning.CutByV(vertical, z);
+                            if (lZones != null)
+                            {
+                                z1234.Add((3, new AabbBoxShape(lZones.Value, Shape)));
+                                z1234.Add((4, new AabbBoxShape(rZones.Value, Shape)));
+                            }
+                            else
+                            {
+                                throw new Exception("no good zone");
+                            }
+
+                            break;
+                        case TwoDVectorLine twoDVectorLine:
+                            var (item1, item2) = twoDVectorLine.CutByV(vertical, z);
+                            if (item1 != null)
+                            {
+                                var t1 = (3, new AabbBoxShape(item1.Value, Shape));
+                                var t2 = (4, new AabbBoxShape(item2.Value, Shape));
+                                z1234.Add(t1);
+                                z1234.Add(t2);
+                            }
+
+                            break;
+                        default:
+                            z1234.Add((4, new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), Shape)));
+                            z1234.Add((3, new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), Shape)));
+                            break;
+                    }
                 }
             }
             else
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[1] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), _shape);
-                    z1234[4] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), _shape);
+                    switch (Shape)
+                    {
+                        case ClockwiseTurning clockwiseTurning:
+
+//                            Console.Out.WriteLine(SomeTools.ZoneLog(z));
+//                            Console.Out.WriteLine("cutBYH::" + horizon);
+                            var (uz, dz) = clockwiseTurning.CutByH(horizon, z);
+//                            Console.Out.WriteLine("out::" + SomeTools.ZoneLog(uz.Value) + "AND" +
+//                                                  SomeTools.ZoneLog(dz.Value));
+
+                            if (uz != null)
+                            {
+                                var t1 = (1, new AabbBoxShape(uz.Value, Shape));
+                                var t2 = (4, new AabbBoxShape(dz.Value, Shape));
+                                z1234.Add(t1);
+                                z1234.Add(t2);
+                            }
+
+                            break;
+                        case TwoDVectorLine twoDVectorLine:
+                            var (uuz, ddz) = twoDVectorLine.CutByH(horizon, z);
+
+                            if (uuz != null)
+                            {
+                                var t1 = (1, new AabbBoxShape(uuz.Value, Shape));
+                                var t2 = (4, new AabbBoxShape(ddz.Value, Shape));
+                                z1234.Add(t1);
+                                z1234.Add(t2);
+                            }
+
+                            break;
+                        default:
+
+                            z1234.Add((1, new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), Shape)));
+                            z1234.Add((4, new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), Shape)));
+                            break;
+                    }
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[2] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), _shape);
-                    z1234[3] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), _shape);
+                    switch (Shape)
+                    {
+                        case ClockwiseTurning clockwiseTurning:
+
+//                            Console.Out.WriteLine(SomeTools.ZoneLog(z));
+//                            Console.Out.WriteLine("cutBYH::" + horizon);
+                            var (uz, dz) = clockwiseTurning.CutByH(horizon, z);
+//                            Console.Out.WriteLine("out::" + SomeTools.ZoneLog(uz.Value) + "AND" +
+//                                                  SomeTools.ZoneLog(dz.Value));
+
+                            if (uz != null)
+                            {
+                                var t1 = (2, new AabbBoxShape(uz.Value, Shape));
+                                var t2 = (3, new AabbBoxShape(dz.Value, Shape));
+                                z1234.Add(t1);
+                                z1234.Add(t2);
+                            }
+
+                            break;
+                        case TwoDVectorLine twoDVectorLine:
+                            var (uuz, ddz) = twoDVectorLine.CutByH(horizon, z);
+                            if (uuz != null)
+                            {
+                                var t1 = (2, new AabbBoxShape(uuz.Value, Shape));
+                                var t2 = (3, new AabbBoxShape(ddz.Value, Shape));
+                                z1234.Add(t1);
+                                z1234.Add(t2);
+                            }
+
+                            break;
+                        default:
+
+                            z1234.Add((2, new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), Shape)));
+                            z1234.Add((3, new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), Shape)));
+                            break;
+                    }
                 }
                 else
                 {
-                    z1234[0] = this;
+                    z1234.Add((0, this));
                 }
             }
 
@@ -120,8 +258,8 @@ namespace ty_game_lib
                 }
                 else
                 {
-                    z1234[Quad.One] = new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), _shape);
-                    z1234[Quad.Two] = new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), _shape);
+                    z1234[Quad.One] = new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), Shape);
+                    z1234[Quad.Two] = new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), Shape);
                 }
             }
             else if (z.Up <= horizon)
@@ -136,28 +274,28 @@ namespace ty_game_lib
                 }
                 else
                 {
-                    z1234[Quad.Four] = new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), _shape);
-                    z1234[Quad.Three] = new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), _shape);
+                    z1234[Quad.Four] = new AabbBoxShape(new Zone(z.Up, z.Down, vertical, z.Right), Shape);
+                    z1234[Quad.Three] = new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), Shape);
                 }
             }
             else
             {
                 if (z.Left >= vertical)
                 {
-                    z1234[Quad.One] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), _shape);
-                    z1234[Quad.Four] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), _shape);
+                    z1234[Quad.One] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), Shape);
+                    z1234[Quad.Four] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), Shape);
                 }
                 else if (z.Right <= vertical)
                 {
-                    z1234[Quad.Two] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), _shape);
-                    z1234[Quad.Three] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), _shape);
+                    z1234[Quad.Two] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, z.Right), Shape);
+                    z1234[Quad.Three] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), Shape);
                 }
                 else
                 {
-                    z1234[Quad.One] = new AabbBoxShape(new Zone(z.Up, horizon, vertical, z.Right), _shape);
-                    z1234[Quad.Two] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, vertical), _shape);
-                    z1234[Quad.Three] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, vertical), _shape);
-                    z1234[Quad.Four] = new AabbBoxShape(new Zone(horizon, z.Down, vertical, z.Right), _shape);
+                    z1234[Quad.One] = new AabbBoxShape(new Zone(z.Up, horizon, vertical, z.Right), Shape);
+                    z1234[Quad.Two] = new AabbBoxShape(new Zone(z.Up, horizon, z.Left, vertical), Shape);
+                    z1234[Quad.Three] = new AabbBoxShape(new Zone(horizon, z.Down, z.Left, vertical), Shape);
+                    z1234[Quad.Four] = new AabbBoxShape(new Zone(horizon, z.Down, vertical, z.Right), Shape);
                 }
             }
 
