@@ -1,0 +1,8 @@
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\bin\Debug\netcoreapp3.0\ty_game_lib.deps.json
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\bin\Debug\netcoreapp3.0\ty_game_lib.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\bin\Debug\netcoreapp3.0\ty_game_lib.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\obj\Debug\netcoreapp3.0\ty_game_lib.csprojAssemblyReference.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\obj\Debug\netcoreapp3.0\ty_game_lib.AssemblyInfoInputs.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\obj\Debug\netcoreapp3.0\ty_game_lib.AssemblyInfo.cs
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\obj\Debug\netcoreapp3.0\ty_game_lib.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\ty_game_lib\obj\Debug\netcoreapp3.0\ty_game_lib.pdb

@@ -1,0 +1,52 @@
+{
+  "format": 1,
+  "restore": {
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj": {}
+  },
+  "projects": {
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj",
+        "projectName": "ty_game_lib",
+        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj",
+        "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
+        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    }
+  }
+}

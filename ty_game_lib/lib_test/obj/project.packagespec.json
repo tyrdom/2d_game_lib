@@ -15,8 +15,8 @@
     "frameworks": {
       "netcoreapp3.0": {
         "projectReferences": {
-          "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj": {
-            "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj"
+          "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
+            "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
           }
         }
       }

@@ -1,10 +1,10 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj",
-    "projectName": "ty_game_lib",
-    "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj",
-    "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\obj\\",
+    "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\actions\\actions.csproj",
+    "projectName": "actions",
+    "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\actions\\actions.csproj",
+    "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\actions\\obj\\",
     "projectStyle": "PackageReference",
     "originalTargetFrameworks": [
       "netcoreapp3.0"

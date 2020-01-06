@@ -7,8 +7,8 @@ namespace ty_game_lib
 {
     public class QSpaceBranch : QSpace
     {
-        public QSpaceBranch(Quad? quad, Zone zone, List<AabbBoxShape> aabbPackBoxes, QSpace quadTwo, QSpace quadOne,
-            QSpace quadFour, QSpace quadThree)
+        public QSpaceBranch(Quad? quad, Zone zone, List<AabbBoxShape> aabbPackBoxes, QSpace quadOne, QSpace quadTwo,
+            QSpace quadThree, QSpace quadFour)
         {
             TheQuad = quad;
             Zone = zone;
@@ -103,15 +103,15 @@ namespace ty_game_lib
             QSpace tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Zone, AabbPackBoxShapes, tryCovToLimitQSpace2, tryCovToLimitQSpace1,
-                tryCovToLimitQSpace4, tryCovToLimitQSpace3);
+            return new QSpaceBranch(TheQuad, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1, tryCovToLimitQSpace2,
+                tryCovToLimitQSpace3, tryCovToLimitQSpace4);
         }
 
         public override int FastTouchWithARightShootPoint(TwoDPoint p)
         {
             var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
 
-            var qSpaces = new QSpace[] {QuadOne, QuadTwo};
+            var qSpaces = new[] {QuadOne, QuadTwo};
             var dqSpace = new[] {QuadThree, QuadFour};
             var m = (Zone.Up + Zone.Down) / 2;
             var b = p.Y > m;
@@ -131,6 +131,7 @@ namespace ty_game_lib
         {
             var (i, aabb) = p.GenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
             var whichQ = p.WhichQ(this);
+//            Console.Out.WriteLine("Q:::" + whichQ);
             switch (whichQ)
             {
                 case Quad.One:

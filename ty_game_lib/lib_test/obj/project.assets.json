@@ -2,28 +2,28 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.0": {
-      "ty_game_lib/1.0.0": {
+      "collision_and_rigid/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.0",
         "compile": {
-          "bin/placeholder/ty_game_lib.dll": {}
+          "bin/placeholder/collision_and_rigid.dll": {}
         },
         "runtime": {
-          "bin/placeholder/ty_game_lib.dll": {}
+          "bin/placeholder/collision_and_rigid.dll": {}
         }
       }
     }
   },
   "libraries": {
-    "ty_game_lib/1.0.0": {
+    "collision_and_rigid/1.0.0": {
       "type": "project",
-      "path": "../ty_game_lib/ty_game_lib.csproj",
-      "msbuildProject": "../ty_game_lib/ty_game_lib.csproj"
+      "path": "../collision_and_rigid/collision_and_rigid.csproj",
+      "msbuildProject": "../collision_and_rigid/collision_and_rigid.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.0": [
-      "ty_game_lib >= 1.0.0"
+      "collision_and_rigid >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -50,8 +50,8 @@
       "frameworks": {
         "netcoreapp3.0": {
           "projectReferences": {
-            "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj": {
-              "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\ty_game_lib\\ty_game_lib.csproj"
+            "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
+              "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
             }
           }
         }
