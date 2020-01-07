@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "collision_and_rigid", "coll
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_test", "lib_test\lib_test.csproj", "{28EB98EF-3A4C-40DD-A699-B1CBD7B1A28E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "actions", "actions\actions.csproj", "{0C302B3A-9CBE-44BA-89F6-E92F8AA650B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "game_stuff", "game_stuff\game_stuff.csproj", "{0C302B3A-9CBE-44BA-89F6-E92F8AA650B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

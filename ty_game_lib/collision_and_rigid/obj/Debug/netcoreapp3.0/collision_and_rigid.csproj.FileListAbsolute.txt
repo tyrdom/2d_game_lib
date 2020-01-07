@@ -1,0 +1,8 @@
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\bin\Debug\netcoreapp3.0\collision_and_rigid.deps.json
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\bin\Debug\netcoreapp3.0\collision_and_rigid.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\bin\Debug\netcoreapp3.0\collision_and_rigid.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\obj\Debug\netcoreapp3.0\collision_and_rigid.csprojAssemblyReference.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\obj\Debug\netcoreapp3.0\collision_and_rigid.AssemblyInfoInputs.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\obj\Debug\netcoreapp3.0\collision_and_rigid.AssemblyInfo.cs
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\obj\Debug\netcoreapp3.0\collision_and_rigid.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\collision_and_rigid\obj\Debug\netcoreapp3.0\collision_and_rigid.pdb

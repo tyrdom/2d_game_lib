@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Schema;
 
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class Poly
     {
@@ -79,7 +79,7 @@ namespace ty_game_lib
             var m = (n - 1) % ptsLength;
             var o = (n + 1) % ptsLength;
             var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[n]);
-            var pt2LinePos = Pts[o].GetPosOnLine(twoDVectorLine1);
+            var pt2LinePos = Pts[o].game_stuff(twoDVectorLine1);
             return pt2LinePos switch
             {
                 Pt2LinePos.Right => true,
@@ -109,7 +109,24 @@ namespace ty_game_lib
                 .ToArray());
         }
 
-        public Block GenByPoly(float r, int limit)
+        public List<TwoDVectorLine> CovToLines()
+        {
+            var startWithACovAndFlush = StartWithACovAndFlush();
+            var pts = startWithACovAndFlush.Pts;
+            var aabbBoxShapes = new List<TwoDVectorLine>();
+
+            for (var i = 0; i < pts.Length - 1; i++)
+            {
+                var a = pts[i];
+                var bPoint = pts[i + 1];
+                var line = new TwoDVectorLine(a, bPoint);
+                aabbBoxShapes.Add(line);
+            }
+
+            return aabbBoxShapes;
+        }
+
+        public WalkBlock GenWalkBlockByPoly(float r, int limit)
         {
             var shapes = new List<IShape>();
 
@@ -142,7 +159,7 @@ namespace ty_game_lib
 
                 var fl2 = line2.MoveVector(unitV2);
 
-                var getposOnLine = cPoint.GetPosOnLine(line1);
+                var getposOnLine = cPoint.game_stuff(line1);
 
 
                 switch (getposOnLine)
@@ -205,7 +222,7 @@ namespace ty_game_lib
 
             var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), limit);
 
-            var block = new Block(r, qSpaceByAabbBoxShapes);
+            var block = new WalkBlock(r, qSpaceByAabbBoxShapes);
             return block;
         }
     }

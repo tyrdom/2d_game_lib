@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Numerics;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class TwoDVectorLine : IShape
     {
@@ -142,15 +142,14 @@ namespace ty_game_lib
             return new TwoDVectorLine(A.move(v), B.move(v));
         }
 
-//        判断线段相交
         public bool IsPointOnAnother(TwoDVectorLine lineB)
         {
             var c = lineB.A;
             var d = lineB.B;
-            var getPosOnLineA = A.GetPosOnLine(lineB);
-            var getPosOnLineB = B.GetPosOnLine(lineB);
-            var getPosOnLineC = c.GetPosOnLine(this);
-            var getPosOnLineD = d.GetPosOnLine(this);
+            var getPosOnLineA = A.game_stuff(lineB);
+            var getPosOnLineB = B.game_stuff(lineB);
+            var getPosOnLineC = c.game_stuff(this);
+            var getPosOnLineD = d.game_stuff(this);
             return getPosOnLineA switch
             {
                 Pt2LinePos.On => getPosOnLineC != getPosOnLineD,
@@ -159,19 +158,21 @@ namespace ty_game_lib
             };
         }
 
+
         public bool SimpleIsCross(TwoDVectorLine lineB)
         {
-            return (A.GetPosOnLine(lineB) == Pt2LinePos.Right) && (B.GetPosOnLine(lineB) != Pt2LinePos.Right);
+            return (A.game_stuff(lineB) == Pt2LinePos.Right) && (B.game_stuff(lineB) != Pt2LinePos.Right);
         }
+
 
         public bool IsCrossAnother(TwoDVectorLine lineB)
         {
             var c = lineB.A;
             var d = lineB.B;
-            var getposOnLineA = A.GetPosOnLine(lineB);
-            var getposOnLineB = B.GetPosOnLine(lineB);
-            var getposOnLineC = c.GetPosOnLine(this);
-            var getposOnLineD = d.GetPosOnLine(this);
+            var getposOnLineA = A.game_stuff(lineB);
+            var getposOnLineB = B.game_stuff(lineB);
+            var getposOnLineC = c.game_stuff(this);
+            var getposOnLineD = d.game_stuff(this);
             return getposOnLineA switch
                    {
                        Pt2LinePos.Left => getposOnLineB == Pt2LinePos.Right,
@@ -199,24 +200,44 @@ namespace ty_game_lib
             return new AabbBoxShape(zone, this);
         }
 
+        public TwoDVectorLine CounterClockwiseHalfPi()
+        {
+            var twoDPoint = A.move(GetVector().CounterClockwiseHalfPi());
+            return new TwoDVectorLine(A, twoDPoint);
+        }
+
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
         {
             var twoDVector = GetVector();
             // var f = twoDVector.X *twoDVector.Y
             if (twoDVector.Y > 0)
             {
-                var getposOnLine = p.GetPosOnLine(this);
+                var getposOnLine = p.game_stuff(this);
                 return getposOnLine == Pt2LinePos.Left ? 1 : 0;
             }
 
             if (twoDVector.Y < 0)
             {
-                var getposOnLine = p.GetPosOnLine((this));
+                var getposOnLine = p.game_stuff((this));
 
                 return getposOnLine == Pt2LinePos.Right ? 1 : 0;
             }
 
             return 0;
+        }
+
+        public bool IsTouchAnother(IShape another)
+        {
+            switch (another)
+            {
+                case TwoDVectorLine twoDVectorLine:
+                    return IsCrossAnother(twoDVectorLine);
+
+                default:
+                {
+                    throw new ArgumentOutOfRangeException(nameof(another));
+                }
+            }
         }
 
         float? GetX(float y)
@@ -318,6 +339,8 @@ namespace ty_game_lib
             return f;
         }
 
+        
+
         public (TwoDPoint?, TwoDPoint?) CrossPtWithRound(Round rd)
         {
             var twoDPoint = ShadowBy(rd.O);
@@ -372,7 +395,6 @@ namespace ty_game_lib
             var (pt1, pt2) = CrossPtWithRound(rd);
             if (pt1 == null || dVectorLine.GetVector().SqNorm() <= ct.R * ct.R)
             {
-//                Console.Out.WriteLine("ptpt null::" + pt1 + '_' + pt2);
                 return (false, this, ct);
             }
 
@@ -387,19 +409,15 @@ namespace ty_game_lib
                 if (cover2)
                 {
                     var twoDVectorLine = new TwoDVectorLine(balanceAngle.O, pt1);
-                    if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Left &&
+                    if (pt2.game_stuff(twoDVectorLine) == Pt2LinePos.Left &&
                         GetMultiFromA(pt2) > GetMultiFromA(pt1))
                     {
                         pp = pt1;
                     }
-                    else if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Right &&
+                    else if (pt2.game_stuff(twoDVectorLine) == Pt2LinePos.Right &&
                              GetMultiFromA(pt2) < GetMultiFromA(pt1))
                     {
                         pp = pt2;
-                    }
-                    else
-                    {
-                        pp = null;
                     }
                 }
                 else
@@ -416,25 +434,19 @@ namespace ty_game_lib
             }
 
 
-            if (pp != null)
-            {
-                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(pp, balanceAngle.O, balanceAngle.B);
-                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, ct.R, null, ct.Next);
+            if (pp == null) return (false, this, ct);
+            var clockwiseBalanceAngle = new ClockwiseBalanceAngle(pp, balanceAngle.O, balanceAngle.B);
+            var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, ct.R, null, ct.Next);
 
-                var newLine = new TwoDVectorLine(A, pp);
+            var newLine = new TwoDVectorLine(A, pp);
 
-                return (true, newLine, clockwiseTurning);
-            }
-
-            {
-                return (false, this, ct);
-            }
+            return (true, newLine, clockwiseTurning);
         }
 
 
         public (bool, TwoDVectorLine, TwoDVectorLine) TouchByLine(TwoDVectorLine line)
         {
-            var getposOnLine = line.B.GetPosOnLine(this);
+            var getposOnLine = line.B.game_stuff(this);
             if (getposOnLine != Pt2LinePos.Left)
             {
                 return (false, this, line);

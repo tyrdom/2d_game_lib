@@ -18,11 +18,11 @@ G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.runtimeconfig.dev.json
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.dll
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\lib_test.pdb
-G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\ty_game_lib.dll
-G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\ty_game_lib.pdb
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.csprojAssemblyReference.cache
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.AssemblyInfoInputs.cache
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.AssemblyInfo.cs
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.csproj.CopyComplete
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.dll
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\collision_and_rigid.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\collision_and_rigid.pdb

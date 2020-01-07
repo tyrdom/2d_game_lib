@@ -3,17 +3,20 @@ using System;
 using System.Collections.Generic;
 
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public abstract class QSpace
     {
-        public abstract TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape);
+        public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush);
         public virtual Quad? TheQuad { get; set; }
         public abstract void InsertBox(AabbBoxShape boxShape);
         public abstract Zone Zone { get; set; }
         public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
         public abstract void Remove(AabbBoxShape boxShape);
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
+        public abstract bool IsTouchBy(AabbBoxShape boxShape);
+
+
         public abstract QSpace TryCovToLimitQSpace(int limit);
         public abstract (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
         public abstract string OutZones();

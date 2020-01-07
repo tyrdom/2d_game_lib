@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml.Xsl;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public static class SomeTools
     {
@@ -45,44 +45,34 @@ namespace ty_game_lib
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
         }
 
-        public static TwoDPoint? SlideTwoDPoint(List<AabbBoxShape> aabbBoxShapes, AabbBoxShape lineInBoxShape)
+        public static TwoDPoint? SlideTwoDPoint(List<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line,bool isPush)
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
-                var notCross = lineInBoxShape.Zone.NotCross(aabbBoxShape.Zone);
-                if (!notCross)
+                var notCross = line.GenZone().NotCross(aabbBoxShape.Zone);
+                if (notCross) continue;
+                switch (aabbBoxShape.Shape)
                 {
-                    switch (lineInBoxShape.Shape)
-                    {
-                        case TwoDVectorLine moveLine:
-                            switch (aabbBoxShape.Shape)
-                            {
-                                case ClockwiseTurning blockClockwiseTurning:
-                                    var isCross = blockClockwiseTurning.IsCross(moveLine);
-                                    if (isCross)
-                                    {
-                                        var twoDPoint = blockClockwiseTurning.Slide(moveLine.B);
-                                        return twoDPoint;
-                                    }
+                    case ClockwiseTurning blockClockwiseTurning:
+                        var isCross = blockClockwiseTurning.IsCross(line);
+                        if (isCross)
+                        {
+                            var twoDPoint = blockClockwiseTurning.Slide(isPush?line.B:line.A);
+                            return twoDPoint;
+                        }
 
-                                    break;
-                                case TwoDVectorLine blockLine:
-                                    var isCrossAnother = blockLine.SimpleIsCross(moveLine);
-                                    if (isCrossAnother)
-                                    {
-                                        var twoDPoint = blockLine.Slide(moveLine.B);
-                                        return twoDPoint;
-                                    }
+                        break;
+                    case TwoDVectorLine blockLine:
+                        var isCrossAnother = blockLine.SimpleIsCross(line);
+                        if (isCrossAnother)
+                        {
+                            var twoDPoint = blockLine.Slide(isPush?line.B:line.A);
+                            return twoDPoint;
+                        }
 
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 

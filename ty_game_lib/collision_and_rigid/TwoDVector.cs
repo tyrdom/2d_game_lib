@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public enum Attitude
     {
@@ -55,6 +55,18 @@ namespace ty_game_lib
         public float Dot(TwoDVector v)
         {
             return v.X * X + v.Y * Y;
+        }
+        public TwoDVector ClockwiseTurn(TwoDVector v)
+        {
+            var vX = X * v.X + Y * v.Y;
+            var vY = -X * v.Y + Y * v.X;
+            return new TwoDVector(vX, vY);
+        }
+        public TwoDVector AntiClockwiseTurn(TwoDVector v)
+        {
+            var vX = X * v.X - Y * v.Y;
+            var vY = X * v.Y + Y * v.X;
+            return new TwoDVector(vX, vY);
         }
 
         public float Norm()

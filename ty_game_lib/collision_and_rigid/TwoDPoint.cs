@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class TwoDPoint
     {
@@ -106,7 +106,7 @@ namespace ty_game_lib
             return xLine.GetVector().Cross(aline.GetVector());
         }
 
-        public Pt2LinePos GetPosOnLine(TwoDVectorLine aline)
+        public Pt2LinePos game_stuff(TwoDVectorLine aline)
         {
             var cross = Get2S(aline);
             return cross switch

@@ -5,15 +5,15 @@ using System.Linq;
 using System.Threading.Tasks.Dataflow;
 
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
-    public class Block : IShape
+    public class WalkBlock : IShape
     {
         private float R;
         public QSpace QSpace;
 
 
-        public Block(float r, QSpace qSpace)
+        public WalkBlock(float r, QSpace qSpace)
         {
             R = r;
             QSpace = qSpace;
@@ -22,18 +22,24 @@ namespace ty_game_lib
         public bool InBlock(TwoDPoint p)
         {
             var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
-            
+
             Console.Out.WriteLine("num::" + item1);
 
             Console.Out.WriteLine("box::" + aabbBoxShape);
             return (item1 % 2) != 0;
         }
 
+        public TwoDPoint PullInToPt(TwoDPoint lastP, TwoDPoint nowP)
+        {
+            var inLine = new TwoDVectorLine(nowP, lastP);
+            var apt = QSpace.GetSlidePoint(inLine, false);
+            return apt ?? lastP;
+        }
+
         public TwoDPoint PushOutToPt(TwoDPoint lastP, TwoDPoint nowP)
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
-            var covToAabbPackBox = inLine.CovToAabbPackBox();
-            var apt = QSpace.GetSlidePoint(covToAabbPackBox);
+            var apt = QSpace.GetSlidePoint(inLine, true);
             return apt ?? lastP;
         }
 
@@ -50,6 +56,9 @@ namespace ty_game_lib
             return touchWithARightShootPoint.Item1;
         }
 
-        
+        public bool IsTouchAnother(IShape another)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

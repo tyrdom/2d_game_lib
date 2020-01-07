@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.SymbolStore;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class ClockwiseBalanceAngle
     {
@@ -19,7 +19,7 @@ namespace ty_game_lib
         public bool CheckTuring()
         {
             var twoDVectorLine = new TwoDVectorLine(A, O);
-            var getposOnLine = B.GetPosOnLine(twoDVectorLine);
+            var getposOnLine = B.game_stuff(twoDVectorLine);
 
             return getposOnLine != Pt2LinePos.Right;
         }
@@ -28,8 +28,8 @@ namespace ty_game_lib
         {
             var oa = new TwoDVectorLine(O, A);
             var ob = new TwoDVectorLine(O, B);
-            var getPosOnLine = pt.GetPosOnLine(oa);
-            var pt2LinePos = pt.GetPosOnLine(ob);
+            var getPosOnLine = pt.game_stuff(oa);
+            var pt2LinePos = pt.game_stuff(ob);
             var b = getPosOnLine != Pt2LinePos.Left && pt2LinePos != Pt2LinePos.Right;
             return b;
         }
@@ -54,7 +54,7 @@ namespace ty_game_lib
             var oDown = o.Y - r;
             var oLeft = o.X - r;
             var oRight = o.X + r;
-            var getposOnLine = b.GetPosOnLine(oa);
+            var getposOnLine = b.game_stuff(oa);
 
             if (oaq == obq)
             {

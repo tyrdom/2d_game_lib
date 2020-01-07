@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class QSpaceBranch : QSpace
     {
@@ -19,25 +19,23 @@ namespace ty_game_lib
             QuadThree = quadThree;
         }
 
-        public override TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape)
+        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush)
         {
-            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, lineInBoxShape);
+            var notCross = Zone.NotCross(line.GenZone());
+            if (notCross)
+            {
+                return null;
+            }
+
+            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush);
             if (a != null)
             {
                 return a;
             }
 
             var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
-            foreach (var qSpace in qSpaces)
-            {
-                var twoDPoint = qSpace.GetSlidePoint(lineInBoxShape);
-                if (twoDPoint != null)
-                {
-                    return twoDPoint;
-                }
-            }
-
-            return null;
+            return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, isPush))
+                .FirstOrDefault(twoDPoint => twoDPoint != null);
         }
 
         public sealed override Quad? TheQuad { get; set; }
@@ -95,6 +93,20 @@ namespace ty_game_lib
             }
 
             return aabbBoxes;
+        }
+
+        public override bool IsTouchBy(AabbBoxShape boxShape)
+        {
+            var notCross = boxShape.Zone.NotCross(Zone);
+            if (notCross)
+            {
+                return false;
+            }
+
+            return (from aabbPackBoxShape in AabbPackBoxShapes
+                let notCross2 = boxShape.Zone.NotCross(aabbPackBoxShape.Zone)
+                where !notCross2
+                select boxShape.Shape.IsTouchAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
         }
 
         public override QSpace TryCovToLimitQSpace(int limit)

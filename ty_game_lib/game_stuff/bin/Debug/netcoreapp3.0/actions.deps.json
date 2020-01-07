@@ -6,12 +6,12 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.0": {
-      "lib_test/1.0.0": {
+      "actions/1.0.0": {
         "dependencies": {
           "collision_and_rigid": "1.0.0"
         },
         "runtime": {
-          "lib_test.dll": {}
+          "actions.dll": {}
         }
       },
       "collision_and_rigid/1.0.0": {
@@ -22,7 +22,7 @@
     }
   },
   "libraries": {
-    "lib_test/1.0.0": {
+    "actions/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

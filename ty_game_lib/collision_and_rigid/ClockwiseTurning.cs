@@ -4,14 +4,35 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class ClockwiseTurning : IShape
     {
-        public ClockwiseBalanceAngle AOB;
-        public float R;
-        private TwoDVectorLine? Last;
-        public TwoDVectorLine? Next;
+        public readonly ClockwiseBalanceAngle AOB;
+        public readonly float R;
+        private readonly TwoDVectorLine? Last;
+        public readonly TwoDVectorLine? Next;
+        private readonly TwoDVectorLine TangentA;
+        private readonly TwoDVectorLine TangentB;
+
+        public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
+        {
+            if (aob.CheckTuring())
+            {
+                AOB = aob;
+                TangentA = new TwoDVectorLine(AOB.A, AOB.O).CounterClockwiseHalfPi();
+                TangentB = new TwoDVectorLine(AOB.B, AOB.O).CounterClockwiseHalfPi();
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            R = r;
+
+            Last = last;
+            Next = next;
+        }
 
         public (bool, ClockwiseTurning, ClockwiseTurning) TouchAnotherOne(ClockwiseTurning another)
         {
@@ -36,19 +57,15 @@ namespace ty_game_lib
                 {
                     var twoDVectorLine = new TwoDVectorLine(angle1.O, pt1);
                     var line2 = new TwoDVectorLine(angle2.O, pt1);
-                    if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Left
-                        && pt2.GetPosOnLine(line2) == Pt2LinePos.Right)
+                    if (pt2.game_stuff(twoDVectorLine) == Pt2LinePos.Left
+                        && pt2.game_stuff(line2) == Pt2LinePos.Right)
                     {
                         pp = pt2;
                     }
-                    else if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Right
-                             && pt2.GetPosOnLine(line2) == Pt2LinePos.Left)
+                    else if (pt2.game_stuff(twoDVectorLine) == Pt2LinePos.Right
+                             && pt2.game_stuff(line2) == Pt2LinePos.Left)
                     {
                         pp = pt1;
-                    }
-                    else
-                    {
-                        pp = null;
                     }
                 }
                 else
@@ -64,19 +81,13 @@ namespace ty_game_lib
                 }
             }
 
-            if (pp != null)
-            {
-                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pp);
-                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
+            if (pp == null) return (false, this, another);
+            var clockwiseBalanceAngle = new ClockwiseBalanceAngle(angle1.A, angle1.O, pp);
+            var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
 
-                var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pp, angle2.O, angle2.B);
-                var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, R, null, Next);
-                return (true, clockwiseTurning, clockwiseTurning2);
-            }
-
-            {
-                return (false, this, another);
-            }
+            var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(pp, angle2.O, angle2.B);
+            var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, R, null, Next);
+            return (true, clockwiseTurning, clockwiseTurning2);
         }
 
         public (bool, ClockwiseTurning, TwoDVectorLine) TouchByLine(TwoDVectorLine line)
@@ -99,19 +110,15 @@ namespace ty_game_lib
                 if (cover2)
                 {
                     var twoDVectorLine = new TwoDVectorLine(AOB.O, pt1);
-                    if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Left &&
+                    if (pt2.game_stuff(twoDVectorLine) == Pt2LinePos.Left &&
                         line.GetMultiFromA(pt2) > line.GetMultiFromA(pt1))
                     {
                         pp = pt2;
                     }
-                    else if (pt2.GetPosOnLine(twoDVectorLine) == Pt2LinePos.Right &&
+                    else if (pt2.game_stuff(twoDVectorLine) == Pt2LinePos.Right &&
                              line.GetMultiFromA(pt2) < line.GetMultiFromA(pt1))
                     {
                         pp = pt1;
-                    }
-                    else
-                    {
-                        pp = null;
                     }
                 }
                 else
@@ -127,37 +134,13 @@ namespace ty_game_lib
                 }
             }
 
-            if (pp != null)
-            {
-                var clockwiseBalanceAngle = new ClockwiseBalanceAngle(AOB.A, AOB.O, pp);
-                var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
+            if (pp == null) return (false, this, line);
+            var clockwiseBalanceAngle = new ClockwiseBalanceAngle(AOB.A, AOB.O, pp);
+            var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
 
-                var newLine = new TwoDVectorLine(pp, line.B);
+            var newLine = new TwoDVectorLine(pp, line.B);
 
-                return (true, clockwiseTurning, newLine);
-            }
-            else
-            {
-                return (false, this, line);
-            }
-        }
-
-
-        public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
-        {
-            if (aob.CheckTuring())
-            {
-                AOB = aob;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            R = r;
-
-            Last = last;
-            Next = next;
+            return (true, clockwiseTurning, newLine);
         }
 
 
@@ -169,8 +152,8 @@ namespace ty_game_lib
 
             var oa = new TwoDVectorLine(o, a);
             var ob = new TwoDVectorLine(o, b);
-            var oaPos = p.GetPosOnLine(oa);
-            var obPos = p.GetPosOnLine(ob);
+            var oaPos = p.game_stuff(oa);
+            var obPos = p.game_stuff(ob);
 
             switch (oaPos)
             {
@@ -182,30 +165,24 @@ namespace ty_game_lib
                             break;
                         case Pt2LinePos.On:
                             return b;
-                            break;
                         case Pt2LinePos.Left:
                             var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R);
                             return o.move(ovr);
-                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
 
-                    break;
                 case Pt2LinePos.On:
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
                             return Next != null ? Next.Slide(p) : b;
-                            break;
                         case Pt2LinePos.On:
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
                                 .Multi(R);
                             return o.move(twoDVector);
-                            break;
                         case Pt2LinePos.Left:
                             return a;
-                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -220,7 +197,7 @@ namespace ty_game_lib
                                 .Multi(R);
                             var m = o.move(twoDVector);
                             var om = new TwoDVectorLine(o, m);
-                            var mPos = p.GetPosOnLine(om);
+                            var mPos = p.game_stuff(om);
                             return mPos switch
                                 {
                                     Pt2LinePos.Right => Next != null ? Next.Slide(p) : b,
@@ -230,13 +207,10 @@ namespace ty_game_lib
                                 }
                                 ;
 
-                            break;
                         case Pt2LinePos.On:
                             return Last != null ? Last.Slide(p) : a;
-                            break;
                         case Pt2LinePos.Left:
                             return Last != null ? Last.Slide(p) : a;
-                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -276,6 +250,11 @@ namespace ty_game_lib
             {
                 return -2;
             }
+        }
+
+        public bool IsTouchAnother(IShape another)
+        {
+            throw new NotImplementedException();
         }
 
 
@@ -333,8 +312,6 @@ namespace ty_game_lib
         public (Zone?, Zone?) CutByV(float v, Zone z)
         {
             var o = AOB.O;
-            var a = AOB.A;
-            var b = AOB.B;
             var round = new Round(o, R);
             var (item1, item2) = round.GetY(v);
 
@@ -536,15 +513,15 @@ namespace ty_game_lib
         {
             var sPoint = twoDVectorLine.A;
             var ePoint = twoDVectorLine.B;
-            var lP = Last.B;
-            var rP = Next.A;
-            var getPosOnLine = sPoint.GetPosOnLine(Last);
+            var lP = AOB.A;
+            var rP = AOB.B;
+            var getPosOnLine = sPoint.game_stuff(TangentA);
 
-            var pt2LinePos = sPoint.GetPosOnLine(Next);
+            var pt2LinePos = sPoint.game_stuff(TangentB);
             if (getPosOnLine == Pt2LinePos.Left)
             {
                 var slLine = new TwoDVectorLine(sPoint, lP);
-                var linePos = ePoint.GetPosOnLine(slLine);
+                var linePos = ePoint.game_stuff(slLine);
                 if (linePos != Pt2LinePos.Left)
                 {
                     return false;
@@ -554,7 +531,7 @@ namespace ty_game_lib
             if (pt2LinePos == Pt2LinePos.Left)
             {
                 var srLine = new TwoDVectorLine(sPoint, rP);
-                var linePos = ePoint.GetPosOnLine(srLine);
+                var linePos = ePoint.game_stuff(srLine);
                 if (linePos == Pt2LinePos.Left)
                 {
                     return false;

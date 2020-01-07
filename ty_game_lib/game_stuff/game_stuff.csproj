@@ -4,4 +4,8 @@
         <TargetFramework>netcoreapp3.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\collision_and_rigid\collision_and_rigid.csproj" />
+    </ItemGroup>
+
 </Project>

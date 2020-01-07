@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class AabbBoxShape
     {

@@ -1,0 +1,11 @@
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\bin\Debug\netcoreapp3.0\game_stuff.deps.json
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\bin\Debug\netcoreapp3.0\game_stuff.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\bin\Debug\netcoreapp3.0\game_stuff.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\bin\Debug\netcoreapp3.0\collision_and_rigid.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\bin\Debug\netcoreapp3.0\collision_and_rigid.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\obj\Debug\netcoreapp3.0\game_stuff.csprojAssemblyReference.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\obj\Debug\netcoreapp3.0\game_stuff.AssemblyInfoInputs.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\obj\Debug\netcoreapp3.0\game_stuff.AssemblyInfo.cs
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\obj\Debug\netcoreapp3.0\game_stuff.csproj.CopyComplete
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\obj\Debug\netcoreapp3.0\game_stuff.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\game_stuff\obj\Debug\netcoreapp3.0\game_stuff.pdb

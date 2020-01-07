@@ -1,8 +1,6 @@
 ﻿#nullable enable
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using ty_game_lib;
+using collision_and_rigid;
 
 namespace lib_test
 {
@@ -53,10 +51,11 @@ namespace lib_test
             }
 
             var poly = new Poly(twoDPoints);
-            var genByPoly = poly.GenByPoly(2f, 3);
+            var genByPoly = poly.GenWalkBlockByPoly(2f, 3);
             var inBlock1 = genByPoly.InBlock(ptt);
             Console.Out.WriteLine(genByPoly.QSpace.OutZones());
             Console.WriteLine("!!!!" + inBlock1);
+
 //            -1.767767|-3.767767|3.767767|5.767767
 //                -3.767767|-4.5|2|3.767767
 //                -3.767767|-4.5|0.23223305|2

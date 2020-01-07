@@ -1,6 +1,6 @@
 using System;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public interface IShape
     {
@@ -8,10 +8,7 @@ namespace ty_game_lib
 
         int TouchByRightShootPointInAAbbBox(TwoDPoint p);
 
-    
-        
+
+        bool IsTouchAnother(IShape another);
     }
-
-
-    
 }

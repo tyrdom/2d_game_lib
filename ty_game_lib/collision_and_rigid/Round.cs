@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class Round : IShape
     {
@@ -53,7 +53,11 @@ namespace ty_game_lib
             throw new System.NotImplementedException();
         }
 
-        
+        public bool IsTouchAnother(IShape another)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public bool IsTouch(Round another)
         {

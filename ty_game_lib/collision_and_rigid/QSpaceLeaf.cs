@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ty_game_lib
+namespace collision_and_rigid
 {
     public class QSpaceLeaf : QSpace
     {
@@ -13,9 +13,10 @@ namespace ty_game_lib
             AabbPackBoxShapes = aabbPackPackBoxShapes;
         }
 
-        public override TwoDPoint? GetSlidePoint(AabbBoxShape lineInBoxShape)
+        public override TwoDPoint GetSlidePoint(TwoDVectorLine line,bool isPush)
         {
-            return SomeTools.SlideTwoDPoint(AabbPackBoxShapes, lineInBoxShape);
+            var notCross = Zone.NotCross(line.GenZone());
+            return notCross ? null : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line,isPush);
         }
 
         public sealed override Quad? TheQuad { get; set; }
@@ -30,6 +31,11 @@ namespace ty_game_lib
         public override IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape)
         {
             return boxShape.TryTouch(AabbPackBoxShapes);
+        }
+
+        public override bool IsTouchBy(AabbBoxShape boxShape)
+        {
+            throw new NotImplementedException();
         }
 
         public override void InsertBox(AabbBoxShape boxShape)
