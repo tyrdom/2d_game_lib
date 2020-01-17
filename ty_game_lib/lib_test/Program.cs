@@ -22,8 +22,8 @@ namespace lib_test
             var bc = new TwoDVectorLine(bPoint, cPoint);
             var crossAnotherPoint = ab.CrossAnotherPointInLinesIncludeEnds(cd);
             var anotherPoint = ad.CrossAnotherPointInLinesIncludeEnds(bc);
-            var crossPoint = ab.CrossPoint(cd);
-            var point = ad.CrossPoint(bc);
+            var crossPoint = ab.CrossPointForWholeLine(cd);
+            var point = ad.CrossPointForWholeLine(bc);
             SomeTools.LogPt(crossAnotherPoint);
             SomeTools.LogPt(anotherPoint);
             SomeTools.LogPt(crossPoint);
@@ -51,8 +51,8 @@ namespace lib_test
             }
 
             var poly = new Poly(twoDPoints);
-            var genByPoly = poly.GenWalkBlockByPoly(2f, 3);
-            var inBlock1 = genByPoly.InBlock(ptt);
+            var genByPoly = poly.GenWalkBlockByPoly(2f, 3, true);
+            var inBlock1 = genByPoly.CoverPoint(ptt);
             Console.Out.WriteLine(genByPoly.QSpace.OutZones());
             Console.WriteLine("!!!!" + inBlock1);
 

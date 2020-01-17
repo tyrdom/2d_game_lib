@@ -9,24 +9,27 @@ namespace collision_and_rigid
 {
     public class WalkBlock : IShape
     {
-        private float R;
+//        private float R;
+        private bool IsBlockIn;
         public QSpace QSpace;
 
 
-        public WalkBlock(float r, QSpace qSpace)
+        public WalkBlock(bool isBlockIn, QSpace qSpace)
         {
-            R = r;
+//            R = r;
+            IsBlockIn = isBlockIn;
             QSpace = qSpace;
         }
 
-        public bool InBlock(TwoDPoint p)
+        public bool CoverPoint(TwoDPoint p)
         {
             var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
 
             Console.Out.WriteLine("num::" + item1);
 
             Console.Out.WriteLine("box::" + aabbBoxShape);
-            return (item1 % 2) != 0;
+            var inBlock = (item1 % 2) != 0;
+            return IsBlockIn ? inBlock : !inBlock;
         }
 
         public TwoDPoint PullInToPt(TwoDPoint lastP, TwoDPoint nowP)
@@ -60,5 +63,10 @@ namespace collision_and_rigid
         {
             throw new NotImplementedException();
         }
+//
+//        public TryToUnityAnotherBlock(WalkBlock anotherWalkBlock)
+//        {
+//            
+//        }
     }
 }

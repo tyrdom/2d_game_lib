@@ -6,17 +6,18 @@ namespace collision_and_rigid
 {
     public class QSpaceLeaf : QSpace
     {
-        public QSpaceLeaf(Quad? quad, Zone zone, List<AabbBoxShape> aabbPackPackBoxShapes)
+        public QSpaceLeaf(Quad? quad, QSpaceBranch? father, Zone zone, List<AabbBoxShape> aabbPackPackBoxShapes)
         {
+            Father = father;
             TheQuad = quad;
             Zone = zone;
             AabbPackBoxShapes = aabbPackPackBoxShapes;
         }
 
-        public override TwoDPoint GetSlidePoint(TwoDVectorLine line,bool isPush)
+        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush)
         {
             var notCross = Zone.NotCross(line.GenZone());
-            return notCross ? null : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line,isPush);
+            return notCross ? null : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush);
         }
 
         public sealed override Quad? TheQuad { get; set; }
@@ -128,9 +129,13 @@ namespace collision_and_rigid
             var zones = Zone.CutTo4(item1, item2);
 
 
-            return new QSpaceBranch(TheQuad, Zone, zone, new QSpaceLeaf(Quad.One, zones[0], one),
-                new QSpaceLeaf(Quad.Two, zones[1], two),
-                new QSpaceLeaf(Quad.Three, zones[2], three), new QSpaceLeaf(Quad.Four, zones[3], four));
+            var tryCovToBranch = new QSpaceBranch(TheQuad, Father, Zone, zone,
+                new QSpaceLeaf(Quad.One, null, zones[0], one),
+                new QSpaceLeaf(Quad.Two, null, zones[1], two),
+                new QSpaceLeaf(Quad.Three, null, zones[2], three),
+                new QSpaceLeaf(Quad.Four, null, zones[3], four));
+           
+            return tryCovToBranch;
         }
     }
 }

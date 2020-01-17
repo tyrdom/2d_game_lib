@@ -9,6 +9,9 @@ namespace collision_and_rigid
     {
         public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush);
         public virtual Quad? TheQuad { get; set; }
+
+        public QSpaceBranch? Father { get; set; }
+
         public abstract void InsertBox(AabbBoxShape boxShape);
         public abstract Zone Zone { get; set; }
         public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
@@ -75,7 +78,7 @@ namespace collision_and_rigid
             return new Zone[4] {z1, z2, z3, z4};
         }
 
-        bool IsIn(Zone anotherZone)
+        public bool IsIn(Zone anotherZone)
         {
             return anotherZone.Left <= Left && anotherZone.Right >= Right && anotherZone.Up >= Up &&
                    anotherZone.Down <= Down;
@@ -111,6 +114,8 @@ namespace collision_and_rigid
             var y = pt.Y;
             return Up >= y && y >= Down && x >= Left && Right >= x;
         }
+
+        
     }
 
 

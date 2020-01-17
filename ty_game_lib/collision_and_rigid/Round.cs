@@ -42,9 +42,14 @@ namespace collision_and_rigid
             return (O.Y - sqrt, O.Y + sqrt);
         }
 
+        public Zone GetZones()
+        {
+            return new Zone(O.Y + R, O.Y - R, O.X - R, O.X + R);
+        }
+
         public AabbBoxShape CovToAabbPackBox()
         {
-            var zone = new Zone(O.Y + R, O.Y - R, O.X - R, O.X + R);
+            var zone = GetZones();
             return new AabbBoxShape(zone, this);
         }
 
@@ -57,8 +62,7 @@ namespace collision_and_rigid
         {
             throw new NotImplementedException();
         }
-
-
+        
         public bool IsTouch(Round another)
         {
             var rr = another.R + R;

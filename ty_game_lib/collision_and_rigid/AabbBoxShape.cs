@@ -45,7 +45,6 @@ namespace collision_and_rigid
 
         public List<(int, AabbBoxShape)> SplitByQuads(float horizon, float vertical)
         {
-//            Console.Out.WriteLine("cutBY::" + horizon + "|" + vertical);
             var z1234 = new List<(int, AabbBoxShape)>();
             var z = Zone;
 

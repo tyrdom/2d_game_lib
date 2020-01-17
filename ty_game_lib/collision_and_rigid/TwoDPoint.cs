@@ -21,11 +21,26 @@ namespace collision_and_rigid
             return zone;
         }
 
+        public bool Same(TwoDPoint an)
+        {
+            if (X > an.X || X < an.X)
+            {
+                return false;
+            }
+
+            if (Y > an.Y || Y < an.Y)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public Quad WhichQ(QSpaceBranch qSpaceBranch)
         {
             var zone = qSpaceBranch.Zone;
             var (h, v) = zone.GetMid();
-            var b = X <= v;
+            var b = X < v;
             if (b)
             {
                 return Y > h ? Quad.Two : Quad.Three;
@@ -65,12 +80,12 @@ namespace collision_and_rigid
                 {
 //                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
 
-                    if (X <= zone.Left)
+                    if (X < zone.Left)
                     {
 //                        Console.Out.WriteLine("!TOUCH::"+SomeTools.ZoneLog(zone));
                         n++;
                     }
-                    else if (X > zone.Left && X < zone.Right)
+                    else if (X >= zone.Left && X < zone.Right)
                     {
                         aShape = aabbBoxShape;
                         var touchByRightShootPointInAAbbBox = aabbBoxShape.Shape.TouchByRightShootPointInAAbbBox(this);
@@ -106,7 +121,7 @@ namespace collision_and_rigid
             return xLine.GetVector().Cross(aline.GetVector());
         }
 
-        public Pt2LinePos game_stuff(TwoDVectorLine aline)
+        public Pt2LinePos GetPosOf(TwoDVectorLine aline)
         {
             var cross = Get2S(aline);
             return cross switch
@@ -117,9 +132,24 @@ namespace collision_and_rigid
             };
         }
 
+        public bool IsInBlock(WalkBlock walkBlock)
+        {
+            return walkBlock.CoverPoint(this);
+        }
+
         public TwoDPoint move(TwoDVector v)
         {
             return new TwoDPoint(X + v.X, Y + v.Y);
+        }
+
+        public bool InRound(Round belongRd)
+        {
+            var oX = belongRd.O.X - X;
+            var oY = belongRd.O.Y - Y;
+            var x = oX * oX + oY * oY;
+            var belongRdR = belongRd.R;
+            var b = x < belongRdR * belongRdR;
+            return b;
         }
     }
 }

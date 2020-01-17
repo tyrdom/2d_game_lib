@@ -7,9 +7,11 @@ namespace collision_and_rigid
 {
     public class QSpaceBranch : QSpace
     {
-        public QSpaceBranch(Quad? quad, Zone zone, List<AabbBoxShape> aabbPackBoxes, QSpace quadOne, QSpace quadTwo,
+        public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, List<AabbBoxShape> aabbPackBoxes,
+            QSpace quadOne, QSpace quadTwo,
             QSpace quadThree, QSpace quadFour)
         {
+            Father = father;
             TheQuad = quad;
             Zone = zone;
             AabbPackBoxShapes = aabbPackBoxes;
@@ -17,6 +19,11 @@ namespace collision_and_rigid
             QuadOne = quadOne;
             QuadFour = quadFour;
             QuadThree = quadThree;
+
+            QuadOne.Father = this;
+            QuadTwo.Father = this;
+            QuadThree.Father = this;
+            QuadFour.Father = this;
         }
 
         public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush)
@@ -115,7 +122,7 @@ namespace collision_and_rigid
             QSpace tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1, tryCovToLimitQSpace2,
+            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1, tryCovToLimitQSpace2,
                 tryCovToLimitQSpace3, tryCovToLimitQSpace4);
         }
 
@@ -281,7 +288,15 @@ namespace collision_and_rigid
                 a.AddRange(qSpace.AabbPackBoxShapes);
             }
 
-            return new QSpaceLeaf(TheQuad, Zone, a);
+            return new QSpaceLeaf(TheQuad, Father, Zone, a);
+        }
+
+        public void TellFather()
+        {
+            QuadOne.Father = this;
+            QuadTwo.Father = this;
+            QuadThree.Father = this;
+            QuadFour.Father = this;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace collision_and_rigid
         public bool CheckTuring()
         {
             var twoDVectorLine = new TwoDVectorLine(A, O);
-            var getposOnLine = B.game_stuff(twoDVectorLine);
+            var getposOnLine = B.GetPosOf(twoDVectorLine);
 
             return getposOnLine != Pt2LinePos.Right;
         }
@@ -28,13 +28,31 @@ namespace collision_and_rigid
         {
             var oa = new TwoDVectorLine(O, A);
             var ob = new TwoDVectorLine(O, B);
-            var getPosOnLine = pt.game_stuff(oa);
-            var pt2LinePos = pt.game_stuff(ob);
+            var getPosOnLine = pt.GetPosOf(oa);
+            var pt2LinePos = pt.GetPosOf(ob);
             var b = getPosOnLine != Pt2LinePos.Left && pt2LinePos != Pt2LinePos.Right;
             return b;
         }
+        public bool BlockUseCover(TwoDPoint pt)
+        {
+            var opt = new TwoDVectorLine(O, pt);
+            var ob = new TwoDVectorLine(O, B);
+            var aPos = A.GetPosOf(opt);
+            var bPos = B.GetPosOf(opt);
+            var b = aPos == Pt2LinePos.Left && bPos != Pt2LinePos.Left;
+            return b;
+        }
+        public bool RealCover(TwoDPoint pt)
+        {
+            var oa = new TwoDVectorLine(O, A);
+            var ob = new TwoDVectorLine(O, B);
+            var getPosOnLine = pt.GetPosOf(oa);
+            var pt2LinePos = pt.GetPosOf(ob);
+            var b = getPosOnLine == Pt2LinePos.Right && pt2LinePos == Pt2LinePos.Left;
+            return b;
+        }
 
-         public Zone GetZone(float r)
+        public Zone GetZone(float r)
         {
             var a = A;
             var b = B;
@@ -54,7 +72,7 @@ namespace collision_and_rigid
             var oDown = o.Y - r;
             var oLeft = o.X - r;
             var oRight = o.X + r;
-            var getposOnLine = b.game_stuff(oa);
+            var getposOnLine = b.GetPosOf(oa);
 
             if (oaq == obq)
             {

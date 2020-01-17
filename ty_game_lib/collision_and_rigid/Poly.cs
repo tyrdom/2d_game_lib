@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
@@ -10,9 +11,11 @@ namespace collision_and_rigid
 {
     public class Poly
     {
+        public TwoDPoint[] Pts { get; }
+
         public Poly(TwoDPoint[] pts)
         {
-            if (pts.Length >= 3)
+            if (pts.Length >= 3 && !CheckCross(pts) && CheckNoSame(pts))
 
             {
                 Pts = pts;
@@ -23,8 +26,6 @@ namespace collision_and_rigid
             }
         }
 
-        public TwoDPoint[] Pts { get; }
-
 
         void ShowPts()
         {
@@ -32,6 +33,41 @@ namespace collision_and_rigid
             {
                 Console.Out.WriteLine("pt:" + twoDPoint.X + "|" + twoDPoint.Y);
             }
+        }
+
+        private static bool CheckNoSame(TwoDPoint[] pts)
+        {
+            for (int i = 0; i < pts.Length; i++)
+            {
+                for (int j = i + 1; j < pts.Length - j; j++)
+                {
+                    var b = pts[i].Same(pts[j]);
+                    if (b)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CheckCross(TwoDPoint[] pts)
+        {
+            for (int i = 0; i < pts.Length - 1; i++)
+            {
+                var twoDVectorLineA = new TwoDVectorLine(pts[i], pts[(i + 1)]);
+                for (int j = i + 2; j < pts.Length - j; j++)
+                {
+                    var twoDVectorLineB = new TwoDVectorLine(pts[j], pts[(j + 1) % pts.Length]);
+                    if (twoDVectorLineA.IsCrossAnother(twoDVectorLineB))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public Poly ToNotCrossPoly()
@@ -79,7 +115,7 @@ namespace collision_and_rigid
             var m = (n - 1) % ptsLength;
             var o = (n + 1) % ptsLength;
             var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[n]);
-            var pt2LinePos = Pts[o].game_stuff(twoDVectorLine1);
+            var pt2LinePos = Pts[o].GetPosOf(twoDVectorLine1);
             return pt2LinePos switch
             {
                 Pt2LinePos.Right => true,
@@ -89,7 +125,7 @@ namespace collision_and_rigid
             };
         }
 
-        public Poly StartWithACovAndFlush()
+        public Poly StartWithACovAndClockwise()
         {
             Poly poly;
             if (!IsFlush())
@@ -111,7 +147,7 @@ namespace collision_and_rigid
 
         public List<TwoDVectorLine> CovToLines()
         {
-            var startWithACovAndFlush = StartWithACovAndFlush();
+            var startWithACovAndFlush = StartWithACovAndClockwise();
             var pts = startWithACovAndFlush.Pts;
             var aabbBoxShapes = new List<TwoDVectorLine>();
 
@@ -126,84 +162,69 @@ namespace collision_and_rigid
             return aabbBoxShapes;
         }
 
-        public WalkBlock GenWalkBlockByPoly(float r, int limit)
+        public List<IBlockShape> GenBlockShapes(float r, bool isBlockIn)
         {
-            var shapes = new List<IShape>();
+            var shapes = new List<IBlockShape>();
 
-            var startWithACovNotFlush = StartWithACovAndFlush();
+            var startWithACovNotFlush = StartWithACovAndClockwise();
 //            startWithACovNotFlush.ShowPts();
-            var pPts = startWithACovNotFlush.Pts;
+            var pPts = isBlockIn ? startWithACovNotFlush.Pts : startWithACovNotFlush.Pts.Reverse().ToArray();
 
             var skip = false;
             var pPtsLength = pPts.Length;
-            foreach (var i in Enumerable.Range(0, pPtsLength))
+            for (int i = 0; i < pPtsLength; i++)
             {
-//                Console.Out.WriteLine(i);
-                if (skip)
                 {
-                    skip = false;
-                    continue;
-                }
+                    if (skip)
+                    {
+                        skip = false;
+                        continue;
+                    }
 
-                var aPoint = pPts[i];
+                    var aPoint = pPts[i];
 //                Console.Out.WriteLine("apx:" + aPoint.X + "!" + aPoint.Y);
-                var bPoint = pPts[(i + 1) % pPtsLength];
-                var cPoint = pPts[(i + 2) % pPtsLength];
+                    var bPoint = pPts[(i + 1) % pPtsLength];
+                    var cPoint = pPts[(i + 2) % pPtsLength];
 
-                var line1 = new TwoDVectorLine(aPoint, bPoint);
-                var line2 = new TwoDVectorLine(bPoint, cPoint);
-                var unitV1 = line1.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
-                var unitV2 = line2.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+                    var line1 = new TwoDVectorLine(aPoint, bPoint);
+                    var line2 = new TwoDVectorLine(bPoint, cPoint);
+                    var unitV1 = line1.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+                    var unitV2 = line2.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
 
-                var fl1 = line1.MoveVector(unitV1);
+                    var fl1 = line1.MoveVector(unitV1);
 
-                var fl2 = line2.MoveVector(unitV2);
+                    var fl2 = line2.MoveVector(unitV2);
 
-                var getposOnLine = cPoint.game_stuff(line1);
+                    var posOf = cPoint.GetPosOf(line1);
+                    switch (posOf)
+                    {
+                        case Pt2LinePos.Right:
 
-
-                switch (getposOnLine)
-                {
-                    case Pt2LinePos.Right:
-
-                        shapes.Add(fl1);
-
-                        var angle = new ClockwiseBalanceAngle(fl1.B, bPoint, fl2.A);
-                        var clockwiseTurning = new ClockwiseTurning(angle, r, fl1, fl2);
-                        shapes.Add(clockwiseTurning);
-
-                        break;
-                    case Pt2LinePos.On:
-                        skip = true;
-                        shapes.Add(new TwoDVectorLine(fl1.A, fl2.B));
-                        break;
-                    case Pt2LinePos.Left:
-
-                        shapes.Add(fl1);
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                            shapes.Add(fl1);
+                            var angle = new ClockwiseBalanceAngle(fl1.B, bPoint, fl2.A);
+                            var clockwiseTurning = new ClockwiseTurning(angle, r, fl1, fl2);
+                            shapes.Add(clockwiseTurning);
+                            break;
+                        case Pt2LinePos.On:
+                            skip = true;
+                            shapes.Add(new TwoDVectorLine(fl1.A, fl2.B));
+                            break;
+                        case Pt2LinePos.Left:
+                            shapes.Add(fl1);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
             }
 
+            var resShapes = SomeTools.CutInSingleShapeList(shapes);
 
-            var shapesCount = shapes.Count;
+            return resShapes.Where(blockShape => !blockShape.IsEmpty()).ToList();
+        }
 
-            var resShapes = shapes;
-            foreach (var i in Enumerable.Range(0, shapesCount))
-            {
-                var cutShapes = SomeTools.CutShapes(i, resShapes);
-                if (cutShapes != null)
-                {
-                    resShapes = cutShapes;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
+        public static List<AabbBoxShape> GenBlockAabbBoxShapes(List<IBlockShape> resShapes)
+        {
             var aabbBoxShapes = new List<AabbBoxShape>();
             foreach (var shape in resShapes)
             {
@@ -220,9 +241,28 @@ namespace collision_and_rigid
                 }
             }
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), limit);
+            return aabbBoxShapes;
+        }
 
-            var block = new WalkBlock(r, qSpaceByAabbBoxShapes);
+        public WalkBlock GenWalkBlockByPoly(float r, int limit, bool isBlockIn)
+        {
+            var genBlockShapes = GenBlockShapes(r, isBlockIn);
+
+            var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
+
+            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(genBlockAabbBoxShapes.ToArray(), limit);
+
+            var block = new WalkBlock(isBlockIn, qSpaceByAabbBoxShapes);
+            return block;
+        }
+
+        public static WalkBlock GenWalkBlockByBlockShapes(int limit, bool isBlockIn, List<IBlockShape> genBlockShapes)
+        {
+            var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
+
+            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(genBlockAabbBoxShapes.ToArray(), limit);
+
+            var block = new WalkBlock(isBlockIn, qSpaceByAabbBoxShapes);
             return block;
         }
     }
