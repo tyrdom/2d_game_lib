@@ -263,6 +263,41 @@ namespace collision_and_rigid
             return res;
         }
 
+        static List<(Poly, bool)> CenterPolys(List<(Poly, bool)> raw)
+        {
+            List<Zone> zones = raw.Select(tuple => tuple.Item1.GenZone()).ToList();
+            var yMax = zones.Select(zone => zone.Up).Max();
+            var yMin = zones.Select(zone => zone.Down).Min();
+            var xMax = zones.Select(zone => zone.Right).Max();
+            var xMin = zones.Select(zone => zone.Left).Min();
+            var cPoint = new TwoDPoint((xMax + xMin) / 2, (yMax + yMin) / 2);
+            var mVector = cPoint.GenVector(new TwoDPoint(0, 0));
+            return raw.Select(poly =>
+                (poly.Item1.Move(mVector), poly.Item2)
+            ).ToList();
+        }
+
+
+        public static WalkBlock GenWalkBlockByPolys(List<(Poly, bool)> rawData, float r)
+        {
+//            rawData = CenterPolys(rawData);
+            var (item1, item2) = rawData[0];
+            var genBlockShapes = (item1.GenBlockShapes(r, item2), item2);
+
+            for (int i = 1; i < rawData.Count; i++)
+            {
+                var (poly, b) = rawData[i];
+                var blockShapes = poly.GenBlockShapes(r, b);
+                genBlockShapes = SomeTools.AddTwoBlocks(genBlockShapes.Item1, genBlockShapes.item2,
+                    blockShapes, b);
+            }
+
+            var genWalkBlockByBlockShapes =
+                Poly.GenWalkBlockByBlockShapes(5, genBlockShapes.item2, genBlockShapes.Item1);
+
+            return genWalkBlockByBlockShapes;
+        }
+
         public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
@@ -280,95 +315,6 @@ namespace collision_and_rigid
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToList());
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
-        }
-
-        public static List<IBlockShape>? CutShapes(int startN, List<IBlockShape> shapes)
-        {
-            var shapesCount = shapes.Count;
-
-            if (startN + 1 >= shapesCount)
-            {
-                return null;
-            }
-
-
-            var list = startN > 0 ? shapes.Take(startN).ToList() : new List<IBlockShape>();
-
-            int mark = startN + 2;
-            var shape = shapes[startN];
-            var shapeT = shapes[startN + 1];
-            for (int i = startN + 1; i < shapesCount; i++)
-            {
-                var shape1 = shapes[i];
-                switch (shape)
-                {
-                    case ClockwiseTurning clockwiseTurning:
-                        switch (shape1)
-                        {
-                            case ClockwiseTurning clockwiseTurning1:
-                                var (item1, item2, item3) = clockwiseTurning.TouchAnotherOne(clockwiseTurning1);
-                                if (item1)
-                                {
-                                    shape = item2;
-                                    shapeT = item3;
-                                    mark = i + 1;
-                                }
-
-                                break;
-                            case TwoDVectorLine twoDVectorLine:
-                                var (item11, item21, item31) = clockwiseTurning.TouchByLine(twoDVectorLine);
-                                if (item11)
-                                {
-                                    shape = item21;
-                                    shapeT = item31;
-                                    mark = i + 1;
-                                }
-
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        break;
-                    case TwoDVectorLine twoDVectorLine:
-                        switch (shape1)
-                        {
-                            case ClockwiseTurning clockwiseTurning1:
-                                var (item1, item2, item3) = twoDVectorLine.TouchByCt(clockwiseTurning1);
-                                if (item1)
-                                {
-                                    shape = item2;
-                                    shapeT = item3;
-                                    mark = i + 1;
-                                }
-
-                                break;
-                            case TwoDVectorLine twoDVectorLine1:
-                                var (item11, item21, item31) = twoDVectorLine.TouchByLineInSamePoly(twoDVectorLine1);
-                                if (item11)
-                                {
-                                    shape = item21;
-                                    shapeT = item31;
-                                    mark = i + 1;
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            list.Add(shape);
-            list.Add(shapeT);
-            if (mark < shapesCount)
-            {
-                list.AddRange(shapes.Skip(mark).Take(shapesCount - mark));
-            }
-
-            return list;
         }
 
         public static void LogPt(TwoDPoint? pt)

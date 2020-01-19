@@ -151,5 +151,10 @@ namespace collision_and_rigid
             var b = x < belongRdR * belongRdR;
             return b;
         }
+
+        public TwoDVector GenVector(TwoDPoint b)
+        {
+            return new TwoDVector(b.X-X,b.Y-Y);
+        }
     }
 }

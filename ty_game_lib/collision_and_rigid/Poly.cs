@@ -26,6 +26,22 @@ namespace collision_and_rigid
             }
         }
 
+        public Poly Move(TwoDVector mv)
+        {
+            var twoDPoints = Pts.Select(point => point.move(mv)).ToArray();
+            var poly = new Poly(twoDPoints);
+            return poly;
+        }
+
+        public Zone GenZone()
+        {
+            var xMax = Pts.Select(x => x.X).Max();
+            var xMin = Pts.Select(x => x.X).Min();
+            var yMax = Pts.Select(x => x.Y).Max();
+            var yMin = Pts.Select(x => x.Y).Min();
+
+            return new Zone(yMax, yMin, xMin, xMax);
+        }
 
         void ShowPts()
         {
