@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
@@ -46,7 +47,8 @@ namespace collision_and_rigid
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
         }
 
-        public static TwoDPoint? SlideTwoDPoint(List<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line, bool isPush)
+        public static TwoDPoint? SlideTwoDPoint(List<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line, bool isPush,
+            bool safe)
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
@@ -58,7 +60,7 @@ namespace collision_and_rigid
                         var isCross = blockClockwiseTurning.IsCross(line);
                         if (isCross)
                         {
-                            var twoDPoint = blockClockwiseTurning.Slide(isPush ? line.B : line.A);
+                            var twoDPoint = blockClockwiseTurning.Slide(isPush ? line.B : line.A, safe);
                             return twoDPoint;
                         }
 
@@ -67,7 +69,7 @@ namespace collision_and_rigid
                         var isCrossAnother = blockLine.SimpleIsCross(line);
                         if (isCrossAnother)
                         {
-                            var twoDPoint = blockLine.Slide(isPush ? line.B : line.A);
+                            var twoDPoint = blockLine.Slide(isPush ? line.B : line.A, safe);
                             return twoDPoint;
                         }
 
@@ -90,22 +92,38 @@ namespace collision_and_rigid
         static (List<IBlockShape>, bool) AddTwoBlocks(List<IBlockShape> l1, bool l1IsBlockIn, List<IBlockShape> l2,
             bool l2IsBlockIn)
         {
+//            foreach (var blockShape in l2)
+//            {
+//                var twoDPoint = blockShape.GetEndPt();
+//                Console.Out.WriteLine("raw end pt::X" + twoDPoint.X + "   Y::" + twoDPoint.Y);
+//            }
+
             //record points
             var dicL1 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
             var dicL2 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
 
             for (int i = 0; i < l1.Count; i++)
             {
+                
+//                    Console.Out.WriteLine("s dic::::" + i);
+                
+
                 var blockShapeFromL1 = l1[i];
                 dicL1.TryGetValue(i, out var df1);
 
                 for (int j = 0; j < l2.Count; j++)
                 {
-                    List<(TwoDPoint, CondAfterCross, CondAfterCross)> crossAnotherBlockShapeReturnIsChangeAndBlocks =
-                        blockShapeFromL1.CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(l2[j]);
+//                    Console.Out.WriteLine("l1::"+i+"  l2::"+j);
+                    var blockShapeFromL2 = l2[j];
+                    var crossAnotherBlockShapeReturnIsChangeAndBlocks =
+                        blockShapeFromL1.CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(blockShapeFromL2);
+
+
                     dicL2.TryGetValue(j, out var df2);
+
                     if (crossAnotherBlockShapeReturnIsChangeAndBlocks.Count > 0)
                     {
+//                        Console.Out.WriteLine("!@#$!@#$");
                         foreach (var (twoDPoint, item2, item3) in crossAnotherBlockShapeReturnIsChangeAndBlocks)
                         {
                             if (df1 != null)
@@ -116,8 +134,7 @@ namespace collision_and_rigid
                             if (df2 != null)
                                 df2.Add((twoDPoint, item3));
                             else
-                                df1 = new List<(TwoDPoint, CondAfterCross)> {(twoDPoint, item3)};
-                            ;
+                                df2 = new List<(TwoDPoint, CondAfterCross)> {(twoDPoint, item3)};
                         }
 
                         dicL2[j] = df2;
@@ -130,7 +147,17 @@ namespace collision_and_rigid
                 }
             }
 
-            //
+//            Console.Out.WriteLine("In dic1::\n" + dicL1.Count);
+//            foreach (var (key, value) in dicL1)
+//            {
+//                Console.Out.WriteLine("key::" + key + "  Count::" + (value?.Count ?? 0));
+//            }
+//
+//            Console.Out.WriteLine("In dic2::\n" + dicL2.Count);
+//            foreach (var (key, value) in dicL2)
+//            {
+//                Console.Out.WriteLine("key::" + key + "  Count::" + (value?.Count ?? 0));
+//            }
 
             var resL1 = new List<IBlockShape>();
             var resL2 = new List<IBlockShape>();
@@ -144,6 +171,7 @@ namespace collision_and_rigid
             var l2QSpace = CreateQSpaceByAabbBoxShapes(Poly.GenBlockAabbBoxShapes(l2).ToArray(), 100);
 
             var block2 = new WalkBlock(l2IsBlockIn, l2QSpace);
+
             var l2StartCond = block1.CoverPoint(l2StartPt) ? CondAfterCross.OutToIn : CondAfterCross.InToOut;
             var l1StartCond = block2.CoverPoint(l1StartPt) ? CondAfterCross.OutToIn : CondAfterCross.InToOut;
 
@@ -163,10 +191,10 @@ namespace collision_and_rigid
 
                 var endPt = blockShape.GetEndPt();
                 var b = block2.CoverPoint(endPt);
-                ptsAndCond.Add(b ? (endPt, CondAfterCross.OutToIn) : (endPt, CondAfterCross.InToOut));
+                var cond = b ? CondAfterCross.OutToIn : CondAfterCross.InToOut;
 
                 var (blockShapes, condAfterCross, item3) =
-                    blockShape.CutByPointReturnGoodBlockCondAndTemp(nowL1Cond, ptsAndCond, temp1);
+                    blockShape.CutByPointReturnGoodBlockCondAndTemp(nowL1Cond, ptsAndCond, temp1, cond);
                 resL1.AddRange(blockShapes);
                 nowL1Cond = condAfterCross;
                 temp1 = item3;
@@ -184,11 +212,14 @@ namespace collision_and_rigid
                 }
 
                 var endPt = blockShape.GetEndPt();
-                var b = block1.CoverPoint(endPt);
-                ptsAndCond2.Add(b ? (endPt, CondAfterCross.OutToIn) : (endPt, CondAfterCross.InToOut));
 
+                var b = block1.CoverPoint(endPt);
+                var cond = b ? CondAfterCross.OutToIn : CondAfterCross.InToOut;
+//
+//                Console.Out.WriteLine("l2 do on::" + i + "  endPt::X" + endPt.X + "::Y" + endPt.Y + "  start cond:::" +
+//                                      nowL2Cond + "  end cond:::" + cond);
                 var (blockShapes, condAfterCross, item3) =
-                    blockShape.CutByPointReturnGoodBlockCondAndTemp(nowL2Cond, ptsAndCond2, temp2);
+                    blockShape.CutByPointReturnGoodBlockCondAndTemp(nowL2Cond, ptsAndCond2, temp2, cond);
                 resL2.AddRange(blockShapes);
                 nowL2Cond = condAfterCross;
                 temp2 = item3;
@@ -215,6 +246,14 @@ namespace collision_and_rigid
                 for (int j = i + 1; j < raw.Count; j++)
                 {
                     var blockShape2 = raw[j];
+                    if (j == i + 1)
+                    {
+                        if (blockShape1.GetType() != blockShape2.GetType())
+                        {
+                            continue;
+                        }
+                    }
+
                     dic.TryGetValue(j, out var jPtAndCond);
                     if (jPtAndCond == null)
                     {
@@ -235,6 +274,16 @@ namespace collision_and_rigid
                 dic[i] = iPtAndCond;
             }
 
+//            foreach (KeyValuePair<int, List<(TwoDPoint, CondAfterCross)>> keyValuePair in dic)
+//            {
+//                Console.Out.WriteLine("dic key::::" + keyValuePair.Key + ":::Count:::" + keyValuePair.Value.Count);
+//                foreach (var valueTuple in keyValuePair.Value)
+//                {
+//                    Console.Out.WriteLine("pt::" + valueTuple.Item1.X + '|' + valueTuple.Item1.Y + "  Sigh:::" +
+//                                          valueTuple.Item2);
+//                }
+//            }
+
             var nowCond = CondAfterCross.MaybeOutToIn;
 
             var temp = new List<IBlockShape>();
@@ -243,6 +292,7 @@ namespace collision_and_rigid
 
             for (int i = 0; i < raw.Count; i++)
             {
+//                Console.Out.WriteLine("now on block````" + i);
                 dic.TryGetValue(i, out var ptAndCond);
                 if (ptAndCond == null)
                 {
@@ -251,14 +301,33 @@ namespace collision_and_rigid
 
                 var blockShape = raw[i];
                 var (blockShapes, condAfterCross, list) =
-                    blockShape.CutByPointReturnGoodBlockCondAndTemp(nowCond, ptAndCond, temp);
+                    blockShape.CutByPointReturnGoodBlockCondAndTemp(nowCond, ptAndCond, temp,
+                        CondAfterCross.MaybeOutToIn);
                 res.AddRange(blockShapes);
                 nowCond = condAfterCross;
                 temp = list;
+//                Console.Out.WriteLine("res::" + res.Count);
+//                foreach (var shape in res)
+//                {
+//                    var startPtPoint = shape.GetStartPt();
+//                    var ePoint = shape.GetEndPt();
+//
+//                    Console.Out.WriteLine("resBlockStart::" + startPtPoint.X + '|' + startPtPoint.Y + "  end:::" +
+//                                          ePoint.X + '|' + ePoint.Y);
+//                }
+//
+//                Console.Out.WriteLine("temp::" + temp.Count);
+//                foreach (var shape in temp)
+//                {
+//                    var startPtPoint = shape.GetStartPt();
+//                    var ePoint = shape.GetEndPt();
+//
+//                    Console.Out.WriteLine("tempBlockStart::" + startPtPoint.X + '|' + startPtPoint.Y + "  end:::" +
+//                                          ePoint.X + '|' + ePoint.Y);
+//                }
             }
 
-            if (nowCond == CondAfterCross.MaybeOutToIn)
-                res.AddRange(temp);
+            res.AddRange(temp);
 
             return res;
         }
@@ -278,22 +347,22 @@ namespace collision_and_rigid
         }
 
 
-        public static WalkBlock GenWalkBlockByPolys(List<(Poly, bool)> rawData, float r)
+        public static WalkBlock GenWalkBlockByPolys(List<(Poly, bool)> rawData, float r, int limit)
         {
 //            rawData = CenterPolys(rawData);
-            var (item1, item2) = rawData[0];
-            var genBlockShapes = (item1.GenBlockShapes(r, item2), item2);
+            var (firstPoly, item2) = rawData[0];
+            var genBlockShapes = (firstPoly.GenBlockShapes(r, item2), item2);
 
             for (int i = 1; i < rawData.Count; i++)
             {
                 var (poly, b) = rawData[i];
-                var blockShapes = poly.GenBlockShapes(r, b);
-                genBlockShapes = SomeTools.AddTwoBlocks(genBlockShapes.Item1, genBlockShapes.item2,
+                List<IBlockShape> blockShapes = poly.GenBlockShapes(r, b);
+                genBlockShapes = AddTwoBlocks(genBlockShapes.Item1, genBlockShapes.item2,
                     blockShapes, b);
             }
 
             var genWalkBlockByBlockShapes =
-                Poly.GenWalkBlockByBlockShapes(5, genBlockShapes.item2, genBlockShapes.Item1);
+                Poly.GenWalkBlockByBlockShapes(limit, genBlockShapes.item2, genBlockShapes.Item1);
 
             return genWalkBlockByBlockShapes;
         }
@@ -327,6 +396,38 @@ namespace collision_and_rigid
             {
                 Console.Out.WriteLine("pt:::" + pt.X + "," + pt.Y);
             }
+        }
+
+        public static List<IBlockShape> CheckCloseAndFilter(List<IBlockShape> blockShapes)
+        {
+            var res = new List<IBlockShape>();
+            var beforeOk = new List<int>();
+            var afterOk = new List<int>();
+            for (int i = 0; i < blockShapes.Count; i++)
+            {
+                var shapeI = blockShapes[i];
+
+                for (int j = i + 1; j < blockShapes.Count; j++)
+                {
+                    var shapeJ = blockShapes[j];
+
+                    var checkAfter = shapeI.CheckAfter(shapeJ);
+                    var checkBefore = shapeI.CheckBefore(shapeJ);
+                    if (checkAfter)
+                    {
+                        afterOk.Add(i);
+                        beforeOk.Add(j);
+                    }
+
+                    if (checkBefore)
+                    {
+                        beforeOk.Add(i);
+                        afterOk.Add(j);
+                    }
+                }
+            }
+
+            return blockShapes.Where((shape, i) => afterOk.Contains(i) && beforeOk.Contains(i)).ToList();
         }
     }
 }

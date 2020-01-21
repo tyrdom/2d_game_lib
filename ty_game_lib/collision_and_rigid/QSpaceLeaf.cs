@@ -14,10 +14,10 @@ namespace collision_and_rigid
             AabbPackBoxShapes = aabbPackPackBoxShapes;
         }
 
-        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush)
+        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
-            return notCross ? null : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush);
+            return notCross ? null : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush, safe);
         }
 
         public sealed override Quad? TheQuad { get; set; }
@@ -69,7 +69,7 @@ namespace collision_and_rigid
 
         public override string OutZones()
         {
-            string s = "";
+            string s = "Leaf:::" + AabbPackBoxShapes.Count + "\n";
             foreach (var aabbBoxShape in AabbPackBoxShapes)
             {
                 var zone = aabbBoxShape.Zone;
@@ -134,7 +134,7 @@ namespace collision_and_rigid
                 new QSpaceLeaf(Quad.Two, null, zones[1], two),
                 new QSpaceLeaf(Quad.Three, null, zones[2], three),
                 new QSpaceLeaf(Quad.Four, null, zones[3], four));
-           
+
             return tryCovToBranch;
         }
     }

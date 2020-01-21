@@ -70,7 +70,7 @@ namespace collision_and_rigid
         {
             var n = 0;
             AabbBoxShape? aShape = null;
-
+//            Console.Out.WriteLine("Count::" + aabbBoxShapes.Count);
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
                 var zone = aabbBoxShape.Zone;
@@ -82,7 +82,7 @@ namespace collision_and_rigid
 
                     if (X < zone.Left)
                     {
-//                        Console.Out.WriteLine("!TOUCH::"+SomeTools.ZoneLog(zone));
+//                        Console.Out.WriteLine("!TOUCH::" + SomeTools.ZoneLog(zone));
                         n++;
                     }
                     else if (X >= zone.Left && X < zone.Right)
@@ -97,11 +97,7 @@ namespace collision_and_rigid
                         {
                             return (touchByRightShootPointInAAbbBox, aShape);
                         }
-
-                        {
-                            n += touchByRightShootPointInAAbbBox;
-                            break;
-                        }
+                        n += touchByRightShootPointInAAbbBox;
                     }
                 }
             }
@@ -137,7 +133,7 @@ namespace collision_and_rigid
             return walkBlock.CoverPoint(this);
         }
 
-        public TwoDPoint move(TwoDVector v)
+        public TwoDPoint Move(TwoDVector v)
         {
             return new TwoDPoint(X + v.X, Y + v.Y);
         }
@@ -154,7 +150,7 @@ namespace collision_and_rigid
 
         public TwoDVector GenVector(TwoDPoint b)
         {
-            return new TwoDVector(b.X-X,b.Y-Y);
+            return new TwoDVector(b.X - X, b.Y - Y);
         }
     }
 }

@@ -16,7 +16,6 @@ namespace collision_and_rigid
 
     public interface IBlockShape
     {
-        (bool, IBlockShape[]) BlockShapeUnionInSamePloy(IBlockShape another);
         bool IsEmpty();
 
 
@@ -26,9 +25,15 @@ namespace collision_and_rigid
         TwoDPoint GetStartPt();
         TwoDPoint GetEndPt();
 
-        (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(CondAfterCross nowCond,
-            List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp);
+        (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
+            CondAfterCross nowCond,
+            List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond);
+
+        bool CheckAfter(IBlockShape another);
+
+        bool CheckBefore(IBlockShape another);
     }
+
 
     public enum CondAfterCross
     {

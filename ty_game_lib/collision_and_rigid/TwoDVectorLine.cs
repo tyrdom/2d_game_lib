@@ -6,21 +6,25 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace collision_and_rigid
 {
     public class TwoDVectorLine : IShape, IBlockShape
     {
-        public TwoDVectorLine(TwoDPoint a, TwoDPoint b)
+        public TwoDVectorLine(TwoDPoint a, TwoDPoint b, bool aOut = false, bool bOut = false)
         {
             A = a;
             B = b;
+            AOut = aOut;
+            BOut = bOut;
         }
 
 
         public TwoDPoint A { get; }
-
+        public bool AOut;
         public TwoDPoint B { get; }
+        public bool BOut;
 
         public TwoDVector GetVector()
         {
@@ -46,7 +50,7 @@ namespace collision_and_rigid
             {
                 var a = sA / b;
                 var ab = GetVector();
-                return A.move(new TwoDVector(a * ab.X, a * ab.Y));
+                return A.Move(new TwoDVector(a * ab.X, a * ab.Y));
             }
 
             return null;
@@ -68,7 +72,7 @@ namespace collision_and_rigid
             {
                 var a = sA / b;
                 var ab = GetVector();
-                return A.move(new TwoDVector(a * ab.X, a * ab.Y));
+                return A.Move(new TwoDVector(a * ab.X, a * ab.Y));
             }
 
             return null;
@@ -96,7 +100,7 @@ namespace collision_and_rigid
                 {
                     var a = sA / b;
                     var ab = GetVector();
-                    return A.move(new TwoDVector(a * ab.X, a * ab.Y));
+                    return A.Move(new TwoDVector(a * ab.X, a * ab.Y));
                 }
                 else
                 {
@@ -117,7 +121,7 @@ namespace collision_and_rigid
                 {
                     var a = sA / b;
                     var ab = GetVector();
-                    return A.move(new TwoDVector(a * ab.X, a * ab.Y));
+                    return A.Move(new TwoDVector(a * ab.X, a * ab.Y));
                 }
                 else
                 {
@@ -141,7 +145,7 @@ namespace collision_and_rigid
 
         public TwoDVectorLine MoveVector(TwoDVector v)
         {
-            return new TwoDVectorLine(A.move(v), B.move(v));
+            return new TwoDVectorLine(A.Move(v), B.Move(v));
         }
 
         public bool IsPointOnAnother(TwoDVectorLine lineB)
@@ -204,7 +208,7 @@ namespace collision_and_rigid
 
         public TwoDVectorLine CounterClockwiseHalfPi()
         {
-            var twoDPoint = A.move(GetVector().CounterClockwiseHalfPi());
+            var twoDPoint = A.Move(GetVector().CounterClockwiseHalfPi());
             return new TwoDVectorLine(A, twoDPoint);
         }
 
@@ -328,7 +332,7 @@ namespace collision_and_rigid
         public TwoDPoint ShadowBy(TwoDPoint p)
         {
             var f = GetMultiFromA(p);
-            return A.move(GetVector().GetUnit().Multi(f));
+            return A.Move(GetVector().GetUnit().Multi(f));
         }
 
 
@@ -342,6 +346,15 @@ namespace collision_and_rigid
             return f;
         }
 
+        public float GetScaleInPt(TwoDPoint p)
+        {
+            var twoDVector = new TwoDVectorLine(A, p).GetVector();
+            var dVector = GetVector();
+            var dot = twoDVector.Dot(dVector);
+            var sqNorm = dVector.SqNorm();
+            var f = dot / sqNorm;
+            return f;
+        }
 
         public (TwoDPoint?, TwoDPoint?) CrossPtWithRound(Round rd)
         {
@@ -359,8 +372,8 @@ namespace collision_and_rigid
             var twoDVector = GetVector().GetUnit();
             var v1 = twoDVector.Multi(sqrt);
             var v2 = twoDVector.Multi(-sqrt);
-            var p1 = twoDPoint.move(v1);
-            var p2 = twoDPoint.move(v2);
+            var p1 = twoDPoint.Move(v1);
+            var p2 = twoDPoint.Move(v2);
             return (p1, p2);
         }
 
@@ -371,19 +384,24 @@ namespace collision_and_rigid
             return get2S / GetVector().Norm();
         }
 
-        public TwoDPoint Slide(TwoDPoint p)
+        public TwoDPoint Slide(TwoDPoint p, bool safe)
         {
             var twoDVector = new TwoDVectorLine(A, p).GetVector();
             var dVector = GetVector();
             var dot = twoDVector.Dot(dVector);
-            var norm = dVector.Norm();
+            var norm = dVector.SqNorm();
             var f = dot / norm;
-            if (f < 0f)
+            if (f <= 0f)
             {
-                return A;
+                return AOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : A;
             }
 
-            return f > 1f ? B : A.move(dVector.GetUnit().Multi(f));
+            if (f >= 1f)
+            {
+                return BOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : B;
+            }
+
+            return A.Move(dVector.GetUnit().Multi(f));
         }
 
 
@@ -403,8 +421,8 @@ namespace collision_and_rigid
             TwoDPoint? pp = null;
 
             var cover1 = balanceAngle.Cover(pt1)
-                         && GetMultiFromA(pt1) <= 1 && GetMultiFromA(pt1) >= 0;
-            var cover2 = balanceAngle.Cover(pt2) && GetMultiFromA(pt2) <= 1 && GetMultiFromA(pt2) >= 0;
+                         && GetScaleInPt(pt1) <= 1 && GetScaleInPt(pt1) >= 0;
+            var cover2 = balanceAngle.Cover(pt2) && GetScaleInPt(pt2) <= 1 && GetScaleInPt(pt2) >= 0;
 
             if (cover1)
             {
@@ -412,12 +430,12 @@ namespace collision_and_rigid
                 {
                     var twoDVectorLine = new TwoDVectorLine(balanceAngle.O, pt1);
                     if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Left &&
-                        GetMultiFromA(pt2) > GetMultiFromA(pt1))
+                        GetScaleInPt(pt2) > GetScaleInPt(pt1))
                     {
                         pp = pt1;
                     }
                     else if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Right &&
-                             GetMultiFromA(pt2) < GetMultiFromA(pt1))
+                             GetScaleInPt(pt2) < GetScaleInPt(pt1))
                     {
                         pp = pt2;
                     }
@@ -459,8 +477,9 @@ namespace collision_and_rigid
                 return twoDPoints;
             }
 
-            var f1 = GetMultiFromA(item1);
-            var f2 = GetMultiFromA(item2);
+            var f1 = GetScaleInPt(item1);
+            var f2 = GetScaleInPt(item2);
+//            Console.Out.WriteLine("maybe have cross pt" + f1 + "==" + f2);
             var (p1, p2) = f1 < f2 ? (item1, item2) : (item2, item1);
             var f11 = MathF.Min(f1, f2);
             var f22 = MathF.Max(f1, f2);
@@ -476,7 +495,9 @@ namespace collision_and_rigid
                 var f1B1 = f1B && cb1 && cb2;
                 if (f1B1)
                 {
-                    twoDPoints.Add((p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                    twoDPoints.Add(f11 < 1
+                        ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
+                        : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
                 }
 
                 var cb3 = cAobB.GetPosOf(this) == Pt2LinePos.Right;
@@ -489,17 +510,24 @@ namespace collision_and_rigid
             }
             else
             {
+//                Console.Out.WriteLine("@##@");
                 var b3 = cAobB.GetPosOf(this) != Pt2LinePos.Right;
                 var b4 = cAobA.GetPosOf(op1) == Pt2LinePos.Left;
                 var f1B1 = b3 && b4 && f1B;
+//                Console.Out.WriteLine("?p1?" + b3 + b4 + f1B);
                 if (f1B1)
                 {
-                    twoDPoints.Add((p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+//                    Console.Out.WriteLine("????");
+                    twoDPoints.Add(f11 < 1
+                        ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
+                        : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
                 }
 
                 var b5 = cAobA.GetPosOf(this) != Pt2LinePos.Right;
                 var b6 = cAobB.GetPosOf(op2) == Pt2LinePos.Right;
                 var f2B1 = b5 && b6 && f2B;
+
+//                Console.Out.WriteLine("?p2?" + b5 + b6 + f2B);
                 if (f2B1)
                 {
                     twoDPoints.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
@@ -521,7 +549,7 @@ namespace collision_and_rigid
 
             var b1 = A.GetPosOf(line) == Pt2LinePos.Left && B.GetPosOf(line) != Pt2LinePos.Left;
             var b2 = A.GetPosOf(line) == Pt2LinePos.Right && B.GetPosOf(line) != Pt2LinePos.Right;
-
+            var b11 = B.GetPosOf(line) == Pt2LinePos.Right;
             var b3 = line.A.GetPosOf(this) != Pt2LinePos.Right && line.B.GetPosOf(this) == Pt2LinePos.Right;
             var b4 = line.B.GetPosOf(this) != Pt2LinePos.Right && line.A.GetPosOf(this) == Pt2LinePos.Right;
             var c1 = b1 && b3;
@@ -532,12 +560,16 @@ namespace collision_and_rigid
 
             if (c1)
             {
-                twoDPoints.Add((pt, CondAfterCross.MaybeOutToIn, CondAfterCross.OutToIn));
+                twoDPoints.Add(b11
+                    ? (pt, CondAfterCross.OutToIn, CondAfterCross.OutToIn)
+                    : (pt, CondAfterCross.MaybeOutToIn, CondAfterCross.OutToIn));
             }
 
             else if (c2)
             {
-                twoDPoints.Add((pt, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                twoDPoints.Add(b11
+                    ? (pt, CondAfterCross.OutToIn, CondAfterCross.InToOut)
+                    : (pt, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
             }
             else if (c3)
             {
@@ -572,23 +604,6 @@ namespace collision_and_rigid
             }
         }
 
-        public (bool, IBlockShape[]) BlockShapeUnionInSamePloy(IBlockShape another)
-        {
-            switch (another)
-            {
-                case ClockwiseTurning clockwiseTurning:
-                    var (item1, item2, item3) = TouchByCt(clockwiseTurning);
-                    IBlockShape[] bs = {item2, item3};
-                    return (item1, bs);
-                case TwoDVectorLine twoDVectorLine:
-                    var (b, twoDVectorLine1, item4) = TouchByLineInSamePoly(twoDVectorLine);
-                    IBlockShape[] bs2 = {twoDVectorLine1, item4};
-                    return (b, bs2);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(another));
-            }
-        }
-
         public bool IsEmpty()
         {
             return A.Same(B);
@@ -619,7 +634,7 @@ namespace collision_and_rigid
 
         public (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
             CondAfterCross nowCond,
-            List<(TwoDPoint, CondAfterCross)> ptsAndCond, List<IBlockShape> temp
+            List<(TwoDPoint, CondAfterCross)> ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond
         )
         {
             if (ptsAndCond == null)
@@ -634,13 +649,14 @@ namespace collision_and_rigid
             var blockShapes = new List<IBlockShape>();
             var nPt = A;
 
-            foreach (var (pt, cond) in ptsAndCond)
+            for (int i = 0; i < ptsAndCond.Count; i++)
             {
+                var (pt, cond) = ptsAndCond[i];
                 switch (cond)
                 {
                     case CondAfterCross.OutToIn:
                     {
-                        var twoDVectorLine = new TwoDVectorLine(nPt, pt);
+                        var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
                         if (temp.Count > 0) blockShapes.AddRange(temp);
                         temp.Clear();
                         blockShapes.Add(twoDVectorLine);
@@ -655,7 +671,7 @@ namespace collision_and_rigid
                              nowCond == CondAfterCross.MaybeOutToIn) &&
                             cond == CondAfterCross.MaybeOutToIn)
                         {
-                            var twoDVectorLine = new TwoDVectorLine(nPt, pt);
+                            var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
 
                             temp.Add(twoDVectorLine);
                         }
@@ -674,19 +690,27 @@ namespace collision_and_rigid
                 nPt = pt;
             }
 
-            switch (nowCond)
+            switch (endCond)
             {
                 case CondAfterCross.OutToIn:
+                    if (nowCond == CondAfterCross.InToOut)
+                    {
+                        Console.Out.WriteLine("Cond Error at end pt:::" + nowCond + " and " + endCond);
+                    }
 
                     break;
                 case CondAfterCross.InToOut:
-                    var twoDVectorLine = new TwoDVectorLine(nPt, B);
+                    var twoDVectorLine = new TwoDVectorLine(nPt, B, false, true);
                     blockShapes.Add(twoDVectorLine);
+                    nowCond = CondAfterCross.InToOut;
                     break;
                 case CondAfterCross.MaybeOutToIn:
+                    if (nowCond != CondAfterCross.OutToIn)
+                    {
+                        var twoDVectorLine2 = new TwoDVectorLine(nPt, B, false, true);
+                        temp.Add(twoDVectorLine2);
+                    }
 
-                    var twoDVectorLine2 = new TwoDVectorLine(nPt, B);
-                    temp.Add(twoDVectorLine2);
                     break;
 
                 default:
@@ -695,6 +719,16 @@ namespace collision_and_rigid
 
 
             return (blockShapes, nowCond, temp);
+        }
+
+        public bool CheckAfter(IBlockShape another)
+        {
+            return GetEndPt().Same(another.GetStartPt());
+        }
+
+        public bool CheckBefore(IBlockShape another)
+        {
+            return GetStartPt().Same(another.GetEndPt());
         }
     }
 }

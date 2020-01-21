@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace lib_test
@@ -28,7 +29,8 @@ namespace lib_test
             SomeTools.LogPt(anotherPoint);
             SomeTools.LogPt(crossPoint);
             SomeTools.LogPt(point);
-            Console.WriteLine("Block test!");
+            Console.WriteLine("Block test!!!");
+            
 //
 //            var pt1 = new TwoDPoint(1.5f, 1.3f);
 //            var pt2 = new TwoDPoint(2f, 2.8f);
@@ -43,33 +45,67 @@ namespace lib_test
 
             var pt6 = new TwoDPoint(2.0f, -2.0f);
 
-            var ptt = new TwoDPoint(-1.5f, 0f);
-            var twoDPoints = new TwoDPoint[] {pt1, pt2, pt3, pt4, pt5, pt6};
-            foreach (var twoDPoint in twoDPoints)
-            {
-                Console.Out.WriteLine("res:" + twoDPoint.X);
-            }
+            var ptt = new TwoDPoint(2f, -1.717f);
+            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
+//            foreach (var twoDPoint in twoDPoints)
+//            {
+//                Console.Out.WriteLine("res:" + twoDPoint.X);
+//            }
 
             var poly = new Poly(twoDPoints);
-            var genByPoly = poly.GenWalkBlockByPoly(2f, 3, true);
-            var inBlock1 = genByPoly.CoverPoint(ptt);
-            Console.Out.WriteLine(genByPoly.QSpace.OutZones());
-            Console.WriteLine("!!!!" + inBlock1);
 
-//            -1.767767|-3.767767|3.767767|5.767767
-//                -3.767767|-4.5|2|3.767767
-//                -3.767767|-4.5|0.23223305|2
-//                -1.767767|-3.767767|-1.767767|0.23223305
-//            1.767767|-1.767767|-2.5|-1.767767
-//            2.767767|1.767767|-1.767767|-0.76776695
-//            3.5|2.767767|-0.76776695|1
-//            3.5|3.291288|1|2
-//            3.5|3.291288|2|3
-//            3.5|2.767767|3|4.767767
-//            2.767767|1.767767|4.767767|5.767767
-//            1.767767|-1.767767|5.767767|6.5
+//            var blockShapes = poly.GenBlockShapes(0.2f, false);
+//            foreach (var blockShape in blockShapes)
+//            {
+//                var twoDPoint = blockShape.GetEndPt();
+//                Console.Out.WriteLine("l1 raw end pt::X::" + twoDPoint.X + "   Y::" + twoDPoint.Y);
+//            }
+
+
+//            var genByPoly = poly.GenWalkBlockByPoly(0.2f, 2, false);
+//            var inBlock1 = genByPoly.CoverPoint(ptt);
+//            if (genByPoly.QSpace != null) Console.Out.WriteLine(genByPoly.QSpace.OutZones());
+//            else
+//            {
+//                Console.Out.WriteLine("all block");
+//            }
 //
-//                !!!!True
+//            Console.WriteLine("!!!!" + inBlock1);
+
+            var pp1 = new TwoDPoint(2f, -0.5f);
+            var pp2 = new TwoDPoint(2.5f, -1f);
+            var pp3 = new TwoDPoint(2, -1.5f);
+            var pp4 = new TwoDPoint(1.5f, -1f);
+            var dPoints = new[] {pp1, pp2, pp3, pp4};
+            var poly1 = new Poly(dPoints);
+            var tuples = new List<(Poly, bool)>
+            {
+                (poly, false), (poly1, true)
+            };
+
+//            var genBlockShapes = poly1.GenBlockShapes(0.2f, true);
+//            foreach (var blockShape in genBlockShapes)
+//            {
+//                var twoDPoint = blockShape.GetEndPt();
+//                Console.Out.WriteLine("raw end pt::X"+ twoDPoint.X+ "   Y::"+twoDPoint.Y);
+//
+//            }
+//
+//            var genWalkBlockByPoly = poly1.GenWalkBlockByPoly(0.2f,100,true);
+//            var outZones = genWalkBlockByPoly.QSpace.OutZones();
+//            Console.Out.WriteLine("zones!!!:::"+outZones);
+
+            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.2f, 100);
+            Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
+            if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
+            else
+            {
+                Console.Out.WriteLine("all block");
+            }
+
+            var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
+
+            Console.WriteLine("!!2!!" + inBlock2);
         }
     }
 }

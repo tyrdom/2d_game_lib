@@ -7,7 +7,7 @@ namespace collision_and_rigid
 {
     public abstract class QSpace
     {
-        public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush);
+        public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush,bool safe =true);
         public virtual Quad? TheQuad { get; set; }
 
         public QSpaceBranch? Father { get; set; }

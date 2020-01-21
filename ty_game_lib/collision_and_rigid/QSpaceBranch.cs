@@ -26,7 +26,7 @@ namespace collision_and_rigid
             QuadFour.Father = this;
         }
 
-        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush)
+        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
             if (notCross)
@@ -34,14 +34,14 @@ namespace collision_and_rigid
                 return null;
             }
 
-            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush);
+            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush, safe);
             if (a != null)
             {
                 return a;
             }
 
             var qSpaces = new QSpace[] {QuadOne, QuadTwo, QuadThree, QuadFour};
-            return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, isPush))
+            return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, isPush, safe))
                 .FirstOrDefault(twoDPoint => twoDPoint != null);
         }
 
@@ -122,7 +122,8 @@ namespace collision_and_rigid
             QSpace tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             QSpace tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1, tryCovToLimitQSpace2,
+            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1,
+                tryCovToLimitQSpace2,
                 tryCovToLimitQSpace3, tryCovToLimitQSpace4);
         }
 
@@ -236,7 +237,7 @@ namespace collision_and_rigid
 
         public override string OutZones()
         {
-            string s = "";
+            string s = "Branch:::";
             foreach (var aabbBoxShape in AabbPackBoxShapes)
             {
                 var zone = aabbBoxShape.Zone;

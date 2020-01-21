@@ -20,11 +20,13 @@ namespace game_stuff
             var walkBlocks = new Dictionary<BodySize, WalkBlock>();
             foreach (KeyValuePair<BodySize, float> keyValuePair in sizeToR)
             {
-                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(lp, keyValuePair.Value);
+                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(lp, keyValuePair.Value, 6);
                 walkBlocks[keyValuePair.Key] = genWalkBlockByPolys;
             }
 
             return new WalkMap(walkBlocks);
         }
+        
+        
     }
 }

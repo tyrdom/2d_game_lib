@@ -97,61 +97,8 @@ namespace collision_and_rigid
             return (true, clockwiseTurning, clockwiseTurning2);
         }
 
-        public (bool, ClockwiseTurning, TwoDVectorLine) TouchByLine(TwoDVectorLine line)
-        {
-            var o = Aob.O;
-            var rd = new Round(o, R);
-            var dVectorLine = new TwoDVectorLine(o, line.B);
 
-            var (pt1, pt2) = line.CrossPtWithRound(rd);
-            if (pt1 == null || dVectorLine.GetVector().SqNorm() <= R * R)
-            {
-                return (false, this, line);
-            }
-
-            TwoDPoint? pp = null;
-            var cover1 = Aob.Cover(pt1) && line.GetMultiFromA(pt1) <= 1 && line.GetMultiFromA(pt1) >= 0;
-            var cover2 = Aob.Cover(pt2) && line.GetMultiFromA(pt2) <= 1 && line.GetMultiFromA(pt2) >= 0;
-            if (cover1)
-            {
-                if (cover2)
-                {
-                    var twoDVectorLine = new TwoDVectorLine(Aob.O, pt1);
-                    if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Left &&
-                        line.GetMultiFromA(pt2) > line.GetMultiFromA(pt1))
-                    {
-                        pp = pt2;
-                    }
-                    else if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Right &&
-                             line.GetMultiFromA(pt2) < line.GetMultiFromA(pt1))
-                    {
-                        pp = pt1;
-                    }
-                }
-                else
-                {
-                    pp = pt1;
-                }
-            }
-            else
-            {
-                if (cover2)
-                {
-                    pp = pt2;
-                }
-            }
-
-            if (pp == null) return (false, this, line);
-            var clockwiseBalanceAngle = new ClockwiseBalanceAngle(Aob.A, Aob.O, pp);
-            var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, Last, null);
-
-            var newLine = new TwoDVectorLine(pp, line.B);
-
-            return (true, clockwiseTurning, newLine);
-        }
-
-
-        public TwoDPoint Slide(TwoDPoint p)
+        public TwoDPoint Slide(TwoDPoint p, bool safe = true)
         {
             var a = Aob.A;
             var b = Aob.B;
@@ -168,12 +115,12 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null ? Next.Slide(p) : b;
+                            return Next != null && !safe ? Next.Slide(p, false) : b;
                         case Pt2LinePos.On:
                             return b;
                         case Pt2LinePos.Left:
                             var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R);
-                            return o.move(ovr);
+                            return o.Move(ovr);
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -182,11 +129,11 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null ? Next.Slide(p) : b;
+                            return Next != null && !safe ? Next.Slide(p, false) : b;
                         case Pt2LinePos.On:
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
                                 .Multi(R);
-                            return o.move(twoDVector);
+                            return o.Move(twoDVector);
                         case Pt2LinePos.Left:
                             return a;
                         default:
@@ -201,22 +148,22 @@ namespace collision_and_rigid
 
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
                                 .Multi(R);
-                            var m = o.move(twoDVector);
+                            var m = o.Move(twoDVector);
                             var om = new TwoDVectorLine(o, m);
                             var mPos = p.GetPosOf(om);
                             return mPos switch
                                 {
-                                    Pt2LinePos.Right => Next != null ? Next.Slide(p) : b,
+                                    Pt2LinePos.Right => Next != null && !safe ? Next.Slide(p, false) : b,
                                     Pt2LinePos.On => m,
-                                    Pt2LinePos.Left => Last != null ? Last.Slide(p) : a,
+                                    Pt2LinePos.Left => Last != null && !safe ? Last.Slide(p, false) : a,
                                     _ => throw new ArgumentOutOfRangeException()
                                 }
                                 ;
 
                         case Pt2LinePos.On:
-                            return Last != null ? Last.Slide(p) : a;
+                            return Last != null && !safe ? Last.Slide(p, false) : a;
                         case Pt2LinePos.Left:
-                            return Last != null ? Last.Slide(p) : a;
+                            return Last != null && !safe ? Last.Slide(p, false) : a;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -229,9 +176,9 @@ namespace collision_and_rigid
         public ClockwiseTurning FixArBr()
         {
             var twoDVector = new TwoDVectorLine(Aob.O, Aob.A).GetVector().GetUnit().Multi(R);
-            var twoDPointA = Aob.O.move(twoDVector);
+            var twoDPointA = Aob.O.Move(twoDVector);
             var twoDVector1 = new TwoDVectorLine(Aob.O, Aob.B).GetVector().GetUnit().Multi(R);
-            var twoDPointB = Aob.O.move(twoDVector1);
+            var twoDPointB = Aob.O.Move(twoDVector1);
             var angle = new ClockwiseBalanceAngle(twoDPointA, Aob.O, twoDPointB);
             return new ClockwiseTurning(angle, R, Last, Next);
         }
@@ -261,24 +208,6 @@ namespace collision_and_rigid
         public bool IsTouchAnother(IShape another)
         {
             throw new NotImplementedException();
-        }
-
-        public (bool, IBlockShape[]) BlockShapeUnionInSamePloy(IBlockShape another)
-        {
-            switch (another)
-            {
-                case ClockwiseTurning clockwiseTurning:
-                    var (item1, item2, item3) = TouchAnotherOne(clockwiseTurning);
-                    IBlockShape[] clockwiseTurnings = {item2, item3};
-                    return (item1, clockwiseTurnings);
-                case TwoDVectorLine twoDVectorLine:
-                    var (b, clockwiseTurning1, twoDVectorLine1) = TouchByLine(twoDVectorLine);
-                    IBlockShape[] bl = {clockwiseTurning1, twoDVectorLine1};
-                    return (b, bl);
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(another));
-            }
         }
 
         public bool IsEmpty()
@@ -317,8 +246,8 @@ namespace collision_and_rigid
             var oi1 = new TwoDVectorLine(o1, item1);
             var (p1, p2) = item2.GetPosOf(oi1) == Pt2LinePos.Right ? (item1, item2) : (item2, item1);
 
-            var f1 = line.GetMultiFromA(p1);
-            var f2 = line.GetMultiFromA(p2);
+            var f1 = line.GetScaleInPt(p1);
+            var f2 = line.GetScaleInPt(p2);
 
             var p1InAngel = Aob.BlockUseCover(p1);
             var p2InAngel = Aob.BlockUseCover(p2);
@@ -336,7 +265,9 @@ namespace collision_and_rigid
                 var p2B = b2 && p2InAngel;
                 if (p2B)
                 {
-                    pts.Add((p2, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                    pts.Add(Aob.RealLessThanEnd(p2)
+                        ? (p2, CondAfterCross.OutToIn, CondAfterCross.InToOut)
+                        : (p2, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
                 }
             }
             else
@@ -347,7 +278,9 @@ namespace collision_and_rigid
                 var p1B = b1 && p1InAngel;
                 if (p1B)
                 {
-                    pts.Add((p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                    pts.Add(Aob.RealLessThanEnd(p1)
+                        ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
+                        : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
                 }
 
                 var p2B = b2 && p2InAngel;
@@ -390,7 +323,9 @@ namespace collision_and_rigid
             var p2Bb = p2B1 && p2B2 && p2InAngel1;
             if (p1Bb)
             {
-                twoDPoints.Add((p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                twoDPoints.Add(Aob.RealLessThanEnd(p1)
+                    ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
+                    : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
             }
 
             if (p2Bb)
@@ -422,7 +357,7 @@ namespace collision_and_rigid
 
         public (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
             CondAfterCross nowCond,
-            List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp)
+            List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond)
         {
             if (ptsAndCond == null)
             {
@@ -478,7 +413,7 @@ namespace collision_and_rigid
                         }
                         else
                         {
-                            Console.Out.WriteLine("Some Cond unexpected::" + nowCond.ToString() + " and " + cond.ToString());
+                            temp.Clear();
                         }
 
                         break;
@@ -490,18 +425,27 @@ namespace collision_and_rigid
                 nPt = pt;
             }
 
-            switch (nowCond)
+            switch (endCond)
             {
                 case CondAfterCross.OutToIn:
+                    if (nowCond == CondAfterCross.InToOut)
+                    {
+                        Console.Out.WriteLine("Cond Error" + nowCond + " and " + endCond);
+                    }
+
                     break;
                 case CondAfterCross.InToOut:
                     var twoDVectorLine = GetAPiece(nPt, Aob.B);
                     blockShapes.Add(twoDVectorLine);
+                    nowCond = CondAfterCross.InToOut;
                     break;
                 case CondAfterCross.MaybeOutToIn:
+                    if (nowCond != CondAfterCross.OutToIn)
+                    {
+                        var twoDVectorLine2 = GetAPiece(nPt, Aob.B);
+                        temp.Add(twoDVectorLine2);
+                    }
 
-                    var twoDVectorLine2 = GetAPiece(nPt, Aob.B);
-                    temp.Add(twoDVectorLine2);
                     break;
 
                 default:
@@ -510,6 +454,16 @@ namespace collision_and_rigid
 
 
             return (blockShapes, nowCond, temp);
+        }
+
+        public bool CheckAfter(IBlockShape another)
+        {
+            return GetEndPt().Same(another.GetStartPt());
+        }
+
+        public bool CheckBefore(IBlockShape another)
+        {
+            return GetStartPt().Same(another.GetEndPt());
         }
 
         public (Zone?, Zone?) CutByH(float h, Zone z)
@@ -621,10 +575,10 @@ namespace collision_and_rigid
             var a = Aob.A;
             var b = Aob.B;
             var o = Aob.O;
-            var u = o.move(new TwoDVector(0, R));
-            var d = o.move(new TwoDVector(0, -R));
-            var l = o.move(new TwoDVector(-R, 0));
-            var r = o.move(new TwoDVector(R, 0));
+            var u = o.Move(new TwoDVector(0, R));
+            var d = o.Move(new TwoDVector(0, -R));
+            var l = o.Move(new TwoDVector(-R, 0));
+            var r = o.Move(new TwoDVector(R, 0));
             var oa = new TwoDVectorLine(o, a);
             var oav = oa.GetVector();
             var ob = new TwoDVectorLine(o, b);

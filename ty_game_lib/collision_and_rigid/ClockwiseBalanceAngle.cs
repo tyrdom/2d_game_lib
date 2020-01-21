@@ -33,15 +33,23 @@ namespace collision_and_rigid
             var b = getPosOnLine != Pt2LinePos.Left && pt2LinePos != Pt2LinePos.Right;
             return b;
         }
+
         public bool BlockUseCover(TwoDPoint pt)
         {
             var opt = new TwoDVectorLine(O, pt);
-            var ob = new TwoDVectorLine(O, B);
             var aPos = A.GetPosOf(opt);
             var bPos = B.GetPosOf(opt);
             var b = aPos == Pt2LinePos.Left && bPos != Pt2LinePos.Left;
             return b;
         }
+
+        public bool RealLessThanEnd(TwoDPoint pt)
+        {
+            var opt = new TwoDVectorLine(O, pt);
+            var bPos = B.GetPosOf(opt);
+            return bPos == Pt2LinePos.Right;
+        }
+
         public bool RealCover(TwoDPoint pt)
         {
             var oa = new TwoDVectorLine(O, A);
