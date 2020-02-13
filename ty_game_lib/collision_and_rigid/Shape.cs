@@ -1,17 +1,23 @@
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Dynamic;
 
 namespace collision_and_rigid
 {
     public interface IShape
     {
         AabbBoxShape CovToAabbPackBox();
-
+        
         int TouchByRightShootPointInAAbbBox(TwoDPoint p);
-
+        
 
         bool IsTouchAnother(IShape another);
+    }
+
+    public interface IIdPointShape:IShape
+    {
+        int GetId();
+        TwoDPoint Move(TwoDVector vector);
+        TwoDPoint GetAchor();
     }
 
     public interface IBlockShape

@@ -44,7 +44,13 @@
             "net48"
           ],
           "assetTargetFallback": true,
-          "warn": true
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\tyrdo\\.dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

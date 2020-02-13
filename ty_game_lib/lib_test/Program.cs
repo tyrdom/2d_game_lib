@@ -5,9 +5,9 @@ using collision_and_rigid;
 
 namespace lib_test
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.Out.WriteLine("Line test!!");
 
@@ -30,7 +30,7 @@ namespace lib_test
             SomeTools.LogPt(crossPoint);
             SomeTools.LogPt(point);
             Console.WriteLine("Block test!!!");
-            
+
 //
 //            var pt1 = new TwoDPoint(1.5f, 1.3f);
 //            var pt2 = new TwoDPoint(2f, 2.8f);
@@ -95,13 +95,11 @@ namespace lib_test
 //            var outZones = genWalkBlockByPoly.QSpace.OutZones();
 //            Console.Out.WriteLine("zones!!!:::"+outZones);
 
-            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.2f, 100);
+            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.2f, 100);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
             if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
             else
-            {
                 Console.Out.WriteLine("all block");
-            }
 
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 

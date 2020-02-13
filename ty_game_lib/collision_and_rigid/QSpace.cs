@@ -2,19 +2,23 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace collision_and_rigid
 {
     public abstract class QSpace
     {
-        public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush,bool safe =true);
         public virtual Quad? TheQuad { get; set; }
-
         public QSpaceBranch? Father { get; set; }
+        public abstract Zone Zone { get; set; }
+
+        public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        
+        public abstract void AddIdPoint(List<AabbBoxShape> idPointShapes, int limit);
+
+        public abstract void MoveIdPoint(Dictionary<int, TwoDVector> gidToMove,int limit);
+
+        public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true);
 
         public abstract void InsertBox(AabbBoxShape boxShape);
-        public abstract Zone Zone { get; set; }
-        public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
         public abstract void Remove(AabbBoxShape boxShape);
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
         public abstract bool IsTouchBy(AabbBoxShape boxShape);
@@ -114,8 +118,6 @@ namespace collision_and_rigid
             var y = pt.Y;
             return Up >= y && y >= Down && x >= Left && Right >= x;
         }
-
-        
     }
 
 

@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Net;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -16,9 +14,9 @@ namespace game_stuff
 
         public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp)
         {
-            Dictionary<BodySize, float> sizeToR = TempConfig.SizeToR;
+            var sizeToR = TempConfig.SizeToR;
             var walkBlocks = new Dictionary<BodySize, WalkBlock>();
-            foreach (KeyValuePair<BodySize, float> keyValuePair in sizeToR)
+            foreach (var keyValuePair in sizeToR)
             {
                 var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(lp, keyValuePair.Value, 6);
                 walkBlocks[keyValuePair.Key] = genWalkBlockByPolys;
@@ -26,7 +24,5 @@ namespace game_stuff
 
             return new WalkMap(walkBlocks);
         }
-        
-        
     }
 }

@@ -17,6 +17,9 @@
         "projectReferences": {
           "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
             "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
+          },
+          "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj": {
+            "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj"
           }
         }
       }
@@ -38,7 +41,13 @@
         "net48"
       ],
       "assetTargetFallback": true,
-      "warn": true
+      "warn": true,
+      "frameworkReferences": {
+        "Microsoft.NETCore.App": {
+          "privateAssets": "all"
+        }
+      },
+      "runtimeIdentifierGraphPath": "C:\\Users\\tyrdo\\.dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
     }
   }
 }

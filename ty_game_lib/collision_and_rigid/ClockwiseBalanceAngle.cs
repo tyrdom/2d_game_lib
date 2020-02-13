@@ -1,13 +1,12 @@
 using System;
-using System.Diagnostics.SymbolStore;
 
 namespace collision_and_rigid
 {
     public class ClockwiseBalanceAngle
     {
         public TwoDPoint A;
-        public TwoDPoint O;
         public TwoDPoint B;
+        public TwoDPoint O;
 
         public ClockwiseBalanceAngle(TwoDPoint a, TwoDPoint o, TwoDPoint b)
         {
@@ -83,7 +82,6 @@ namespace collision_and_rigid
             var getposOnLine = b.GetPosOf(oa);
 
             if (oaq == obq)
-            {
                 switch (getposOnLine)
                 {
                     case Pt2LinePos.Right:
@@ -99,9 +97,7 @@ namespace collision_and_rigid
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-            }
             else
-            {
                 switch (oaq)
                 {
                     case Quad.One:
@@ -183,7 +179,6 @@ namespace collision_and_rigid
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-            }
 
             var zone = new Zone(up, down, left, right);
             return zone;

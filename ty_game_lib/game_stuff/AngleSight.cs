@@ -5,27 +5,27 @@ namespace game_stuff
 {
     public class AngleSight
     {
+        private readonly TwoDVector _upLeft;
+        private readonly TwoDVector _upRight;
         private TwoDVector Aim;
+        private readonly float MaxR;
         private float NowR;
-        private TwoDVector _upLeft;
-        private TwoDVector _upRight;
-        private float MaxR;
-        private float Theta;
+        private readonly float Theta;
 
-        public AngleSight(float R, TwoDVector upLeft)
+        public AngleSight(float r, TwoDVector upLeft)
         {
             Aim = new TwoDVector(1f, 0f);
-            NowR = R;
+            NowR = r;
             var vector = upLeft.GetUnit();
             _upLeft = vector;
             _upRight = new TwoDVector(vector.X, -vector.Y);
-            MaxR = R;
+            MaxR = r;
             var cosA = vector.X;
             var cos2A = 2 * cosA * cosA - 1;
             Theta = MathF.Acos(cos2A);
         }
 
-        bool InSight(TwoDVectorLine sLine)
+        private bool InSight(TwoDVectorLine sLine)
         {
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
             var c1 = twoDVector.Cross(_upLeft);
@@ -33,7 +33,7 @@ namespace game_stuff
             return c1 >= 0 && c2 <= 0;
         }
 
-        void OpChangeAim(TwoDVector newAim, float twoSToSeePerTick)
+        private void OpChangeAim(TwoDVector newAim, float twoSToSeePerTick)
         {
             var oldAim = Aim;
             Aim = newAim;

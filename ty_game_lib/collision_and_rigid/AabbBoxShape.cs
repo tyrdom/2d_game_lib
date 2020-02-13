@@ -6,8 +6,8 @@ namespace collision_and_rigid
 {
     public class AabbBoxShape
     {
-        public Zone Zone;
         public readonly IShape Shape;
+        public Zone Zone;
 
 
         public AabbBoxShape(Zone zone, IShape shape)
@@ -52,16 +52,11 @@ namespace collision_and_rigid
             if (z.Down >= horizon)
             {
                 if (z.Left >= vertical)
-                {
                     z1234.Add((1, this));
 //                    z1234[1] = this;
-                }
                 else if (z.Right <= vertical)
-                {
                     z1234.Add((2, this));
-                }
                 else
-                {
                     switch (Shape)
                     {
                         case ClockwiseTurning clockwiseTurning:
@@ -100,20 +95,14 @@ namespace collision_and_rigid
                             z1234.Add((2, new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), Shape)));
                             break;
                     }
-                }
             }
             else if (z.Up <= horizon)
             {
                 if (z.Left >= vertical)
-                {
                     z1234.Add((4, this));
-                }
                 else if (z.Right <= vertical)
-                {
                     z1234.Add((3, this));
-                }
                 else
-                {
                     switch (Shape)
                     {
                         case ClockwiseTurning clockwiseTurning:
@@ -146,12 +135,10 @@ namespace collision_and_rigid
                             z1234.Add((3, new AabbBoxShape(new Zone(z.Up, z.Down, z.Left, vertical), Shape)));
                             break;
                     }
-                }
             }
             else
             {
                 if (z.Left >= vertical)
-                {
                     switch (Shape)
                     {
                         case ClockwiseTurning clockwiseTurning:
@@ -189,9 +176,7 @@ namespace collision_and_rigid
                             z1234.Add((4, new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), Shape)));
                             break;
                     }
-                }
                 else if (z.Right <= vertical)
-                {
                     switch (Shape)
                     {
                         case ClockwiseTurning clockwiseTurning:
@@ -228,11 +213,8 @@ namespace collision_and_rigid
                             z1234.Add((3, new AabbBoxShape(new Zone(horizon, z.Down, z.Left, z.Right), Shape)));
                             break;
                     }
-                }
                 else
-                {
                     z1234.Add((0, this));
-                }
             }
 
 

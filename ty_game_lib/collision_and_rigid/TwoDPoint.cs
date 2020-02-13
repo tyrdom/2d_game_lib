@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 
 namespace collision_and_rigid
 {
     public class TwoDPoint
     {
+        public readonly float X;
+        public readonly float Y;
+
         public TwoDPoint(float x, float y)
         {
             X = x;
             Y = y;
         }
-
-        public readonly float X;
-        public readonly float Y;
 
         public Zone GenZone(TwoDPoint b)
         {
@@ -23,15 +22,9 @@ namespace collision_and_rigid
 
         public bool Same(TwoDPoint an)
         {
-            if (X > an.X || X < an.X)
-            {
-                return false;
-            }
+            if (X > an.X || X < an.X) return false;
 
-            if (Y > an.Y || Y < an.Y)
-            {
-                return false;
-            }
+            if (Y > an.Y || Y < an.Y) return false;
 
             return true;
         }
@@ -42,15 +35,18 @@ namespace collision_and_rigid
             var (h, v) = zone.GetMid();
             var b = X < v;
             if (b)
-            {
                 return Y > h ? Quad.Two : Quad.Three;
-            }
-            else
-            {
-                return Y > h ? Quad.One : Quad.Four;
-            }
+            return Y > h ? Quad.One : Quad.Four;
         }
-
+        public Quad WhichQ(Zone zone)
+        {
+            
+            var (h, v) = zone.GetMid();
+            var b = X < v;
+            if (b)
+                return Y > h ? Quad.Two : Quad.Three;
+            return Y > h ? Quad.One : Quad.Four;
+        }
         public int FastGenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
@@ -58,12 +54,15 @@ namespace collision_and_rigid
             {
                 var objZone = aabbBoxShape.Zone;
                 if (objZone.Up >= Y && objZone.Down < Y)
-                {
-//                    Console.Out.WriteLine("TOUCH::"+SomeTools.ZoneLog(objZone));
+                    //                    Console.Out.WriteLine("TOUCH::"+SomeTools.ZoneLog(objZone));
                     n++;
-                }
             });
             return n;
+        }
+
+        public Zone GetZone()
+        {
+            return new Zone(Y, Y, X, X);
         }
 
         public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
@@ -93,10 +92,7 @@ namespace collision_and_rigid
 //                                              SomeTools.ZoneLog(aabbBoxShape.Zone));
 //
 //                        Console.Out.WriteLine(SomeTools.ZoneLog(zone));
-                        if (touchByRightShootPointInAAbbBox < 0)
-                        {
-                            return (touchByRightShootPointInAAbbBox, aShape);
-                        }
+                        if (touchByRightShootPointInAAbbBox < 0) return (touchByRightShootPointInAAbbBox, aShape);
                         n += touchByRightShootPointInAAbbBox;
                     }
                 }

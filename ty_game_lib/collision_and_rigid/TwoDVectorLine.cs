@@ -1,17 +1,14 @@
 #nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace collision_and_rigid
 {
     public class TwoDVectorLine : IShape, IBlockShape
     {
+        public bool AOut;
+        public bool BOut;
+
         public TwoDVectorLine(TwoDPoint a, TwoDPoint b, bool aOut = false, bool bOut = false)
         {
             A = a;
@@ -22,9 +19,168 @@ namespace collision_and_rigid
 
 
         public TwoDPoint A { get; }
-        public bool AOut;
         public TwoDPoint B { get; }
-        public bool BOut;
+
+        public bool IsEmpty()
+        {
+            return A.Same(B);
+        }
+
+        public List<(TwoDPoint, CondAfterCross, CondAfterCross)>
+            CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(
+                IBlockShape blockShape)
+        {
+            return blockShape switch
+            {
+                null => throw new Exception("no good block!!"),
+                ClockwiseTurning clockwiseTurning => UnionByCt(clockwiseTurning),
+                TwoDVectorLine twoDVectorLine => UnionByLine(twoDVectorLine),
+                _ => throw new ArgumentOutOfRangeException(nameof(blockShape))
+            };
+        }
+
+        public TwoDPoint GetStartPt()
+        {
+            return A;
+        }
+
+        public TwoDPoint GetEndPt()
+        {
+            return B;
+        }
+
+        public (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
+            CondAfterCross nowCond,
+            List<(TwoDPoint, CondAfterCross)> ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond
+        )
+        {
+            if (ptsAndCond == null)
+                ptsAndCond = new List<(TwoDPoint, CondAfterCross)>();
+            else
+                ptsAndCond.Sort((p1, p2) => GetMultiFromA(p1.Item1).CompareTo(GetMultiFromA(p2.Item1)));
+
+            var blockShapes = new List<IBlockShape>();
+            var nPt = A;
+
+            for (var i = 0; i < ptsAndCond.Count; i++)
+            {
+                var (pt, cond) = ptsAndCond[i];
+                switch (cond)
+                {
+                    case CondAfterCross.OutToIn:
+                    {
+                        var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
+                        if (temp.Count > 0) blockShapes.AddRange(temp);
+                        temp.Clear();
+                        blockShapes.Add(twoDVectorLine);
+                        break;
+                    }
+                    case CondAfterCross.InToOut:
+                        temp.Clear();
+                        break;
+                    default:
+                    {
+                        if ((nowCond == CondAfterCross.InToOut ||
+                             nowCond == CondAfterCross.MaybeOutToIn) &&
+                            cond == CondAfterCross.MaybeOutToIn)
+                        {
+                            var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
+
+                            temp.Add(twoDVectorLine);
+                        }
+                        else
+                        {
+                            Console.Out.WriteLine("Some Cond unexpected::" + nowCond + " and " +
+                                                  cond);
+                        }
+
+                        break;
+                    }
+                }
+
+
+                nowCond = cond;
+                nPt = pt;
+            }
+
+            switch (endCond)
+            {
+                case CondAfterCross.OutToIn:
+                    if (nowCond == CondAfterCross.InToOut)
+                        Console.Out.WriteLine("Cond Error at end pt:::" + nowCond + " and " + endCond);
+
+                    break;
+                case CondAfterCross.InToOut:
+                    var twoDVectorLine = new TwoDVectorLine(nPt, B, false, true);
+                    blockShapes.Add(twoDVectorLine);
+                    nowCond = CondAfterCross.InToOut;
+                    break;
+                case CondAfterCross.MaybeOutToIn:
+                    if (nowCond != CondAfterCross.OutToIn)
+                    {
+                        var twoDVectorLine2 = new TwoDVectorLine(nPt, B, false, true);
+                        temp.Add(twoDVectorLine2);
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(nowCond), nowCond, null);
+            }
+
+
+            return (blockShapes, nowCond, temp);
+        }
+
+        public bool CheckAfter(IBlockShape another)
+        {
+            return GetEndPt().Same(another.GetStartPt());
+        }
+
+        public bool CheckBefore(IBlockShape another)
+        {
+            return GetStartPt().Same(another.GetEndPt());
+        }
+
+        public AabbBoxShape CovToAabbPackBox()
+        {
+            var zone = GenZone();
+            return new AabbBoxShape(zone, this);
+        }
+
+        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        {
+            var twoDVector = GetVector();
+            // var f = twoDVector.X *twoDVector.Y
+            if (twoDVector.Y > 0)
+            {
+                var getposOnLine = p.GetPosOf(this);
+                return getposOnLine == Pt2LinePos.Left ? 1 : 0;
+            }
+
+            if (twoDVector.Y < 0)
+            {
+                var getposOnLine = p.GetPosOf(this);
+
+                return getposOnLine == Pt2LinePos.Right ? 1 : 0;
+            }
+
+            return 0;
+        }
+
+        public bool IsTouchAnother(IShape another)
+        {
+            switch (another)
+            {
+                case TwoDVectorLine twoDVectorLine:
+                    return IsCrossAnother(twoDVectorLine);
+
+                default:
+                {
+                    throw new ArgumentOutOfRangeException(nameof(another));
+                }
+            }
+        }
 
         public TwoDVector GetVector()
         {
@@ -36,7 +192,7 @@ namespace collision_and_rigid
         {
             var sA = A.Get2S(lineB);
             var sB = B.Get2S(lineB);
-            return (sA > 0 && sB < 0) || (sA < 0 && sB > 0);
+            return sA > 0 && sB < 0 || sA < 0 && sB > 0;
         }
 
         public TwoDPoint? CrossPointForWholeLine(TwoDVectorLine lineB)
@@ -88,13 +244,10 @@ namespace collision_and_rigid
             var b = sA - sB;
             var sD = b + sC;
 
-            var b1 = sC < 0 ^ sD < 0;
+            var b1 = (sC < 0) ^ (sD < 0);
             if (sA < 0f)
             {
-                if (sB < 0f)
-                {
-                    return null;
-                }
+                if (sB < 0f) return null;
 
                 if (sB > 0f)
                 {
@@ -102,20 +255,12 @@ namespace collision_and_rigid
                     var ab = GetVector();
                     return A.Move(new TwoDVector(a * ab.X, a * ab.Y));
                 }
-                else
-                {
-                    if (b1)
-                    {
-                        return B;
-                    }
-                }
+
+                if (b1) return B;
             }
             else if (sA > 0f)
             {
-                if (sB > 0f)
-                {
-                    return null;
-                }
+                if (sB > 0f) return null;
 
                 if (sB < 0f)
                 {
@@ -123,20 +268,12 @@ namespace collision_and_rigid
                     var ab = GetVector();
                     return A.Move(new TwoDVector(a * ab.X, a * ab.Y));
                 }
-                else
-                {
-                    if (b1)
-                    {
-                        return B;
-                    }
-                }
+
+                if (b1) return B;
             }
             else
             {
-                if (b1)
-                {
-                    return A;
-                }
+                if (b1) return A;
             }
 
 
@@ -167,7 +304,7 @@ namespace collision_and_rigid
 
         public bool SimpleIsCross(TwoDVectorLine lineB)
         {
-            return (A.GetPosOf(lineB) == Pt2LinePos.Right) && (B.GetPosOf(lineB) != Pt2LinePos.Right);
+            return A.GetPosOf(lineB) == Pt2LinePos.Right && B.GetPosOf(lineB) != Pt2LinePos.Right;
         }
 
 
@@ -200,77 +337,31 @@ namespace collision_and_rigid
             return zone;
         }
 
-        public AabbBoxShape CovToAabbPackBox()
-        {
-            var zone = GenZone();
-            return new AabbBoxShape(zone, this);
-        }
-
         public TwoDVectorLine CounterClockwiseHalfPi()
         {
             var twoDPoint = A.Move(GetVector().CounterClockwiseHalfPi());
             return new TwoDVectorLine(A, twoDPoint);
         }
 
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
-        {
-            var twoDVector = GetVector();
-            // var f = twoDVector.X *twoDVector.Y
-            if (twoDVector.Y > 0)
-            {
-                var getposOnLine = p.GetPosOf(this);
-                return getposOnLine == Pt2LinePos.Left ? 1 : 0;
-            }
 
-            if (twoDVector.Y < 0)
-            {
-                var getposOnLine = p.GetPosOf((this));
-
-                return getposOnLine == Pt2LinePos.Right ? 1 : 0;
-            }
-
-            return 0;
-        }
-
-        public bool IsTouchAnother(IShape another)
-        {
-            switch (another)
-            {
-                case TwoDVectorLine twoDVectorLine:
-                    return IsCrossAnother(twoDVectorLine);
-
-                default:
-                {
-                    throw new ArgumentOutOfRangeException(nameof(another));
-                }
-            }
-        }
-
-
-        float? GetX(float y)
+        private float? GetX(float y)
         {
             var bY = y - B.Y;
             var aY = y - A.Y;
             var u = aY * B.X - bY * A.X;
             var d = aY - bY;
-            if (d > 0 || d < 0)
-            {
-                return u / d;
-            }
+            if (d > 0 || d < 0) return u / d;
 
             return null;
         }
 
-        float? GetY(float x)
+        private float? GetY(float x)
         {
             var bY = x - B.X;
             var aY = x - A.X;
             var u = aY * B.Y - bY * A.Y;
             var d = aY - bY;
-            if (d > 0 || d < 0)
-            {
-                return u / d;
-            }
+            if (d > 0 || d < 0) return u / d;
 
             return null;
         }
@@ -361,10 +452,7 @@ namespace collision_and_rigid
             var twoDPoint = ShadowBy(rd.O);
             var distanceRight = DistanceRight(rd.O);
             var rdR = rd.R * rd.R - distanceRight * distanceRight;
-            if (rdR < 0)
-            {
-                return (null, null);
-            }
+            if (rdR < 0) return (null, null);
 
             if (!(rdR > 0)) return (null, twoDPoint);
             var sqrt = MathF.Sqrt(rdR);
@@ -391,15 +479,9 @@ namespace collision_and_rigid
             var dot = twoDVector.Dot(dVector);
             var norm = dVector.SqNorm();
             var f = dot / norm;
-            if (f <= 0f)
-            {
-                return AOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : A;
-            }
+            if (f <= 0f) return AOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : A;
 
-            if (f >= 1f)
-            {
-                return BOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : B;
-            }
+            if (f >= 1f) return BOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : B;
 
             return A.Move(dVector.GetUnit().Multi(f));
         }
@@ -413,10 +495,7 @@ namespace collision_and_rigid
             var dVectorLine = new TwoDVectorLine(o, A);
 
             var (pt1, pt2) = CrossPtWithRound(rd);
-            if (pt1 == null || dVectorLine.GetVector().SqNorm() <= ct.R * ct.R)
-            {
-                return (false, this, ct);
-            }
+            if (pt1 == null || dVectorLine.GetVector().SqNorm() <= ct.R * ct.R) return (false, this, ct);
 
             TwoDPoint? pp = null;
 
@@ -431,14 +510,10 @@ namespace collision_and_rigid
                     var twoDVectorLine = new TwoDVectorLine(balanceAngle.O, pt1);
                     if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Left &&
                         GetScaleInPt(pt2) > GetScaleInPt(pt1))
-                    {
                         pp = pt1;
-                    }
                     else if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Right &&
                              GetScaleInPt(pt2) < GetScaleInPt(pt1))
-                    {
                         pp = pt2;
-                    }
                 }
                 else
                 {
@@ -447,10 +522,7 @@ namespace collision_and_rigid
             }
             else
             {
-                if (cover2)
-                {
-                    pp = pt2;
-                }
+                if (cover2) pp = pt2;
             }
 
 
@@ -472,10 +544,7 @@ namespace collision_and_rigid
             var cAobA = clockwiseTurning.Aob.A;
             var (item1, item2) = CrossPtWithRound(rd);
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-            if (item1 == null)
-            {
-                return twoDPoints;
-            }
+            if (item1 == null) return twoDPoints;
 
             var f1 = GetScaleInPt(item1);
             var f2 = GetScaleInPt(item2);
@@ -494,19 +563,14 @@ namespace collision_and_rigid
                 var cb2 = cAobB.GetPosOf(op1) != Pt2LinePos.Left;
                 var f1B1 = f1B && cb1 && cb2;
                 if (f1B1)
-                {
                     twoDPoints.Add(f11 < 1
                         ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
                         : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
-                }
 
                 var cb3 = cAobB.GetPosOf(this) == Pt2LinePos.Right;
                 var cb4 = cAobA.GetPosOf(op2) != Pt2LinePos.Right;
                 var f2B1 = f2B && cb3 && cb4;
-                if (f2B1)
-                {
-                    twoDPoints.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
-                }
+                if (f2B1) twoDPoints.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
             }
             else
             {
@@ -516,22 +580,17 @@ namespace collision_and_rigid
                 var f1B1 = b3 && b4 && f1B;
 //                Console.Out.WriteLine("?p1?" + b3 + b4 + f1B);
                 if (f1B1)
-                {
-//                    Console.Out.WriteLine("????");
+                    //                    Console.Out.WriteLine("????");
                     twoDPoints.Add(f11 < 1
                         ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
                         : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
-                }
 
                 var b5 = cAobA.GetPosOf(this) != Pt2LinePos.Right;
                 var b6 = cAobB.GetPosOf(op2) == Pt2LinePos.Right;
                 var f2B1 = b5 && b6 && f2B;
 
 //                Console.Out.WriteLine("?p2?" + b5 + b6 + f2B);
-                if (f2B1)
-                {
-                    twoDPoints.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
-                }
+                if (f2B1) twoDPoints.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
             }
 
             return twoDPoints;
@@ -542,10 +601,7 @@ namespace collision_and_rigid
         {
             var pt = CrossPointForWholeLine(line);
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-            if (pt == null)
-            {
-                return twoDPoints;
-            }
+            if (pt == null) return twoDPoints;
 
             var b1 = A.GetPosOf(line) == Pt2LinePos.Left && B.GetPosOf(line) != Pt2LinePos.Left;
             var b2 = A.GetPosOf(line) == Pt2LinePos.Right && B.GetPosOf(line) != Pt2LinePos.Right;
@@ -559,26 +615,17 @@ namespace collision_and_rigid
             var c4 = b2 && b4;
 
             if (c1)
-            {
                 twoDPoints.Add(b11
                     ? (pt, CondAfterCross.OutToIn, CondAfterCross.OutToIn)
                     : (pt, CondAfterCross.MaybeOutToIn, CondAfterCross.OutToIn));
-            }
 
             else if (c2)
-            {
                 twoDPoints.Add(b11
                     ? (pt, CondAfterCross.OutToIn, CondAfterCross.InToOut)
                     : (pt, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
-            }
             else if (c3)
-            {
                 twoDPoints.Add((pt, CondAfterCross.InToOut, CondAfterCross.OutToIn));
-            }
-            else if (c4)
-            {
-                twoDPoints.Add((pt, CondAfterCross.InToOut, CondAfterCross.InToOut));
-            }
+            else if (c4) twoDPoints.Add((pt, CondAfterCross.InToOut, CondAfterCross.InToOut));
 
             return twoDPoints;
         }
@@ -586,149 +633,17 @@ namespace collision_and_rigid
         public (bool, TwoDVectorLine, TwoDVectorLine) TouchByLineInSamePoly(TwoDVectorLine line)
         {
             var posOf = line.B.GetPosOf(this);
-            if (posOf != Pt2LinePos.Left)
-            {
-                return (false, this, line);
-            }
+            if (posOf != Pt2LinePos.Left) return (false, this, line);
 
             var cp = CrossAnotherPointInLinesNotIncludeEnds(line);
             if (cp == null)
             {
                 return (false, this, line);
             }
-            else
-            {
-                var line1 = new TwoDVectorLine(A, cp);
-                var line2 = new TwoDVectorLine(cp, line.B);
-                return (true, line1, line2);
-            }
-        }
 
-        public bool IsEmpty()
-        {
-            return A.Same(B);
-        }
-
-        public List<(TwoDPoint, CondAfterCross, CondAfterCross)>
-            CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(
-                IBlockShape blockShape)
-        {
-            return blockShape switch
-            {
-                null => throw new Exception("no good block!!"),
-                ClockwiseTurning clockwiseTurning => UnionByCt(clockwiseTurning),
-                TwoDVectorLine twoDVectorLine => UnionByLine(twoDVectorLine),
-                _ => throw new ArgumentOutOfRangeException(nameof(blockShape))
-            };
-        }
-
-        public TwoDPoint GetStartPt()
-        {
-            return A;
-        }
-
-        public TwoDPoint GetEndPt()
-        {
-            return B;
-        }
-
-        public (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
-            CondAfterCross nowCond,
-            List<(TwoDPoint, CondAfterCross)> ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond
-        )
-        {
-            if (ptsAndCond == null)
-            {
-                ptsAndCond = new List<(TwoDPoint, CondAfterCross)>();
-            }
-            else
-            {
-                ptsAndCond.Sort((p1, p2) => GetMultiFromA(p1.Item1).CompareTo(GetMultiFromA(p2.Item1)));
-            }
-
-            var blockShapes = new List<IBlockShape>();
-            var nPt = A;
-
-            for (int i = 0; i < ptsAndCond.Count; i++)
-            {
-                var (pt, cond) = ptsAndCond[i];
-                switch (cond)
-                {
-                    case CondAfterCross.OutToIn:
-                    {
-                        var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
-                        if (temp.Count > 0) blockShapes.AddRange(temp);
-                        temp.Clear();
-                        blockShapes.Add(twoDVectorLine);
-                        break;
-                    }
-                    case CondAfterCross.InToOut:
-                        temp.Clear();
-                        break;
-                    default:
-                    {
-                        if ((nowCond == CondAfterCross.InToOut ||
-                             nowCond == CondAfterCross.MaybeOutToIn) &&
-                            cond == CondAfterCross.MaybeOutToIn)
-                        {
-                            var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
-
-                            temp.Add(twoDVectorLine);
-                        }
-                        else
-                        {
-                            Console.Out.WriteLine("Some Cond unexpected::" + nowCond.ToString() + " and " +
-                                                  cond.ToString());
-                        }
-
-                        break;
-                    }
-                }
-
-
-                nowCond = cond;
-                nPt = pt;
-            }
-
-            switch (endCond)
-            {
-                case CondAfterCross.OutToIn:
-                    if (nowCond == CondAfterCross.InToOut)
-                    {
-                        Console.Out.WriteLine("Cond Error at end pt:::" + nowCond + " and " + endCond);
-                    }
-
-                    break;
-                case CondAfterCross.InToOut:
-                    var twoDVectorLine = new TwoDVectorLine(nPt, B, false, true);
-                    blockShapes.Add(twoDVectorLine);
-                    nowCond = CondAfterCross.InToOut;
-                    break;
-                case CondAfterCross.MaybeOutToIn:
-                    if (nowCond != CondAfterCross.OutToIn)
-                    {
-                        var twoDVectorLine2 = new TwoDVectorLine(nPt, B, false, true);
-                        temp.Add(twoDVectorLine2);
-                    }
-
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(nowCond), nowCond, null);
-            }
-
-
-            return (blockShapes, nowCond, temp);
-        }
-
-        public bool CheckAfter(IBlockShape another)
-        {
-            return GetEndPt().Same(another.GetStartPt());
-        }
-
-        public bool CheckBefore(IBlockShape another)
-        {
-            return GetStartPt().Same(another.GetEndPt());
+            var line1 = new TwoDVectorLine(A, cp);
+            var line2 = new TwoDVectorLine(cp, line.B);
+            return (true, line1, line2);
         }
     }
 }

@@ -11,6 +11,19 @@
         "runtime": {
           "bin/placeholder/collision_and_rigid.dll": {}
         }
+      },
+      "game_stuff/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.0",
+        "dependencies": {
+          "collision_and_rigid": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/game_stuff.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/game_stuff.dll": {}
+        }
       }
     }
   },
@@ -19,11 +32,17 @@
       "type": "project",
       "path": "../collision_and_rigid/collision_and_rigid.csproj",
       "msbuildProject": "../collision_and_rigid/collision_and_rigid.csproj"
+    },
+    "game_stuff/1.0.0": {
+      "type": "project",
+      "path": "../game_stuff/game_stuff.csproj",
+      "msbuildProject": "../game_stuff/game_stuff.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.0": [
-      "collision_and_rigid >= 1.0.0"
+      "collision_and_rigid >= 1.0.0",
+      "game_stuff >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -52,6 +71,9 @@
           "projectReferences": {
             "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
               "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
+            },
+            "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj": {
+              "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj"
             }
           }
         }
@@ -73,7 +95,13 @@
           "net48"
         ],
         "assetTargetFallback": true,
-        "warn": true
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Users\\tyrdo\\.dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }

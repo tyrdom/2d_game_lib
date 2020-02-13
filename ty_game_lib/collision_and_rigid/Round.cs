@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace collision_and_rigid
 {
@@ -14,14 +13,27 @@ namespace collision_and_rigid
             R = r;
         }
 
+        public AabbBoxShape CovToAabbPackBox()
+        {
+            var zone = GetZones();
+            return new AabbBoxShape(zone, this);
+        }
+
+        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsTouchAnother(IShape another)
+        {
+            throw new NotImplementedException();
+        }
+
         public (float?, float?) GetX(float y)
         {
             var oY = y - O.Y;
             var f = R * R - oY * oY;
-            if (f < 0)
-            {
-                return (null, null);
-            }
+            if (f < 0) return (null, null);
 
             if (!(f > 0)) return (null, O.X);
             var sqrt = MathF.Sqrt(f);
@@ -32,10 +44,7 @@ namespace collision_and_rigid
         {
             var oY = x - O.X;
             var f = R * R - oY * oY;
-            if (f < 0)
-            {
-                return (null, null);
-            }
+            if (f < 0) return (null, null);
 
             if (!(f > 0)) return (null, O.Y);
             var sqrt = MathF.Sqrt(f);
@@ -47,22 +56,6 @@ namespace collision_and_rigid
             return new Zone(O.Y + R, O.Y - R, O.X - R, O.X + R);
         }
 
-        public AabbBoxShape CovToAabbPackBox()
-        {
-            var zone = GetZones();
-            return new AabbBoxShape(zone, this);
-        }
-
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public bool IsTouchAnother(IShape another)
-        {
-            throw new NotImplementedException();
-        }
-        
         public bool IsTouch(Round another)
         {
             var rr = another.R + R;
@@ -88,28 +81,23 @@ namespace collision_and_rigid
                 return (null, null);
             }
 
-            else
-
-
+            var sq = (R * R - r2 * r2 + dSq) / (2 * d);
+            var h = MathF.Sqrt(R * R - sq * sq);
+            var xp = O.X + sq * oX / d;
+            var yp = O.Y + sq * oY / d;
+            if (h <= 0)
             {
-                var sq = (R * R - r2 * r2 + dSq) / (2 * d);
-                var h = MathF.Sqrt(R * R - sq * sq);
-                var xp = O.X + sq * oX / d;
-                var yp = O.Y + sq * oY / d;
-                if (h <= 0)
-                {
-                    var twoDPoint = new TwoDPoint(xp, yp);
-                    return (null, twoDPoint);
-                }
-
-                var x1 = xp - h * oY / d;
-                var y1 = yp + h * oX / d;
-                var x2 = xp + h * oY / d;
-                var y2 = yp - h * oX / d;
-                var p1 = new TwoDPoint(x1, y1);
-                var p2 = new TwoDPoint(x2, y2);
-                return (p1, p2);
+                var twoDPoint = new TwoDPoint(xp, yp);
+                return (null, twoDPoint);
             }
+
+            var x1 = xp - h * oY / d;
+            var y1 = yp + h * oX / d;
+            var x2 = xp + h * oY / d;
+            var y2 = yp - h * oX / d;
+            var p1 = new TwoDPoint(x1, y1);
+            var p2 = new TwoDPoint(x2, y2);
+            return (p1, p2);
         }
     }
 }

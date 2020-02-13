@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public class SightMap
     {
-        private QSpace Lines;
+        private readonly QSpace Lines;
 
         public SightMap(QSpace lines)
         {
@@ -13,7 +13,7 @@ namespace game_stuff
         }
 
 
-        bool IsBlockSightLine(TwoDVectorLine s)
+        private bool IsBlockSightLine(TwoDVectorLine s)
         {
             var isTouchBy = Lines.IsTouchBy(s.CovToAabbPackBox());
             return isTouchBy;

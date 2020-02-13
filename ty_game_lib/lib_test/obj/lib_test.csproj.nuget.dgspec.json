@@ -44,18 +44,24 @@
             "net48"
           ],
           "assetTargetFallback": true,
-          "warn": true
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\tyrdo\\.dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj": {
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
-        "projectName": "lib_test",
-        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
+        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj",
+        "projectName": "game_stuff",
+        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj",
         "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
-        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\obj\\",
+        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -92,7 +98,70 @@
             "net48"
           ],
           "assetTargetFallback": true,
-          "warn": true
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\tyrdo\\.dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
+        "projectName": "lib_test",
+        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
+        "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
+        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
+                "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
+              },
+              "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj": {
+                "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\tyrdo\\.dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 
 namespace collision_and_rigid
 {
@@ -13,15 +12,15 @@ namespace collision_and_rigid
 
     public class TwoDVector
     {
-        public float X { get; }
-
-        public float Y { get; }
-
         public TwoDVector(float a, float b)
         {
             X = a;
             Y = b;
         }
+
+        public float X { get; }
+
+        public float Y { get; }
 
         public static TwoDVector TwoDVectorByPt(TwoDPoint a, TwoDPoint b)
         {
@@ -56,12 +55,14 @@ namespace collision_and_rigid
         {
             return v.X * X + v.Y * Y;
         }
+
         public TwoDVector ClockwiseTurn(TwoDVector v)
         {
             var vX = X * v.X + Y * v.Y;
             var vY = -X * v.Y + Y * v.X;
             return new TwoDVector(vX, vY);
         }
+
         public TwoDVector AntiClockwiseTurn(TwoDVector v)
         {
             var vX = X * v.X - Y * v.Y;
@@ -81,7 +82,7 @@ namespace collision_and_rigid
 
         public bool IsAlmostRightUp()
         {
-            var b = X >= 0 ^ Y < 0;
+            var b = (X >= 0) ^ (Y < 0);
             return b;
         }
 
@@ -89,29 +90,20 @@ namespace collision_and_rigid
         {
             if (X > 0)
             {
-                if (Y > 0)
-                {
-                    return Attitude.RightUp;
-                }
+                if (Y > 0) return Attitude.RightUp;
 
                 return Y < 0 ? Attitude.LeftUp : Attitude.Vertical;
             }
 
             if (!(X < 0)) return Attitude.Horizon;
-            if (Y < 0)
-            {
-                return Attitude.RightUp;
-            }
+            if (Y < 0) return Attitude.RightUp;
 
             return Y > 0 ? Attitude.LeftUp : Attitude.Vertical;
         }
 
         public Quad WhichQ()
         {
-            if (X > 0)
-            {
-                return Y > 0 ? Quad.One : Quad.Four;
-            }
+            if (X > 0) return Y > 0 ? Quad.One : Quad.Four;
 
             return Y > 0 ? Quad.Two : Quad.Three;
         }

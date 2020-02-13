@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Xml.Xsl;
+using System.Numerics;
 
 namespace collision_and_rigid
 {
@@ -26,17 +21,14 @@ namespace collision_and_rigid
         public static Zone JoinAabbZone(AabbBoxShape[] aabbBoxShapes)
         {
             var foo = aabbBoxShapes[0].Zone;
-            foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length - 1))
-            {
-                foo = foo.Join(aabbBoxShapes[i].Zone);
-            }
+            foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length - 1)) foo = foo.Join(aabbBoxShapes[i].Zone);
 
             return foo;
         }
 
         public static void LogZones(AabbBoxShape[] aabbBoxShapes)
         {
-            string s = "";
+            var s = "";
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
                 var zone = aabbBoxShape.Zone;
@@ -82,6 +74,42 @@ namespace collision_and_rigid
             return null;
         }
 
+        public static (List<AabbBoxShape>, List<AabbBoxShape>) MovePtsReturnInAndOut(
+            Dictionary<int, TwoDVector> gidToMove,
+            List<AabbBoxShape> aabbBoxShapes, Zone zone)
+        {
+            var inZone = new List<AabbBoxShape>();
+            var outZone = new List<AabbBoxShape>();
+
+            foreach (var aabbPackBoxShape in aabbBoxShapes)
+            {
+                var shape = aabbPackBoxShape.Shape;
+
+                switch (shape)
+                {
+                    case IIdPointShape idPointShape:
+                        var id = idPointShape.GetId();
+                        if (gidToMove.TryGetValue(id, out var vector))
+                        {
+                            var twoDPoint = idPointShape.Move(vector);
+                            if (zone.IncludePt(twoDPoint))
+                            {
+                                inZone.Add(aabbPackBoxShape);
+                            }
+                            else
+                            {
+                                outZone.Add(aabbPackBoxShape);
+                            }
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(shape));
+                }
+            }
+
+            return (inZone, outZone);
+        }
 
         public static string ZoneLog(Zone zone)
         {
@@ -89,7 +117,8 @@ namespace collision_and_rigid
         }
 
 
-        static (List<IBlockShape>, bool) AddTwoBlocks(List<IBlockShape> l1, bool l1IsBlockIn, List<IBlockShape> l2,
+        private static (List<IBlockShape>, bool) AddTwoBlocks(List<IBlockShape> l1, bool l1IsBlockIn,
+            List<IBlockShape> l2,
             bool l2IsBlockIn)
         {
 //            foreach (var blockShape in l2)
@@ -102,16 +131,15 @@ namespace collision_and_rigid
             var dicL1 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
             var dicL2 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
 
-            for (int i = 0; i < l1.Count; i++)
+            for (var i = 0; i < l1.Count; i++)
             {
-                
 //                    Console.Out.WriteLine("s dic::::" + i);
-                
+
 
                 var blockShapeFromL1 = l1[i];
                 dicL1.TryGetValue(i, out var df1);
 
-                for (int j = 0; j < l2.Count; j++)
+                for (var j = 0; j < l2.Count; j++)
                 {
 //                    Console.Out.WriteLine("l1::"+i+"  l2::"+j);
                     var blockShapeFromL2 = l2[j];
@@ -140,10 +168,7 @@ namespace collision_and_rigid
                         dicL2[j] = df2;
                     }
 
-                    if (df1 != null)
-                    {
-                        dicL1[i] = df1;
-                    }
+                    if (df1 != null) dicL1[i] = df1;
                 }
             }
 
@@ -179,15 +204,12 @@ namespace collision_and_rigid
             var nowL2Cond = l2StartCond;
             var temp1 = new List<IBlockShape>();
             var temp2 = new List<IBlockShape>();
-            for (int i = 0; i < l1.Count; i++)
+            for (var i = 0; i < l1.Count; i++)
             {
                 var blockShape = l1[i];
 
                 dicL1.TryGetValue(i, out var ptsAndCond);
-                if (ptsAndCond == null)
-                {
-                    ptsAndCond = new List<(TwoDPoint, CondAfterCross)>();
-                }
+                if (ptsAndCond == null) ptsAndCond = new List<(TwoDPoint, CondAfterCross)>();
 
                 var endPt = blockShape.GetEndPt();
                 var b = block2.CoverPoint(endPt);
@@ -201,15 +223,12 @@ namespace collision_and_rigid
             }
 
 
-            for (int i = 0; i < l2.Count; i++)
+            for (var i = 0; i < l2.Count; i++)
             {
                 var blockShape = l2[i];
 
                 dicL2.TryGetValue(i, out var ptsAndCond2);
-                if (ptsAndCond2 == null)
-                {
-                    ptsAndCond2 = new List<(TwoDPoint, CondAfterCross)>();
-                }
+                if (ptsAndCond2 == null) ptsAndCond2 = new List<(TwoDPoint, CondAfterCross)>();
 
                 var endPt = blockShape.GetEndPt();
 
@@ -234,31 +253,21 @@ namespace collision_and_rigid
         public static List<IBlockShape> CutInSingleShapeList(List<IBlockShape> raw)
         {
             var dic = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
-            for (int i = 0; i < raw.Count - 1; i++)
+            for (var i = 0; i < raw.Count - 1; i++)
             {
                 var blockShape1 = raw[i];
                 dic.TryGetValue(i, out var iPtAndCond);
-                if (iPtAndCond == null)
-                {
-                    iPtAndCond = new List<(TwoDPoint, CondAfterCross)>();
-                }
+                if (iPtAndCond == null) iPtAndCond = new List<(TwoDPoint, CondAfterCross)>();
 
-                for (int j = i + 1; j < raw.Count; j++)
+                for (var j = i + 1; j < raw.Count; j++)
                 {
                     var blockShape2 = raw[j];
                     if (j == i + 1)
-                    {
                         if (blockShape1.GetType() != blockShape2.GetType())
-                        {
                             continue;
-                        }
-                    }
 
                     dic.TryGetValue(j, out var jPtAndCond);
-                    if (jPtAndCond == null)
-                    {
-                        jPtAndCond = new List<(TwoDPoint, CondAfterCross)>();
-                    }
+                    if (jPtAndCond == null) jPtAndCond = new List<(TwoDPoint, CondAfterCross)>();
 
                     var crossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond =
                         blockShape1.CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(blockShape2);
@@ -290,14 +299,11 @@ namespace collision_and_rigid
 
             var res = new List<IBlockShape>();
 
-            for (int i = 0; i < raw.Count; i++)
+            for (var i = 0; i < raw.Count; i++)
             {
 //                Console.Out.WriteLine("now on block````" + i);
                 dic.TryGetValue(i, out var ptAndCond);
-                if (ptAndCond == null)
-                {
-                    ptAndCond = new List<(TwoDPoint, CondAfterCross)>();
-                }
+                if (ptAndCond == null) ptAndCond = new List<(TwoDPoint, CondAfterCross)>();
 
                 var blockShape = raw[i];
                 var (blockShapes, condAfterCross, list) =
@@ -332,9 +338,9 @@ namespace collision_and_rigid
             return res;
         }
 
-        static List<(Poly, bool)> CenterPolys(List<(Poly, bool)> raw)
+        private static List<(Poly, bool)> CenterPolys(List<(Poly, bool)> raw)
         {
-            List<Zone> zones = raw.Select(tuple => tuple.Item1.GenZone()).ToList();
+            var zones = raw.Select(tuple => tuple.Item1.GenZone()).ToList();
             var yMax = zones.Select(zone => zone.Up).Max();
             var yMin = zones.Select(zone => zone.Down).Min();
             var xMax = zones.Select(zone => zone.Right).Max();
@@ -353,10 +359,10 @@ namespace collision_and_rigid
             var (firstPoly, item2) = rawData[0];
             var genBlockShapes = (firstPoly.GenBlockShapes(r, item2), item2);
 
-            for (int i = 1; i < rawData.Count; i++)
+            for (var i = 1; i < rawData.Count; i++)
             {
                 var (poly, b) = rawData[i];
-                List<IBlockShape> blockShapes = poly.GenBlockShapes(r, b);
+                var blockShapes = poly.GenBlockShapes(r, b);
                 genBlockShapes = AddTwoBlocks(genBlockShapes.Item1, genBlockShapes.item2,
                     blockShapes, b);
             }
@@ -370,10 +376,7 @@ namespace collision_and_rigid
         public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
-            if (joinAabbZone.IsIn(zone))
-            {
-                joinAabbZone = zone;
-            }
+            if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToList());
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
@@ -389,13 +392,9 @@ namespace collision_and_rigid
         public static void LogPt(TwoDPoint? pt)
         {
             if (pt == null)
-            {
                 Console.Out.WriteLine("pt:::null");
-            }
             else
-            {
                 Console.Out.WriteLine("pt:::" + pt.X + "," + pt.Y);
-            }
         }
 
         public static List<IBlockShape> CheckCloseAndFilter(List<IBlockShape> blockShapes)
@@ -403,11 +402,11 @@ namespace collision_and_rigid
             var res = new List<IBlockShape>();
             var beforeOk = new List<int>();
             var afterOk = new List<int>();
-            for (int i = 0; i < blockShapes.Count; i++)
+            for (var i = 0; i < blockShapes.Count; i++)
             {
                 var shapeI = blockShapes[i];
 
-                for (int j = i + 1; j < blockShapes.Count; j++)
+                for (var j = i + 1; j < blockShapes.Count; j++)
                 {
                     var shapeJ = blockShapes[j];
 
