@@ -180,7 +180,24 @@ namespace collision_and_rigid
             return i;
         }
 
-    
+        public override void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape,T t)
+        {
+            foreach (var aabbPackBoxShape in AabbPackBoxShapes)
+            {
+                var shape = aabbPackBoxShape.Shape;
+                switch (shape)
+                {
+                    case IIdPointShape idPointShape:
+                        doWithIIdPointShape(idPointShape,t);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(shape));
+                }
+            }
+        }
+
+       
+
 
         public QSpace TryCovToBranch()
         {

@@ -13,7 +13,7 @@ namespace game_stuff
         }
 
 
-        private bool IsBlockSightLine(TwoDVectorLine s)
+        public bool IsBlockSightLine(TwoDVectorLine s)
         {
             var isTouchBy = Lines.IsTouchBy(s.CovToAabbPackBox());
             return isTouchBy;

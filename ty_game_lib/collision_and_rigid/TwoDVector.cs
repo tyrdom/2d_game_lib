@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Win32.SafeHandles;
 
 namespace collision_and_rigid
 {
@@ -35,10 +36,20 @@ namespace collision_and_rigid
             return X * b.Y - b.X * Y;
         }
 
+        public static TwoDVector Zero()
+        {
+            return new TwoDVector(0f, 0f);
+        }
+
         public TwoDVector GetUnit()
         {
             var f = Norm();
             return new TwoDVector(X / f, Y / f);
+        }
+
+        public TwoDVector Minus(TwoDVector another)
+        {
+            return new TwoDVector(X - another.X, Y - another.Y);
         }
 
         public TwoDVector CounterClockwiseHalfPi()

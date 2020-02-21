@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -55,6 +56,11 @@ namespace game_stuff
         public TwoDPoint GetAchor()
         {
             return NowPos;
+        }
+
+        public void DoOpFromDic(Dictionary<int,Operate> gidToOp)
+        {
+            throw new NotImplementedException();
         }
     }
 }

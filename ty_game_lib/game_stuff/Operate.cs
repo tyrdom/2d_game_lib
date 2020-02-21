@@ -7,6 +7,7 @@ namespace game_stuff
     {
         private Action Action;
         private TwoDVector Move;
+        private TwoDVector Aim;
     }
 
     internal enum Action
@@ -16,8 +17,4 @@ namespace game_stuff
         A3
     }
 
-    public class TickOprations
-    {
-        public Dictionary<int, Operate> GidToOperates;
-    }
 }

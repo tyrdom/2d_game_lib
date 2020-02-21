@@ -25,18 +25,20 @@ namespace game_stuff
             Theta = MathF.Acos(cos2A);
         }
 
-        private bool InSight(TwoDVectorLine sLine)
+        public bool InSight(TwoDVectorLine sLine, SightMap map)
         {
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
             var c1 = twoDVector.Cross(_upLeft);
             var c2 = twoDVector.Cross(_upRight);
-            return c1 >= 0 && c2 <= 0;
+            var b = twoDVector.SqNorm() <= NowR * NowR;
+            var isBlockSightLine = map.IsBlockSightLine(sLine);
+            return c1 >= 0 && c2 <= 0 && b && isBlockSightLine;
         }
 
         private void OpChangeAim(TwoDVector newAim, float twoSToSeePerTick)
         {
             var oldAim = Aim;
-            Aim = newAim;
+            Aim = newAim.GetUnit();
 
             var cosT = newAim.GetUnit().Dot(oldAim) / oldAim.Norm();
             var cosA = _upLeft.X;

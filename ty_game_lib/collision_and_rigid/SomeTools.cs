@@ -7,6 +7,25 @@ namespace collision_and_rigid
 {
     public static class SomeTools
     {
+        public static QSpaceBranch CreateEmptyRootBranch(Zone zone)
+        {
+            var (item1, item2) = zone.GetMid();
+            var cutTo4 = zone.CutTo4(item1, item2);
+            var qSpaceBranch = new QSpaceBranch(null, null, zone, new List<AabbBoxShape>(
+                )
+                ,
+                new QSpaceLeaf(Quad.One, null, cutTo4[0], new List<AabbBoxShape>()),
+                new QSpaceLeaf(Quad.Two, null, cutTo4[1], new List<AabbBoxShape>()),
+                new QSpaceLeaf(Quad.Three, null, cutTo4[2], new List<AabbBoxShape>()),
+                new QSpaceLeaf(Quad.Four, null, cutTo4[3], new List<AabbBoxShape>())
+            );
+            qSpaceBranch.QuadOne.Father = qSpaceBranch;
+            qSpaceBranch.QuadTwo.Father = qSpaceBranch;
+            qSpaceBranch.QuadThree.Father = qSpaceBranch;
+            qSpaceBranch.QuadFour.Father = qSpaceBranch;
+            return qSpaceBranch;
+        }
+
         public static TwoDPoint[] SwapPoints(TwoDPoint[] x, int a, int b)
         {
             var xLength = x.Length;

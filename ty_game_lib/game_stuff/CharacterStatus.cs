@@ -3,46 +3,53 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    internal enum SkillStatus
+    public enum WeaponSkillStatus
     {
         Normal,
         Casting,
-        P1,
-        P2,
-        P3,
-        P4
+        Catching,
+        P1Ok,
+        P2Ok,
+        P3Ok,
+        P4Ok,
+        P5Ok
     }
 
     public class CharacterStatus
     {
         public int GId;
-        private SkillStatus SkillStatus;
+
+        public int PauseTick;
+
+        public int? GidWhoLocks;
 
         public Weapon Weapon1;
 
         public Weapon Weapon2;
+
+        public Skill NowCast;
+        
     }
 
     public class Weapon
     {
-        public SkillGroup SkillGroup1;
-        public SkillGroup SkillGroup2;
+        public WeaponSkillStatus WeaponSkillStatus;
+        public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup1;
+        public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup2;
     }
 
-    public class SkillGroup
-    {
-        private Dictionary<SkillStatus, Skill> CastDic;
-    }
 
-    internal class Skill
+    public class Skill
     {
+        private int NowOnTick;
+        private int NowTough;
+
         private int BaseTough;
-        private Dictionary<int, Bullet> launchTick;
-
-        private int MoveFinishTick;
-
-        private TwoDVector MoveSpeed;
+        private Dictionary<int, Bullet> launchTickToBullet;
+        private List<TwoDVector> Moves;
         private int MoveStartTick;
+        private int? HomingTicks;
+
         private int totalTick;
     }
 }

@@ -26,6 +26,7 @@ namespace collision_and_rigid
             QuadFour.Father = this;
         }
 
+
         public sealed override Quad? TheQuad { get; set; }
 
         public sealed override Zone Zone { get; set; }
@@ -213,6 +214,28 @@ namespace collision_and_rigid
 
             return i;
         }
+
+        public override void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
+        {
+            foreach (var shape in AabbPackBoxShapes.Select(aabbPackBoxShape => aabbPackBoxShape.Shape))
+            {
+                switch (shape)
+                {
+                    case IIdPointShape idPointShape:
+                        doWithIIdPointShape(idPointShape, t);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(shape));
+                }
+            }
+
+            QuadOne.ForeachDoWithOutMove(doWithIIdPointShape, t);
+            QuadTwo.ForeachDoWithOutMove(doWithIIdPointShape, t);
+            QuadThree.ForeachDoWithOutMove(doWithIIdPointShape, t);
+            QuadFour.ForeachDoWithOutMove(doWithIIdPointShape, t);
+        }
+
+       
 
         public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
         {

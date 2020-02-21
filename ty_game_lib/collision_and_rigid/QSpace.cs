@@ -11,10 +11,10 @@ namespace collision_and_rigid
         public abstract Zone Zone { get; set; }
 
         public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
-        
+
         public abstract void AddIdPoint(List<AabbBoxShape> idPointShapes, int limit);
 
-        public abstract void MoveIdPoint(Dictionary<int, TwoDVector> gidToMove,int limit);
+        public abstract void MoveIdPoint(Dictionary<int, TwoDVector> gidToMove, int limit);
 
         public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true);
 
@@ -28,6 +28,23 @@ namespace collision_and_rigid
         public abstract (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
         public abstract string OutZones();
         public abstract int FastTouchWithARightShootPoint(TwoDPoint p);
+
+        public abstract void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t);
+
+        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+            T t)
+        {
+            var dicIntToTu = new Dictionary<int, TU>();
+            Action<IIdPointShape, T> act =
+                (id, tt) =>
+                {
+                    var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+                    var i = id.GetId();
+                    dicIntToTu[i] = withIIdPtsShape;
+                };
+            ForeachDoWithOutMove(act, t);
+            return dicIntToTu;
+        }
     }
 
 
