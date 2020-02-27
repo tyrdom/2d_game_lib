@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace collision_and_rigid
 {
-    public class TwoDVectorLine : IShape, IBlockShape
+    public class TwoDVectorLine : IShape, IBlockShape, IRawBulletShape
     {
         public bool AOut;
         public bool BOut;
@@ -644,6 +644,32 @@ namespace collision_and_rigid
             var line1 = new TwoDVectorLine(A, cp);
             var line2 = new TwoDVectorLine(cp, line.B);
             return (true, line1, line2);
+        }
+
+        public Zone GenBulletZone(float r)
+        {
+            var z = GenZone().MoreHigh(r).MoreWide(r);
+            return z;
+        }
+
+        public TwoDVectorLine Reverse()
+        {
+            return new TwoDVectorLine(B, A);
+        }
+
+        public IBulletShape GenBulletShape(float r)
+        {
+            var twoDVector = GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+            var twoDVectorLine1 = MoveVector(twoDVector);
+            var twoDVectorLine2 =
+                Reverse().MoveVector(Reverse().GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r));
+            var clockwiseBalanceAngle1 = new ClockwiseBalanceAngle(twoDVectorLine1.B, B, twoDVectorLine2.A);
+            var clockwiseBalanceAngle2 = new ClockwiseBalanceAngle(twoDVectorLine2.B, A, twoDVectorLine1.A);
+            var clockwiseTurning1 = new ClockwiseTurning(clockwiseBalanceAngle1, r, twoDVectorLine1, twoDVectorLine2);
+            var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, r, twoDVectorLine2, twoDVectorLine1);
+            var blockShapes = new List<IBlockShape>
+                {twoDVectorLine1, clockwiseTurning1, twoDVectorLine2, clockwiseTurning2};
+            return new SimpleBlocks(Poly.GenBlockAabbBoxShapes(blockShapes));
         }
     }
 }

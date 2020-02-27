@@ -131,7 +131,7 @@ namespace collision_and_rigid
             return boxShape.TryTouch(AabbPackBoxShapes);
         }
 
-        public override bool IsTouchBy(AabbBoxShape boxShape)
+        public override bool LineIsCross(TwoDVectorLine line)
         {
             throw new NotImplementedException();
         }

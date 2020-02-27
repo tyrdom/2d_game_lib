@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-
 namespace collision_and_rigid
 {
     public class WalkBlock : IShape
@@ -27,11 +25,6 @@ namespace collision_and_rigid
         {
             var touchWithARightShootPoint = QSpace.TouchWithARightShootPoint(p);
             return touchWithARightShootPoint.Item1;
-        }
-
-        public bool IsTouchAnother(IShape another)
-        {
-            throw new NotImplementedException();
         }
 
         public bool CoverPoint(TwoDPoint p)
@@ -71,10 +64,5 @@ namespace collision_and_rigid
             return apt ?? lastP;
         }
 
-//
-//        public TryToUnityAnotherBlock(WalkBlock anotherWalkBlock)
-//        {
-//            
-//        }
     }
 }

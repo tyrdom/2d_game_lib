@@ -118,6 +118,11 @@ namespace collision_and_rigid
 
             return Y > 0 ? Quad.Two : Quad.Three;
         }
+        public TwoDPoint ToPt()
+        {
+            var twoDPoint = new TwoDPoint(X, Y);
+            return twoDPoint;
+        }
     }
 
     public enum Pt2LinePos

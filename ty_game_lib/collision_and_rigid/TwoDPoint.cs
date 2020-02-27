@@ -14,6 +14,13 @@ namespace collision_and_rigid
             Y = y;
         }
 
+        public TwoDPoint ClockTurnAboutZero(TwoDVector v)
+        {
+            var vX = X * v.X + Y * v.Y;
+            var vY = -X * v.Y + Y * v.X;
+            return new TwoDPoint(vX, vY);
+        }
+
         public Zone GenZone(TwoDPoint b)
         {
             var zone = new Zone(Math.Max(Y, b.Y), Math.Min(Y, b.Y), Math.Min(X, b.X), Math.Max(X, b.X));
@@ -38,15 +45,16 @@ namespace collision_and_rigid
                 return Y > h ? Quad.Two : Quad.Three;
             return Y > h ? Quad.One : Quad.Four;
         }
+
         public Quad WhichQ(Zone zone)
         {
-            
             var (h, v) = zone.GetMid();
             var b = X < v;
             if (b)
                 return Y > h ? Quad.Two : Quad.Three;
             return Y > h ? Quad.One : Quad.Four;
         }
+
         public int FastGenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
@@ -63,6 +71,13 @@ namespace collision_and_rigid
         public Zone GetZone()
         {
             return new Zone(Y, Y, X, X);
+        }
+
+      
+
+        public TwoDPoint GenPosInLocal(TwoDPoint zero, TwoDVector xAim)
+        {
+            return TwoDVector.TwoDVectorByPt(zero, this).AntiClockwiseTurn(xAim).ToPt();
         }
 
         public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)

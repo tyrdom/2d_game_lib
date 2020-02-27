@@ -26,3 +26,5 @@ G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.pdb
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\collision_and_rigid.dll
 G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\collision_and_rigid.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\game_stuff.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\bin\Debug\netcoreapp3.0\game_stuff.pdb

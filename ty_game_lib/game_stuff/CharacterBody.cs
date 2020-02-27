@@ -28,14 +28,10 @@ namespace game_stuff
             var zone = new Zone(0f,0f,0f,0f);
             return new AabbBoxShape(zone, this);
         }
-
+        
+        
 
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsTouchAnother(IShape another)
         {
             throw new NotImplementedException();
         }

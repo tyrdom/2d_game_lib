@@ -38,6 +38,11 @@ namespace collision_and_rigid
             foreach (var twoDPoint in Pts) Console.Out.WriteLine("pt:" + twoDPoint.X + "|" + twoDPoint.Y);
         }
 
+       public Poly ClockTurnAboutZero(TwoDVector aim)
+        {
+            var enumerable = Pts.Select(twoDPoint => twoDPoint.ClockTurnAboutZero(aim)).ToArray();
+            return new Poly(enumerable);
+        }
         private static bool CheckNoSame(TwoDPoint[] pts)
         {
             for (var i = 0; i < pts.Length; i++)

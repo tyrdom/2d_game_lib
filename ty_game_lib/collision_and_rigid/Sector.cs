@@ -2,7 +2,7 @@
 
 namespace collision_and_rigid
 {
-    public class Sector
+    public class Sector : IRawBulletShape
     {
         private readonly ClockwiseBalanceAngle AOB;
         private readonly float R;
@@ -44,6 +44,22 @@ namespace collision_and_rigid
             var piece3 = new ClockwiseTurning(p3, r, null, null);
 
             return new List<IBlockShape> {oaOut, piece1, aobOut, piece2, boOut, piece3};
+        }
+
+        public Zone GenBulletZone(float r)
+        {
+            var twoDPoint = AOB.O;
+            var round = new Round(twoDPoint,R);
+            var genBulletRawZone = round.GenBulletZone(r);
+            return genBulletRawZone;
+        }
+
+        public IBulletShape GenBulletShape(float r)
+        {
+            var genBlockShapes = GenBlockShapes(r);
+            var genBlockAabbBoxShapes = Poly.GenBlockAabbBoxShapes(genBlockShapes);
+            var simpleBlocks = new SimpleBlocks(genBlockAabbBoxShapes);
+            return simpleBlocks;
         }
     }
 }

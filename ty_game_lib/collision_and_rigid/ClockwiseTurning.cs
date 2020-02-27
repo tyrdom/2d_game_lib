@@ -187,11 +187,6 @@ namespace collision_and_rigid
             }
         }
 
-        public bool IsTouchAnother(IShape another)
-        {
-            throw new NotImplementedException();
-        }
-
         public Round BelongRd()
         {
             return new Round(Aob.O, R);

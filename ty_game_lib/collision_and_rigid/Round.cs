@@ -2,7 +2,7 @@ using System;
 
 namespace collision_and_rigid
 {
-    public class Round : IShape
+    public class Round : IShape, IRawBulletShape, IBulletShape
     {
         public TwoDPoint O;
         public float R;
@@ -19,12 +19,8 @@ namespace collision_and_rigid
             return new AabbBoxShape(zone, this);
         }
 
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
-        {
-            throw new NotImplementedException();
-        }
 
-        public bool IsTouchAnother(IShape another)
+        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
         {
             throw new NotImplementedException();
         }
@@ -98,6 +94,23 @@ namespace collision_and_rigid
             var p1 = new TwoDPoint(x1, y1);
             var p2 = new TwoDPoint(x2, y2);
             return (p1, p2);
+        }
+
+        public Zone GenBulletZone(float r)
+        {
+            var moreHigh = GetZones().MoreWide(r).MoreHigh(r);
+            return moreHigh;
+        }
+
+        public IBulletShape GenBulletShape(float r)
+        {
+            var round = new Round(O, R + r);
+            return round;
+        }
+
+        public bool PtInShape(TwoDPoint point)
+        {
+            return TwoDVector.TwoDVectorByPt(O, point).SqNorm() <= R * R;
         }
     }
 }

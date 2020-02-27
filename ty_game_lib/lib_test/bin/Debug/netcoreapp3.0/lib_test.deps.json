@@ -8,7 +8,8 @@
     ".NETCoreApp,Version=v3.0": {
       "lib_test/1.0.0": {
         "dependencies": {
-          "collision_and_rigid": "1.0.0"
+          "collision_and_rigid": "1.0.0",
+          "game_stuff": "1.0.0"
         },
         "runtime": {
           "lib_test.dll": {}
@@ -17,6 +18,14 @@
       "collision_and_rigid/1.0.0": {
         "runtime": {
           "collision_and_rigid.dll": {}
+        }
+      },
+      "game_stuff/1.0.0": {
+        "dependencies": {
+          "collision_and_rigid": "1.0.0"
+        },
+        "runtime": {
+          "game_stuff.dll": {}
         }
       }
     }
@@ -28,6 +37,11 @@
       "sha512": ""
     },
     "collision_and_rigid/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "game_stuff/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -177,15 +177,15 @@ namespace collision_and_rigid
             return aabbBoxes;
         }
 
-        public override bool IsTouchBy(AabbBoxShape boxShape)
+        public override bool LineIsCross(TwoDVectorLine line)
         {
-            var notCross = boxShape.Zone.NotCross(Zone);
+            var notCross = line.GenZone().NotCross(Zone);
             if (notCross) return false;
 
             return (from aabbPackBoxShape in AabbPackBoxShapes
-                let notCross2 = boxShape.Zone.NotCross(aabbPackBoxShape.Zone)
+                let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
-                select boxShape.Shape.IsTouchAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
+                select line.IsTouchAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
         }
 
         public override QSpace TryCovToLimitQSpace(int limit)

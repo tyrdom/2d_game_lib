@@ -8,11 +8,24 @@ namespace collision_and_rigid
         AabbBoxShape CovToAabbPackBox();
         
         int TouchByRightShootPointInAAbbBox(TwoDPoint p);
-        
 
-        bool IsTouchAnother(IShape another);
     }
 
+    public interface IRawBulletShape
+    {
+        
+        Zone GenBulletZone(float r);
+
+        IBulletShape GenBulletShape(float r);
+    }
+    
+    
+    public interface IBulletShape
+    {
+        public bool PtInShape(TwoDPoint point);
+    }
+    
+    
     public interface IIdPointShape:IShape
     {
         int GetId();

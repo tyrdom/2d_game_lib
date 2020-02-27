@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
 
 namespace collision_and_rigid
 {
@@ -21,7 +22,7 @@ namespace collision_and_rigid
         public abstract void InsertBox(AabbBoxShape boxShape);
         public abstract void Remove(AabbBoxShape boxShape);
         public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
-        public abstract bool IsTouchBy(AabbBoxShape boxShape);
+        public abstract bool LineIsCross(TwoDVectorLine line);
 
 
         public abstract QSpace TryCovToLimitQSpace(int limit);
@@ -50,10 +51,10 @@ namespace collision_and_rigid
 
     public struct Zone
     {
-        public readonly float Up;
-        public readonly float Down;
-        public readonly float Left;
-        public readonly float Right;
+        public float Up;
+        public float Down;
+        public float Left;
+        public float Right;
 
         public Zone(float up, float down, float left, float right)
         {
@@ -134,6 +135,34 @@ namespace collision_and_rigid
             var x = pt.X;
             var y = pt.Y;
             return Up >= y && y >= Down && x >= Left && Right >= x;
+        }
+
+        public Zone MoreWide(float w)
+        {
+            return new Zone(Up, Down, Left - w, Right + w);
+        }
+
+        public Zone MoreHigh(float w)
+        {
+            return new Zone(Up + w, Down - w, Left, Right);
+        }
+
+        public Poly ToPoly()
+        {
+            var twoDPoints = new[] {LD(), LU(), RU(), RD()};
+            var poly = new Poly(twoDPoints);
+            return poly;
+        }
+
+        public Zone ClockTurnAboutZero(TwoDVector aim)
+        {
+            var genZone = ToPoly().ClockTurnAboutZero(aim).GenZone();
+            return genZone;
+        }
+
+        public Zone MoveToAnchor(TwoDPoint anchor)
+        {
+            return new Zone(Up+anchor.Y,Down+anchor.Y,Left+anchor.X,Right+anchor.X);
         }
     }
 

@@ -21,7 +21,7 @@ namespace game_stuff
 
         public int PauseTick;
 
-        public int? GidWhoLocks;
+        public int? GidWhoSkillLocks;
 
         public Weapon Weapon1;
 
@@ -44,12 +44,25 @@ namespace game_stuff
         private int NowOnTick;
         private int NowTough;
 
-        private int BaseTough;
-        private Dictionary<int, Bullet> launchTickToBullet;
-        private List<TwoDVector> Moves;
+       
+        private Dictionary<int, BulletConfig> launchTickToBullet;
+        private TwoDVector[] Moves;
         private int MoveStartTick;
-        private int? HomingTicks;
+        private int? HomingStartTick;
+        private int? HomingEndTick;
 
         private int totalTick;
+
+        public Skill(int nowOnTick, int nowTough, Dictionary<int, BulletConfig> launchTickToBullet, TwoDVector[] moves, int moveStartTick, int? homingStartTick, int? homingEndTick, int totalTick)
+        {
+            NowOnTick = nowOnTick;
+            NowTough = nowTough;
+            this.launchTickToBullet = launchTickToBullet;
+            Moves = moves;
+            MoveStartTick = moveStartTick;
+            HomingStartTick = homingStartTick;
+            HomingEndTick = homingEndTick;
+            this.totalTick = totalTick;
+        }
     }
 }
