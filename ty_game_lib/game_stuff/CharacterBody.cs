@@ -13,11 +13,12 @@ namespace game_stuff
         public TwoDPoint NowPos;
         public AngleSight Sight;
 
-        public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus, TwoDPoint lastPos,
+        public CharacterBody(TwoDPoint nowPos, BodySize bodySize,ref CharacterStatus characterStatus, TwoDPoint lastPos,
             AngleSight sight)
         {
             NowPos = nowPos;
             BodySize = bodySize;
+            characterStatus.CharacterBody = this;
             CharacterStatus = characterStatus;
             LastPos = lastPos;
             Sight = sight;

@@ -8,8 +8,8 @@ namespace collision_and_rigid
     public class QSpaceBranch : QSpace
     {
         public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, List<AabbBoxShape> aabbPackBoxes,
-            QSpace quadOne, QSpace quadTwo,
-            QSpace quadThree, QSpace quadFour)
+           ref QSpace quadOne, ref QSpace quadTwo,
+           ref QSpace quadThree,ref QSpace quadFour)
         {
             Father = father;
             TheQuad = quad;
@@ -194,9 +194,9 @@ namespace collision_and_rigid
             var tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1,
-                tryCovToLimitQSpace2,
-                tryCovToLimitQSpace3, tryCovToLimitQSpace4);
+            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, ref tryCovToLimitQSpace1,
+                ref tryCovToLimitQSpace2,
+                ref tryCovToLimitQSpace3, ref tryCovToLimitQSpace4);
         }
 
         public override int FastTouchWithARightShootPoint(TwoDPoint p)

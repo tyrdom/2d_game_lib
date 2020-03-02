@@ -22,10 +22,9 @@ namespace game_stuff
         }
 
 
-        public bool IsHit(CharacterBody characterBody, TwoDPoint bPos, TwoDVector bAim)
+        public bool IsHit(TwoDPoint cPos, TwoDPoint bPos, TwoDVector bAim)
         {
-            var characterBodyNowPos = characterBody.NowPos;
-            var genPosInLocal = characterBodyNowPos.GenPosInLocal(bPos, bAim);
+            var genPosInLocal = cPos.GenPosInLocal(bPos, bAim);
             var ptInShape = BulletShape.PtInShape(genPosInLocal);
             return ptInShape;
         }

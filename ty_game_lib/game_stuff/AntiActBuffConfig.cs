@@ -4,12 +4,14 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public abstract class AntiActBuffConfig
+    public  interface IAntiActBuffConfig
     {
+        public AntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+            BodySize bodySize,ref CharacterStatus? whoDid);
     }
 
 
-    public class PushEarthAntiActBuffConfig : AntiActBuffConfig
+    public class PushEarthAntiActBuffConfig : IAntiActBuffConfig
     {
         private float RawTwoDVectorX;
         private PushType PushType;
@@ -34,7 +36,7 @@ namespace game_stuff
         }
 
         public AntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize)
+            BodySize bodySize,ref CharacterStatus? whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -58,7 +60,7 @@ namespace game_stuff
         }
     }
 
-    public class PushAirAntiActBuffConfig : AntiActBuffConfig
+    public class PushAirAntiActBuffConfig : IAntiActBuffConfig
     {
         private float RawTwoDVectorX;
         private PushType PushType;
@@ -74,7 +76,7 @@ namespace game_stuff
         }
 
         public AntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
-            , float upSpeed, BodySize bodySize)
+            , float upSpeed, BodySize bodySize,ref CharacterStatus? whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -109,17 +111,23 @@ namespace game_stuff
         Vector
     }
 
-    public class CatchAntiActBuffConfig : AntiActBuffConfig
+    public class CatchAntiActBuffConfig : IAntiActBuffConfig
     {
         private TwoDVector[] TwoDVectors;
         private int LastTick;
 
-        public AntiActBuff GenBuff(TwoDPoint anchor, TwoDVector aim, int gid)
+        public AntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim,ref CharacterStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move).ToList();
-            var caught = new Caught(gid, twoDPoints, LastTick);
+            var caught = new Caught( twoDPoints, LastTick,ref whoDid);
             return caught;
+        }
+
+        public AntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed, BodySize bodySize,ref CharacterStatus? whoDid)
+        {
+            var antiActBuff = GenABuff(pos,aim,ref whoDid);
+            return antiActBuff;
         }
     }
 }

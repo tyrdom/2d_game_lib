@@ -11,18 +11,20 @@ namespace collision_and_rigid
         {
             var (item1, item2) = zone.GetMid();
             var cutTo4 = zone.CutTo4(item1, item2);
+
+
+            QSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new List<AabbBoxShape>());
+            QSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new List<AabbBoxShape>());
+            QSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new List<AabbBoxShape>());
+            QSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new List<AabbBoxShape>());
             var qSpaceBranch = new QSpaceBranch(null, null, zone, new List<AabbBoxShape>(
                 )
                 ,
-                new QSpaceLeaf(Quad.One, null, cutTo4[0], new List<AabbBoxShape>()),
-                new QSpaceLeaf(Quad.Two, null, cutTo4[1], new List<AabbBoxShape>()),
-                new QSpaceLeaf(Quad.Three, null, cutTo4[2], new List<AabbBoxShape>()),
-                new QSpaceLeaf(Quad.Four, null, cutTo4[3], new List<AabbBoxShape>())
+              ref qs1,
+               ref qs2,
+               ref qs3,
+                ref qs4
             );
-            qSpaceBranch.QuadOne.Father = qSpaceBranch;
-            qSpaceBranch.QuadTwo.Father = qSpaceBranch;
-            qSpaceBranch.QuadThree.Father = qSpaceBranch;
-            qSpaceBranch.QuadFour.Father = qSpaceBranch;
             return qSpaceBranch;
         }
 

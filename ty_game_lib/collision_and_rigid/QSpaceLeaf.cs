@@ -73,11 +73,12 @@ namespace collision_and_rigid
 
                 var (item1, item2) = Zone.GetMid();
                 var cutTo4 = Zone.CutTo4(item1, item2);
-                var qsl1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], q1);
-                var qsl2 = new QSpaceLeaf(Quad.One, null, cutTo4[1], q2);
-                var qsl3 = new QSpaceLeaf(Quad.One, null, cutTo4[2], q3);
-                var qsl4 = new QSpaceLeaf(Quad.One, null, cutTo4[3], q4);
-                var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, qsl1, qsl2, qsl3, qsl4);
+                QSpace qsl1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], q1);
+                QSpace qsl2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], q2);
+                QSpace qsl3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], q3);
+                QSpace qsl4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], q4);
+                var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, ref qsl1, ref qsl2,
+                    ref qsl3, ref qsl4);
                 qSpaceBranch.QuadOne.Father = qSpaceBranch;
                 qSpaceBranch.QuadTwo.Father = qSpaceBranch;
                 qSpaceBranch.QuadThree.Father = qSpaceBranch;
@@ -180,7 +181,7 @@ namespace collision_and_rigid
             return i;
         }
 
-        public override void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape,T t)
+        public override void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
             foreach (var aabbPackBoxShape in AabbPackBoxShapes)
             {
@@ -188,15 +189,13 @@ namespace collision_and_rigid
                 switch (shape)
                 {
                     case IIdPointShape idPointShape:
-                        doWithIIdPointShape(idPointShape,t);
+                        doWithIIdPointShape(idPointShape, t);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(shape));
                 }
             }
         }
-
-       
 
 
         public QSpace TryCovToBranch()
@@ -240,12 +239,15 @@ namespace collision_and_rigid
 
             var zones = Zone.CutTo4(item1, item2);
 
-
+            QSpace qs1 = new QSpaceLeaf(Quad.One, null, zones[0], one);
+            QSpace qs2 = new QSpaceLeaf(Quad.Two, null, zones[1], two);
+            QSpace qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
+            QSpace qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
             var tryCovToBranch = new QSpaceBranch(TheQuad, Father, Zone, zone,
-                new QSpaceLeaf(Quad.One, null, zones[0], one),
-                new QSpaceLeaf(Quad.Two, null, zones[1], two),
-                new QSpaceLeaf(Quad.Three, null, zones[2], three),
-                new QSpaceLeaf(Quad.Four, null, zones[3], four));
+                ref qs1,
+                ref qs2,
+                ref qs3,
+                ref qs4);
             tryCovToBranch.QuadOne.Father = tryCovToBranch;
             tryCovToBranch.QuadTwo.Father = tryCovToBranch;
             tryCovToBranch.QuadThree.Father = tryCovToBranch;

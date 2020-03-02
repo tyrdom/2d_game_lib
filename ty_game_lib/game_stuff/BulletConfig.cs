@@ -6,28 +6,36 @@ namespace game_stuff
 {
     public class BulletConfig
     {
-        //     private TwoDVector LocalAnchor;
-
+        private TwoDVector LocalAim;
+        private BType BType;
         public Dictionary<BodySize, BulletBox> RawBulletBoxes;
-        private AntiActBuffConfig SuccessActBuffConfigToOpponent;
+        private IAntiActBuffConfig SuccessActBuffConfigToOpponent;
 
-        private AntiActBuffConfig FailActBuffConfigToSelf;
+        private IAntiActBuffConfig FailActBuffConfigToSelf;
         private DamageBuffConfig[] DamageBuffConfigs;
         private int PauseToCaster;
         private int PauseToOpponent;
+        private int LifeTime;
+        private TwoDVector Speed;
 
+        public ObjType ObjType;
 
-        public Bullet GenBullet(TwoDPoint casterPos, TwoDVector casterAim, CharacterStatus caster)
+        public Bullet GenBullet(TwoDPoint casterPos, TwoDVector casterAim,ref CharacterStatus caster, int tough)
         {
-            // var twoDPoint = casterPos.Move(LocalAnchor.ClockwiseTurn(casterAim));
+            var fixedAim = casterAim.ClockwiseTurn(LocalAim);
 
             var dictionary = RawBulletBoxes.ToDictionary(pair => pair.Key,
-                pair => pair.Value.GenBulletboxByRawBox(casterPos, casterAim));
+                pair => pair.Value.GenBulletboxByRawBox(casterPos, fixedAim));
 
 
-            return new Bullet(casterPos, casterAim, dictionary, caster,
+            return new Bullet(casterPos, fixedAim, dictionary,ref caster,
                 SuccessActBuffConfigToOpponent,
-                FailActBuffConfigToSelf, PauseToCaster, PauseToOpponent, DamageBuffConfigs);
+                FailActBuffConfigToSelf, PauseToCaster, PauseToOpponent, DamageBuffConfigs, ObjType, tough,BType);
         }
+    }
+
+    public enum BType
+    {
+        Melee,Range
     }
 }

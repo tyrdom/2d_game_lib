@@ -12,8 +12,8 @@ namespace game_stuff
         private int MoveStartTick;
         private int HomingStartTick;
         private int HomingEndTick;
-        private int totalTick;
-
+        private int SkillTick;
+        private int ComboTick;
 
         Skill GenSkill(bool isLockObj)
         {
@@ -21,10 +21,10 @@ namespace game_stuff
             {
              
                 return new Skill(0, BaseTough, launchTickToBullet, Moves, MoveStartTick, HomingStartTick, HomingEndTick,
-                    totalTick);   
+                    SkillTick,ComboTick);   
             }
             return new Skill(0, BaseTough, launchTickToBullet, Moves, MoveStartTick, null, null,
-                totalTick);
+                SkillTick,ComboTick);
         }
     }
 }

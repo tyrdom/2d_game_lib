@@ -46,7 +46,7 @@ namespace game_stuff
         }
     }
 
-    class PushOnAir : AntiActBuff
+    public class PushOnAir : AntiActBuff
     {
         public TwoDVector PushVector;
         public float Height;
@@ -88,15 +88,16 @@ namespace game_stuff
 
     class Caught : AntiActBuff
     {
-        public int GidWhoCatch;
+        
 
         public List<TwoDPoint> MovesOnPoints;
-
-        public Caught(int gidWhoCatch, List<TwoDPoint> movesOnPoints, int restTick)
+        public CharacterStatus WhoCatchMe;
+        public Caught( List<TwoDPoint> movesOnPoints, int restTick,ref CharacterStatus whoCatchMe)
         {
-            GidWhoCatch = gidWhoCatch;
+            
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
+            WhoCatchMe = whoCatchMe;
         }
 
         public sealed override int RestTick { get; set; }

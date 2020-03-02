@@ -9,6 +9,7 @@ namespace game_stuff
         private readonly SightMap SightMap;
         private readonly WalkMap WalkMap;
         private Dictionary<int, int> GidToTeam;
+        private Dictionary<int, Dictionary<int, Bullet>> TeamToGidToBullet;
 
         public PlayGround(Dictionary<int, QSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
             Dictionary<int, int> gidToTeam)
@@ -35,6 +36,7 @@ namespace game_stuff
             return dictionary;
         }
 
+        
         public void DoOperates(Dictionary<int, Operate> gidToOperates)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);

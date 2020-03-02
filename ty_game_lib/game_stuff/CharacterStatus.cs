@@ -6,7 +6,6 @@ namespace game_stuff
     public enum WeaponSkillStatus
     {
         Normal,
-        Casting,
         Catching,
         P1Ok,
         P2Ok,
@@ -17,52 +16,64 @@ namespace game_stuff
 
     public class CharacterStatus
     {
+        public CharacterBody CharacterBody;
+        
         public int GId;
 
         public int PauseTick;
 
         public int? GidWhoSkillLocks;
 
-        public Weapon Weapon1;
+        public CharacterStatus? Catching;
+        public int NowWeapon;
 
-        public Weapon Weapon2;
+        public Dictionary<int, WeaponConfig> WeaponConfigs;
 
-        public Skill NowCast;
-        
-    }
+        public Skill? NowCast;
 
-    public class Weapon
-    {
         public WeaponSkillStatus WeaponSkillStatus;
-        public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup1;
-        public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup2;
+
+        public int ComboTick;
+
+        public int NowTough;
+
+        public AntiActBuff? AntiActBuff;
+
+
+        public DamageBuff DamageBuff;
+
+        public DamageHealAbout DamageHealAbout;
+        public int ProtectTick;
+
+        public TwoDPoint GetPos()
+        {
+            return CharacterBody.NowPos;
+        }
+    }
+
+    public class DamageHealAbout
+    {
+        private int MaxHp;
+        private int NowHp;
+
+       public void TakeDamage(Damage damage)
+        {
+            NowHp -= damage.DamageValue;
+        }
+
+       public void GetHeal(Heal heal)
+        {
+            
+        }
+    }
+
+    public class Heal
+    {
+        private int HealValue;
     }
 
 
-    public class Skill
+    public class DamageBuff
     {
-        private int NowOnTick;
-        private int NowTough;
-
-       
-        private Dictionary<int, BulletConfig> launchTickToBullet;
-        private TwoDVector[] Moves;
-        private int MoveStartTick;
-        private int? HomingStartTick;
-        private int? HomingEndTick;
-
-        private int totalTick;
-
-        public Skill(int nowOnTick, int nowTough, Dictionary<int, BulletConfig> launchTickToBullet, TwoDVector[] moves, int moveStartTick, int? homingStartTick, int? homingEndTick, int totalTick)
-        {
-            NowOnTick = nowOnTick;
-            NowTough = nowTough;
-            this.launchTickToBullet = launchTickToBullet;
-            Moves = moves;
-            MoveStartTick = moveStartTick;
-            HomingStartTick = homingStartTick;
-            HomingEndTick = homingEndTick;
-            this.totalTick = totalTick;
-        }
     }
 }
