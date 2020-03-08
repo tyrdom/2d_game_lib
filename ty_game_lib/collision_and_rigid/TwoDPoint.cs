@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace collision_and_rigid
 {
-    public class TwoDPoint
+    public class TwoDPoint : ITwoDTwoP
     {
         public readonly float X;
         public readonly float Y;
@@ -55,16 +55,17 @@ namespace collision_and_rigid
             return Y > h ? Quad.One : Quad.Four;
         }
 
-        public int FastGenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
+        public int FastGenARightShootCrossALotAabbBoxShape(IEnumerable<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
-            aabbBoxShapes.ForEach(aabbBoxShape =>
+            foreach (var aabbBoxShape in aabbBoxShapes)
             {
                 var objZone = aabbBoxShape.Zone;
                 if (objZone.Up >= Y && objZone.Down < Y)
                     //                    Console.Out.WriteLine("TOUCH::"+SomeTools.ZoneLog(objZone));
                     n++;
-            });
+            }
+
             return n;
         }
 
@@ -73,14 +74,13 @@ namespace collision_and_rigid
             return new Zone(Y, Y, X, X);
         }
 
-      
 
         public TwoDPoint GenPosInLocal(TwoDPoint zero, TwoDVector xAim)
         {
             return TwoDVector.TwoDVectorByPt(zero, this).AntiClockwiseTurn(xAim).ToPt();
         }
 
-        public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(List<AabbBoxShape> aabbBoxShapes)
+        public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(IEnumerable<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
             AabbBoxShape? aShape = null;
@@ -102,7 +102,14 @@ namespace collision_and_rigid
                     else if (X >= zone.Left && X < zone.Right)
                     {
                         aShape = aabbBoxShape;
-                        var touchByRightShootPointInAAbbBox = aabbBoxShape.Shape.TouchByRightShootPointInAAbbBox(this);
+                        var shape = aabbBoxShape.Shape;
+                        var touchByRightShootPointInAAbbBox = shape switch
+                        {
+                            ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBox(this),
+                            TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBox(this),
+                            _ => throw new ArgumentOutOfRangeException(nameof(shape))
+                        };
+
 //                        Console.Out.WriteLine("a num:" + touchByRightShootPointInAAbbBox + "zone: " +
 //                                              SomeTools.ZoneLog(aabbBoxShape.Zone));
 //

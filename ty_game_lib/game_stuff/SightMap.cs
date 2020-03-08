@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public class SightMap
     {
-        private readonly QSpace Lines;
+        public readonly QSpace Lines;
 
         public SightMap(QSpace lines)
         {

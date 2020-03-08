@@ -7,7 +7,8 @@ namespace game_stuff
     public class BulletConfig
     {
         private TwoDVector LocalAim;
-        private BType BType;
+
+        public int LastTick;
         public Dictionary<BodySize, BulletBox> RawBulletBoxes;
         private IAntiActBuffConfig SuccessActBuffConfigToOpponent;
 
@@ -19,8 +20,9 @@ namespace game_stuff
         private TwoDVector Speed;
 
         public ObjType ObjType;
+        public int ResId;
 
-        public Bullet GenBullet(TwoDPoint casterPos, TwoDVector casterAim,ref CharacterStatus caster, int tough)
+        public Bullet GenBullet(TwoDPoint casterPos, TwoDVector casterAim, ref CharacterStatus caster, int tough)
         {
             var fixedAim = casterAim.ClockwiseTurn(LocalAim);
 
@@ -28,14 +30,10 @@ namespace game_stuff
                 pair => pair.Value.GenBulletboxByRawBox(casterPos, fixedAim));
 
 
-            return new Bullet(casterPos, fixedAim, dictionary,ref caster,
+            return new Bullet(casterPos, fixedAim, dictionary, ref caster,
                 SuccessActBuffConfigToOpponent,
-                FailActBuffConfigToSelf, PauseToCaster, PauseToOpponent, DamageBuffConfigs, ObjType, tough,BType);
+                FailActBuffConfigToSelf, PauseToCaster, PauseToOpponent, DamageBuffConfigs, ObjType, tough, LastTick,
+                ResId);
         }
-    }
-
-    public enum BType
-    {
-        Melee,Range
     }
 }

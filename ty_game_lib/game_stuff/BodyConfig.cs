@@ -12,6 +12,8 @@ namespace game_stuff
     {
         public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup1;
         public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup2;
+        public Dictionary<WeaponSkillStatus, SkillConfig> SkillGroup3;
+        
     }
 
 

@@ -52,16 +52,14 @@ namespace collision_and_rigid
             return apt ?? lastP;
         }
 
-        public TwoDPoint PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true)
+        public TwoDPoint? PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true)
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
             var apt = QSpace.GetSlidePoint(inLine, true, safe);
 
-            if (safe) return apt ?? lastP;
+            if (safe) return apt ;
 
-            if (CoverPoint(apt)) return PushOutToPt(lastP, apt, false);
-
-            return apt ?? lastP;
+            return CoverPoint(apt) ? PushOutToPt(lastP, apt, false) : apt;
         }
 
     }

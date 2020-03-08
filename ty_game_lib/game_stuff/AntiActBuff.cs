@@ -1,16 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace game_stuff
 {
-    public abstract class AntiActBuff
+    public interface IAntiActBuff
     {
-        public abstract int RestTick { get; set; }
+        public int RestTick { get; set; }
 
-        public abstract (TwoDPoint, AntiActBuff?) GoATick(TwoDPoint oldPt);
+        public (ITwoDTwoP?, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt);
+
+        public float HitWall();
     }
 
-    class PushOnEarth : AntiActBuff
+    class PushOnEarth : IAntiActBuff
     {
         public TwoDVector PushVector;
         public TwoDVector DecreasePerTick;
@@ -22,14 +25,14 @@ namespace game_stuff
             RestTick = restTick;
         }
 
-        public sealed override int RestTick { get; set; }
+        public int RestTick { get; set; }
 
-        public override (TwoDPoint, AntiActBuff?) GoATick(TwoDPoint oldPt)
+        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             RestTick -= 1;
             if (RestTick <= 0)
             {
-                return (oldPt.Move(PushVector), null);
+                return (PushVector, null);
             }
 
             var push = PushVector;
@@ -42,11 +45,19 @@ namespace game_stuff
 
             PushVector = twoDVector;
 
-            return (oldPt.Move(push), this);
+            return (push, this);
+        }
+
+        public float HitWall()
+        {
+            var sqNorm = PushVector.SqNorm();
+            PushVector = TwoDVector.Zero();
+            RestTick = RestTick + 1 + (int) (sqNorm * TempConfig.HitWallTickParam);
+            return sqNorm;
         }
     }
 
-    public class PushOnAir : AntiActBuff
+    public class PushOnAir : IAntiActBuff
     {
         public TwoDVector PushVector;
         public float Height;
@@ -61,48 +72,54 @@ namespace game_stuff
             RestTick = restTick;
         }
 
-        public sealed override int RestTick { get; set; }
+        public int RestTick { get; set; }
 
-        public override (TwoDPoint, AntiActBuff?) GoATick(TwoDPoint oldPt)
+        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             var nowHeight = Height + UpSpeed;
             RestTick -= 1;
             if (RestTick <= 0)
             {
-                return (oldPt.Move(PushVector), null);
+                return (PushVector, null);
             }
 
             if (nowHeight <= 0)
             {
                 var pushOnEarth =
                     new PushOnEarth(PushVector, PushVector.GetUnit().Multi(TempConfig.Friction), RestTick);
-                return (oldPt.Move(PushVector), pushOnEarth);
+                return (PushVector, pushOnEarth);
             }
 
             var nowUpSpeed = UpSpeed - TempConfig.G;
             Height = nowHeight;
             UpSpeed = nowUpSpeed;
-            return (oldPt.Move(PushVector), this);
+            return (PushVector, this);
+        }
+
+        public float HitWall()
+        {
+            var sqNorm = PushVector.SqNorm();
+            PushVector = TwoDVector.Zero();
+            RestTick = RestTick + 1 + (int) (sqNorm * TempConfig.HitWallTickParam);
+            return sqNorm;
         }
     }
 
-    class Caught : AntiActBuff
+    class Caught : IAntiActBuff
     {
-        
-
         public List<TwoDPoint> MovesOnPoints;
         public CharacterStatus WhoCatchMe;
-        public Caught( List<TwoDPoint> movesOnPoints, int restTick,ref CharacterStatus whoCatchMe)
+
+        public Caught(List<TwoDPoint> movesOnPoints, int restTick, ref CharacterStatus whoCatchMe)
         {
-            
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
             WhoCatchMe = whoCatchMe;
         }
 
-        public sealed override int RestTick { get; set; }
+        public int RestTick { get; set; }
 
-        public override (TwoDPoint, AntiActBuff?) GoATick(TwoDPoint oldPt)
+        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             RestTick -= 1;
             var count = MovesOnPoints.Count;
@@ -111,6 +128,7 @@ namespace game_stuff
 
             if (RestTick <= 0)
             {
+                WhoCatchMe.Catching = null;
                 return (pt, null);
             }
 
@@ -120,6 +138,12 @@ namespace game_stuff
             }
 
             return (pt, this);
+        }
+
+        public float HitWall()
+        {
+            RestTick += TempConfig.HitWallCatchTickParam;
+            return TempConfig.HitWallCatchDmgParam;
         }
     }
 }

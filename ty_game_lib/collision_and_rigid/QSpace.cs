@@ -11,11 +11,12 @@ namespace collision_and_rigid
         public QSpaceBranch? Father { get; set; }
         public abstract Zone Zone { get; set; }
 
-        public abstract List<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public abstract HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
 
-        public abstract void AddIdPoint(List<AabbBoxShape> idPointShapes, int limit);
+        public abstract void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit);
 
-        public abstract void MoveIdPoint(Dictionary<int, TwoDVector> gidToMove, int limit);
+        public abstract void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
+
 
         public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true);
 
@@ -36,133 +37,48 @@ namespace collision_and_rigid
             T t)
         {
             var dicIntToTu = new Dictionary<int, TU>();
-            Action<IIdPointShape, T> act =
-                (id, tt) =>
-                {
-                    var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-                    var i = id.GetId();
-                    dicIntToTu[i] = withIIdPtsShape;
-                };
-            ForeachDoWithOutMove(act, t);
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+                if (withIIdPtsShape == null) return;
+                var i = id.GetId();
+
+                dicIntToTu[i] = withIIdPtsShape;
+            }
+
+            ForeachDoWithOutMove(Act, t);
             return dicIntToTu;
         }
-    }
 
-
-    public struct Zone
-    {
-        public float Up;
-        public float Down;
-        public float Left;
-        public float Right;
-
-        public Zone(float up, float down, float left, float right)
+        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+            T t)
         {
-            Up = up;
-            Down = down;
-            Left = left;
-            Right = right;
+            var dicIntToTu = new HashSet<IIdPointShape>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+
+                if (withIIdPtsShape) dicIntToTu.Add(id);
+            }
+
+            ForeachDoWithOutMove(Act, t);
+            return dicIntToTu;
         }
 
-        public TwoDPoint RU()
+        public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
+        )
         {
-            return new TwoDPoint(Right, Up);
-        }
+            var dicIntToTu = new HashSet<T>();
 
-        public TwoDPoint RD()
-        {
-            return new TwoDPoint(Right, Down);
-        }
-
-        public TwoDPoint LU()
-        {
-            return new TwoDPoint(Left, Up);
-        }
-
-        public TwoDPoint LD()
-        {
-            return new TwoDPoint(Left, Down);
-        }
-
-        public (float, float) GetMid()
-        {
-            var horizon = (Up + Down) / 2;
-            var vertical = (Right + Left) / 2;
-            return (horizon, vertical);
-        }
-
-        public Zone[] CutTo4(float horizon, float vertical)
-        {
-            var z1 = new Zone(Up, horizon, vertical, Right);
-            var z2 = new Zone(Up, horizon, Left, vertical);
-            var z3 = new Zone(horizon, Down, Left, vertical);
-            var z4 = new Zone(horizon, Down, vertical, Right);
-            return new Zone[4] {z1, z2, z3, z4};
-        }
-
-        public bool IsIn(Zone anotherZone)
-        {
-            return anotherZone.Left <= Left && anotherZone.Right >= Right && anotherZone.Up >= Up &&
-                   anotherZone.Down <= Down;
-        }
-
-        public bool NotCross(Zone anotherZone)
-        {
-            return Right < anotherZone.Left || anotherZone.Right < Left ||
-                   Up < anotherZone.Down || anotherZone.Up < Down;
-        }
-
-        public Zone Inter(Zone another)
-        {
-            var nUp = MathF.Min(Up, another.Up);
-            var nLeft = MathF.Max(Left, another.Left);
-            var nDown = MathF.Max(Down, another.Down);
-            var nRight = MathF.Min(Right, another.Right);
-            return new Zone(nUp, nDown, nLeft, nRight);
-        }
-
-        public Zone Join(Zone another)
-        {
-            var nUp = MathF.Max(Up, another.Up);
-            var nLeft = MathF.Min(Left, another.Left);
-            var nDown = MathF.Min(Down, another.Down);
-            var nRight = MathF.Max(Right, another.Right);
-            return new Zone(nUp, nDown, nLeft, nRight);
-        }
-
-        public bool IncludePt(TwoDPoint pt)
-        {
-            var x = pt.X;
-            var y = pt.Y;
-            return Up >= y && y >= Down && x >= Left && Right >= x;
-        }
-
-        public Zone MoreWide(float w)
-        {
-            return new Zone(Up, Down, Left - w, Right + w);
-        }
-
-        public Zone MoreHigh(float w)
-        {
-            return new Zone(Up + w, Down - w, Left, Right);
-        }
-
-        public Poly ToPoly()
-        {
-            var twoDPoints = new[] {LD(), LU(), RU(), RD()};
-            var poly = new Poly(twoDPoints);
-            return poly;
-        }
-
-        public Zone ClockTurnAboutZero(TwoDVector aim)
-        {
-            var genZone = ToPoly().ClockTurnAboutZero(aim).GenZone();
-            return genZone;
-        }
-
-        public Zone MoveToAnchor(TwoDPoint anchor)
-        {
-            return new Zone(Up+anchor.Y,Down+anchor.Y,Left+anchor.X,Right+anchor.X);
+            void Act(IIdPointShape id, bool a)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id);
+                dicIntToTu.Add(withIIdPtsShape);
+            }
+            ForeachDoWithOutMove(Act, true);
+            return dicIntToTu;
         }
     }
 

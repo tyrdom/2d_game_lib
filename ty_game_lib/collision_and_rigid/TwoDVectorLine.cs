@@ -51,7 +51,7 @@ namespace collision_and_rigid
 
         public (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
             CondAfterCross nowCond,
-            List<(TwoDPoint, CondAfterCross)> ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond
+            List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond
         )
         {
             if (ptsAndCond == null)

@@ -6,7 +6,7 @@ namespace game_stuff
 {
     public  interface IAntiActBuffConfig
     {
-        public AntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+        public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize,ref CharacterStatus? whoDid);
     }
 
@@ -18,7 +18,7 @@ namespace game_stuff
         private TwoDVector pushAboutVector;
         private int TickLast;
 
-        AntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? air, float upSpeed, float friction)
+        IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? air, float upSpeed, float friction)
         {
             var dVector1 = unit.Multi(speed);
 
@@ -35,7 +35,7 @@ namespace game_stuff
             }
         }
 
-        public AntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+        public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize,ref CharacterStatus? whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
@@ -71,11 +71,11 @@ namespace game_stuff
 
         float GenUp(float? air, float bodyMass)
         {
-            var maxUp = GameTools.GetMaxUp(air);
+            var maxUp = GameTools.GetMaxUpSpeed(air);
             return MathF.Min(maxUp, UpForce / bodyMass);
         }
 
-        public AntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
+        public IAntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
             , float upSpeed, BodySize bodySize,ref CharacterStatus? whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
@@ -97,7 +97,7 @@ namespace game_stuff
             }
         }
 
-        private AntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
+        private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
         {
             var max = MathF.Max(GenUp(height, f), upSpeed);
             var pushOnAir = new PushOnAir(unit.Multi(speed), height.GetValueOrDefault(0), max, TickLast);
@@ -115,8 +115,9 @@ namespace game_stuff
     {
         private TwoDVector[] TwoDVectors;
         private int LastTick;
-
-        public AntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim,ref CharacterStatus whoDid)
+        public Skill? TrickSkill;
+        
+        public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim,ref CharacterStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move).ToList();
@@ -124,7 +125,7 @@ namespace game_stuff
             return caught;
         }
 
-        public AntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed, BodySize bodySize,ref CharacterStatus? whoDid)
+        public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed, BodySize bodySize,ref CharacterStatus? whoDid)
         {
             var antiActBuff = GenABuff(pos,aim,ref whoDid);
             return antiActBuff;

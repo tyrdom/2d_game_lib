@@ -6,23 +6,23 @@ namespace game_stuff
 {
     public static class GameTools
     {
-        public static void DoOp(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
+        public static (ITwoDTwoP?,Bullet?) BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
         {
             switch (idPointShape)
             {
                 case CharacterBody characterBody:
-                    characterBody.DoOpFromDic(gidToOp);
-                    break;
+                    var doOpFromDic = characterBody.BodyGoATick(gidToOp);
+                    return doOpFromDic;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(idPointShape));
             }
         }
 
-        public static float GetMaxUp(float? height)
+        public static float GetMaxUpSpeed(float? height)
         {
             if (height == null)
             {
-                return TempConfig.MaxUp;
+                return TempConfig.MaxUpSpeed;
             }
 
             var maxHeight = TempConfig.MaxHeight - height.Value;
@@ -30,7 +30,7 @@ namespace game_stuff
             return MathF.Sqrt(f);
         }
 
-        static BulletBox GenRawBulletBox(IRawBulletShape shape, float r)
+        private static BulletBox GenRawBulletBox(IRawBulletShape shape, float r)
         {
             var genBulletZone = shape.GenBulletZone(r);
             var genBulletShape = shape.GenBulletShape(r);

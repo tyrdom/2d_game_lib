@@ -5,7 +5,14 @@
         private TwoDPoint LeftDown;
         private TwoDPoint LeftUp;
         private float Height;
-        
+
+        public Rectangle(TwoDPoint leftDown, TwoDPoint leftUp, float height)
+        {
+            LeftDown = leftDown;
+            LeftUp = leftUp;
+            Height = height;
+        }
+
         Poly CovPoly(){
             var twoDVectorLine = new TwoDVectorLine(LeftDown,LeftUp);
             var twoDVector = twoDVectorLine.GetVector().ClockwiseTurn(new TwoDVector(0, 1)).GetUnit().Multi(Height);

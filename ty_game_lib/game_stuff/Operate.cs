@@ -5,12 +5,12 @@ namespace game_stuff
 {
     public class Operate
     {
-        private Action Action;
-        private TwoDVector Move;
-        private TwoDVector Aim;
+        public SkillAction? Action;
+        public TwoDVector? Move;
+        public TwoDVector? Aim;
     }
 
-    internal enum Action
+    public enum SkillAction
     {
         A1,
         A2,

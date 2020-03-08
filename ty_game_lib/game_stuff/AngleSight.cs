@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -7,11 +8,15 @@ namespace game_stuff
     {
         private readonly TwoDVector _upLeft;
         private readonly TwoDVector _upRight;
-        private TwoDVector Aim;
+        public TwoDVector Aim;
         private readonly float MaxR;
         private float NowR;
         private readonly float Theta;
 
+        public static AngleSight StandardAngleSight()
+        {
+            return new AngleSight(TempConfig.StandardSightR,TempConfig.StandardVector);
+        }
         public AngleSight(float r, TwoDVector upLeft)
         {
             Aim = new TwoDVector(1f, 0f);
@@ -35,7 +40,7 @@ namespace game_stuff
             return c1 >= 0 && c2 <= 0 && b && isBlockSightLine;
         }
 
-        private void OpChangeAim(TwoDVector newAim, float twoSToSeePerTick)
+        public void OpChangeAim(TwoDVector newAim)
         {
             var oldAim = Aim;
             Aim = newAim.GetUnit();
@@ -47,10 +52,10 @@ namespace game_stuff
 
             var nowRSquare = NowR * NowR;
             var snowR = nowRSquare * t;
-            var twoSr = twoSToSeePerTick - snowR;
+            var twoSr = TempConfig.TwoSToSeePerTick - snowR;
             if (twoSr <= 0)
             {
-                var sqrt = MathF.Sqrt(twoSToSeePerTick / t);
+                var sqrt = MathF.Sqrt(TempConfig.TwoSToSeePerTick / t);
                 NowR = MathF.Min(MaxR, sqrt);
             }
             else

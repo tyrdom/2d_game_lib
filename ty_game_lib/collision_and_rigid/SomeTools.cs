@@ -7,17 +7,17 @@ namespace collision_and_rigid
 {
     public static class SomeTools
     {
-        public static QSpaceBranch CreateEmptyRootBranch(Zone zone)
+        public static QSpace CreateEmptyRootBranch(Zone zone)
         {
             var (item1, item2) = zone.GetMid();
             var cutTo4 = zone.CutTo4(item1, item2);
 
 
-            QSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new List<AabbBoxShape>());
-            QSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new List<AabbBoxShape>());
-            QSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new List<AabbBoxShape>());
-            QSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new List<AabbBoxShape>());
-            var qSpaceBranch = new QSpaceBranch(null, null, zone, new List<AabbBoxShape>(
+            QSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new HashSet<AabbBoxShape>());
+            QSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new HashSet<AabbBoxShape>());
+            QSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new HashSet<AabbBoxShape>());
+            QSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new HashSet<AabbBoxShape>());
+            var qSpaceBranch = new QSpaceBranch(null, null, zone, new HashSet<AabbBoxShape>(
                 )
                 ,
               ref qs1,
@@ -60,7 +60,7 @@ namespace collision_and_rigid
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
         }
 
-        public static TwoDPoint? SlideTwoDPoint(List<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line, bool isPush,
+        public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line, bool isPush,
             bool safe)
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
@@ -95,12 +95,12 @@ namespace collision_and_rigid
             return null;
         }
 
-        public static (List<AabbBoxShape>, List<AabbBoxShape>) MovePtsReturnInAndOut(
-            Dictionary<int, TwoDVector> gidToMove,
-            List<AabbBoxShape> aabbBoxShapes, Zone zone)
+        public static (HashSet<AabbBoxShape>, HashSet<AabbBoxShape>) MovePtsReturnInAndOut(
+            Dictionary<int, ITwoDTwoP> gidToMove,
+            IEnumerable<AabbBoxShape> aabbBoxShapes, Zone zone)
         {
-            var inZone = new List<AabbBoxShape>();
-            var outZone = new List<AabbBoxShape>();
+            var inZone = new HashSet<AabbBoxShape>();
+            var outZone = new HashSet<AabbBoxShape>();
 
             foreach (var aabbPackBoxShape in aabbBoxShapes)
             {
@@ -399,14 +399,14 @@ namespace collision_and_rigid
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
 
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToList());
+            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToHashSet());
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
         public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToList());
+            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToHashSet());
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 

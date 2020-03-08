@@ -14,8 +14,8 @@ namespace game_stuff
         private int HomingEndTick;
         private int SkillTick;
         private int ComboTick;
-
-        Skill GenSkill(bool isLockObj)
+        public WeaponSkillStatus NextCombo;
+        public Skill GenSkill(bool isLockObj)
         {
             if (isLockObj)
             {

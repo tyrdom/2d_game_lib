@@ -21,14 +21,26 @@ namespace game_stuff
         };
 
 
-        public static float MaxHeight = 2f;
-        public static float MaxUp = MathF.Sqrt(2f * G * MaxHeight);
-        public static float G = 10f;
-        public static readonly float Friction = 1f;
+        public const float MaxHeight = 2f;
+        public static readonly float MaxUpSpeed = MathF.Sqrt(2f * G * MaxHeight);
+        public const float G = 0.1f;
+        public const float Friction = 1f;
 
-        public static int ToughGrowPerTick = 1000;
-        public static int MidTough = 10000;
+        public const int ToughGrowPerTick = 1000;
+        public const int MidTough = 10000;
+        public const int WeaponNum = 2;
+        public const float TwoSToSeePerTick = 10f;
+        public static readonly PushOnAir OutCought = new PushOnAir(new TwoDVector(0, 0), 0.1f, 0, 6);
 
-        public static PushOnAir OutCought = new PushOnAir(new TwoDVector(0, 0), 0.1f, 0, 8);
+        public const int QSpaceBodyMaxPerLevel = 5;
+
+        public const int HitWallTickParam = 2;
+        public const int HitWallCatchTickParam = 10;
+        public const int HitWallDmgParam = 2;
+        public const float HitWallCatchDmgParam = 5f;
+
+        public const float StandardSightR = 45f;
+        public static TwoDVector StandardVector = new TwoDVector(1f, 1.2f);
+        public static int StartHp=1000;
     }
 }

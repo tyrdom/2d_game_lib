@@ -7,9 +7,9 @@ namespace collision_and_rigid
 {
     public class QSpaceBranch : QSpace
     {
-        public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, List<AabbBoxShape> aabbPackBoxes,
-           ref QSpace quadOne, ref QSpace quadTwo,
-           ref QSpace quadThree,ref QSpace quadFour)
+        public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<AabbBoxShape> aabbPackBoxes,
+            ref QSpace quadOne, ref QSpace quadTwo,
+            ref QSpace quadThree, ref QSpace quadFour)
         {
             Father = father;
             TheQuad = quad;
@@ -31,7 +31,7 @@ namespace collision_and_rigid
 
         public sealed override Zone Zone { get; set; }
 
-        public sealed override List<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public sealed override HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
         public QSpace QuadTwo { get; set; }
         public QSpace QuadOne { get; set; }
 
@@ -40,26 +40,24 @@ namespace collision_and_rigid
 
         public QSpace QuadThree { get; set; }
 
-        public override void AddIdPoint(List<AabbBoxShape> idPointShapes, int limit)
+        public override void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit)
         {
-            var rawCount = AabbPackBoxShapes.Count;
-            var outZone = new List<AabbBoxShape>();
-            var q1 = new List<AabbBoxShape>();
-            var q2 = new List<AabbBoxShape>();
-            var q3 = new List<AabbBoxShape>();
-            var q4 = new List<AabbBoxShape>();
-            for (var index = 0; index < idPointShapes.Count; index++)
+            var outZone = new HashSet<AabbBoxShape>();
+            var q1 = new HashSet<AabbBoxShape>();
+            var q2 = new HashSet<AabbBoxShape>();
+            var q3 = new HashSet<AabbBoxShape>();
+            var q4 = new HashSet<AabbBoxShape>();
+            foreach (var aabbBoxShape in idPointShapes)
             {
-                var aabbBoxShape = idPointShapes[index];
                 var shape = aabbBoxShape.Shape;
                 switch (shape)
                 {
                     case IIdPointShape idPointShape:
-                        var twoDPoint = idPointShape.GetAchor();
+                        var twoDPoint = idPointShape.GetAnchor();
 
                         if (Zone.IncludePt(twoDPoint))
                         {
-                            if (index + rawCount < limit)
+                            if (AabbPackBoxShapes.Count <= limit)
                             {
                                 AabbPackBoxShapes.Add(aabbBoxShape);
                             }
@@ -108,7 +106,7 @@ namespace collision_and_rigid
             QuadFour.AddIdPoint(q4, limit);
         }
 
-        public override void MoveIdPoint(Dictionary<int, TwoDVector> gidToMove, int limit)
+        public override void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBoxShapes, Zone);
             AabbPackBoxShapes = inZone;
@@ -122,7 +120,7 @@ namespace collision_and_rigid
         }
 
 
-        public override TwoDPoint GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
+        public override TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
             if (notCross) return null;
@@ -235,7 +233,6 @@ namespace collision_and_rigid
             QuadFour.ForeachDoWithOutMove(doWithIIdPointShape, t);
         }
 
-       
 
         public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
         {
@@ -362,7 +359,7 @@ namespace collision_and_rigid
         {
             var qSpaces = new[] {QuadTwo, QuadOne, QuadFour, QuadThree};
             var a = AabbPackBoxShapes;
-            foreach (var qSpace in qSpaces) a.AddRange(qSpace.AabbPackBoxShapes);
+            foreach (var qSpace in qSpaces) a.UnionWith(qSpace.AabbPackBoxShapes);
 
             return new QSpaceLeaf(TheQuad, Father, Zone, a);
         }

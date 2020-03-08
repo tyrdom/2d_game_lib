@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public class WalkMap
     {
-        private Dictionary<BodySize, WalkBlock> SizeToEdge;
+        public Dictionary<BodySize, WalkBlock> SizeToEdge;
 
         public WalkMap(Dictionary<BodySize, WalkBlock> sizeToEdge)
         {

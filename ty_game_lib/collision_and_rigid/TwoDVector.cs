@@ -11,7 +11,7 @@ namespace collision_and_rigid
         Vertical
     }
 
-    public class TwoDVector
+    public class TwoDVector:ITwoDTwoP
     {
         public TwoDVector(float a, float b)
         {

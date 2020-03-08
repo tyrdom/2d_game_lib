@@ -10,7 +10,7 @@ namespace game_stuff
         private int NowTough;
 
 
-        private Dictionary<int, BulletConfig> launchTickToBullet;
+        private Dictionary<int, BulletConfig> LaunchTickToBullet;
         private TwoDVector[] Moves;
         private int MoveStartTick;
         private int? HomingStartTick;
@@ -18,15 +18,14 @@ namespace game_stuff
 
         private int SkillTick;
         private int ComboTick;
-        
-        
+
 
         public Skill(int nowOnTick, int nowTough, Dictionary<int, BulletConfig> launchTickToBullet, TwoDVector[] moves,
-            int moveStartTick, int? homingStartTick, int? homingEndTick, int skillTick,int comboTick)
+            int moveStartTick, int? homingStartTick, int? homingEndTick, int skillTick, int comboTick)
         {
             NowOnTick = nowOnTick;
             NowTough = nowTough;
-            this.launchTickToBullet = launchTickToBullet;
+            LaunchTickToBullet = launchTickToBullet;
             Moves = moves;
             MoveStartTick = moveStartTick;
             HomingStartTick = homingStartTick;
@@ -35,8 +34,47 @@ namespace game_stuff
             ComboTick = comboTick;
         }
 
-        public void GoTick()
+        public (TwoDVector?, Bullet?, int?) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
+             CharacterStatus caster,
+            TwoDPoint? objPos)
         {
+// GenVector
+            var lockDistance = objPos == null ? null : casterPos.GenVector(objPos);
+            TwoDVector? twoDVector = null;
+            if
+            (lockDistance != null && HomingStartTick != null && HomingEndTick != null &&
+             NowOnTick >= HomingStartTick.Value && NowOnTick < HomingEndTick.Value)
+            {
+                var rest = HomingEndTick.Value - NowOnTick;
+
+                twoDVector = lockDistance.Multi(1 / rest);
+            }
+
+            else if (NowOnTick >= MoveStartTick && NowOnTick < MoveStartTick + Moves.Length)
+
+            {
+                var moveStartTick = NowOnTick - MoveStartTick;
+
+                twoDVector = Moves[moveStartTick];
+            }
+
+// GenBulleft
+            Bullet bullet = null;
+            if (LaunchTickToBullet.TryGetValue(NowOnTick, out var bulletConfig))
+            {
+                bullet = bulletConfig.GenBullet(casterPos, casterAim, ref caster, NowTough);
+            }
+
+            //GONext
+            if (NowOnTick < SkillTick)
+            {
+                NowTough += TempConfig.ToughGrowPerTick;
+                NowOnTick += 1;
+
+                return (twoDVector, bullet, null);
+            }
+
+            return (twoDVector, bullet, ComboTick);
         }
     }
 }

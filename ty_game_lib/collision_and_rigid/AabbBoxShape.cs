@@ -22,7 +22,7 @@ namespace collision_and_rigid
         }
 
 
-        public List<AabbBoxShape> TryTouch(List<AabbBoxShape> aabbBoxes)
+        public List<AabbBoxShape> TryTouch(IEnumerable<AabbBoxShape> aabbBoxes)
         {
             return (List<AabbBoxShape>) aabbBoxes.Where(aabbBox => !aabbBox.IsNotTouch(this));
         }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace collision_and_rigid
 {
     public class QSpaceLeaf : QSpace
     {
-        public QSpaceLeaf(Quad? quad, QSpaceBranch? father, Zone zone, List<AabbBoxShape> aabbPackPackBoxShapes)
+        public QSpaceLeaf(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<AabbBoxShape> aabbPackPackBoxShapes)
         {
             Father = father;
             TheQuad = quad;
@@ -16,30 +17,29 @@ namespace collision_and_rigid
         public sealed override Quad? TheQuad { get; set; }
         public sealed override Zone Zone { get; set; }
 
-        public sealed override List<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public sealed override HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
 
-        public override void AddIdPoint(List<AabbBoxShape> idPointShapes, int limit)
+        public override void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit)
         {
             var rawCount = AabbPackBoxShapes.Count;
             if (rawCount + idPointShapes.Count <= limit)
             {
-                AabbPackBoxShapes.AddRange(idPointShapes);
+                AabbPackBoxShapes.UnionWith(idPointShapes);
             }
             else
             {
-                var q1 = new List<AabbBoxShape>();
-                var q2 = new List<AabbBoxShape>();
-                var q3 = new List<AabbBoxShape>();
-                var q4 = new List<AabbBoxShape>();
-                for (var index = 0; index < idPointShapes.Count; index++)
+                var q1 = new HashSet<AabbBoxShape>();
+                var q2 = new HashSet<AabbBoxShape>();
+                var q3 = new HashSet<AabbBoxShape>();
+                var q4 = new HashSet<AabbBoxShape>();
+                foreach (var aabbBoxShape in idPointShapes)
                 {
-                    var aabbBoxShape = idPointShapes[index];
                     var shape = aabbBoxShape.Shape;
                     switch (shape)
                     {
                         case IIdPointShape idPointShape:
-                            var twoDPoint = idPointShape.GetAchor();
-                            if (index + rawCount < limit)
+                            var twoDPoint = idPointShape.GetAnchor();
+                            if (AabbPackBoxShapes.Count <= limit)
                             {
                                 AabbPackBoxShapes.Add(aabbBoxShape);
                             }
@@ -79,10 +79,7 @@ namespace collision_and_rigid
                 QSpace qsl4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], q4);
                 var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, ref qsl1, ref qsl2,
                     ref qsl3, ref qsl4);
-                qSpaceBranch.QuadOne.Father = qSpaceBranch;
-                qSpaceBranch.QuadTwo.Father = qSpaceBranch;
-                qSpaceBranch.QuadThree.Father = qSpaceBranch;
-                qSpaceBranch.QuadFour.Father = qSpaceBranch;
+
                 if (Father != null)
                 {
                     switch (TheQuad)
@@ -108,7 +105,7 @@ namespace collision_and_rigid
             }
         }
 
-        public override void MoveIdPoint(Dictionary<int, TwoDVector> gidToMove, int limit)
+        public override void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBoxShapes, Zone);
             AabbPackBoxShapes = inZone;
@@ -200,39 +197,38 @@ namespace collision_and_rigid
 
         public QSpace TryCovToBranch()
         {
-            var one = new List<AabbBoxShape>();
-            var two = new List<AabbBoxShape>();
-            var three = new List<AabbBoxShape>();
-            var four = new List<AabbBoxShape>();
-            var zone = new List<AabbBoxShape>();
+            var one = new HashSet<AabbBoxShape>();
+            var two = new HashSet<AabbBoxShape>();
+            var three = new HashSet<AabbBoxShape>();
+            var four = new HashSet<AabbBoxShape>();
+            var zone = new HashSet<AabbBoxShape>();
             var (item1, item2) = Zone.GetMid();
-            AabbPackBoxShapes.ForEach(aabbBoxShape =>
-                {
-                    var intTBoxShapes = aabbBoxShape.SplitByQuads(item1, item2);
+            foreach (var aabbBoxShape in AabbPackBoxShapes)
+            {
+                var intTBoxShapes = aabbBoxShape.SplitByQuads(item1, item2);
 
-                    foreach (var (i, aabbBoxShape1) in intTBoxShapes)
-                        switch (i)
-                        {
-                            case 0:
-                                zone.Add(aabbBoxShape1);
-                                break;
-                            case 1:
-                                one.Add(aabbBoxShape1);
-                                break;
-                            case 2:
-                                two.Add(aabbBoxShape1);
-                                break;
-                            case 3:
-                                three.Add(aabbBoxShape1);
-                                break;
-                            case 4:
-                                four.Add(aabbBoxShape1);
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                }
-            );
+                foreach (var (i, aabbBoxShape1) in intTBoxShapes)
+                    switch (i)
+                    {
+                        case 0:
+                            zone.Add(aabbBoxShape1);
+                            break;
+                        case 1:
+                            one.Add(aabbBoxShape1);
+                            break;
+                        case 2:
+                            two.Add(aabbBoxShape1);
+                            break;
+                        case 3:
+                            three.Add(aabbBoxShape1);
+                            break;
+                        case 4:
+                            four.Add(aabbBoxShape1);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+            }
 
             if (zone.Count == AabbPackBoxShapes.Count) return this;
 
