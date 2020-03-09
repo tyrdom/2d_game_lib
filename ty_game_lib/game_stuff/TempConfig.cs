@@ -41,6 +41,10 @@ namespace game_stuff
 
         public const float StandardSightR = 45f;
         public static TwoDVector StandardVector = new TwoDVector(1f, 1.2f);
-        public static int StartHp=1000;
+        public const int StartHp = 1000;
+        public static int TestAtk = 10;
+
+        public static int TrickProtect = 100;
+        public static int ProtectTick = 10;
     }
 }

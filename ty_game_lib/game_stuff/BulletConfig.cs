@@ -19,7 +19,8 @@ namespace game_stuff
         private int PauseToOpponent;
         private int LifeTime;
         private TwoDVector Speed;
-
+        public int DamageMultiPercent;
+        public int ProtectV;
         public ObjType ObjType;
         public int ResId;
 
@@ -31,10 +32,14 @@ namespace game_stuff
                 pair => pair.Value.GenBulletboxByRawBox(casterPos, fixedAim));
 
 
+            int atk = caster.DamageHealStatus.Atk;
+            var damageMultiPercent = (int) atk * DamageMultiPercent / 100;
+            var damage = new Damage(damageMultiPercent, ProtectV);
+
             return new Bullet(casterPos, fixedAim, dictionary, ref caster,
                 SuccessActBuffConfigToOpponent,
                 FailActBuffConfigToSelf, PauseToCaster, PauseToOpponent, DamageBuffConfigs, ObjType, tough, LastTick,
-                ResId);
+                ResId, damage);
         }
     }
 }
