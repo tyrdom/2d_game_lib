@@ -8,7 +8,10 @@ WalkBlock碰撞地图
   
     SomeTools.GenWalkBlockByPolys
     
-    方法生成针对此半径角色的四叉树碰撞地图WalkBlock，这种地图是把圆和多个多边形的碰撞转化为点与直线，弧线组合的碰撞，并且直线和弧线会分布到四叉树结构中，并使用AABB包围盒射线碰撞排除
+    方法生成针对此半径角色的四叉树碰撞地图WalkBlock，
+    优势：这种地图是把圆和多个多边形的碰撞转化为点与直线，弧线组合的碰撞，
+    并且直线和弧线会分布到四叉树结构中，并使用AABB包围盒射线碰撞排除，
+    所以这样会比一般的四叉树角色之间碰撞要快
     
     WalkBlock的Qspace使用OutZones()可以递归打印branch和leaf的aabb包围盒范围
     CoverPoint可以判断是否碰撞到该点
