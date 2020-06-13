@@ -7,16 +7,16 @@ namespace collision_and_rigid
 {
     public static class SomeTools
     {
-        public static QSpace CreateEmptyRootBranch(Zone zone)
+        public static IQSpace CreateEmptyRootBranch(Zone zone)
         {
             var (item1, item2) = zone.GetMid();
             var cutTo4 = zone.CutTo4(item1, item2);
 
 
-            QSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new HashSet<AabbBoxShape>());
-            QSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new HashSet<AabbBoxShape>());
-            QSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new HashSet<AabbBoxShape>());
-            QSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new HashSet<AabbBoxShape>());
+            IQSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new HashSet<AabbBoxShape>());
+            IQSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new HashSet<AabbBoxShape>());
+            IQSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new HashSet<AabbBoxShape>());
+            IQSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new HashSet<AabbBoxShape>());
             var qSpaceBranch = new QSpaceBranch(null, null, zone, new HashSet<AabbBoxShape>(
                 )
                 ,
@@ -394,7 +394,7 @@ namespace collision_and_rigid
             return genWalkBlockByBlockShapes;
         }
 
-        public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
+        public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
@@ -403,7 +403,7 @@ namespace collision_and_rigid
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
-        public static QSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
+        public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToHashSet());

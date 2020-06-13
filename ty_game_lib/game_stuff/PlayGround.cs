@@ -7,13 +7,13 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private Dictionary<int, QSpace> TeamToBodies;
+        private Dictionary<int, IQSpace> TeamToBodies;
         private readonly SightMap SightMap;
         private readonly WalkMap WalkMap;
         private Dictionary<int, CharacterBody> GidToBody;
         private Dictionary<int, List<Bullet>> TeamToBullet;
 
-        public PlayGround(Dictionary<int, QSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
+        public PlayGround(Dictionary<int, IQSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody, Dictionary<int, List<Bullet>> teamToBullet)
         {
             TeamToBodies = teamToBodies;
@@ -235,7 +235,7 @@ namespace game_stuff
 
                             break;
                         case ObjType.AllTeam:
-                            foreach (var i in from QSpace value in TeamToBodies
+                            foreach (var i in from IQSpace value in TeamToBodies
                                 select bullet.HitTeam(value)
                                 into hitTeam
                                 from i in hitTeam

@@ -5,26 +5,13 @@ namespace collision_and_rigid
     {
 //        private float R;
         public bool IsBlockIn;
-        public QSpace? QSpace;
+        public IQSpace? QSpace;
 
 
-        public WalkBlock(bool isBlockIn, QSpace? qSpace)
+        public WalkBlock(bool isBlockIn, IQSpace? qSpace)
         {
             IsBlockIn = isBlockIn;
             QSpace = qSpace;
-        }
-
-        public AabbBoxShape CovToAabbPackBox()
-        {
-            var foo = QSpace.Zone;
-
-            return new AabbBoxShape(foo, this);
-        }
-
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
-        {
-            var touchWithARightShootPoint = QSpace.TouchWithARightShootPoint(p);
-            return touchWithARightShootPoint.Item1;
         }
 
         public bool CoverPoint(TwoDPoint p)
@@ -45,22 +32,19 @@ namespace collision_and_rigid
             return item1 == -1;
         }
 
-        public TwoDPoint PullInToPt(TwoDPoint lastP, TwoDPoint nowP)
-        {
-            var inLine = new TwoDVectorLine(nowP, lastP);
-            var apt = QSpace.GetSlidePoint(inLine, false);
-            return apt ?? lastP;
-        }
-
         public TwoDPoint? PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true)
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
+            if (QSpace == null) return null;
             var apt = QSpace.GetSlidePoint(inLine, true, safe);
 
-            if (safe) return apt ;
+            if (safe) return apt;
+            if (apt != null)
+            {
+                return CoverPoint(apt) ? PushOutToPt(lastP, apt, false) : apt;
+            }
 
-            return CoverPoint(apt) ? PushOutToPt(lastP, apt, false) : apt;
+            return null;
         }
-
     }
 }

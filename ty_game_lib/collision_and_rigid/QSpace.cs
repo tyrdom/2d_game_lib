@@ -1,37 +1,36 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 
 namespace collision_and_rigid
 {
-    public abstract class QSpace
+    public interface IQSpace
     {
-        public virtual Quad? TheQuad { get; set; }
+        public  Quad? TheQuad { get; set; }
         public QSpaceBranch? Father { get; set; }
-        public abstract Zone Zone { get; set; }
+        public Zone Zone { get; set; }
 
-        public abstract HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
 
-        public abstract void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit);
+        public void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit);
 
-        public abstract void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
-
-
-        public abstract TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true);
-
-        public abstract void InsertBox(AabbBoxShape boxShape);
-        public abstract void Remove(AabbBoxShape boxShape);
-        public abstract IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
-        public abstract bool LineIsCross(TwoDVectorLine line);
+        public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
 
-        public abstract QSpace TryCovToLimitQSpace(int limit);
-        public abstract (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
-        public abstract string OutZones();
-        public abstract int FastTouchWithARightShootPoint(TwoDPoint p);
+        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true);
 
-        public abstract void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t);
+        public void InsertBox(AabbBoxShape boxShape);
+        public void Remove(AabbBoxShape boxShape);
+        public IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
+        public bool LineIsCross(TwoDVectorLine line);
+
+
+        public IQSpace TryCovToLimitQSpace(int limit);
+        public (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
+        public string OutZones();
+        public int FastTouchWithARightShootPoint(TwoDPoint p);
+
+        public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t);
 
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t)

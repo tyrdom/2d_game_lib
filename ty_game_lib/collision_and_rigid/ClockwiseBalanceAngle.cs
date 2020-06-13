@@ -4,9 +4,9 @@ namespace collision_and_rigid
 {
     public class ClockwiseBalanceAngle
     {
-        public TwoDPoint A;
-        public TwoDPoint B;
-        public TwoDPoint O;
+        public readonly TwoDPoint A;
+        public readonly TwoDPoint B;
+        public readonly TwoDPoint O;
 
         public ClockwiseBalanceAngle(TwoDPoint a, TwoDPoint o, TwoDPoint b)
         {
@@ -23,8 +23,13 @@ namespace collision_and_rigid
             return getposOnLine != Pt2LinePos.Right;
         }
 
-        public bool Cover(TwoDPoint pt)
+        public bool Cover(TwoDPoint? pt)
         {
+            if (pt == null)
+            {
+                return false;
+            }
+
             var oa = new TwoDVectorLine(O, A);
             var ob = new TwoDVectorLine(O, B);
             var getPosOnLine = pt.GetPosOf(oa);

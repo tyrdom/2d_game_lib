@@ -5,11 +5,11 @@ using System.Security.Cryptography;
 
 namespace collision_and_rigid
 {
-    public class QSpaceBranch : QSpace
+    public class QSpaceBranch : IQSpace
     {
         public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<AabbBoxShape> aabbPackBoxes,
-            ref QSpace quadOne, ref QSpace quadTwo,
-            ref QSpace quadThree, ref QSpace quadFour)
+            ref IQSpace quadOne, ref IQSpace quadTwo,
+            ref IQSpace quadThree, ref IQSpace quadFour)
         {
             Father = father;
             TheQuad = quad;
@@ -27,20 +27,21 @@ namespace collision_and_rigid
         }
 
 
-        public sealed override Quad? TheQuad { get; set; }
+        public Quad? TheQuad { get; set; }
+        public QSpaceBranch? Father { get; set; }
 
-        public sealed override Zone Zone { get; set; }
+        public Zone Zone { get; set; }
 
-        public sealed override HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
-        public QSpace QuadTwo { get; set; }
-        public QSpace QuadOne { get; set; }
+        public HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public IQSpace QuadTwo { get; set; }
+        public IQSpace QuadOne { get; set; }
 
-        public QSpace QuadFour { get; set; }
+        public IQSpace QuadFour { get; set; }
 
 
-        public QSpace QuadThree { get; set; }
+        public IQSpace QuadThree { get; set; }
 
-        public override void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit)
+        public void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit)
         {
             var outZone = new HashSet<AabbBoxShape>();
             var q1 = new HashSet<AabbBoxShape>();
@@ -95,7 +96,8 @@ namespace collision_and_rigid
                 }
             }
 
-            Father.AddIdPoint(outZone, limit);
+            Father?.AddIdPoint(outZone, limit);
+
 
             QuadOne.AddIdPoint(q1, limit);
 
@@ -106,12 +108,12 @@ namespace collision_and_rigid
             QuadFour.AddIdPoint(q4, limit);
         }
 
-        public override void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
+        public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBoxShapes, Zone);
             AabbPackBoxShapes = inZone;
 
-            Father.AddIdPoint(outZone, limit);
+            Father?.AddIdPoint(outZone, limit);
 
             QuadOne.MoveIdPoint(gidToMove, limit);
             QuadTwo.MoveIdPoint(gidToMove, limit);
@@ -120,7 +122,7 @@ namespace collision_and_rigid
         }
 
 
-        public override TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
+        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
             if (notCross) return null;
@@ -134,7 +136,7 @@ namespace collision_and_rigid
         }
 
 
-        public override void Remove(AabbBoxShape boxShape)
+        public void Remove(AabbBoxShape boxShape)
         {
             if (AabbPackBoxShapes.Remove(boxShape)) return;
 
@@ -144,7 +146,7 @@ namespace collision_and_rigid
             QuadOne.Remove(boxShape);
         }
 
-        public override IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape)
+        public IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape)
         {
             var aabbBoxes = boxShape.TryTouch(AabbPackBoxShapes);
             var (item1, item2) = Zone.GetMid();
@@ -175,7 +177,7 @@ namespace collision_and_rigid
             return aabbBoxes;
         }
 
-        public override bool LineIsCross(TwoDVectorLine line)
+        public bool LineIsCross(TwoDVectorLine line)
         {
             var notCross = line.GenZone().NotCross(Zone);
             if (notCross) return false;
@@ -186,7 +188,7 @@ namespace collision_and_rigid
                 select line.IsTouchAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
         }
 
-        public override QSpace TryCovToLimitQSpace(int limit)
+        public IQSpace TryCovToLimitQSpace(int limit)
         {
             var tryCovToLimitQSpace1 = QuadOne.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
@@ -197,7 +199,7 @@ namespace collision_and_rigid
                 ref tryCovToLimitQSpace3, ref tryCovToLimitQSpace4);
         }
 
-        public override int FastTouchWithARightShootPoint(TwoDPoint p)
+        public int FastTouchWithARightShootPoint(TwoDPoint p)
         {
             var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
 
@@ -213,7 +215,7 @@ namespace collision_and_rigid
             return i;
         }
 
-        public override void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
+        public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
             foreach (var shape in AabbPackBoxShapes.Select(aabbPackBoxShape => aabbPackBoxShape.Shape))
             {
@@ -234,7 +236,7 @@ namespace collision_and_rigid
         }
 
 
-        public override (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
+        public (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
         {
             var (i, aabb) = p.GenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
             var whichQ = p.WhichQ(this);
@@ -310,7 +312,7 @@ namespace collision_and_rigid
             return (i, aabb);
         }
 
-        public override string OutZones()
+        public string OutZones()
         {
             var s = "Branch:::";
             foreach (var aabbBoxShape in AabbPackBoxShapes)
@@ -329,7 +331,7 @@ namespace collision_and_rigid
             return s;
         }
 
-        public override void InsertBox(AabbBoxShape boxShape)
+        public void InsertBox(AabbBoxShape boxShape)
         {
             var (item1, item2) = Zone.GetMid();
             var cutTo4 = boxShape.WhichQ(item1, item2);

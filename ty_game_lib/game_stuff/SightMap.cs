@@ -5,9 +5,9 @@ namespace game_stuff
 {
     public class SightMap
     {
-        public readonly QSpace Lines;
+        public readonly IQSpace Lines;
 
-        public SightMap(QSpace lines)
+        public SightMap(IQSpace lines)
         {
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }

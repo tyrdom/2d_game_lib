@@ -212,10 +212,10 @@ namespace collision_and_rigid
                 {
                     var twoDVectorLine = new TwoDVectorLine(angle1.O, pt1);
                     var line2 = new TwoDVectorLine(angle2.O, pt1);
-                    if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Left
+                    if (pt2?.GetPosOf(twoDVectorLine) == Pt2LinePos.Left
                         && pt2.GetPosOf(line2) == Pt2LinePos.Right)
                         pp = pt2;
-                    else if (pt2.GetPosOf(twoDVectorLine) == Pt2LinePos.Right
+                    else if (pt2?.GetPosOf(twoDVectorLine) == Pt2LinePos.Right
                              && pt2.GetPosOf(line2) == Pt2LinePos.Left)
                         pp = pt1;
                 }
