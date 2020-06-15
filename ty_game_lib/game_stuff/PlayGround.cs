@@ -206,7 +206,7 @@ namespace game_stuff
                         continue;
                     }
 
-                    switch (bullet.ObjType)
+                    switch (bullet.TargetType)
                     {
                         case ObjType.OtherTeam:
                             foreach (var (bodyTeam, value) in TeamToBodies)

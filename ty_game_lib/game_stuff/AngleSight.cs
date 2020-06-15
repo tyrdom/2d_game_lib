@@ -9,9 +9,9 @@ namespace game_stuff
         private readonly TwoDVector _upLeft;
         private readonly TwoDVector _upRight;
         public TwoDVector Aim;
-        private readonly float MaxR;
-        private float NowR;
-        private readonly float Theta;
+        private readonly float _maxR;
+        private float _nowR;
+        private readonly float _theta;
 
         public static AngleSight StandardAngleSight()
         {
@@ -20,14 +20,14 @@ namespace game_stuff
         public AngleSight(float r, TwoDVector upLeft)
         {
             Aim = new TwoDVector(1f, 0f);
-            NowR = r;
+            _nowR = r;
             var vector = upLeft.GetUnit();
             _upLeft = vector;
             _upRight = new TwoDVector(vector.X, -vector.Y);
-            MaxR = r;
+            _maxR = r;
             var cosA = vector.X;
             var cos2A = 2 * cosA * cosA - 1;
-            Theta = MathF.Acos(cos2A);
+            _theta = MathF.Acos(cos2A);
         }
 
         public bool InSight(TwoDVectorLine sLine, SightMap map)
@@ -35,7 +35,7 @@ namespace game_stuff
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
             var c1 = twoDVector.Cross(_upLeft);
             var c2 = twoDVector.Cross(_upRight);
-            var b = twoDVector.SqNorm() <= NowR * NowR;
+            var b = twoDVector.SqNorm() <= _nowR * _nowR;
             var isBlockSightLine = map.IsBlockSightLine(sLine);
             return c1 >= 0 && c2 <= 0 && b && isBlockSightLine;
         }
@@ -48,21 +48,21 @@ namespace game_stuff
             var cosT = newAim.GetUnit().Dot(oldAim) / oldAim.Norm();
             var cosA = _upLeft.X;
             var cos2A = 2 * cosA * cosA - 1;
-            var t = cosT > cos2A ? MathF.Acos(cosT) : Theta;
+            var t = cosT > cos2A ? MathF.Acos(cosT) : _theta;
 
-            var nowRSquare = NowR * NowR;
+            var nowRSquare = _nowR * _nowR;
             var snowR = nowRSquare * t;
             var twoSr = TempConfig.TwoSToSeePerTick - snowR;
             if (twoSr <= 0)
             {
                 var sqrt = MathF.Sqrt(TempConfig.TwoSToSeePerTick / t);
-                NowR = MathF.Min(MaxR, sqrt);
+                _nowR = MathF.Min(_maxR, sqrt);
             }
             else
             {
-                var rSquare = twoSr / Theta + nowRSquare;
+                var rSquare = twoSr / _theta + nowRSquare;
                 var sqrt = MathF.Sqrt(rSquare);
-                NowR = MathF.Min(MaxR, sqrt);
+                _nowR = MathF.Min(_maxR, sqrt);
             }
         }
     }

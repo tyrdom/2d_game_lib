@@ -22,7 +22,7 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
-            var characterStatus = new CharacterStatus(Speed, Gid, 0, null, null,
+            var characterStatus = new CharacterInBattle(Speed, Gid, 0, null, null,
                 1, WeaponConfigs, null,
                 Combo.ZeroCombo, 0, null,
                 new List<DamageBuff>(), DamageHealStatus.StartDamageHealAbout(), 0);

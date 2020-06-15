@@ -18,7 +18,7 @@ namespace game_stuff
         public TwoDPoint Pos;
         public TwoDVector Aim;
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision;
-        public CharacterStatus Caster;
+        public CharacterInBattle Caster;
         public IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
         public IAntiActBuffConfig FailActBuffConfigToSelf;
         public int PauseToCaster;
@@ -26,15 +26,15 @@ namespace game_stuff
         public Damage Damage;
         public DamageBuffConfig[] DamageBuffConfigs;
         public int Tough;
-        public ObjType ObjType;
+        public ObjType TargetType;
 
         public int RestTick;
         public int ResId;
 
         public Bullet(TwoDPoint pos, TwoDVector aim, Dictionary<BodySize, BulletBox> sizeToBulletCollision,
-            ref CharacterStatus caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
+            ref CharacterInBattle caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
             IAntiActBuffConfig failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            DamageBuffConfig[] damageBuffConfigs, ObjType objType, int tough, int restTick, int resId)
+            DamageBuffConfig[] damageBuffConfigs, ObjType targetType, int tough, int restTick, int resId)
         {
             Pos = pos;
             Aim = aim;
@@ -45,9 +45,9 @@ namespace game_stuff
 
             PauseToCaster = pauseToCaster;
             PauseToOpponent = pauseToOpponent;
-
+            Damage = new Damage(0);
             DamageBuffConfigs = damageBuffConfigs;
-            ObjType = objType;
+            TargetType = targetType;
             Tough = tough;
             RestTick = restTick;
             ResId = resId;
@@ -73,7 +73,7 @@ namespace game_stuff
                 case CharacterBody characterBody1:
                     if (IsHit(characterBody1))
                     {
-                        HitOne(ref characterBody1.CharacterStatus);
+                        HitOne(characterBody1.CharacterInBattle);
                     }
 
                     return true;
@@ -84,15 +84,15 @@ namespace game_stuff
             return false;
         }
 
-        public void HitOne(ref CharacterStatus characterStatus)
+        public void HitOne(CharacterInBattle characterInBattle)
         {
-            var protecting = characterStatus.ProtectTick > 0;
+            var protecting = characterInBattle.ProtectTick > 0;
 
-            var objTough = characterStatus.NowTough;
-            var opponentCharacterStatusAntiActBuff = characterStatus.AntiActBuff;
+            var objTough = characterInBattle.NowTough;
+            var opponentCharacterStatusAntiActBuff = characterInBattle.AntiActBuff;
             var isStun = opponentCharacterStatusAntiActBuff != null;
-            var isActSkill = characterStatus.NowCastSkill != null;
-            var twoDVector = characterStatus.CharacterBody.Sight.Aim;
+            var isActSkill = characterInBattle.NowCastSkill != null;
+            var twoDVector = characterInBattle.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) <= 0;
             var b2 = isActSkill && objTough < Tough;
             var b3 = !isActSkill && Tough < TempConfig.MidTough;
@@ -107,60 +107,61 @@ namespace game_stuff
             if (isStun || b2 || b3 || b4)
             {
                 Caster.PauseTick = PauseToCaster;
-                Caster.WhoLocks ??= characterStatus;
-                characterStatus.Catching.AntiActBuff = TempConfig.OutCought;
-                characterStatus.Combo.Reset();
-                characterStatus.DamageHealStatus.TakeDamage(Damage);
+                Caster.WhoLocks ??= characterInBattle;
+                if (characterInBattle.Catching != null) characterInBattle.Catching.AntiActBuff = TempConfig.OutCought;
+                characterInBattle.Combo.Reset();
+                characterInBattle.DamageHealStatus.TakeDamage(Damage);
 
                 switch (opponentCharacterStatusAntiActBuff)
                 {
                     case null:
-                        if (PauseToOpponent > characterStatus.PauseTick)
+                        if (PauseToOpponent > characterInBattle.PauseTick)
                         {
-                            characterStatus.PauseTick = PauseToOpponent;
+                            characterInBattle.PauseTick = PauseToOpponent;
                         }
 
                         break;
                     case Caught _:
-                        if (Caster.Catching == characterStatus)
+                        if (Caster.Catching == characterInBattle)
                         {
-                            if (PauseToOpponent > characterStatus.PauseTick)
+                            if (PauseToOpponent > characterInBattle.PauseTick)
                             {
-                                characterStatus.PauseTick = PauseToOpponent;
+                                characterInBattle.PauseTick = PauseToOpponent;
                             }
 
-                            var genBuff1 = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, characterStatus.GetPos(),
+                            var genBuff1 = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, characterInBattle.GetPos(),
                                 Aim,
                                 null, 0,
-                                characterStatus.CharacterBody.BodySize, ref Caster);
-                            characterStatus.AntiActBuff = genBuff1;
+                                characterInBattle.CharacterBody.BodySize, Caster);
+                            characterInBattle.AntiActBuff = genBuff1;
                         }
 
                         break;
                     case PushOnAir pushOnAir:
-                        if (PauseToOpponent > characterStatus.PauseTick)
+                        if (PauseToOpponent > characterInBattle.PauseTick)
                         {
-                            characterStatus.PauseTick = PauseToOpponent;
+                            characterInBattle.PauseTick = PauseToOpponent;
                         }
 
                         var height = pushOnAir.Height;
 
-                        var antiActBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, characterStatus.GetPos(), Aim,
+                        var antiActBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, characterInBattle.GetPos(),
+                            Aim,
                             height,
-                            pushOnAir.UpSpeed, characterStatus.CharacterBody.BodySize, ref Caster);
-                        characterStatus.AntiActBuff = antiActBuff;
+                            pushOnAir.UpSpeed, characterInBattle.CharacterBody.BodySize, Caster);
+                        characterInBattle.AntiActBuff = antiActBuff;
                         break;
                     case PushOnEarth _:
 
-                        if (PauseToOpponent > characterStatus.PauseTick)
+                        if (PauseToOpponent > characterInBattle.PauseTick)
                         {
-                            characterStatus.PauseTick = PauseToOpponent;
+                            characterInBattle.PauseTick = PauseToOpponent;
                         }
 
-                        var genBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, characterStatus.GetPos(), Aim,
+                        var genBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, characterInBattle.GetPos(), Aim,
                             null, 0,
-                            characterStatus.CharacterBody.BodySize, ref Caster);
-                        characterStatus.AntiActBuff = genBuff;
+                            characterInBattle.CharacterBody.BodySize, Caster);
+                        characterInBattle.AntiActBuff = genBuff;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(opponentCharacterStatusAntiActBuff));
@@ -174,15 +175,16 @@ namespace game_stuff
                 switch (FailActBuffConfigToSelf)
                 {
                     case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                        characterStatus.Catching = Caster;
-                        characterStatus.NowCastSkill = catchAntiActBuffConfig.TrickSkill;
+                        characterInBattle.Catching = Caster;
+                        characterInBattle.NowCastSkill = catchAntiActBuffConfig.TrickSkill;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
                 }
 
-                var antiActBuff = FailActBuffConfigToSelf.GenBuff(characterStatus.GetPos(), Caster.GetPos(), Aim, null,
-                    0, Caster.CharacterBody.BodySize, ref characterStatus);
+                var antiActBuff = FailActBuffConfigToSelf.GenBuff(characterInBattle.GetPos(), Caster.GetPos(), Aim,
+                    null,
+                    0, Caster.CharacterBody.BodySize, characterInBattle);
                 Caster.AntiActBuff = antiActBuff;
             }
         }
@@ -196,7 +198,7 @@ namespace game_stuff
 
         public BulletMsg GenMsg()
         {
-            return new BulletMsg(Pos,Aim,ResId,Caster.GetPos());
+            return new BulletMsg(Pos, Aim, ResId, Caster.GetPos());
         }
     }
 

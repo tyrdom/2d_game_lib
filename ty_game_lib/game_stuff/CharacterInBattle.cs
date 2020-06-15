@@ -16,7 +16,7 @@ namespace game_stuff
         P5
     }
 
-    public class CharacterStatus
+    public class CharacterInBattle
     {
         public CharacterBody CharacterBody;
 
@@ -26,9 +26,9 @@ namespace game_stuff
 
         public int PauseTick;
 
-        public CharacterStatus? WhoLocks;
+        public CharacterInBattle? WhoLocks;
 
-        public CharacterStatus? Catching;
+        public CharacterInBattle? Catching;
 
 //
 //weaponModu
@@ -52,8 +52,8 @@ namespace game_stuff
 
         public int ProtectTick;
 
-        public CharacterStatus(float moveSpeed, int gId, int pauseTick, CharacterStatus? whoLocks,
-            CharacterStatus? catching, int nowWeapon, Dictionary<int, WeaponConfig> weaponConfigs, Skill? nowCastSkill,
+        public CharacterInBattle(float moveSpeed, int gId, int pauseTick, CharacterInBattle? whoLocks,
+            CharacterInBattle? catching, int nowWeapon, Dictionary<int, WeaponConfig> weaponConfigs, Skill? nowCastSkill,
             Combo combo, int nowTough, IAntiActBuff? antiActBuff, List<DamageBuff> damageBuffs,
             DamageHealStatus damageHealStatus, int protectTick)
         {
