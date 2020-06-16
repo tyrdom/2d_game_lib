@@ -20,9 +20,9 @@ namespace collision_and_rigid
             var qSpaceBranch = new QSpaceBranch(null, null, zone, new HashSet<AabbBoxShape>(
                 )
                 ,
-              ref qs1,
-               ref qs2,
-               ref qs3,
+                ref qs1,
+                ref qs2,
+                ref qs3,
                 ref qs4
             );
             return qSpaceBranch;
@@ -60,7 +60,8 @@ namespace collision_and_rigid
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
         }
 
-        public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line, bool isPush,
+        public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line,
+            bool isPush,
             bool safe)
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
@@ -138,7 +139,9 @@ namespace collision_and_rigid
         }
 
 
-        private static (List<IBlockShape>, bool) AddTwoBlocks(List<IBlockShape> l1, bool l1IsBlockIn,
+        private static (List<IBlockShape>, bool) AddTwoBlocks(
+            List<IBlockShape> l1,
+            bool l1IsBlockIn,
             List<IBlockShape> l2,
             bool l2IsBlockIn)
         {
@@ -158,7 +161,10 @@ namespace collision_and_rigid
 
 
                 var blockShapeFromL1 = l1[i];
-                dicL1.TryGetValue(i, out var df1);
+                if (!dicL1.TryGetValue(i, out var df1))
+                {
+                    df1 = new List<(TwoDPoint, CondAfterCross)>();
+                }
 
                 for (var j = 0; j < l2.Count; j++)
                 {
@@ -168,7 +174,7 @@ namespace collision_and_rigid
                         blockShapeFromL1.CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(blockShapeFromL2);
 
 
-                    dicL2.TryGetValue(j, out var df2);
+                    if (!dicL2.TryGetValue(j, out var df2)) df2 = new List<(TwoDPoint, CondAfterCross)>();
 
                     if (crossAnotherBlockShapeReturnIsChangeAndBlocks.Count > 0)
                     {

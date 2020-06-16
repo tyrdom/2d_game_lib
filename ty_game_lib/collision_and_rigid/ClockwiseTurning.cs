@@ -330,7 +330,7 @@ namespace collision_and_rigid
             var rd = BelongRd();
             var (item1, item2) = line.CrossPtWithRound(rd);
             var pts = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-            if (item1 == null) return pts;
+            if (item1 == null || item2 == null) return pts;
 
             var o1 = Aob.O;
             var oi1 = new TwoDVectorLine(o1, item1);
@@ -380,7 +380,7 @@ namespace collision_and_rigid
             var rd1 = BelongRd();
             var rd2 = clockwiseTurning.BelongRd();
             var (item1, item2) = rd1.GetCrossPt(rd2);
-            if (item1 == null) return twoDPoints;
+            if (item1 == null || item2 == null) return twoDPoints;
 
             var o1 = Aob.O;
             var o2 = clockwiseTurning.Aob.O;

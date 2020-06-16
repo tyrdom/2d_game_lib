@@ -123,11 +123,18 @@ namespace game_stuff
 
     public class CatchAntiActBuffConfig : IAntiActBuffConfig
     {
+        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, int lastTick, Skill? trickSkill)
+        {
+            TwoDVectors = twoDVectors;
+            LastTick = lastTick;
+            TrickSkill = trickSkill;
+        }
+
         private TwoDVector[] TwoDVectors;
         private int LastTick;
         public Skill? TrickSkill;
 
-        public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, ref CharacterInBattle whoDid)
+        public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim,  CharacterInBattle whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move).ToList();
@@ -138,7 +145,7 @@ namespace game_stuff
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize, CharacterInBattle? whoDid)
         {
-            var antiActBuff = GenABuff(pos, aim, ref whoDid);
+            var antiActBuff = GenABuff(pos, aim,  whoDid);
             return antiActBuff;
         }
     }
