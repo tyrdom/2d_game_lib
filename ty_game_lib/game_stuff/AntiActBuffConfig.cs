@@ -7,7 +7,7 @@ namespace game_stuff
     public interface IAntiActBuffConfig
     {
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterInBattle? whoDid);
+            BodySize bodySize, CharacterInBattle whoDid);
     }
 
 
@@ -36,7 +36,7 @@ namespace game_stuff
         }
 
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterInBattle? whoDid)
+            BodySize bodySize, CharacterInBattle whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -86,7 +86,7 @@ namespace game_stuff
         }
 
         public IAntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
-            , float upSpeed, BodySize bodySize, CharacterInBattle? whoDid)
+            , float upSpeed, BodySize bodySize, CharacterInBattle whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -143,7 +143,7 @@ namespace game_stuff
         }
 
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterInBattle? whoDid)
+            BodySize bodySize, CharacterInBattle whoDid)
         {
             var antiActBuff = GenABuff(pos, aim,  whoDid);
             return antiActBuff;
