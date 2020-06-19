@@ -495,7 +495,7 @@ namespace collision_and_rigid
             var dVectorLine = new TwoDVectorLine(o, A);
 
             var (pt1, pt2) = CrossPtWithRound(rd);
-            if (pt1 == null || dVectorLine.GetVector().SqNorm() <= ct.R * ct.R) return (false, this, ct);
+            if (pt1 == null || pt2 == null || dVectorLine.GetVector().SqNorm() <= ct.R * ct.R) return (false, this, ct);
 
             TwoDPoint? pp = null;
 
@@ -544,7 +544,7 @@ namespace collision_and_rigid
             var cAobA = clockwiseTurning.Aob.A;
             var (item1, item2) = CrossPtWithRound(rd);
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-            if (item1 == null) return twoDPoints;
+            if (item1 == null||item2==null) return twoDPoints;
 
             var f1 = GetScaleInPt(item1);
             var f2 = GetScaleInPt(item2);

@@ -16,19 +16,24 @@ namespace game_stuff
         P5
     }
 
-    public class CharacterInBattle
+    public class CharacterStatus
     {
         public CharacterBody CharacterBody;
 
-        public float MoveSpeed;
+        public readonly float MaxMoveSpeed;
+        public readonly float MinMoveSpeed;
 
+        public readonly float AddMoveSpeed;
+
+        public float MoveSpeed;
+            
         public int GId;
 
         public int PauseTick;
 
-        public CharacterInBattle? WhoLocks;
+        public CharacterStatus? WhoLocks;
 
-        public CharacterInBattle? Catching;
+        public CharacterStatus? Catching;
 
 //
 //weaponModu
@@ -52,13 +57,13 @@ namespace game_stuff
 
         public int ProtectTick;
 
-        public CharacterInBattle(float moveSpeed, int gId, int pauseTick, CharacterInBattle? whoLocks,
-            CharacterInBattle? catching, int nowWeapon, Dictionary<int, WeaponConfig> weaponConfigs, Skill? nowCastSkill,
+        public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, CharacterStatus? whoLocks,
+            CharacterStatus? catching, int nowWeapon, Dictionary<int, WeaponConfig> weaponConfigs, Skill? nowCastSkill,
             Combo combo, int nowTough, IAntiActBuff? antiActBuff, List<DamageBuff> damageBuffs,
             DamageHealStatus damageHealStatus, int protectTick)
         {
             CharacterBody = null;
-            MoveSpeed = moveSpeed;
+            MaxMoveSpeed = maxMoveSpeed;
             GId = gId;
             PauseTick = pauseTick;
             WhoLocks = whoLocks;
@@ -153,7 +158,7 @@ namespace game_stuff
 
                     break;
                 case null:
-                    var twoDVector = operate.Move?.Multi(MoveSpeed);
+                    var twoDVector = operate.Move?.Multi(MaxMoveSpeed);
                     return (twoDVector, null);
 
                 default:
@@ -182,7 +187,7 @@ namespace game_stuff
 
         public static DamageHealStatus StartDamageHealAbout()
         {
-            return new DamageHealStatus(TempConfig.StartHp,TempConfig.StartHp);
+            return new DamageHealStatus(TempConfig.StartHp, TempConfig.StartHp);
         }
 
         public void TakeDamage(Damage damage)
@@ -209,8 +214,8 @@ namespace game_stuff
         }
 
         public static Combo ZeroCombo
-        = new Combo(WeaponSkillStatus.Normal, null);
-        
+            = new Combo(WeaponSkillStatus.Normal, null);
+
 
         public void Reset()
         {

@@ -35,7 +35,7 @@ namespace game_stuff
         }
 
         public (TwoDVector?, Bullet?, int?) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
-             CharacterInBattle caster,
+             CharacterStatus caster,
             TwoDPoint? objPos)
         {
 // GenVector

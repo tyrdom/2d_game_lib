@@ -7,7 +7,7 @@ namespace game_stuff
     public interface IAntiActBuffConfig
     {
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterInBattle whoDid);
+            BodySize bodySize, CharacterStatus whoDid);
     }
 
 
@@ -17,6 +17,15 @@ namespace game_stuff
         private PushType PushType;
         private TwoDVector pushAboutVector;
         private int TickLast;
+
+        public PushEarthAntiActBuffConfig(float rawTwoDVectorX, PushType pushType, TwoDVector pushAboutVector,
+            int tickLast)
+        {
+            RawTwoDVectorX = rawTwoDVectorX;
+            PushType = pushType;
+            this.pushAboutVector = pushAboutVector;
+            TickLast = tickLast;
+        }
 
         IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? air, float upSpeed, float friction)
         {
@@ -36,7 +45,7 @@ namespace game_stuff
         }
 
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterInBattle whoDid)
+            BodySize bodySize, CharacterStatus whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -86,7 +95,7 @@ namespace game_stuff
         }
 
         public IAntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
-            , float upSpeed, BodySize bodySize, CharacterInBattle whoDid)
+            , float upSpeed, BodySize bodySize, CharacterStatus whoDid)
         {
             var f = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -134,7 +143,7 @@ namespace game_stuff
         private int LastTick;
         public Skill? TrickSkill;
 
-        public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim,  CharacterInBattle whoDid)
+        public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move).ToList();
@@ -143,9 +152,9 @@ namespace game_stuff
         }
 
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterInBattle whoDid)
+            BodySize bodySize, CharacterStatus whoDid)
         {
-            var antiActBuff = GenABuff(pos, aim,  whoDid);
+            var antiActBuff = GenABuff(pos, aim, whoDid);
             return antiActBuff;
         }
     }

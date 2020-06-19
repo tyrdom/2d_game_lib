@@ -8,8 +8,8 @@ namespace game_stuff
     public class PlayGround
     {
         private Dictionary<int, IQSpace> TeamToBodies;
-        private readonly SightMap SightMap;
-        private readonly WalkMap WalkMap;
+        private readonly SightMap _sightMap;
+        private readonly WalkMap _walkMap;
         private Dictionary<int, CharacterBody> GidToBody;
         private Dictionary<int, List<Bullet>> TeamToBullet;
 
@@ -17,8 +17,8 @@ namespace game_stuff
             Dictionary<int, CharacterBody> gidToBody, Dictionary<int, List<Bullet>> teamToBullet)
         {
             TeamToBodies = teamToBodies;
-            SightMap = sightMap;
-            WalkMap = walkMap;
+            _sightMap = sightMap;
+            _walkMap = walkMap;
             GidToBody = gidToBody;
             TeamToBullet = teamToBullet;
         }
@@ -140,7 +140,7 @@ namespace game_stuff
                     else
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((idp, acb) => { return acb.InSight(idp, SightMap); },
+                            qSpace.FilterToGIdPsList((idp, acb) => { return acb.InSight(idp, _sightMap); },
                                 characterBody);
                         characterBodies.UnionWith(filterToGIdPsList.Select(x =>
                         {
@@ -187,7 +187,7 @@ namespace game_stuff
                     }
 
                     return null;
-                }, WalkMap);
+                }, _walkMap);
                 qSpace.MoveIdPoint(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
             }
         }

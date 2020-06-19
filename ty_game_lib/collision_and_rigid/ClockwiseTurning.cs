@@ -422,7 +422,7 @@ namespace collision_and_rigid
             var round = new Round(Aob.O, R);
             var (item1, item2) = round.GetX(h);
 
-            if (item1 == null) return (null, null);
+            if (item1 == null||item2==null) return (null, null);
 
 
             var b = item1.Value < z.Right && item1.Value > z.Left;
@@ -471,7 +471,7 @@ namespace collision_and_rigid
             var round = new Round(o, R);
             var (item1, item2) = round.GetY(v);
 
-            if (item1 == null) return (null, null);
+            if (item1 == null||item2==null) return (null, null);
 
             var b1 = item1.Value < z.Up && item1.Value > z.Down;
             var b2 = item2.Value < z.Up && item2.Value > z.Down;

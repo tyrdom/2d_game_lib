@@ -4,7 +4,6 @@ using collision_and_rigid;
 namespace game_stuff
 {
     public class SkillConfig
-
     {
         private int BaseTough;
         private Dictionary<int, BulletConfig> launchTickToBullet;

@@ -108,9 +108,9 @@ namespace game_stuff
     class Caught : IAntiActBuff
     {
         public List<TwoDPoint> MovesOnPoints;
-        public CharacterInBattle WhoCatchMe;
+        public CharacterStatus WhoCatchMe;
 
-        public Caught(List<TwoDPoint> movesOnPoints, int restTick, ref CharacterInBattle whoCatchMe)
+        public Caught(List<TwoDPoint> movesOnPoints, int restTick, ref CharacterStatus whoCatchMe)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;

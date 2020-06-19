@@ -22,7 +22,7 @@ namespace game_stuff
         public ObjType ObjType;
         public int ResId;
 
-        public Bullet GenBullet(TwoDPoint casterPos, TwoDVector casterAim, ref CharacterInBattle caster, int tough)
+        public Bullet GenBullet(TwoDPoint casterPos, TwoDVector casterAim, ref CharacterStatus caster, int tough)
         {
             var fixedAim = casterAim.ClockwiseTurn(LocalAim);
 

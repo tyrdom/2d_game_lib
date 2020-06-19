@@ -7,20 +7,20 @@ namespace game_stuff
     public class CharacterBody : IIdPointShape
     {
         public BodySize BodySize;
-        public CharacterInBattle CharacterInBattle;
+        public CharacterStatus CharacterStatus;
         public TwoDPoint LastPos;
 
         public TwoDPoint NowPos;
         public AngleSight Sight;
         public int Team;
-        public CharacterBody(TwoDPoint nowPos, BodySize bodySize, ref CharacterInBattle characterInBattle,
+        public CharacterBody(TwoDPoint nowPos, BodySize bodySize,  CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
         {
             NowPos = nowPos;
             BodySize = bodySize;
-            characterInBattle.CharacterBody = this;
-            CharacterInBattle = characterInBattle;
+            characterStatus.CharacterBody = this;
+            CharacterStatus = characterStatus;
             LastPos = lastPos;
             Sight = sight;
             Team = team;
@@ -40,7 +40,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return CharacterInBattle.GId;
+            return CharacterStatus.GId;
         }
 
         public TwoDPoint Move(ITwoDTwoP vector)
@@ -66,14 +66,14 @@ namespace game_stuff
         {
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return (null, null);
-            var charGoTick = CharacterInBattle.CharGoTick(o);
+            var charGoTick = CharacterStatus.CharGoTick(o);
             return charGoTick;
 
         }
 
         public void HitWall()
         {
-            var characterStatusAntiActBuff = CharacterInBattle.AntiActBuff;
+            var characterStatusAntiActBuff = CharacterStatus.AntiActBuff;
             if (characterStatusAntiActBuff == null)
             {
                 return;
@@ -81,18 +81,18 @@ namespace game_stuff
 
             var hitWall = characterStatusAntiActBuff.HitWall();
             var hitWallDmgParam = 1 + (int) (TempConfig.HitWallDmgParam * hitWall);
-            CharacterInBattle.DamageHealStatus.TakeDamage(new Damage(hitWallDmgParam));
+            CharacterStatus.DamageHealStatus.TakeDamage(new Damage(hitWallDmgParam));
         }
 
         public CharTickMsg GenTickMsg()
         {
-            var type = CharacterInBattle.AntiActBuff?.GetType();
-            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterInBattle.DamageHealStatus,CharacterInBattle.NowCastSkill!=null,type);
+            var type = CharacterStatus.AntiActBuff?.GetType();
+            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.NowCastSkill!=null,type);
         }
 
         public CharInitMsg GenInitMsg()
         {
-            return new CharInitMsg(GetId(),NowPos,Sight.Aim,CharacterInBattle.DamageHealStatus,CharacterInBattle.WeaponConfigs);
+            return new CharInitMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.WeaponConfigs);
         }
     }
 }
