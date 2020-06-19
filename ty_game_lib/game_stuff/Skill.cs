@@ -9,19 +9,22 @@ namespace game_stuff
 
         private int NowTough;
 
+        private readonly int BaseTough;
 
-        private Dictionary<int, BulletConfig> LaunchTickToBullet;
-        private TwoDVector[] Moves;
-        private int MoveStartTick;
-        private int? HomingStartTick;
-        private int? HomingEndTick;
+        private readonly Dictionary<int, BulletConfig> LaunchTickToBullet;
+        private readonly TwoDVector[] Moves;
+        private readonly int MoveStartTick;
+
+        private bool IsHoming;
+        private int HomingStartTick;
+        private int HomingEndTick;
 
         private int SkillTick;
         private int ComboTick;
 
 
         public Skill(int nowOnTick, int nowTough, Dictionary<int, BulletConfig> launchTickToBullet, TwoDVector[] moves,
-            int moveStartTick, int? homingStartTick, int? homingEndTick, int skillTick, int comboTick)
+            int moveStartTick, int homingStartTick, int homingEndTick, int skillTick, int comboTick)
         {
             NowOnTick = nowOnTick;
             NowTough = nowTough;
@@ -35,19 +38,19 @@ namespace game_stuff
         }
 
         public (TwoDVector?, Bullet?, int?) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
-             CharacterStatus caster,
+            CharacterStatus caster,
             TwoDPoint? objPos)
         {
 // GenVector
             var lockDistance = objPos == null ? null : casterPos.GenVector(objPos);
             TwoDVector? twoDVector = null;
             if
-            (lockDistance != null && HomingStartTick != null && HomingEndTick != null &&
-             NowOnTick >= HomingStartTick.Value && NowOnTick < HomingEndTick.Value)
+            (lockDistance != null && IsHoming &&
+             NowOnTick >= HomingStartTick && NowOnTick < HomingEndTick)
             {
-                var rest = HomingEndTick.Value - NowOnTick;
+                var rest = HomingEndTick - NowOnTick;
 
-                twoDVector = lockDistance.Multi(1 / rest);
+                twoDVector = lockDistance.Multi(1f / rest);
             }
 
             else if (NowOnTick >= MoveStartTick && NowOnTick < MoveStartTick + Moves.Length)

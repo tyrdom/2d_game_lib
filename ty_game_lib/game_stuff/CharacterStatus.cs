@@ -26,7 +26,7 @@ namespace game_stuff
         public readonly float AddMoveSpeed;
 
         public float MoveSpeed;
-            
+
         public int GId;
 
         public int PauseTick;
@@ -62,7 +62,7 @@ namespace game_stuff
             Combo combo, int nowTough, IAntiActBuff? antiActBuff, List<DamageBuff> damageBuffs,
             DamageHealStatus damageHealStatus, int protectTick)
         {
-            CharacterBody = null;
+            CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
             GId = gId;
             PauseTick = pauseTick;
@@ -109,6 +109,7 @@ namespace game_stuff
             }
 
             CharacterBody.Sight.OpChangeAim(operate.Aim);
+
             switch (operate.Action)
             {
                 case SkillAction.A1:
@@ -213,9 +214,10 @@ namespace game_stuff
             ComboTick = comboTick;
         }
 
-        public static Combo ZeroCombo
-            = new Combo(WeaponSkillStatus.Normal, null);
-
+        public static Combo NewZeroCombo()
+        {
+            return new Combo(WeaponSkillStatus.Normal, null);
+        }
 
         public void Reset()
         {

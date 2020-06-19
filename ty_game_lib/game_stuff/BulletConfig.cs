@@ -4,6 +4,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
+    //TODO 直接使用Bullet 不反复创建对象
     public class BulletConfig
     {
         private TwoDVector LocalAim;

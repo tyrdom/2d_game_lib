@@ -15,6 +15,7 @@ namespace game_stuff
 
     public class Bullet
     {
+        public bool IsActive;
         public TwoDPoint Pos;
         public TwoDVector Aim;
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision;
@@ -45,7 +46,7 @@ namespace game_stuff
 
             PauseToCaster = pauseToCaster;
             PauseToOpponent = pauseToOpponent;
-            Damage = new Damage(0);
+            Damage = new Damage(1);
             DamageBuffConfigs = damageBuffConfigs;
             TargetType = targetType;
             Tough = tough;

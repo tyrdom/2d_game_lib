@@ -7,7 +7,8 @@ namespace game_stuff
     {
         public SkillAction? Action;
         public TwoDVector? Move;
-        public TwoDVector? Aim;
+        public TwoDVector Aim;
+        
     }
 
     public enum SkillAction

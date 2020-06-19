@@ -25,7 +25,7 @@ namespace game_stuff
         {
             var characterStatus = new CharacterStatus(Speed, Gid, 0, null, null,
                 1, WeaponConfigs, null,
-                Combo.ZeroCombo, 0, null,
+                Combo.NewZeroCombo(), 0, null,
                 new List<DamageBuff>(), DamageHealStatus.StartDamageHealAbout(), 0);
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
                 AngleSight.StandardAngleSight(),
