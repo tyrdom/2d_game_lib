@@ -34,9 +34,9 @@ namespace game_stuff
         TwoDVector Aim;
 
         private DamageHealStatus _damageHealStatus;
-        private Dictionary<int, WeaponConfig> WeaponConfigs;
+        private Dictionary<int, Weapon> WeaponConfigs;
 
-        public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, Dictionary<int, WeaponConfig> weaponConfigs)
+        public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, Dictionary<int, Weapon> weaponConfigs)
         {
             GId = gId;
             Pos = pos;

@@ -25,7 +25,6 @@ namespace game_stuff
         public int PauseToCaster;
         public int PauseToOpponent;
         public Damage Damage;
-        public DamageBuffConfig[] DamageBuffConfigs;
         public int Tough;
         public ObjType TargetType;
 
@@ -35,7 +34,7 @@ namespace game_stuff
         public Bullet(TwoDPoint pos, TwoDVector aim, Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             ref CharacterStatus caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
             IAntiActBuffConfig failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            DamageBuffConfig[] damageBuffConfigs, ObjType targetType, int tough, int restTick, int resId)
+           ObjType targetType, int tough, int restTick, int resId)
         {
             Pos = pos;
             Aim = aim;
@@ -47,7 +46,6 @@ namespace game_stuff
             PauseToCaster = pauseToCaster;
             PauseToOpponent = pauseToOpponent;
             Damage = new Damage(1);
-            DamageBuffConfigs = damageBuffConfigs;
             TargetType = targetType;
             Tough = tough;
             RestTick = restTick;
@@ -200,6 +198,11 @@ namespace game_stuff
         public BulletMsg GenMsg()
         {
             return new BulletMsg(Pos, Aim, ResId, Caster.GetPos());
+        }
+
+        public Bullet? ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim, ref CharacterStatus caster, in int nowTough)
+        {
+            throw new NotImplementedException();
         }
     }
 

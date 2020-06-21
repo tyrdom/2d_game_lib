@@ -11,20 +11,21 @@ namespace game_stuff
 
         private readonly int BaseTough;
 
-        private readonly Dictionary<int, BulletConfig> LaunchTickToBullet;
+        private readonly Dictionary<int, Bullet> LaunchTickToBullet;
         private readonly TwoDVector[] Moves;
         private readonly int MoveStartTick;
 
-        private bool IsHoming;
+        private bool IsHoming=false;
         private int HomingStartTick;
         private int HomingEndTick;
 
         private int SkillTick;
         private int ComboTick;
+        public WeaponSkillStatus NextCombo;
 
 
-        public Skill(int nowOnTick, int nowTough, Dictionary<int, BulletConfig> launchTickToBullet, TwoDVector[] moves,
-            int moveStartTick, int homingStartTick, int homingEndTick, int skillTick, int comboTick)
+        public Skill(int nowOnTick, int nowTough, Dictionary<int, Bullet> launchTickToBullet, TwoDVector[] moves,
+            int moveStartTick, int homingStartTick, int homingEndTick, int skillTick, int comboTick, int baseTough)
         {
             NowOnTick = nowOnTick;
             NowTough = nowTough;
@@ -35,6 +36,7 @@ namespace game_stuff
             HomingEndTick = homingEndTick;
             SkillTick = skillTick;
             ComboTick = comboTick;
+            BaseTough = baseTough;
         }
 
         public (TwoDVector?, Bullet?, int?) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
@@ -65,7 +67,7 @@ namespace game_stuff
             Bullet bullet = null;
             if (LaunchTickToBullet.TryGetValue(NowOnTick, out var bulletConfig))
             {
-                bullet = bulletConfig.GenBullet(casterPos, casterAim, ref caster, NowTough);
+                bullet = bullet.ActiveBullet(casterPos, casterAim, ref caster, NowTough);
             }
 
             //GONext
@@ -78,6 +80,11 @@ namespace game_stuff
             }
 
             return (twoDVector, bullet, ComboTick);
+        }
+
+        public Skill? LaunchSkill(bool p0)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

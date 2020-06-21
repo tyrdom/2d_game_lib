@@ -81,7 +81,7 @@ namespace game_stuff
 
             var hitWall = characterStatusAntiActBuff.HitWall();
             var hitWallDmgParam = 1 + (int) (TempConfig.HitWallDmgParam * hitWall);
-            CharacterStatus.DamageHealStatus.TakeDamage(new Damage(hitWallDmgParam,0));
+            CharacterStatus.DamageHealStatus.TakeDamage(new Damage(0));
         }
 
         public CharTickMsg GenTickMsg()

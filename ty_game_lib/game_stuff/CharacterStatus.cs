@@ -39,7 +39,7 @@ namespace game_stuff
 //weaponModu
         public int NowWeapon;
 
-        public Dictionary<int, WeaponConfig> WeaponConfigs;
+        public Dictionary<int, Weapon> WeaponConfigs;
 
 //
         public Skill? NowCastSkill;
@@ -58,7 +58,7 @@ namespace game_stuff
         public int ProtectTick;
 
         public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, CharacterStatus? whoLocks,
-            CharacterStatus? catching, int nowWeapon, Dictionary<int, WeaponConfig> weaponConfigs, Skill? nowCastSkill,
+            CharacterStatus? catching, int nowWeapon, Dictionary<int, Weapon> weaponConfigs, Skill? nowCastSkill,
             Combo combo, int nowTough, IAntiActBuff? antiActBuff, List<DamageBuff> damageBuffs,
             DamageHealStatus damageHealStatus, int protectTick)
         {
@@ -119,7 +119,7 @@ namespace game_stuff
                             = w.SkillGroup1;
                         if (valueSkillGroup1.TryGetValue(Combo.GetWStatus(), out var skillConfig))
                         {
-                            var genSkill = skillConfig.GenSkill(WhoLocks != null);
+                            var genSkill = skillConfig.LaunchSkill(WhoLocks != null);
                             Combo.WeaponSkillStatus = skillConfig.NextCombo;
                             NowCastSkill = genSkill;
                             return CharGoTick(null);
@@ -132,10 +132,10 @@ namespace game_stuff
                     {
                         var valueSkillGroup2
                             = w1.SkillGroup2;
-                        if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skillConfig))
+                        if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skill))
                         {
-                            var genSkill = skillConfig.GenSkill(WhoLocks != null);
-                            Combo.WeaponSkillStatus = skillConfig.NextCombo;
+                            var genSkill = skill.LaunchSkill(WhoLocks != null);
+                            Combo.WeaponSkillStatus = skill.NextCombo;
                             NowCastSkill = genSkill;
                             return CharGoTick(null);
                         }
@@ -150,7 +150,7 @@ namespace game_stuff
                             = w2.SkillGroup3;
                         if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skillConfig))
                         {
-                            var genSkill = skillConfig.GenSkill(WhoLocks != null);
+                            var genSkill = skillConfig.LaunchSkill(WhoLocks != null);
                             Combo.WeaponSkillStatus = skillConfig.NextCombo;
                             NowCastSkill = genSkill;
                             return CharGoTick(null);

@@ -7,11 +7,11 @@ namespace game_stuff
     {
         public int Gid;
         public int TeamId;
-        private Dictionary<int, WeaponConfig> WeaponConfigs;
+        private Dictionary<int, Weapon> WeaponConfigs;
         private BodySize BodySize;
         private float Speed;
 
-        public PlayerInitData(int gid, int teamId, Dictionary<int, WeaponConfig> weaponConfigs, BodySize bodySize,
+        public PlayerInitData(int gid, int teamId, Dictionary<int, Weapon> weaponConfigs, BodySize bodySize,
             float speed)
         {
             Gid = gid;
