@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using collision_and_rigid;
 
@@ -20,31 +21,28 @@ namespace game_stuff
     {
         public CharacterBody CharacterBody;
 
-        public readonly float MaxMoveSpeed;
+        private readonly float _maxMoveSpeed;
         public readonly float MinMoveSpeed;
 
         public readonly float AddMoveSpeed;
 
-        public float MoveSpeed;
+        public float NowMoveSpeed;
 
         public int GId;
 
         public int PauseTick;
 
-        public CharacterStatus? WhoLocks;
+        public CharacterStatus? LockingWho;
 
-        public CharacterStatus? Catching;
+        public CharacterStatus? CatchingWho;
 
-//
-//weaponModu
         public int NowWeapon;
 
         public Dictionary<int, Weapon> WeaponConfigs;
 
-//
-        public Skill? NowCastSkill;
+        //
+        public Queue<Skill> NowCastSkillQueue;
 
-        public Combo Combo;
 
         public int NowTough;
 
@@ -57,27 +55,31 @@ namespace game_stuff
 
         public int ProtectTick;
 
-        public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, CharacterStatus? whoLocks,
-            CharacterStatus? catching, int nowWeapon, Dictionary<int, Weapon> weaponConfigs, Skill? nowCastSkill,
-            Combo combo, int nowTough, IAntiActBuff? antiActBuff, List<DamageBuff> damageBuffs,
-            DamageHealStatus damageHealStatus, int protectTick)
+        public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, CharacterStatus? lockingWho,
+            CharacterStatus? catchingWho, int nowWeapon, Dictionary<int, Weapon> weaponConfigs,
+            int nowTough,
+            DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
         {
             CharacterBody = null!;
-            MaxMoveSpeed = maxMoveSpeed;
+            _maxMoveSpeed = maxMoveSpeed;
             GId = gId;
             PauseTick = pauseTick;
-            WhoLocks = whoLocks;
-            Catching = catching;
+            LockingWho = lockingWho;
+            CatchingWho = catchingWho;
             NowWeapon = nowWeapon;
             WeaponConfigs = weaponConfigs;
-            NowCastSkill = nowCastSkill;
-            Combo = combo;
+            NowCastSkillQueue = new Queue<Skill>();
+
             NowTough = nowTough;
-            AntiActBuff = antiActBuff;
-            DamageBuffs = damageBuffs;
+            AntiActBuff = null;
+            DamageBuffs = new List<DamageBuff>();
             DamageHealStatus = damageHealStatus;
             ProtectTick = protectTick;
+            AddMoveSpeed = addMoveSpeed;
+            MinMoveSpeed = minMoveSpeed;
+            NowMoveSpeed = 0f;
         }
+
 
         public (ITwoDTwoP?, Bullet?) CharGoTick(Operate? operate)
         {
@@ -94,12 +96,14 @@ namespace game_stuff
                 return (twoDPoint, null);
             }
 
-            if (NowCastSkill != null)
+            if (NowCastSkillQueue.Count > 0)
             {
                 var (twoDVector, bullet, item3) =
-                    NowCastSkill.GoATick(GetPos(), CharacterBody.Sight.Aim, this, WhoLocks.GetPos());
-                if (item3 != null)
-                    Combo.ComboTick = item3.Value;
+                    NowCastSkillQueue.First().GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
+                if (item3)
+                {
+                    NowCastSkillQueue.Dequeue();
+                }
                 return (twoDVector, bullet);
             }
 
@@ -108,63 +112,66 @@ namespace game_stuff
                 return (null, null);
             }
 
-            CharacterBody.Sight.OpChangeAim(operate.Aim);
-
-            switch (operate.Action)
+            if (operate.Aim != null)
             {
-                case SkillAction.A1:
-                    if (WeaponConfigs.TryGetValue(NowWeapon, out var w))
-                    {
-                        var valueSkillGroup1
-                            = w.SkillGroup1;
-                        if (valueSkillGroup1.TryGetValue(Combo.GetWStatus(), out var skillConfig))
-                        {
-                            var genSkill = skillConfig.LaunchSkill(WhoLocks != null);
-                            Combo.WeaponSkillStatus = skillConfig.NextCombo;
-                            NowCastSkill = genSkill;
-                            return CharGoTick(null);
-                        }
-                    }
-
-                    break;
-                case SkillAction.A2:
-                    if (WeaponConfigs.TryGetValue(NowWeapon, out var w1))
-                    {
-                        var valueSkillGroup2
-                            = w1.SkillGroup2;
-                        if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skill))
-                        {
-                            var genSkill = skill.LaunchSkill(WhoLocks != null);
-                            Combo.WeaponSkillStatus = skill.NextCombo;
-                            NowCastSkill = genSkill;
-                            return CharGoTick(null);
-                        }
-                    }
-
-                    break;
-                case SkillAction.A3:
-                    NowWeapon = (NowWeapon + 1) % TempConfig.WeaponNum;
-                    if (WeaponConfigs.TryGetValue(NowWeapon, out var w2))
-                    {
-                        var valueSkillGroup2
-                            = w2.SkillGroup3;
-                        if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skillConfig))
-                        {
-                            var genSkill = skillConfig.LaunchSkill(WhoLocks != null);
-                            Combo.WeaponSkillStatus = skillConfig.NextCombo;
-                            NowCastSkill = genSkill;
-                            return CharGoTick(null);
-                        }
-                    }
-
-                    break;
-                case null:
-                    var twoDVector = operate.Move?.Multi(MaxMoveSpeed);
-                    return (twoDVector, null);
-
-                default:
-                    throw new ArgumentOutOfRangeException();
+                CharacterBody.Sight.OpChangeAim(operate.Aim);
             }
+
+            // switch (operate.Action)
+            // {
+            //     case SkillAction.A1:
+            //         if (WeaponConfigs.TryGetValue(NowWeapon, out var w))
+            //         {
+            //             var valueSkillGroup1
+            //                 = w.SkillGroup1;
+            //             if (valueSkillGroup1.TryGetValue(Combo.GetWStatus(), out var skillConfig))
+            //             {
+            //                 var genSkill = skillConfig.LaunchSkill(LockingWho != null);
+            //                 Combo.WeaponSkillStatus = skillConfig.NextCombo;
+            //                 NowCastSkillQueue.Enqueue(genSkill);
+            //                 return CharGoTick(null);
+            //             }
+            //         }
+            //
+            //         break;
+            //     case SkillAction.A2:
+            //         if (WeaponConfigs.TryGetValue(NowWeapon, out var w1))
+            //         {
+            //             var valueSkillGroup2
+            //                 = w1.SkillGroup2;
+            //             if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skill))
+            //             {
+            //                 var genSkill = skill.LaunchSkill(LockingWho != null);
+            //                 Combo.WeaponSkillStatus = skill.NextCombo;
+            //                 NowCastSkillQueue = genSkill;
+            //                 return CharGoTick(null);
+            //             }
+            //         }
+            //
+            //         break;
+            //     case SkillAction.A3:
+            //         NowWeapon = (NowWeapon + 1) % TempConfig.WeaponNum;
+            //         if (WeaponConfigs.TryGetValue(NowWeapon, out var w2))
+            //         {
+            //             var valueSkillGroup2
+            //                 = w2.SkillGroup3;
+            //             if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skillConfig))
+            //             {
+            //                 var genSkill = skillConfig.LaunchSkill(LockingWho != null);
+            //                 Combo.WeaponSkillStatus = skillConfig.NextCombo;
+            //                 NowCastSkillQueue = genSkill;
+            //                 return CharGoTick(null);
+            //             }
+            //         }
+            //
+            //         break;
+            //     case null:
+            //         var twoDVector = operate.Move?.Multi(_maxMoveSpeed);
+            //         return (twoDVector, null);
+            //
+            //     default:
+            //         throw new ArgumentOutOfRangeException();
+            // }
 
             return (null, null);
         }

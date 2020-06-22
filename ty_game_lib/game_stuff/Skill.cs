@@ -1,90 +1,100 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace game_stuff
 {
     public class Skill
     {
-        private int NowOnTick;
+        private int _nowOnTick;
 
-        private int NowTough;
+        private int _nowTough;
 
-        private readonly int BaseTough;
+        private readonly int _baseTough;
 
-        private readonly Dictionary<int, Bullet> LaunchTickToBullet;
-        private readonly TwoDVector[] Moves;
-        private readonly int MoveStartTick;
+        private readonly Dictionary<int, Bullet> _launchTickToBullet;
+        private readonly TwoDVector[] _moves;
+        private readonly int _moveStartTick;
 
-        private bool IsHoming=false;
-        private int HomingStartTick;
-        private int HomingEndTick;
+        private bool _isHoming;
+        private readonly int _homingStartTick;
+        private readonly int _homingEndTick;
 
-        private int SkillTick;
-        private int ComboTick;
-        public WeaponSkillStatus NextCombo;
+        private readonly int _skillMustTick; //必须播放帧
+        private readonly int _comboInputStartTick; //可接受输入操作帧
+        private readonly int _skillMaxTick; // 至多帧，在播放帧
+        public readonly WeaponSkillStatus NextCombo; 
 
 
         public Skill(int nowOnTick, int nowTough, Dictionary<int, Bullet> launchTickToBullet, TwoDVector[] moves,
-            int moveStartTick, int homingStartTick, int homingEndTick, int skillTick, int comboTick, int baseTough)
+            int moveStartTick, int homingStartTick, int homingEndTick, int skillMustTick, int skillMaxTick, int baseTough,
+            WeaponSkillStatus nextCombo, int comboInputStartTick)
         {
-            NowOnTick = nowOnTick;
-            NowTough = nowTough;
-            LaunchTickToBullet = launchTickToBullet;
-            Moves = moves;
-            MoveStartTick = moveStartTick;
-            HomingStartTick = homingStartTick;
-            HomingEndTick = homingEndTick;
-            SkillTick = skillTick;
-            ComboTick = comboTick;
-            BaseTough = baseTough;
+            _nowOnTick = nowOnTick;
+            _nowTough = nowTough;
+            _launchTickToBullet = launchTickToBullet;
+            _moves = moves;
+            _moveStartTick = moveStartTick;
+            _homingStartTick = homingStartTick;
+            _homingEndTick = homingEndTick;
+            _skillMustTick = skillMustTick;
+            _skillMaxTick = skillMaxTick;
+            _baseTough = baseTough;
+            NextCombo = nextCombo;
+            _comboInputStartTick = comboInputStartTick;
+            _isHoming = false;
         }
 
-        public (TwoDVector?, Bullet?, int?) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
+        public (TwoDVector? move, Bullet? lauchBullet, bool isEnd) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
             CharacterStatus caster,
             TwoDPoint? objPos)
         {
-// GenVector
+            // GenVector
             var lockDistance = objPos == null ? null : casterPos.GenVector(objPos);
             TwoDVector? twoDVector = null;
             if
-            (lockDistance != null && IsHoming &&
-             NowOnTick >= HomingStartTick && NowOnTick < HomingEndTick)
+            (lockDistance != null && _isHoming &&
+             _nowOnTick >= _homingStartTick && _nowOnTick < _homingEndTick)
             {
-                var rest = HomingEndTick - NowOnTick;
+                var rest = _homingEndTick - _nowOnTick;
 
                 twoDVector = lockDistance.Multi(1f / rest);
             }
 
-            else if (NowOnTick >= MoveStartTick && NowOnTick < MoveStartTick + Moves.Length)
+            else if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
 
             {
-                var moveStartTick = NowOnTick - MoveStartTick;
+                var moveStartTick = _nowOnTick - _moveStartTick;
 
-                twoDVector = Moves[moveStartTick];
+                twoDVector = _moves[moveStartTick];
             }
 
-// GenBulleft
-            Bullet bullet = null;
-            if (LaunchTickToBullet.TryGetValue(NowOnTick, out var bulletConfig))
+            // GenBullet 生成子弹
+            Bullet? bullet = null;
+            if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
             {
-                bullet = bullet.ActiveBullet(casterPos, casterAim, ref caster, NowTough);
+                bullet = nowBullet.ActiveBullet(casterPos, casterAim, caster, _nowTough);
             }
 
             //GONext
-            if (NowOnTick < SkillTick)
+            if (_nowOnTick < _skillMaxTick)
             {
-                NowTough += TempConfig.ToughGrowPerTick;
-                NowOnTick += 1;
+                _nowTough += TempConfig.ToughGrowPerTick;
+                _nowOnTick += 1;
 
-                return (twoDVector, bullet, null);
+                return (twoDVector, bullet, false);
             }
 
-            return (twoDVector, bullet, ComboTick);
+            return (twoDVector, bullet, true);
         }
 
-        public Skill? LaunchSkill(bool p0)
+        public Skill LaunchSkill(bool haveLock)
         {
-            throw new System.NotImplementedException();
+            _isHoming = haveLock;
+            _nowTough = _baseTough;
+            return this;
         }
+
+        
     }
 }

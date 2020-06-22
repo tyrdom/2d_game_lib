@@ -87,7 +87,7 @@ namespace game_stuff
         public CharTickMsg GenTickMsg()
         {
             var type = CharacterStatus.AntiActBuff?.GetType();
-            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.NowCastSkill!=null,type);
+            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.NowCastSkillQueue!=null,type);
         }
 
         public CharInitMsg GenInitMsg()

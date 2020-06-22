@@ -128,7 +128,7 @@ namespace game_stuff
 
             if (RestTick <= 0)
             {
-                WhoCatchMe.Catching = null;
+                WhoCatchMe.CatchingWho = null;
                 return (pt, null);
             }
 
