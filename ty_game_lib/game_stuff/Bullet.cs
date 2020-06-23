@@ -90,7 +90,7 @@ namespace game_stuff
             var objTough = targetCharacterStatus.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
             var isStun = opponentCharacterStatusAntiActBuff != null;
-            var isActSkill = targetCharacterStatus.NowCastSkillQueue.Count > 0;
+            var isActSkill = targetCharacterStatus.NowCastSkill != null;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) <= 0;
             var b2 = isActSkill && objTough < Tough;
@@ -172,14 +172,13 @@ namespace game_stuff
             else
             {
                 //AttackFail
-                Caster.NowCastSkillQueue.Clear();
+                Caster.NowCastSkill = null;
                 Caster.LockingWho = null;
                 switch (FailActBuffConfigToSelf)
                 {
                     case CatchAntiActBuffConfig catchAntiActBuffConfig:
                         targetCharacterStatus.CatchingWho = Caster;
-                        targetCharacterStatus.NowCastSkillQueue.Clear();
-                        targetCharacterStatus.NowCastSkillQueue.Enqueue(catchAntiActBuffConfig.TrickSkill);
+                        targetCharacterStatus.NowCastSkill=catchAntiActBuffConfig.TrickSkill;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));

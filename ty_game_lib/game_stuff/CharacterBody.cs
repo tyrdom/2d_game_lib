@@ -87,12 +87,12 @@ namespace game_stuff
         public CharTickMsg GenTickMsg()
         {
             var type = CharacterStatus.AntiActBuff?.GetType();
-            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.NowCastSkillQueue!=null,type);
+            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.NowCastSkill!=null,type);
         }
 
         public CharInitMsg GenInitMsg()
         {
-            return new CharInitMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.WeaponConfigs);
+            return new CharInitMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.Weapons);
         }
     }
 }

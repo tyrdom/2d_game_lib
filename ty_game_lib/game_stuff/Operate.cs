@@ -23,7 +23,9 @@ namespace game_stuff
     {
         A1,
         A2,
-        A3
+        A3,
+        Switch
+        
     }
 
 }

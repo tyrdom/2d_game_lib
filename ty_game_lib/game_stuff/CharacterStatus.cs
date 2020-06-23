@@ -22,13 +22,14 @@ namespace game_stuff
         public CharacterBody CharacterBody;
 
         private readonly float _maxMoveSpeed;
-        public readonly float MinMoveSpeed;
 
-        public readonly float AddMoveSpeed;
+        private readonly float _minMoveSpeed;
+
+        private readonly float _addMoveSpeed;
 
         public float NowMoveSpeed;
 
-        public int GId;
+        public readonly int GId;
 
         public int PauseTick;
 
@@ -38,11 +39,12 @@ namespace game_stuff
 
         public int NowWeapon;
 
-        public Dictionary<int, Weapon> WeaponConfigs;
+        public Dictionary<int, Weapon> Weapons { get; }
 
         //
-        public Queue<Skill> NowCastSkillQueue;
+        public Skill? NowCastSkill { get; set; }
 
+        public Tuple<TwoDVector, Skill>? NextSkill { get; set; }
 
         public int NowTough;
 
@@ -56,8 +58,7 @@ namespace game_stuff
         public int ProtectTick;
 
         public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, CharacterStatus? lockingWho,
-            CharacterStatus? catchingWho, int nowWeapon, Dictionary<int, Weapon> weaponConfigs,
-            int nowTough,
+            CharacterStatus? catchingWho, Dictionary<int, Weapon> weapons,
             DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
         {
             CharacterBody = null!;
@@ -66,20 +67,30 @@ namespace game_stuff
             PauseTick = pauseTick;
             LockingWho = lockingWho;
             CatchingWho = catchingWho;
-            NowWeapon = nowWeapon;
-            WeaponConfigs = weaponConfigs;
-            NowCastSkillQueue = new Queue<Skill>();
-
-            NowTough = nowTough;
+            NowWeapon = 0;
+            Weapons = weapons;
+            NowCastSkill = null;
+            NextSkill = null;
+            NowTough = 0;
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
             DamageHealStatus = damageHealStatus;
             ProtectTick = protectTick;
-            AddMoveSpeed = addMoveSpeed;
-            MinMoveSpeed = minMoveSpeed;
+            _addMoveSpeed = addMoveSpeed;
+            _minMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
         }
 
+        public void ComboByNext()
+        {
+            if (NextSkill == null || NowCastSkill == null ||
+                NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo) return;
+            var nextSkillItem1 = NextSkill.Item1;
+            CharacterBody.Sight.OpChangeAim(nextSkillItem1);
+            NextSkill.Item2.LaunchSkill(LockingWho != null);
+            NowCastSkill = NextSkill.Item2;
+            NextSkill = null;
+        }
 
         public (ITwoDTwoP?, Bullet?) CharGoTick(Operate? operate)
         {
@@ -96,15 +107,32 @@ namespace game_stuff
                 return (twoDPoint, null);
             }
 
-            if (NowCastSkillQueue.Count > 0)
+            if (NowCastSkill != null)
             {
-                var (twoDVector, bullet, item3) =
-                    NowCastSkillQueue.First().GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
-                if (item3)
+                var (move, launchBullet) = NowCastSkill
+                    .GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
+                ComboByNext();
+                if (operate?.Action == null) return (move, launchBullet);
+                var nowWeapon = Weapons.TryGetValue(NowWeapon, out var weapon)
+                    ? weapon
+                    : Weapons.First().Value;
+                switch (operate.Action)
                 {
-                    NowCastSkillQueue.Dequeue();
+                    case SkillAction.A1:
+                        break;
+                    case SkillAction.A2:
+                        break;
+                    case SkillAction.A3:
+                        break;
+                    case SkillAction.Switch:
+                        break;
+                    case null:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
-                return (twoDVector, bullet);
+
+                return (move, launchBullet);
             }
 
             if (operate == null)

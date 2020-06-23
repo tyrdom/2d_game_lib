@@ -6,31 +6,32 @@ namespace game_stuff
 {
     public class Skill
     {
-        private int _nowOnTick;
+        private uint _nowOnTick;
 
         private int _nowTough;
 
         private readonly int _baseTough;
 
-        private readonly Dictionary<int, Bullet> _launchTickToBullet;
+        private readonly Dictionary<uint, Bullet> _launchTickToBullet;
         private readonly TwoDVector[] _moves;
-        private readonly int _moveStartTick;
+        private readonly uint _moveStartTick;
 
         private bool _isHoming;
-        private readonly int _homingStartTick;
-        private readonly int _homingEndTick;
+        private readonly uint _homingStartTick;
+        private readonly uint _homingEndTick;
 
-        private readonly int _skillMustTick; //必须播放帧
-        private readonly int _comboInputStartTick; //可接受输入操作帧
-        private readonly int _skillMaxTick; // 至多帧，在播放帧
-        public readonly WeaponSkillStatus NextCombo; 
+        private readonly uint _skillMustTick; //必须播放帧
+        private readonly uint _comboInputStartTick; //可接受输入操作帧
+        private readonly uint _skillMaxTick; // 至多帧，在播放帧
+        public readonly WeaponSkillStatus NextCombo;
 
 
-        public Skill(int nowOnTick, int nowTough, Dictionary<int, Bullet> launchTickToBullet, TwoDVector[] moves,
-            int moveStartTick, int homingStartTick, int homingEndTick, int skillMustTick, int skillMaxTick, int baseTough,
-            WeaponSkillStatus nextCombo, int comboInputStartTick)
+        public Skill(int nowTough, Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
+            uint moveStartTick, uint homingStartTick, uint homingEndTick, uint skillMustTick, uint skillMaxTick,
+            int baseTough,
+            WeaponSkillStatus nextCombo, uint comboInputStartTick)
         {
-            _nowOnTick = nowOnTick;
+            _nowOnTick = 0;
             _nowTough = nowTough;
             _launchTickToBullet = launchTickToBullet;
             _moves = moves;
@@ -45,7 +46,30 @@ namespace game_stuff
             _isHoming = false;
         }
 
-        public (TwoDVector? move, Bullet? lauchBullet, bool isEnd) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
+        public enum SkillPeriod
+        {
+            Casting,
+            CanCombo,
+            End
+        }
+
+        public SkillPeriod InWhichPeriod()
+        {
+            if (_nowOnTick < _skillMustTick)
+            {
+                return SkillPeriod.Casting;
+            }
+
+            return _nowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
+        }
+
+        public bool CanComboInput()
+        {
+            return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick;
+        }
+
+        public (TwoDVector? move, Bullet? launchBullet) GoATick(
+            TwoDPoint casterPos, TwoDVector casterAim,
             CharacterStatus caster,
             TwoDPoint? objPos)
         {
@@ -77,24 +101,20 @@ namespace game_stuff
             }
 
             //GONext
-            if (_nowOnTick < _skillMaxTick)
-            {
-                _nowTough += TempConfig.ToughGrowPerTick;
-                _nowOnTick += 1;
 
-                return (twoDVector, bullet, false);
-            }
+            _nowTough += TempConfig.ToughGrowPerTick;
+            _nowOnTick += 1;
 
-            return (twoDVector, bullet, true);
+
+            return (twoDVector, bullet);
         }
 
         public Skill LaunchSkill(bool haveLock)
         {
             _isHoming = haveLock;
             _nowTough = _baseTough;
+            _nowOnTick = 0;
             return this;
         }
-
-        
     }
 }
