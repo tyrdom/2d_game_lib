@@ -90,7 +90,7 @@ namespace game_stuff
             var objTough = nowCastSkill?.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
             var isStun = opponentCharacterStatusAntiActBuff != null;
-            var isActSkill = nowCastSkill != null;
+            var isActSkill = nowCastSkill != null || nowCastSkill?.InWhichPeriod() != Skill.SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) <= 0;
             var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough;
