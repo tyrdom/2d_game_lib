@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using collision_and_rigid;
@@ -14,7 +15,8 @@ namespace game_stuff
         P2,
         P3,
         P4,
-        P5
+        P5,
+        Switch
     }
 
     public class CharacterStatus
@@ -44,9 +46,9 @@ namespace game_stuff
         //
         public Skill? NowCastSkill { get; set; }
 
-        public Tuple<TwoDVector, Skill>? NextSkill { get; set; }
+        public (TwoDVector? Aim, Skill skill, bool is_switch)? NextSkill { get; set; }
 
-        public int NowTough;
+        
 
         public IAntiActBuff? AntiActBuff;
 
@@ -71,7 +73,6 @@ namespace game_stuff
             Weapons = weapons;
             NowCastSkill = null;
             NextSkill = null;
-            NowTough = 0;
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
             DamageHealStatus = damageHealStatus;
@@ -81,14 +82,39 @@ namespace game_stuff
             NowMoveSpeed = 0f;
         }
 
+        private void LoadSkill(TwoDVector? aim, Skill skill)
+        {
+            if (aim != null)
+            {
+                CharacterBody.Sight.OpChangeAim(aim);
+            }
+
+            skill.LaunchSkill(LockingWho != null);
+            NowCastSkill = skill;
+        }
+
+        public (TwoDVector? move, Bullet? launchBullet) ActNowSkillATick()
+        {
+            if (NowCastSkill == null)
+            {
+                return (null, null);
+            }
+
+            return NowCastSkill
+                .GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
+        }
+
         public void ComboByNext()
         {
             if (NextSkill == null || NowCastSkill == null ||
                 NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo) return;
-            var nextSkillItem1 = NextSkill.Item1;
-            CharacterBody.Sight.OpChangeAim(nextSkillItem1);
-            NextSkill.Item2.LaunchSkill(LockingWho != null);
-            NowCastSkill = NextSkill.Item2;
+            if (NextSkill.Value.is_switch)
+            {
+                NowWeapon = (NowWeapon + 1) % Weapons.Count;
+            }
+
+            var aim = NextSkill.Value.Aim;
+            LoadSkill(aim, NextSkill.Value.skill);
             NextSkill = null;
         }
 
@@ -107,32 +133,54 @@ namespace game_stuff
                 return (twoDPoint, null);
             }
 
+            if (NowCastSkill?.InWhichPeriod() == Skill.SkillPeriod.End) NowCastSkill = null;
+
             if (NowCastSkill != null)
             {
-                var (move, launchBullet) = NowCastSkill
-                    .GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
+                var (move, launchBullet) = ActNowSkillATick();
                 ComboByNext();
                 if (operate?.Action == null) return (move, launchBullet);
-                var nowWeapon = Weapons.TryGetValue(NowWeapon, out var weapon)
-                    ? weapon
-                    : Weapons.First().Value;
-                switch (operate.Action)
-                {
-                    case SkillAction.A1:
-                        break;
-                    case SkillAction.A2:
-                        break;
-                    case SkillAction.A3:
-                        break;
-                    case SkillAction.Switch:
-                        break;
-                    case null:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
 
-                return (move, launchBullet);
+                var weaponSkillStatus = NowCastSkill.ComboInputRes();
+
+                if (weaponSkillStatus != null)
+                {
+                    var status = weaponSkillStatus.Value;
+                    var b = operate.Action == SkillAction.Switch;
+                    var toUse = NowWeapon;
+                    if (b)
+                    {
+                        status = WeaponSkillStatus.Switch;
+                        toUse = (toUse + 1) % Weapons.Count;
+                    }
+
+                    var nowWeapon = Weapons.TryGetValue(toUse, out var weapon)
+                        ? weapon
+                        : Weapons.First().Value;
+
+                    var operateAction = operate.Action.Value;
+
+
+                    if (!nowWeapon.SkillGroups.TryGetValue(operateAction, out var skills) ||
+                        !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
+                    switch (NowCastSkill.InWhichPeriod())
+                    {
+                        case Skill.SkillPeriod.Casting:
+                            NextSkill = (operate.Aim, skill, b);
+                            break;
+                        case Skill.SkillPeriod.CanCombo:
+                            LoadSkill(operate.Aim, skill);
+                            NowWeapon = toUse;
+                            break;
+                        case Skill.SkillPeriod.End:
+                            NowWeapon = toUse;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    return (move, launchBullet);
+                }
             }
 
             if (operate == null)
@@ -140,66 +188,26 @@ namespace game_stuff
                 return (null, null);
             }
 
+
             if (operate.Aim != null)
             {
                 CharacterBody.Sight.OpChangeAim(operate.Aim);
             }
 
-            // switch (operate.Action)
-            // {
-            //     case SkillAction.A1:
-            //         if (WeaponConfigs.TryGetValue(NowWeapon, out var w))
-            //         {
-            //             var valueSkillGroup1
-            //                 = w.SkillGroup1;
-            //             if (valueSkillGroup1.TryGetValue(Combo.GetWStatus(), out var skillConfig))
-            //             {
-            //                 var genSkill = skillConfig.LaunchSkill(LockingWho != null);
-            //                 Combo.WeaponSkillStatus = skillConfig.NextCombo;
-            //                 NowCastSkillQueue.Enqueue(genSkill);
-            //                 return CharGoTick(null);
-            //             }
-            //         }
-            //
-            //         break;
-            //     case SkillAction.A2:
-            //         if (WeaponConfigs.TryGetValue(NowWeapon, out var w1))
-            //         {
-            //             var valueSkillGroup2
-            //                 = w1.SkillGroup2;
-            //             if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skill))
-            //             {
-            //                 var genSkill = skill.LaunchSkill(LockingWho != null);
-            //                 Combo.WeaponSkillStatus = skill.NextCombo;
-            //                 NowCastSkillQueue = genSkill;
-            //                 return CharGoTick(null);
-            //             }
-            //         }
-            //
-            //         break;
-            //     case SkillAction.A3:
-            //         NowWeapon = (NowWeapon + 1) % TempConfig.WeaponNum;
-            //         if (WeaponConfigs.TryGetValue(NowWeapon, out var w2))
-            //         {
-            //             var valueSkillGroup2
-            //                 = w2.SkillGroup3;
-            //             if (valueSkillGroup2.TryGetValue(Combo.GetWStatus(), out var skillConfig))
-            //             {
-            //                 var genSkill = skillConfig.LaunchSkill(LockingWho != null);
-            //                 Combo.WeaponSkillStatus = skillConfig.NextCombo;
-            //                 NowCastSkillQueue = genSkill;
-            //                 return CharGoTick(null);
-            //             }
-            //         }
-            //
-            //         break;
-            //     case null:
-            //         var twoDVector = operate.Move?.Multi(_maxMoveSpeed);
-            //         return (twoDVector, null);
-            //
-            //     default:
-            //         throw new ArgumentOutOfRangeException();
-            // }
+            if (operate.Action == null) return (null, null);
+            {
+                if (operate.Action.Value == SkillAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                else
+                {
+                    if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
+                        !weapon.SkillGroups.TryGetValue(operate.Action.Value, out var value) ||
+                        !value.TryGetValue(WeaponSkillStatus.Normal, out var skill)) return (null, null);
+                    LoadSkill(null, skill);
+                    var actNowSkillATick = ActNowSkillATick();
+                    return actNowSkillATick;
+                }
+            }
+
 
             return (null, null);
         }

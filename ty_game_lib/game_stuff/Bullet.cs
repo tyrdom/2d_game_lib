@@ -86,14 +86,14 @@ namespace game_stuff
         public void HitOne(CharacterStatus targetCharacterStatus)
         {
             var protecting = targetCharacterStatus.ProtectTick > 0;
-
-            var objTough = targetCharacterStatus.NowTough;
+            var nowCastSkill = targetCharacterStatus.NowCastSkill;
+            var objTough = nowCastSkill?.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
             var isStun = opponentCharacterStatusAntiActBuff != null;
-            var isActSkill = targetCharacterStatus.NowCastSkill != null;
+            var isActSkill = nowCastSkill != null;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) <= 0;
-            var b2 = isActSkill && objTough < Tough;
+            var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough;
             var b3 = !isActSkill && Tough < TempConfig.MidTough;
 
             if (protecting)
@@ -178,7 +178,7 @@ namespace game_stuff
                 {
                     case CatchAntiActBuffConfig catchAntiActBuffConfig:
                         targetCharacterStatus.CatchingWho = Caster;
-                        targetCharacterStatus.NowCastSkill=catchAntiActBuffConfig.TrickSkill;
+                        targetCharacterStatus.NowCastSkill = catchAntiActBuffConfig.TrickSkill;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));

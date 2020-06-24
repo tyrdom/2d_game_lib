@@ -8,7 +8,7 @@ namespace game_stuff
     {
         private uint _nowOnTick;
 
-        private int _nowTough;
+        public int NowTough;
 
         private readonly int _baseTough;
 
@@ -23,16 +23,16 @@ namespace game_stuff
         private readonly uint _skillMustTick; //必须播放帧
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
-        public readonly WeaponSkillStatus NextCombo;
+        private readonly WeaponSkillStatus _nextCombo;
 
 
-        public Skill(int nowTough, Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
+        public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint homingStartTick, uint homingEndTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
             WeaponSkillStatus nextCombo, uint comboInputStartTick)
         {
             _nowOnTick = 0;
-            _nowTough = nowTough;
+            NowTough = baseTough;
             _launchTickToBullet = launchTickToBullet;
             _moves = moves;
             _moveStartTick = moveStartTick;
@@ -41,7 +41,7 @@ namespace game_stuff
             _skillMustTick = skillMustTick;
             _skillMaxTick = skillMaxTick;
             _baseTough = baseTough;
-            NextCombo = nextCombo;
+            _nextCombo = nextCombo;
             _comboInputStartTick = comboInputStartTick;
             _isHoming = false;
         }
@@ -63,9 +63,9 @@ namespace game_stuff
             return _nowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
         }
 
-        public bool CanComboInput()
+        public WeaponSkillStatus? ComboInputRes()
         {
-            return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick;
+            return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick ? this._nextCombo : (WeaponSkillStatus?) null;
         }
 
         public (TwoDVector? move, Bullet? launchBullet) GoATick(
@@ -97,24 +97,24 @@ namespace game_stuff
             Bullet? bullet = null;
             if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
             {
-                bullet = nowBullet.ActiveBullet(casterPos, casterAim, caster, _nowTough);
+                bullet = nowBullet.ActiveBullet(casterPos, casterAim, caster, NowTough);
             }
 
             //GONext
 
-            _nowTough += TempConfig.ToughGrowPerTick;
+            NowTough += TempConfig.ToughGrowPerTick;
             _nowOnTick += 1;
 
 
             return (twoDVector, bullet);
         }
 
-        public Skill LaunchSkill(bool haveLock)
+        public void LaunchSkill(bool haveLock)
         {
             _isHoming = haveLock;
-            _nowTough = _baseTough;
+            NowTough = _baseTough;
             _nowOnTick = 0;
-            return this;
+            
         }
     }
 }

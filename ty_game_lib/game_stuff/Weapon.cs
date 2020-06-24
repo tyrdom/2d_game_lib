@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace game_stuff
 {
     public class Weapon
     {
-        public Dictionary<SkillAction, Dictionary<WeaponSkillStatus, Skill>> SkillGroups;
+        public readonly ImmutableDictionary<SkillAction, ImmutableDictionary<WeaponSkillStatus, Skill>> SkillGroups;
 
-        public Weapon(Dictionary<SkillAction, Dictionary<WeaponSkillStatus, Skill>> skillGroups)
+        public Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<WeaponSkillStatus, Skill>> skillGroups)
         {
             SkillGroups = skillGroups;
         }
