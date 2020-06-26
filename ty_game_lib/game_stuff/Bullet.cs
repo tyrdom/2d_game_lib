@@ -18,9 +18,10 @@ namespace game_stuff
         public bool IsActive;
         public TwoDPoint Pos;
         public TwoDVector Aim;
-        public Dictionary<BodySize, BulletBox> SizeToBulletCollision;
-        public CharacterStatus Caster;
-        public IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
+       
+        public readonly Dictionary<BodySize, BulletBox> SizeToBulletCollision;
+        public readonly CharacterStatus Caster;
+        public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
         public IAntiActBuffConfig FailActBuffConfigToSelf;
         public int PauseToCaster;
         public int PauseToOpponent;
@@ -50,6 +51,8 @@ namespace game_stuff
             Tough = tough;
             RestTick = restTick;
             ResId = resId;
+         
+            IsActive = false;
         }
 
         public bool CanGoATick()
@@ -203,9 +206,12 @@ namespace game_stuff
             return new BulletMsg(Pos, Aim, ResId, Caster.GetPos());
         }
 
-        public Bullet? ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim, CharacterStatus caster, in int nowTough)
+        public Bullet? ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim)
         {
-            throw new NotImplementedException();
+            IsActive = true;
+            Pos = casterPos;
+            Aim = casterAim;
+            return this;
         }
     }
 

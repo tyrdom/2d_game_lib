@@ -97,7 +97,7 @@ namespace game_stuff
             Bullet? bullet = null;
             if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
             {
-                bullet = nowBullet.ActiveBullet(casterPos, casterAim, caster, NowTough);
+                bullet = nowBullet.ActiveBullet(casterPos, casterAim);
             }
 
             //GONext

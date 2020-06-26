@@ -93,7 +93,7 @@ namespace game_stuff
             NowCastSkill = skill;
         }
 
-        public (TwoDVector? move, Bullet? launchBullet) ActNowSkillATick()
+        private (TwoDVector? move, Bullet? launchBullet) ActNowSkillATick()
         {
             if (NowCastSkill == null)
             {
@@ -104,7 +104,7 @@ namespace game_stuff
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
         }
 
-        public void ComboByNext()
+        private void ComboByNext()
         {
             if (NextSkill == null || NowCastSkill == null ||
                 NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo) return;

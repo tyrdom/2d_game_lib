@@ -1,28 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj": {}
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj": {}
   },
   "projects": {
-    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj": {
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj",
+        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj",
         "projectName": "collision_and_rigid",
-        "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj",
-        "packagesPath": "/Users/tianhao/.nuget/packages/",
-        "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/obj/",
+        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj",
+        "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
+        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "/Users/tianhao/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -48,41 +47,54 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[3.0.1, 3.0.1]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/game_stuff.csproj": {
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/game_stuff.csproj",
+        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj",
         "projectName": "game_stuff",
-        "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/game_stuff.csproj",
-        "packagesPath": "/Users/tianhao/.nuget/packages/",
-        "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/obj/",
+        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj",
+        "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
+        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "/Users/tianhao/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "netcoreapp3.0": {
             "projectReferences": {
-              "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj": {
-                "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj"
+              "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
+                "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
               }
             }
           }
@@ -105,44 +117,57 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[3.0.1, 3.0.1]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj": {
+    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
+        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
         "projectName": "lib_test",
-        "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/lib_test.csproj",
-        "packagesPath": "/Users/tianhao/.nuget/packages/",
-        "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/",
+        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\lib_test.csproj",
+        "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
+        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\lib_test\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "/Users/tianhao/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "netcoreapp3.0": {
             "projectReferences": {
-              "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj": {
-                "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/collision_and_rigid/collision_and_rigid.csproj"
+              "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj": {
+                "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\collision_and_rigid\\collision_and_rigid.csproj"
               },
-              "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/game_stuff.csproj": {
-                "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/game_stuff.csproj"
+              "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj": {
+                "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_stuff\\game_stuff.csproj"
               }
             }
           }
@@ -165,12 +190,30 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[3.0.1, 3.0.1]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[3.0.3, 3.0.3]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[3.0.0, 3.0.0]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -48,10 +48,18 @@ namespace collision_and_rigid
 
         public Zone GenBulletZone(float r)
         {
-            var twoDPoint = AOB.O;
-            var round = new Round(twoDPoint,R);
-            var genBulletRawZone = round.GenBulletZone(r);
-            return genBulletRawZone;
+            var a = AOB.A;
+            var b = AOB.B;
+            var o = AOB.O;
+
+            var oa = new TwoDVectorLine(o, a);
+            var ob = new TwoDVectorLine(o, b);
+            var zone1 = AOB.GetZone(r);
+
+            var zone2 = oa.GenZone().MoreWide(r).MoreHigh(r);
+            var zone3 = ob.GenZone().MoreWide(r).MoreHigh(r);
+            var zoneJ = zone1.Join(zone2).Join(zone3);
+            return zoneJ;
         }
 
         public IBulletShape GenBulletShape(float r)

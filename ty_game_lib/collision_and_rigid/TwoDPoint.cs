@@ -20,7 +20,12 @@ namespace collision_and_rigid
             var vY = -X * v.Y + Y * v.X;
             return new TwoDPoint(vX, vY);
         }
-
+        public TwoDPoint WiseClockTurnAboutZero(TwoDVector v)
+        {
+            var vX = X * v.X - Y * v.Y;
+            var vY = X * v.Y + Y * v.X;
+            return new TwoDPoint(vX, vY);
+        }
         public Zone GenZone(TwoDPoint b)
         {
             var zone = new Zone(Math.Max(Y, b.Y), Math.Min(Y, b.Y), Math.Min(X, b.X), Math.Max(X, b.X));
