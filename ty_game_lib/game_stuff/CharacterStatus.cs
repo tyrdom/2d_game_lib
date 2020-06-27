@@ -146,7 +146,7 @@ namespace game_stuff
                 if (weaponSkillStatus != null)
                 {
                     var status = weaponSkillStatus.Value;
-                    var b = operate.Action == SkillAction.Switch;
+                    var b = operate.Action == OpAction.Switch;
                     var toUse = NowWeapon;
                     if (b)
                     {
@@ -196,7 +196,7 @@ namespace game_stuff
 
             if (operate.Action == null) return (null, null);
             {
-                if (operate.Action.Value == SkillAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                if (operate.Action.Value == OpAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
                 else
                 {
                     if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||

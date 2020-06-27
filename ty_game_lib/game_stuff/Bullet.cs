@@ -22,12 +22,12 @@ namespace game_stuff
         public readonly Dictionary<BodySize, BulletBox> SizeToBulletCollision;
         public readonly CharacterStatus Caster;
         public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
-        public IAntiActBuffConfig FailActBuffConfigToSelf;
-        public int PauseToCaster;
-        public int PauseToOpponent;
+        public readonly IAntiActBuffConfig FailActBuffConfigToSelf;
+        public readonly int PauseToCaster;
+        public readonly int PauseToOpponent;
         public Damage Damage;
         public int Tough;
-        public ObjType TargetType;
+        public readonly ObjType TargetType;
 
         public int RestTick;
         public int ResId;

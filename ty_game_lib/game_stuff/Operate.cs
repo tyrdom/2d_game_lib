@@ -7,11 +7,11 @@ namespace game_stuff
     [Serializable]
     public class Operate
     {
-        public SkillAction? Action;
+        public OpAction? Action;
         public TwoDVector? Move;
         public TwoDVector? Aim;
 
-        public Operate(SkillAction? action, TwoDVector? move, TwoDVector aim)
+        public Operate(OpAction? action, TwoDVector? move, TwoDVector aim)
         {
             Action = action;
             Move = move;
@@ -19,11 +19,11 @@ namespace game_stuff
         }
     }
 
-    public enum SkillAction
+    public enum OpAction
     {
-        A1,
-        A2,
-        A3,
+        Op1,
+        Op2,
+        Op3,
         Switch
         
     }
