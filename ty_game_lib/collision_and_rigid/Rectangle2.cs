@@ -26,7 +26,7 @@ namespace collision_and_rigid
             var p3 = new TwoDPoint(Width / 2f, Height / 2f);
             var p4 = new TwoDPoint(Width / 2f, -Height / 2f);
             var twoDPoints = new []{p1,p2,p3,p4};
-            var dPoints = twoDPoints.Select(x=>x.WiseClockTurnAboutZero(MidRotate).Move(MidPos));
+            var dPoints = twoDPoints.Select(x=>x.AntiWiseClockTurnAboutZero(MidRotate).Move(MidPos));
             return new Poly(dPoints.ToArray());
         }
 

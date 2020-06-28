@@ -10,6 +10,7 @@ namespace game_stuff
 
         public int NowTough;
 
+        public bool IsHit;
         private readonly int _baseTough;
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
@@ -23,13 +24,13 @@ namespace game_stuff
         private readonly uint _skillMustTick; //必须播放帧
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
-        private readonly WeaponSkillStatus _nextCombo;
-
+        private readonly WeaponSkillStatus _nextComboHit;
+        private readonly WeaponSkillStatus _nextComboMiss;
 
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint homingStartTick, uint homingEndTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
-            WeaponSkillStatus nextCombo, uint comboInputStartTick)
+            WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss)
         {
             _nowOnTick = 0;
             NowTough = baseTough;
@@ -41,8 +42,10 @@ namespace game_stuff
             _skillMustTick = skillMustTick;
             _skillMaxTick = skillMaxTick;
             _baseTough = baseTough;
-            _nextCombo = nextCombo;
+            _nextComboHit = nextComboHit;
             _comboInputStartTick = comboInputStartTick;
+            _nextComboMiss = nextComboMiss;
+            IsHit = false;
             _isHoming = false;
         }
 
@@ -65,12 +68,14 @@ namespace game_stuff
 
         public WeaponSkillStatus? ComboInputRes()
         {
-            return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick ? this._nextCombo : (WeaponSkillStatus?) null;
+            var weaponSkillStatus = IsHit ? _nextComboHit : _nextComboMiss;
+            return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick
+                ? weaponSkillStatus
+                : (WeaponSkillStatus?) null;
         }
 
         public (TwoDVector? move, Bullet? launchBullet) GoATick(
             TwoDPoint casterPos, TwoDVector casterAim,
-            CharacterStatus caster,
             TwoDPoint? objPos)
         {
             // GenVector
@@ -112,9 +117,9 @@ namespace game_stuff
         public void LaunchSkill(bool haveLock)
         {
             _isHoming = haveLock;
+            IsHit = false;
             NowTough = _baseTough;
             _nowOnTick = 0;
-            
         }
     }
 }

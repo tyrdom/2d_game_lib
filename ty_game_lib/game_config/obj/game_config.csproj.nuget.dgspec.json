@@ -1,27 +1,28 @@
 {
   "format": 1,
   "restore": {
-    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_config\\game_config.csproj": {}
+    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj": {}
   },
   "projects": {
-    "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_config\\game_config.csproj": {
+    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_config\\game_config.csproj",
+        "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
         "projectName": "game_config",
-        "projectPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_config\\game_config.csproj",
-        "packagesPath": "C:\\Users\\tyrdo\\.nuget\\packages\\",
-        "outputPath": "G:\\workspace\\RiderProjects\\2d_game_lib\\ty_game_lib\\game_config\\obj\\",
+        "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
+        "packagesPath": "/Users/tianhao/.nuget/packages/",
+        "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/obj/",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "C:\\Users\\tyrdo\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/tianhao/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -58,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.200/RuntimeIdentifierGraph.json"
         }
       }
     }

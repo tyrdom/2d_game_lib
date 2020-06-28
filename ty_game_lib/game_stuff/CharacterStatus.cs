@@ -101,7 +101,7 @@ namespace game_stuff
             }
 
             return NowCastSkill
-                .GoATick(GetPos(), CharacterBody.Sight.Aim, this, LockingWho?.GetPos());
+                .GoATick(GetPos(), CharacterBody.Sight.Aim, LockingWho?.GetPos());
         }
 
         private void ComboByNext()

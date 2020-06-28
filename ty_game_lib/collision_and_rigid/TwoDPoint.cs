@@ -20,7 +20,7 @@ namespace collision_and_rigid
             var vY = -X * v.Y + Y * v.X;
             return new TwoDPoint(vX, vY);
         }
-        public TwoDPoint WiseClockTurnAboutZero(TwoDVector v)
+        public TwoDPoint AntiWiseClockTurnAboutZero(TwoDVector v)
         {
             var vX = X * v.X - Y * v.Y;
             var vY = X * v.Y + Y * v.X;
