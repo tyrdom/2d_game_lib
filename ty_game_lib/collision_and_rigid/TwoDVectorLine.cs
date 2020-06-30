@@ -455,7 +455,12 @@ namespace collision_and_rigid
             if (rdR < 0) return (null, null);
 
             if (!(rdR > 0)) return (null, twoDPoint);
-            var sqrt = MathF.Sqrt(rdR);
+#if NETCOREAPP3
+var sqrt = MathF.Sqrt(rdR);
+#else
+            var sqrt = (float) Math.Sqrt(rdR);
+#endif
+
 
             var twoDVector = GetVector().GetUnit();
             var v1 = twoDVector.Multi(sqrt);
@@ -544,14 +549,20 @@ namespace collision_and_rigid
             var cAobA = clockwiseTurning.Aob.A;
             var (item1, item2) = CrossPtWithRound(rd);
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-            if (item1 == null||item2==null) return twoDPoints;
+            if (item1 == null || item2 == null) return twoDPoints;
 
             var f1 = GetScaleInPt(item1);
             var f2 = GetScaleInPt(item2);
 //            Console.Out.WriteLine("maybe have cross pt" + f1 + "==" + f2);
             var (p1, p2) = f1 < f2 ? (item1, item2) : (item2, item1);
+#if NETCOREAPP3
             var f11 = MathF.Min(f1, f2);
             var f22 = MathF.Max(f1, f2);
+#else
+            var f11 = (float) Math.Min(f1, f2);
+            var f22 = (float) Math.Max(f1, f2);
+#endif
+
             var op1 = new TwoDVectorLine(o, p1);
             var op2 = new TwoDVectorLine(o, p2);
             var b = p2.GetPosOf(op1) == Pt2LinePos.Right;

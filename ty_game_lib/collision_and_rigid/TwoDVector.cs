@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using Microsoft.Win32.SafeHandles;
 
 namespace collision_and_rigid
@@ -11,7 +12,7 @@ namespace collision_and_rigid
         Vertical
     }
 
-    public class TwoDVector:ITwoDTwoP
+    public class TwoDVector : ITwoDTwoP
     {
         public TwoDVector(float a, float b)
         {
@@ -83,7 +84,11 @@ namespace collision_and_rigid
 
         public float Norm()
         {
+#if NETCOREAPP3
             return MathF.Sqrt(SqNorm());
+#else
+            return (float) Math.Sqrt(SqNorm());
+#endif
         }
 
         public float SqNorm()
@@ -118,6 +123,7 @@ namespace collision_and_rigid
 
             return Y > 0 ? Quad.Two : Quad.Three;
         }
+
         public TwoDPoint ToPt()
         {
             var twoDPoint = new TwoDPoint(X, Y);

@@ -372,6 +372,49 @@ namespace collision_and_rigid
             QuadTwo.Father = this;
             QuadThree.Father = this;
             QuadFour.Father = this;
+        } public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
+        )
+        {
+            var dicIntToTu = new HashSet<T>();
+
+            void Act(IIdPointShape id, bool a)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id);
+                dicIntToTu.Add(withIIdPtsShape);
+            }
+            ForeachDoWithOutMove(Act, true);
+            return dicIntToTu;
+        }     public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+            T t)
+        {
+            var dicIntToTu = new Dictionary<int, TU>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+                if (withIIdPtsShape == null) return;
+                var i = id.GetId();
+
+                dicIntToTu[i] = withIIdPtsShape;
+            }
+
+            ForeachDoWithOutMove(Act, t);
+            return dicIntToTu;
+        }
+        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+            T t)
+        {
+            var dicIntToTu = new HashSet<IIdPointShape>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+
+                if (withIIdPtsShape) dicIntToTu.Add(id);
+            }
+
+            ForeachDoWithOutMove(Act, t);
+            return dicIntToTu;
         }
     }
 }

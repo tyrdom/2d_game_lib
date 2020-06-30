@@ -121,5 +121,10 @@ namespace game_stuff
             NowTough = _baseTough;
             _nowOnTick = 0;
         }
+
+        // public static Skill InitFormConfig(game_config.Skill skillConfig)
+        // {
+        //     
+        // }
     }
 }

@@ -22,7 +22,7 @@ namespace game_stuff
 
 
         public const float MaxHeight = 2f;
-        public static readonly float MaxUpSpeed = MathF.Sqrt(2f * G * MaxHeight);
+        public static readonly float MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
         public const float G = 0.1f;
         public const float Friction = 1f;
 

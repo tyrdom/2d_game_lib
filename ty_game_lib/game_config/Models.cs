@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+
 
 namespace game_config
 {
@@ -70,11 +70,11 @@ namespace game_config
 
     public static class Content
     {
-        public static ImmutableDictionary<int, Bullet> Bullets = GameConfigTools.GenConfigDict<Bullet>();
-        public static ImmutableDictionary<int, Item> Items = GameConfigTools.GenConfigDict<Item>();
-        public static ImmutableDictionary<int, Show_text> Show_texts = GameConfigTools.GenConfigDict<Show_text>();
-        public static ImmutableDictionary<int, Skill> Skills = GameConfigTools.GenConfigDict<Skill>();
-        public static ImmutableDictionary<int, Weapon> Weapons = GameConfigTools.GenConfigDict<Weapon>();
+        public static Dictionary<int, Bullet> Bullets = GameConfigTools.GenConfigDict<Bullet>();
+        public static Dictionary<int, Item> Items = GameConfigTools.GenConfigDict<Item>();
+        public static Dictionary<int, Show_text> Show_texts = GameConfigTools.GenConfigDict<Show_text>();
+        public static Dictionary<int, Skill> Skills = GameConfigTools.GenConfigDict<Skill>();
+        public static Dictionary<int, Weapon> Weapons = GameConfigTools.GenConfigDict<Weapon>();
     }
 
     public class SimpleObj1 : IGameConfig

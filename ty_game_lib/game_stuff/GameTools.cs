@@ -27,7 +27,7 @@ namespace game_stuff
 
             var maxHeight = TempConfig.MaxHeight - height.Value;
             var f = 2f * TempConfig.G * maxHeight;
-            return MathF.Sqrt(f);
+            return MathTools.Sqrt(f);
         }
 
         private static BulletBox GenRawBulletBox(IRawBulletShape shape, float r)
@@ -41,11 +41,11 @@ namespace game_stuff
         static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape shape)
         {
             var bulletBoxes = new Dictionary<BodySize,BulletBox>();
-            foreach (var (key, value) in TempConfig.SizeToR)
+            foreach (var k in TempConfig.SizeToR)
             {
-                var genRawBulletBox = GenRawBulletBox(shape,value);
+                var genRawBulletBox = GenRawBulletBox(shape,k.Value);
 
-                bulletBoxes[key] = genRawBulletBox;
+                bulletBoxes[k.Key] = genRawBulletBox;
             }
 
             return bulletBoxes;

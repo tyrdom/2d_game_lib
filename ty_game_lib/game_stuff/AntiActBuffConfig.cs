@@ -91,7 +91,7 @@ namespace game_stuff
         float GenUp(float? air, float bodyMass)
         {
             var maxUp = GameTools.GetMaxUpSpeed(air);
-            return MathF.Min(maxUp, UpForce / bodyMass);
+            return MathTools.Min(maxUp, UpForce / bodyMass);
         }
 
         public IAntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
@@ -118,7 +118,7 @@ namespace game_stuff
 
         private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
         {
-            var max = MathF.Max(GenUp(height, f), upSpeed);
+            var max = MathTools.Max(GenUp(height, f), upSpeed);
             var pushOnAir = new PushOnAir(unit.Multi(speed), height.GetValueOrDefault(0), max, TickLast);
             return pushOnAir;
         }

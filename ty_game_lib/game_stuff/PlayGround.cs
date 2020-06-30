@@ -68,15 +68,15 @@ namespace game_stuff
         {
             var dictionary = new Dictionary<int, HashSet<CharInitMsg>>();
             var charInitMsgs = GidToBody.ToDictionary(p => p.Key, p => p.Value.GenInitMsg());
-            foreach (var (key, value) in charInitMsgs)
+            foreach (var kv in charInitMsgs)
             {
-                if (dictionary.TryGetValue(key, out var charInitMsglist))
+                if (dictionary.TryGetValue(kv.Key, out var charInitMsglist))
                 {
-                    charInitMsglist.Add(value);
+                    charInitMsglist.Add(kv.Value);
                 }
                 else
                 {
-                    dictionary[key] = new HashSet<CharInitMsg> {value};
+                    dictionary[kv.Key] = new HashSet<CharInitMsg> {kv.Value};
                 }
             }
 
@@ -87,11 +87,11 @@ namespace game_stuff
         {
             var dictionary = new Dictionary<int, Dictionary<int, Operate>>();
 
-            foreach (var (gid, operate) in gidToOperates)
+            foreach (var kv in gidToOperates)
             {
-                if (GidToBody.TryGetValue(gid, out var characterBody))
+                if (GidToBody.TryGetValue(kv.Key, out var characterBody))
                 {
-                    dictionary[characterBody.Team][gid] = operate;
+                    dictionary[characterBody.Team][kv.Key] = kv.Value;
                 }
             }
 
@@ -196,8 +196,10 @@ namespace game_stuff
         public Dictionary<int, HashSet<Bullet>> BulletsDo()
         {
             var whoHitGid = new Dictionary<int, HashSet<Bullet>>();
-            foreach (var (team, bullets) in TeamToBullet)
+            foreach (var ii in TeamToBullet)
             {
+                var team = ii.Key;
+                var bullets = ii.Value;
                 foreach (var bullet in bullets)
                 {
                     if (!bullet.CanGoATick())

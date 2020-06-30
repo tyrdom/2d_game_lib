@@ -67,19 +67,28 @@ namespace collision_and_rigid
 
         public Zone Inter(Zone another)
         {
-            var nUp = MathF.Min(Up, another.Up);
-            var nLeft = MathF.Max(Left, another.Left);
-            var nDown = MathF.Max(Down, another.Down);
-            var nRight = MathF.Min(Right, another.Right);
+            var nUp = Math.Min(Up, another.Up);
+            var nLeft = Math.Max(Left, another.Left);
+            var nDown = Math.Max(Down, another.Down);
+            var nRight = Math.Min(Right, another.Right);
             return new Zone(nUp, nDown, nLeft, nRight);
         }
 
         public Zone Join(Zone another)
         {
-            var nUp = MathF.Max(Up, another.Up);
+            
+#if NETCOREAPP3
+               var nUp = MathF.Max(Up, another.Up);
             var nLeft = MathF.Min(Left, another.Left);
             var nDown = MathF.Min(Down, another.Down);
             var nRight = MathF.Max(Right, another.Right);
+#else
+            var nUp = Math.Max(Up, another.Up);
+            var nLeft = Math.Min(Left, another.Left);
+            var nDown = Math.Min(Down, another.Down);
+            var nRight = Math.Max(Right, another.Right);
+#endif
+         
             return new Zone(nUp, nDown, nLeft, nRight);
         }
 

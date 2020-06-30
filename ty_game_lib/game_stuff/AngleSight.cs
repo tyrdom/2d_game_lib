@@ -27,7 +27,7 @@ namespace game_stuff
             _maxR = r;
             var cosA = vector.X;
             var cos2A = 2 * cosA * cosA - 1;
-            _theta = MathF.Acos(cos2A);
+            _theta = MathTools.Acos(cos2A);
         }
 
         public bool InSight(TwoDVectorLine sLine, SightMap map)
@@ -48,21 +48,21 @@ namespace game_stuff
             var cosT = newAim.GetUnit().Dot(oldAim) / oldAim.Norm();
             var cosA = _upLeft.X;
             var cos2A = 2 * cosA * cosA - 1;
-            var t = cosT > cos2A ? MathF.Acos(cosT) : _theta;
+            var t = cosT > cos2A ? MathTools.Acos(cosT) : _theta;
 
             var nowRSquare = _nowR * _nowR;
             var snowR = nowRSquare * t;
             var twoSr = TempConfig.TwoSToSeePerTick - snowR;
             if (twoSr <= 0)
             {
-                var sqrt = MathF.Sqrt(TempConfig.TwoSToSeePerTick / t);
-                _nowR = MathF.Min(_maxR, sqrt);
+                var sqrt = MathTools.Sqrt(TempConfig.TwoSToSeePerTick / t);
+                _nowR = MathTools.Min(_maxR, sqrt);
             }
             else
             {
                 var rSquare = twoSr / _theta + nowRSquare;
-                var sqrt = MathF.Sqrt(rSquare);
-                _nowR = MathF.Min(_maxR, sqrt);
+                var sqrt = MathTools.Sqrt(rSquare);
+                _nowR = MathTools.Min(_maxR, sqrt);
             }
         }
     }

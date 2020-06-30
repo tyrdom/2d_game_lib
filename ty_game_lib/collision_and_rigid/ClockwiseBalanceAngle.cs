@@ -1,5 +1,6 @@
 using System;
 
+
 namespace collision_and_rigid
 {
     public class ClockwiseBalanceAngle
@@ -75,11 +76,22 @@ namespace collision_and_rigid
             var obv = ob.GetVector();
             var oaq = oav.WhichQ();
             var obq = obv.WhichQ();
-            var up = MathF.Max(a.Y, b.Y);
-            var down = MathF.Min(a.Y, b.Y);
-            var right = MathF.Max(a.X, b.X);
-            var left = MathF.Min(a.X, b.X);
 
+            float up;
+            float down;
+            float right;
+            float left;
+#if NETCOREAPP3
+            up = MathF.Max(a.Y, b.Y);
+            down = MathF.Min(a.Y, b.Y);
+            right = MathF.Max(a.X, b.X);
+            left = MathF.Min(a.X, b.X);
+#else
+             up = Math.Max(a.Y, b.Y);
+            down = Math.Min(a.Y, b.Y);
+            right = Math.Max(a.X, b.X);
+            left = Math.Min(a.X, b.X);
+#endif
             var oUp = o.Y + r;
             var oDown = o.Y - r;
             var oLeft = o.X - r;

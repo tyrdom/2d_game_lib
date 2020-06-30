@@ -400,19 +400,44 @@ namespace collision_and_rigid
             return genWalkBlockByBlockShapes;
         }
 
+        public static HashSet<TX> ListToHashSet<TX>(List<TX> aList)
+        {
+            var hashSet = new HashSet<TX>();
+            foreach (var xe in aList)
+            {
+                hashSet.Add(xe)
+                    ;
+            }
+
+            return hashSet;
+        }
+
         public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
+#if NETCOREAPP3
+             var aabbPackPackBoxShapes = aabbBoxShapes.ToHashSet();
+#else
+            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes.ToList());
+#endif
 
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToHashSet());
+
+            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
         public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbBoxShapes.ToHashSet());
+            
+#if NETCOREAPP3
+             var aabbPackPackBoxShapes = aabbBoxShapes.ToHashSet();
+#else
+            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes.ToList());
+#endif
+
+            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
