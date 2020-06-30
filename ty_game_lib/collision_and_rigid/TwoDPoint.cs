@@ -82,7 +82,7 @@ namespace collision_and_rigid
 
         public TwoDPoint GenPosInLocal(TwoDPoint zero, TwoDVector xAim)
         {
-            return TwoDVector.TwoDVectorByPt(zero, this).AntiClockwiseTurn(xAim).ToPt();
+            return TwoDVector.TwoDVectorByPt(zero, this).ClockwiseTurn(xAim).ToPt();
         }
 
         public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(IEnumerable<AabbBoxShape> aabbBoxShapes)

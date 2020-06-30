@@ -14,19 +14,14 @@ namespace game_stuff
             BulletShape = bulletShape;
         }
 
-        public BulletBox GenBulletboxByRawBox(TwoDPoint pos, TwoDVector aim)
 
+        public bool IsHit(TwoDPoint objPos, TwoDPoint bPos, TwoDVector bAim)
         {
-            var clockTurnAboutZero = Zone.ClockTurnAboutZero(aim).MoveToAnchor(pos);
-            return new BulletBox(clockTurnAboutZero, BulletShape);
-        }
-
-
-        public bool IsHit(TwoDPoint cPos, TwoDPoint bPos, TwoDVector bAim)
-        {
-            var genPosInLocal = cPos.GenPosInLocal(bPos, bAim);
+            var genPosInLocal = objPos.GenPosInLocal(bPos, bAim);
+            if (!Zone.IncludePt(genPosInLocal)) return false;
             var ptInShape = BulletShape.PtInShape(genPosInLocal);
             return ptInShape;
+
         }
     }
 }
