@@ -74,21 +74,19 @@ namespace collision_and_rigid
             return new Zone(nUp, nDown, nLeft, nRight);
         }
 
+        public static Zone Zero()
+        {
+            return new Zone(0f, 0f, 0f, 0f);
+        }
+
         public Zone Join(Zone another)
         {
-            
-#if NETCOREAPP3
-               var nUp = MathF.Max(Up, another.Up);
-            var nLeft = MathF.Min(Left, another.Left);
-            var nDown = MathF.Min(Down, another.Down);
-            var nRight = MathF.Max(Right, another.Right);
-#else
-            var nUp = Math.Max(Up, another.Up);
-            var nLeft = Math.Min(Left, another.Left);
-            var nDown = Math.Min(Down, another.Down);
-            var nRight = Math.Max(Right, another.Right);
-#endif
-         
+            var nUp = MathTools.Max(Up, another.Up);
+            var nLeft = MathTools.Min(Left, another.Left);
+            var nDown = MathTools.Min(Down, another.Down);
+            var nRight = MathTools.Max(Right, another.Right);
+
+
             return new Zone(nUp, nDown, nLeft, nRight);
         }
 
@@ -124,7 +122,7 @@ namespace collision_and_rigid
 
         public Zone MoveToAnchor(TwoDPoint anchor)
         {
-            return new Zone(Up+anchor.Y,Down+anchor.Y,Left+anchor.X,Right+anchor.X);
+            return new Zone(Up + anchor.Y, Down + anchor.Y, Left + anchor.X, Right + anchor.X);
         }
     }
 }

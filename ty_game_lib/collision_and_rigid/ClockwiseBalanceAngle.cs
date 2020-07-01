@@ -77,21 +77,11 @@ namespace collision_and_rigid
             var oaq = oav.WhichQ();
             var obq = obv.WhichQ();
 
-            float up;
-            float down;
-            float right;
-            float left;
-#if NETCOREAPP3
-            up = MathF.Max(a.Y, b.Y);
-            down = MathF.Min(a.Y, b.Y);
-            right = MathF.Max(a.X, b.X);
-            left = MathF.Min(a.X, b.X);
-#else
-             up = Math.Max(a.Y, b.Y);
-            down = Math.Min(a.Y, b.Y);
-            right = Math.Max(a.X, b.X);
-            left = Math.Min(a.X, b.X);
-#endif
+            var up = MathTools.Max(a.Y, b.Y);
+            var down = MathTools.Min(a.Y, b.Y);
+            var right = MathTools.Max(a.X, b.X);
+            var left = MathTools.Min(a.X, b.X);
+
             var oUp = o.Y + r;
             var oDown = o.Y - r;
             var oLeft = o.X - r;

@@ -209,7 +209,7 @@ namespace game_stuff
         {
             var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.HitBody(body),
                 this);
-            return mapToGidList.Select(x => x.GetId()).ToHashSet();
+            return SomeTools.ListToHashSet(mapToGidList.Select(x => x.GetId()));
         }
 
         public BulletMsg GenMsg()

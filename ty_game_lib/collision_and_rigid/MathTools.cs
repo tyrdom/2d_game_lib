@@ -1,6 +1,6 @@
 using System;
 
-namespace game_stuff
+namespace collision_and_rigid
 {
     public class MathTools
     {
@@ -15,7 +15,7 @@ namespace game_stuff
 
         public static float Max(float a, float b)
         {
-#if NETCOREAPP3
+#if NETCOREAPP
             return MathF.Max(a, b);
 #else
             return (float) Math.Max(a, b);

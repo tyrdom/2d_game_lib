@@ -7,9 +7,9 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private Dictionary<int, IQSpace> TeamToBodies;
-        private readonly SightMap _sightMap;
-        private readonly WalkMap _walkMap;
+        private Dictionary<int, IQSpace> TeamToBodies;  //角色放置到四叉树中
+        private readonly SightMap _sightMap; //视野地图
+        private readonly WalkMap _walkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody;
         private Dictionary<int, List<Bullet>> TeamToBullet;
 
@@ -26,7 +26,7 @@ namespace game_stuff
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) InitPlayGround(
             IEnumerable<PlayerInitData> playerInitData, MapInitData mapInitData)
         {
-            var qSpaces = new Dictionary<int, HashSet<CharacterBody>>();
+            var bodies = new Dictionary<int, HashSet<CharacterBody>>();
             var characterBodies = new Dictionary<int, CharacterBody>();
 
             foreach (var initData in playerInitData)
@@ -36,25 +36,26 @@ namespace game_stuff
                 {
                     var twoDPoint = startPts.GenPt();
                     var genCharacterBody = initData.GenCharacterBody(twoDPoint);
-                    if (qSpaces.TryGetValue(initDataTeamId, out var qSpace))
+                    if (bodies.TryGetValue(initDataTeamId, out var qSpace))
                     {
                         qSpace.Add(genCharacterBody);
                     }
                     else
                     {
-                        qSpaces[initDataTeamId] = new HashSet<CharacterBody> {genCharacterBody};
+                        bodies[initDataTeamId] = new HashSet<CharacterBody> {genCharacterBody};
                     }
 
                     characterBodies[initData.Gid] = genCharacterBody;
                 }
             }
 
-            var spaces = qSpaces.ToDictionary(p => p.Key, p =>
+            var spaces = bodies.ToDictionary(p => p.Key, p =>
             {
                 var hashSet = p.Value;
                 var zone = mapInitData.GetZone();
                 var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
-                var aabbBoxShapes = hashSet.Select(x => x.CovToAabbPackBox()).ToHashSet();
+                var aabbBoxShapes =
+                    SomeTools.ListToHashSet(hashSet.Select(x => x.CovToAabbPackBox()));
                 emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                 return emptyRootBranch;
             });
@@ -103,7 +104,7 @@ namespace game_stuff
         {
             var everyBodyGoATick = EveryBodyGoATick(gidToOperates);
             var gidToWhichBulletHit = BulletsDo();
-            foreach (var (_, qSpace) in TeamToBodies)
+            foreach (var qSpace in TeamToBodies.Select(kk => kk.Value))
             {
                 qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
             }
@@ -120,11 +121,16 @@ namespace game_stuff
         private Dictionary<int, HashSet<CharacterBody>> GetPlayerSee()
         {
             var gidToCharacterBodies = new Dictionary<int, HashSet<CharacterBody>>();
-            foreach (var (key, characterBody) in GidToBody)
+            foreach (var kv in GidToBody)
             {
+                var key = kv.Key;
+                var characterBody = kv.Value;
                 var characterBodies = new HashSet<CharacterBody>();
-                foreach (var (bTeam, qSpace) in TeamToBodies)
+                foreach (var kv2 in TeamToBodies)
                 {
+                    var bTeam = kv2.Key;
+                    var qSpace = kv2.Value;
+
                     if (characterBody.Team == bTeam)
                     {
                         var filterToGIdPsList = qSpace.FilterToGIdPsList((x, y) => true, true).Select(x =>
@@ -140,7 +146,7 @@ namespace game_stuff
                     else
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((idp, acb) => { return acb.InSight(idp, _sightMap); },
+                            qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, _sightMap),
                                 characterBody);
                         characterBodies.UnionWith(filterToGIdPsList.Select(x =>
                         {
@@ -161,34 +167,37 @@ namespace game_stuff
 
         public void BodiesRePlace()
         {
-            foreach (var (_, qSpace) in TeamToBodies)
+            foreach (var qSpace in TeamToBodies.Select(kv => kv.Value))
             {
-                var mapToDicGidToSth = qSpace.MapToDicGidToSth((idpts, dic) =>
-                {
-                    switch (idpts)
+                var mapToDicGidToSth = qSpace.MapToDicGidToSth(
+                    (idPts, dic) =>
                     {
-                        case CharacterBody characterBody:
-                            var characterBodyBodySize = characterBody.BodySize;
-                            if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
-                            {
-                                ITwoDTwoP pushOutToPt =
-                                    walkBlock.PushOutToPt(characterBody.LastPos, characterBody.NowPos);
-                                if (pushOutToPt != null)
+                        switch (idPts)
+                        {
+                            case CharacterBody characterBody:
+                                var characterBodyBodySize = characterBody.BodySize;
+                                if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
-                                    characterBody.HitWall();
+                                    ITwoDTwoP? pushOutToPt =
+                                        walkBlock.PushOutToPt(characterBody.LastPos, characterBody.NowPos);
+                                    if (pushOutToPt != null)
+                                    {
+                                        characterBody.HitWall();
+                                    }
+
+                                    return pushOutToPt;
                                 }
 
-                                return pushOutToPt;
-                            }
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(idPts));
+                        }
 
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(idpts));
-                    }
+                        return null;
+                    }, _walkMap);
 
-                    return null;
-                }, _walkMap);
-                qSpace.MoveIdPoint(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
+
+                qSpace.MoveIdPoint(mapToDicGidToSth!, TempConfig.QSpaceBodyMaxPerLevel);
             }
         }
 
@@ -211,20 +220,22 @@ namespace game_stuff
                     switch (bullet.TargetType)
                     {
                         case ObjType.OtherTeam:
-                            foreach (var (bodyTeam, value) in TeamToBodies)
+                            foreach (var i in from kvv in TeamToBodies
+                                let bodyTeam = kvv.Key
+                                let value = kvv.Value
+                                where team != bodyTeam
+                                select bullet.HitTeam(value)
+                                into hitTeam
+                                from i in hitTeam
+                                select i)
                             {
-                                if (team == bodyTeam) continue;
-                                var hitTeam = bullet.HitTeam(value);
-                                foreach (var i in hitTeam)
+                                if (whoHitGid.TryGetValue(i, out var hBullets))
                                 {
-                                    if (whoHitGid.TryGetValue(i, out var hBullets))
-                                    {
-                                        hBullets.Add(bullet);
-                                    }
-                                    else
-                                    {
-                                        whoHitGid[i] = new HashSet<Bullet> {bullet};
-                                    }
+                                    hBullets.Add(bullet);
+                                }
+                                else
+                                {
+                                    whoHitGid[i] = new HashSet<Bullet> {bullet};
                                 }
                             }
 
@@ -268,13 +279,19 @@ namespace game_stuff
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
 
             var twoDTwoPs = new Dictionary<int, ITwoDTwoP>();
-            foreach (var (team, qSpace) in TeamToBodies)
+            foreach (var tq in TeamToBodies)
             {
+                var team = tq.Key;
+                var qSpace = tq.Value;
                 if (!sepOperatesToTeam.TryGetValue(team, out var gidToOp)) continue;
                 var mapToDicGidToSth = qSpace.MapToDicGidToSth(GameTools.BodyGoATick, gidToOp);
 
-                foreach (var (gid, (twoDTwoP, bullet)) in mapToDicGidToSth)
+                foreach (var gtb in mapToDicGidToSth)
                 {
+                    // (gid, (twoDTwoP, bullet))
+                    var gid = gtb.Key;
+                    var twoDTwoP = gtb.Value.Item1;
+                    var bullet = gtb.Value.Item2;
                     if (twoDTwoP != null)
                     {
                         twoDTwoPs[gid] = twoDTwoP;
@@ -304,8 +321,9 @@ namespace game_stuff
 
         public Zone GetZone()
         {
-            return (from WalkBlock walkBlock in WalkMap.SizeToEdge select walkBlock.QSpace.Zone).Aggregate(
-                SightMap.Lines.Zone, (current, qSpaceZone) => current.Join(qSpaceZone));
+            return WalkMap.SizeToEdge.Cast<WalkBlock>().Select(walkBlock => walkBlock.QSpace?.Zone ?? Zone.Zero())
+                .Aggregate(
+                    SightMap.Lines.Zone, (current, qSpaceZone) => current.Join(qSpaceZone));
         }
 
         public MapInitData(SightMap sightMap, WalkMap walkMap, Dictionary<int, StartPts> teamToStartPt)

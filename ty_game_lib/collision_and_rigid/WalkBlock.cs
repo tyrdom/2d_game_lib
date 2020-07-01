@@ -32,7 +32,7 @@ namespace collision_and_rigid
             return item1 == -1;
         }
 
-        public TwoDPoint? PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true)
+        public TwoDPoint? PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true) //null表示不需要被动移动
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
             if (QSpace == null) return null;

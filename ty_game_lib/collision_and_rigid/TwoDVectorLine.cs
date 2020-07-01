@@ -455,11 +455,9 @@ namespace collision_and_rigid
             if (rdR < 0) return (null, null);
 
             if (!(rdR > 0)) return (null, twoDPoint);
-#if NETCOREAPP3
-var sqrt = MathF.Sqrt(rdR);
-#else
-            var sqrt = (float) Math.Sqrt(rdR);
-#endif
+
+            var sqrt =  MathTools.Sqrt(rdR);
+
 
 
             var twoDVector = GetVector().GetUnit();
@@ -555,13 +553,10 @@ var sqrt = MathF.Sqrt(rdR);
             var f2 = GetScaleInPt(item2);
 //            Console.Out.WriteLine("maybe have cross pt" + f1 + "==" + f2);
             var (p1, p2) = f1 < f2 ? (item1, item2) : (item2, item1);
-#if NETCOREAPP3
-            var f11 = MathF.Min(f1, f2);
-            var f22 = MathF.Max(f1, f2);
-#else
-            var f11 = (float) Math.Min(f1, f2);
-            var f22 = (float) Math.Max(f1, f2);
-#endif
+
+            var f11 = MathTools.Min(f1, f2);
+            var f22 = MathTools.Max(f1, f2);
+
 
             var op1 = new TwoDVectorLine(o, p1);
             var op2 = new TwoDVectorLine(o, p2);

@@ -117,7 +117,7 @@ namespace collision_and_rigid
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
-            return notCross ? null : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush, safe);
+            return notCross ? line.B : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush, safe);
         }
 
         public void Remove(AabbBoxShape boxShape)
@@ -164,13 +164,9 @@ namespace collision_and_rigid
         public string OutZones()
         {
             var s = "Leaf:::" + AabbPackBoxShapes.Count + "\n";
-            foreach (var aabbBoxShape in AabbPackBoxShapes)
-            {
-                var zone = aabbBoxShape.Zone;
-                s += SomeTools.ZoneLog(zone) + "\n";
-            }
 
-            return s;
+            return AabbPackBoxShapes.Select(aabbBoxShape => aabbBoxShape.Zone)
+                .Aggregate(s, (current, zone) => current + (SomeTools.ZoneLog(zone) + "\n"));
         }
 
         public int FastTouchWithARightShootPoint(TwoDPoint p)
@@ -181,9 +177,8 @@ namespace collision_and_rigid
 
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
-            foreach (var aabbPackBoxShape in AabbPackBoxShapes)
+            foreach (var shape in AabbPackBoxShapes.Select(aabbPackBoxShape => aabbPackBoxShape.Shape))
             {
-                var shape = aabbPackBoxShape.Shape;
                 switch (shape)
                 {
                     case IIdPointShape idPointShape:
@@ -204,10 +199,9 @@ namespace collision_and_rigid
             var four = new HashSet<AabbBoxShape>();
             var zone = new HashSet<AabbBoxShape>();
             var (item1, item2) = Zone.GetMid();
-            foreach (var aabbBoxShape in AabbPackBoxShapes)
+            foreach (var intTBoxShapes in AabbPackBoxShapes.Select(aabbBoxShape =>
+                aabbBoxShape.SplitByQuads(item1, item2)))
             {
-                var intTBoxShapes = aabbBoxShape.SplitByQuads(item1, item2);
-
                 foreach (var (i, aabbBoxShape1) in intTBoxShapes)
                     switch (i)
                     {
@@ -265,7 +259,9 @@ namespace collision_and_rigid
 
             ForeachDoWithOutMove(Act, true);
             return dicIntToTu;
-        }     public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+        }
+
+        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t)
         {
             var dicIntToTu = new Dictionary<int, TU>();
@@ -281,7 +277,9 @@ namespace collision_and_rigid
 
             ForeachDoWithOutMove(Act, t);
             return dicIntToTu;
-        } public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+        }
+
+        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t)
         {
             var dicIntToTu = new HashSet<IIdPointShape>();

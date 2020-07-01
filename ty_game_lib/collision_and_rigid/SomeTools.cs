@@ -60,30 +60,31 @@ namespace collision_and_rigid
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
         }
 
-        public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes, TwoDVectorLine line,
+        public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes,
+            TwoDVectorLine moveLine,
             bool isPush,
             bool safe)
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
-                var notCross = line.GenZone().NotCross(aabbBoxShape.Zone);
+                var notCross = moveLine.GenZone().NotCross(aabbBoxShape.Zone);
                 if (notCross) continue;
                 switch (aabbBoxShape.Shape)
                 {
                     case ClockwiseTurning blockClockwiseTurning:
-                        var isCross = blockClockwiseTurning.IsCross(line);
+                        var isCross = blockClockwiseTurning.IsCross(moveLine);
                         if (isCross)
                         {
-                            var twoDPoint = blockClockwiseTurning.Slide(isPush ? line.B : line.A, safe);
+                            var twoDPoint = blockClockwiseTurning.Slide(isPush ? moveLine.B : moveLine.A, safe);
                             return twoDPoint;
                         }
 
                         break;
                     case TwoDVectorLine blockLine:
-                        var isCrossAnother = blockLine.SimpleIsCross(line);
+                        var isCrossAnother = blockLine.SimpleIsCross(moveLine);
                         if (isCrossAnother)
                         {
-                            var twoDPoint = blockLine.Slide(isPush ? line.B : line.A, safe);
+                            var twoDPoint = blockLine.Slide(isPush ? moveLine.B : moveLine.A, safe);
                             return twoDPoint;
                         }
 
@@ -400,15 +401,17 @@ namespace collision_and_rigid
             return genWalkBlockByBlockShapes;
         }
 
-        public static HashSet<TX> ListToHashSet<TX>(List<TX> aList)
+        public static HashSet<TX> ListToHashSet<TX>(IEnumerable<TX> aList)
         {
+#if NETCOREAPP3
+            var  hashSet = aList.ToHashSet();
+#else
             var hashSet = new HashSet<TX>();
             foreach (var xe in aList)
             {
-                hashSet.Add(xe)
-                    ;
+                hashSet.Add(xe);
             }
-
+#endif
             return hashSet;
         }
 
@@ -416,11 +419,8 @@ namespace collision_and_rigid
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
-#if NETCOREAPP3
-             var aabbPackPackBoxShapes = aabbBoxShapes.ToHashSet();
-#else
-            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes.ToList());
-#endif
+
+            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
 
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
@@ -430,12 +430,9 @@ namespace collision_and_rigid
         public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
-            
-#if NETCOREAPP3
-             var aabbPackPackBoxShapes = aabbBoxShapes.ToHashSet();
-#else
-            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes.ToList());
-#endif
+
+
+            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);

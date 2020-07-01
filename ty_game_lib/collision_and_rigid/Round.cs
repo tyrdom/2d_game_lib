@@ -32,11 +32,9 @@ namespace collision_and_rigid
             if (f < 0) return (null, null);
 
             if (!(f > 0)) return (null, O.X);
-#if NETCOREAPP3
-             var sqrt = MathF.Sqrt(f);
-#else
-            var sqrt = (float) Math.Sqrt(f);
-#endif
+
+            var sqrt = MathTools.Sqrt(f);
+
 
             return (O.X - sqrt, O.X + sqrt);
         }
@@ -81,11 +79,8 @@ namespace collision_and_rigid
             var oY = -O.Y + another.O.Y;
 
             var dSq = oX * oX + oY * oY;
-#if NETCOREAPP3
-            var d = MathF.Sqrt(dSq);
-#else
-            var d = (float)Math.Sqrt(dSq);
-#endif
+            var d = MathTools.Sqrt(dSq);
+
 
             if (rr * rr < dSq || rd * rd > dSq || dSq <= 0)
             {
@@ -93,13 +88,11 @@ namespace collision_and_rigid
             }
 
             var sq = (R * R - r2 * r2 + dSq) / (2 * d);
-            
-#if NETCOREAPP3
-            var h = MathF.Sqrt(R * R - sq * sq);
-#else
-            var h = (float)Math.Sqrt(R * R - sq * sq);
-#endif
-            
+
+
+            var h = MathTools.Sqrt(R * R - sq * sq);
+
+
             var xp = O.X + sq * oX / d;
             var yp = O.Y + sq * oY / d;
             if (h <= 0)

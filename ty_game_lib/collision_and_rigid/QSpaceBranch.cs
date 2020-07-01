@@ -35,10 +35,7 @@ namespace collision_and_rigid
         public HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
         public IQSpace QuadTwo { get; set; }
         public IQSpace QuadOne { get; set; }
-
         public IQSpace QuadFour { get; set; }
-
-
         public IQSpace QuadThree { get; set; }
 
         public void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit)
@@ -372,7 +369,9 @@ namespace collision_and_rigid
             QuadTwo.Father = this;
             QuadThree.Father = this;
             QuadFour.Father = this;
-        } public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
+        }
+
+        public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
         )
         {
             var dicIntToTu = new HashSet<T>();
@@ -382,9 +381,12 @@ namespace collision_and_rigid
                 var withIIdPtsShape = funcWithIIdPtsShape(id);
                 dicIntToTu.Add(withIIdPtsShape);
             }
+
             ForeachDoWithOutMove(Act, true);
             return dicIntToTu;
-        }     public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+        }
+
+        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t)
         {
             var dicIntToTu = new Dictionary<int, TU>();
@@ -401,6 +403,7 @@ namespace collision_and_rigid
             ForeachDoWithOutMove(Act, t);
             return dicIntToTu;
         }
+
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t)
         {

@@ -84,11 +84,9 @@ namespace collision_and_rigid
 
         public float Norm()
         {
-#if NETCOREAPP3
-            return MathF.Sqrt(SqNorm());
-#else
-            return (float) Math.Sqrt(SqNorm());
-#endif
+
+            return MathTools.Sqrt(SqNorm());
+
         }
 
         public float SqNorm()
