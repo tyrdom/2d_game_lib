@@ -32,6 +32,14 @@ namespace game_stuff
             int baseTough,
             WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss)
         {
+            var b = homingStartTick < homingEndTick && homingEndTick < comboInputStartTick &&
+                    skillMustTick < skillMaxTick &&
+                    moveStartTick + moves.Length < skillMaxTick;
+            if (!b)
+            {
+                Console.Out.WriteLine("some skill config is error~~~~~~~");
+            }
+
             _nowOnTick = 0;
             NowTough = baseTough;
             _launchTickToBullet = launchTickToBullet;
@@ -56,6 +64,11 @@ namespace game_stuff
             End
         }
 
+        public bool CanChangeAim()
+        {
+            return _nowOnTick < _homingEndTick && _nowOnTick >= _homingStartTick;
+        }
+
         public SkillPeriod InWhichPeriod()
         {
             if (_nowOnTick < _skillMustTick)
@@ -75,27 +88,19 @@ namespace game_stuff
         }
 
         public (TwoDVector? move, Bullet? launchBullet) GoATick(
-            TwoDPoint casterPos, TwoDVector casterAim,
-            TwoDPoint? objPos)
+            TwoDPoint casterPos, TwoDVector casterAim, float? moveFix
+        )
         {
             // GenVector
-            var lockDistance = objPos == null ? null : casterPos.GenVector(objPos);
             TwoDVector? twoDVector = null;
-            if
-            (lockDistance != null && _isHoming &&
-             _nowOnTick >= _homingStartTick && _nowOnTick < _homingEndTick)
-            {
-                var rest = _homingEndTick - _nowOnTick;
 
-                twoDVector = lockDistance.Multi(1f / rest);
-            }
-
-            else if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
+            if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
 
             {
                 var moveStartTick = _nowOnTick - _moveStartTick;
-
-                twoDVector = _moves[moveStartTick];
+                var fix = moveFix.GetValueOrDefault(1f);
+                var max = MathTools.Max(0, MathTools.Min(1, fix));
+                twoDVector = _moves[moveStartTick].Multi(max);
             }
 
             // GenBullet 生成子弹

@@ -23,7 +23,7 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
-            var characterStatus = new CharacterStatus(Speed, Gid, 0, null, null, WeaponConfigs, DamageHealStatus.StartDamageHealAbout(), 0, 0.5f, 0.5f);
+            var characterStatus = new CharacterStatus(Speed, Gid, 0, WeaponConfigs, DamageHealStatus.StartDamageHealAbout(), 0, 0.5f, 0.5f);
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
                 AngleSight.StandardAngleSight(),
                 TeamId);

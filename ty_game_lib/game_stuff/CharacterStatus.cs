@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using System.Linq;
-
 using collision_and_rigid;
 
 namespace game_stuff
@@ -48,7 +46,6 @@ namespace game_stuff
 
         public (TwoDVector? Aim, Skill skill, bool is_switch)? NextSkill { get; set; }
 
-        
 
         public IAntiActBuff? AntiActBuff;
 
@@ -59,16 +56,15 @@ namespace game_stuff
 
         public int ProtectTick;
 
-        public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, CharacterStatus? lockingWho,
-            CharacterStatus? catchingWho, Dictionary<int, Weapon> weapons,
+        public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, Dictionary<int, Weapon> weapons,
             DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
         {
             CharacterBody = null!;
             _maxMoveSpeed = maxMoveSpeed;
             GId = gId;
             PauseTick = pauseTick;
-            LockingWho = lockingWho;
-            CatchingWho = catchingWho;
+            LockingWho = null;
+            CatchingWho = null;
             NowWeapon = 0;
             Weapons = weapons;
             NowCastSkill = null;
@@ -101,7 +97,7 @@ namespace game_stuff
             }
 
             return NowCastSkill
-                .GoATick(GetPos(), CharacterBody.Sight.Aim, LockingWho?.GetPos());
+                .GoATick(GetPos(), CharacterBody.Sight.Aim, null);
         }
 
         private void ComboByNext()
@@ -137,8 +133,16 @@ namespace game_stuff
 
             if (NowCastSkill != null)
             {
+                if (NowCastSkill.CanChangeAim() && operate?.Aim != null)
+                {
+                    CharacterBody.Sight.OpChangeAim(operate.Aim);
+                }
+
                 var (move, launchBullet) = ActNowSkillATick();
+
+
                 ComboByNext();
+
                 if (operate?.Action == null) return (move, launchBullet);
 
                 var weaponSkillStatus = NowCastSkill.ComboInputRes();

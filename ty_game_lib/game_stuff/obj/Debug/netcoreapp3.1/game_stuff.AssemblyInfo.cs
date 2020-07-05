@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("game_config")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("game_stuff")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
-[assembly: System.Reflection.AssemblyProductAttribute("game_config")]
-[assembly: System.Reflection.AssemblyTitleAttribute("game_config")]
+[assembly: System.Reflection.AssemblyProductAttribute("game_stuff")]
+[assembly: System.Reflection.AssemblyTitleAttribute("game_stuff")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // 由 MSBuild WriteCodeFragment 类生成。
