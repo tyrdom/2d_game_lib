@@ -13,7 +13,8 @@ namespace game_stuff
         public TwoDPoint NowPos;
         public AngleSight Sight;
         public int Team;
-        public CharacterBody(TwoDPoint nowPos, BodySize bodySize,  CharacterStatus characterStatus,
+
+        public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
         {
@@ -37,6 +38,11 @@ namespace game_stuff
             return new AabbBoxShape(zone, this);
         }
 
+
+        public float GetRr()
+        {
+            return TempConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
+        }
 
         public int GetId()
         {
@@ -65,10 +71,9 @@ namespace game_stuff
         public (ITwoDTwoP?, Bullet?) BodyGoATick(Dictionary<int, Operate> gidToOp)
         {
             var id = GetId();
-            if (!gidToOp.TryGetValue(id, out var o)) return (null, null);
+            if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
             return charGoTick;
-
         }
 
         public void HitWall()
@@ -87,12 +92,14 @@ namespace game_stuff
         public CharTickMsg GenTickMsg()
         {
             var type = CharacterStatus.AntiActBuff?.GetType();
-            return new CharTickMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.NowCastSkill!=null,type);
+            return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
+                CharacterStatus.NowCastSkill != null, type);
         }
 
         public CharInitMsg GenInitMsg()
         {
-            return new CharInitMsg(GetId(),NowPos,Sight.Aim,CharacterStatus.DamageHealStatus,CharacterStatus.Weapons);
+            return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
+                CharacterStatus.Weapons);
         }
     }
 }

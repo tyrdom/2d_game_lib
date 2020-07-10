@@ -6,6 +6,7 @@ namespace game_stuff
 {
     public class Skill
     {
+        private LockArea? _lockArea;
         private uint _nowOnTick;
 
         public int NowTough;
@@ -14,7 +15,7 @@ namespace game_stuff
         private readonly int _baseTough;
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
-        private readonly TwoDVector[] _moves;
+        private readonly (TwoDVector, float)[] _moves;
         private readonly uint _moveStartTick;
 
         private readonly uint _homingStartTick; //可操作帧开始
@@ -26,10 +27,11 @@ namespace game_stuff
         private readonly WeaponSkillStatus _nextComboHit;
         private readonly WeaponSkillStatus _nextComboMiss;
 
-        public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
+        public Skill(Dictionary<uint, Bullet> launchTickToBullet, (TwoDVector, float)[] moves,
             uint moveStartTick, uint homingStartTick, uint homingEndTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
-            WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss)
+            WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss,
+            LockArea? lockArea)
         {
             var b = homingStartTick < homingEndTick && homingEndTick < comboInputStartTick &&
                     skillMustTick < skillMaxTick &&
@@ -52,6 +54,7 @@ namespace game_stuff
             _nextComboHit = nextComboHit;
             _comboInputStartTick = comboInputStartTick;
             _nextComboMiss = nextComboMiss;
+            _lockArea = lockArea;
             IsHit = false;
         }
 
@@ -86,17 +89,23 @@ namespace game_stuff
         }
 
         public (TwoDVector? move, Bullet? launchBullet) GoATick(
-            TwoDPoint casterPos, TwoDVector casterAim)
+            TwoDPoint casterPos, TwoDVector casterAim, TwoDVector? approachingVector)
         {
             // GenVector
             TwoDVector? twoDVector = null;
 
             if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
-
             {
                 var moveStartTick = _nowOnTick - _moveStartTick;
 
-                twoDVector = _moves[moveStartTick];
+                twoDVector = _moves[moveStartTick].Item1;
+                if (approachingVector != null)
+                {
+                    var min = MathTools.Min(approachingVector.X, twoDVector.X);
+                    var max = MathTools.Max(approachingVector.Y, twoDVector.Y);
+                    twoDVector.X = min;
+                    twoDVector.Y = max;
+                }
             }
 
             // GenBullet 生成子弹
@@ -115,7 +124,7 @@ namespace game_stuff
             return (twoDVector, bullet);
         }
 
-        public void LaunchSkill(bool haveLock)
+        public void LaunchSkill()
         {
             IsHit = false;
             NowTough = _baseTough;

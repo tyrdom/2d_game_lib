@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Microsoft.Win32.SafeHandles;
 
 namespace collision_and_rigid
@@ -20,9 +21,9 @@ namespace collision_and_rigid
             Y = b;
         }
 
-        public float X { get; }
+        public float X { get; set; }
 
-        public float Y { get; }
+        public float Y { get; set; }
 
         public static TwoDVector TwoDVectorByPt(TwoDPoint a, TwoDPoint b)
         {
@@ -51,6 +52,14 @@ namespace collision_and_rigid
         public TwoDVector Minus(TwoDVector another)
         {
             return new TwoDVector(X - another.X, Y - another.Y);
+        }
+
+
+        public TwoDVector AddX(float x)
+        {
+            X += x;
+           
+            return this;
         }
 
         public TwoDVector CounterClockwiseHalfPi()
@@ -82,11 +91,16 @@ namespace collision_and_rigid
             return new TwoDVector(vX, vY);
         }
 
+        public TwoDVector Normalize()
+        {
+            X /= Norm();
+            Y /= Norm();
+            return this;
+        }
+
         public float Norm()
         {
-
             return MathTools.Sqrt(SqNorm());
-
         }
 
         public float SqNorm()

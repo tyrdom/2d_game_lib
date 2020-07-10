@@ -13,14 +13,14 @@ namespace game_stuff
         AllTeam
     }
 
-    public class Bullet
+    public class Bullet : IHitStuff
     {
-        public bool IsActive;
-        public TwoDPoint Pos;
-        public TwoDVector Aim;
+        public bool IsActive { get; set; }
+        public TwoDPoint Pos { get; set; }
+        public TwoDVector Aim { get; set; }
 
-        public readonly Dictionary<BodySize, BulletBox> SizeToBulletCollision;
-        public readonly CharacterStatus Caster;
+        public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
+        public CharacterStatus Caster { get; }
         public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
         public readonly Skill FromSkill;
         public readonly Skill? SuccessCasterSkillAct;

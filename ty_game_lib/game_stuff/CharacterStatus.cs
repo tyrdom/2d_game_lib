@@ -85,7 +85,7 @@ namespace game_stuff
                 CharacterBody.Sight.OpChangeAim(aim);
             }
 
-            skill.LaunchSkill(LockingWho != null);
+            skill.LaunchSkill();
             NowCastSkill = skill;
         }
 
@@ -96,8 +96,15 @@ namespace game_stuff
                 return (null, null);
             }
 
+            var limitV
+                = LockingWho == null
+                    ? null
+                    : TwoDVector.TwoDVectorByPt(LockingWho.GetPos(), GetPos())
+                        .ClockwiseTurn(CharacterBody.Sight.Aim)
+                        .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr());
+
             return NowCastSkill
-                .GoATick(GetPos(), CharacterBody.Sight.Aim);
+                .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);
         }
 
         private void ComboByNext()
@@ -122,9 +129,10 @@ namespace game_stuff
                 return (null, null);
             }
 
+            var dPoint = GetPos();
             if (AntiActBuff != null)
             {
-                var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(GetPos());
+                var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(dPoint);
                 AntiActBuff = antiActBuff;
                 return (twoDPoint, null);
             }
@@ -133,13 +141,7 @@ namespace game_stuff
 
             if (NowCastSkill != null)
             {
-                if (NowCastSkill.CanChangeAim() && operate?.Aim != null)
-                {
-                    CharacterBody.Sight.OpChangeAim(operate.Aim);
-                }
-
                 var (move, launchBullet) = ActNowSkillATick();
-
 
                 ComboByNext();
 

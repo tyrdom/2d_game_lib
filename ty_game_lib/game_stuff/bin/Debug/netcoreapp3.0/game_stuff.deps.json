@@ -94,9 +94,6 @@
         }
       },
       "collision_and_rigid/1.0.0": {
-        "dependencies": {
-          "System.Runtime.Extensions": "4.3.1"
-        },
         "runtime": {
           "collision_and_rigid.dll": {}
         }
