@@ -15,7 +15,8 @@ namespace game_stuff
         private bool SkillOn;
         private Type? AntiBuff;
 
-        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, bool skillOn, Type? antiBuff)
+        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, bool skillOn,
+            Type? antiBuff)
         {
             Gid = gid;
             Pos = pos;
@@ -23,7 +24,6 @@ namespace game_stuff
             _damageHealStatus = damageHealStatus;
             SkillOn = skillOn;
             AntiBuff = antiBuff;
-            
         }
     }
 
@@ -36,7 +36,8 @@ namespace game_stuff
         private DamageHealStatus _damageHealStatus;
         private Dictionary<int, Weapon> WeaponConfigs;
 
-        public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, Dictionary<int, Weapon> weaponConfigs)
+        public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus,
+            Dictionary<int, Weapon> weaponConfigs)
         {
             GId = gId;
             Pos = pos;
@@ -44,8 +45,5 @@ namespace game_stuff
             _damageHealStatus = damageHealStatus;
             WeaponConfigs = weaponConfigs;
         }
-
-       
     }
-    
 }

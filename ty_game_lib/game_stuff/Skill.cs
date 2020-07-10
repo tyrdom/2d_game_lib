@@ -17,11 +17,10 @@ namespace game_stuff
         private readonly TwoDVector[] _moves;
         private readonly uint _moveStartTick;
 
-        private bool _isHoming;
-        private readonly uint _homingStartTick;
-        private readonly uint _homingEndTick;
+        private readonly uint _homingStartTick; //可操作帧开始
+        private readonly uint _homingEndTick; //可操作帧结束
 
-        private readonly uint _skillMustTick; //必须播放帧
+        private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
         private readonly WeaponSkillStatus _nextComboHit;
@@ -54,7 +53,6 @@ namespace game_stuff
             _comboInputStartTick = comboInputStartTick;
             _nextComboMiss = nextComboMiss;
             IsHit = false;
-            _isHoming = false;
         }
 
         public enum SkillPeriod
@@ -88,8 +86,7 @@ namespace game_stuff
         }
 
         public (TwoDVector? move, Bullet? launchBullet) GoATick(
-            TwoDPoint casterPos, TwoDVector casterAim, float? moveFix
-        )
+            TwoDPoint casterPos, TwoDVector casterAim)
         {
             // GenVector
             TwoDVector? twoDVector = null;
@@ -98,9 +95,8 @@ namespace game_stuff
 
             {
                 var moveStartTick = _nowOnTick - _moveStartTick;
-                var fix = moveFix.GetValueOrDefault(1f);
-                var max = MathTools.Max(0, MathTools.Min(1, fix));
-                twoDVector = _moves[moveStartTick].Multi(max);
+
+                twoDVector = _moves[moveStartTick];
             }
 
             // GenBullet 生成子弹
@@ -121,7 +117,6 @@ namespace game_stuff
 
         public void LaunchSkill(bool haveLock)
         {
-            _isHoming = haveLock;
             IsHit = false;
             NowTough = _baseTough;
             _nowOnTick = 0;
