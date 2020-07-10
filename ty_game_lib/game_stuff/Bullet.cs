@@ -69,9 +69,7 @@ namespace game_stuff
 
         public bool IsHit(CharacterBody characterBody)
         {
-            var characterBodyBodySize = characterBody.BodySize;
-            return SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
-                   bulletBox.IsHit(characterBody.NowPos, Pos, Aim);
+            return GameTools.IsHit(this, characterBody);
         }
 
         public bool HitBody(IIdPointShape targetBody)

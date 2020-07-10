@@ -95,7 +95,7 @@ namespace game_stuff
             {
                 return (null, null);
             }
-
+            //在有锁定目标时，会根据与当前目标的向量调整有一定程度的防止穿模型
             var limitV
                 = LockingWho == null
                     ? null

@@ -15,7 +15,7 @@ namespace game_stuff
         private readonly int _baseTough;
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
-        private readonly (TwoDVector, float)[] _moves;
+        private readonly TwoDVector[] _moves;
         private readonly uint _moveStartTick;
 
         private readonly uint _homingStartTick; //可操作帧开始
@@ -27,7 +27,7 @@ namespace game_stuff
         private readonly WeaponSkillStatus _nextComboHit;
         private readonly WeaponSkillStatus _nextComboMiss;
 
-        public Skill(Dictionary<uint, Bullet> launchTickToBullet, (TwoDVector, float)[] moves,
+        public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint homingStartTick, uint homingEndTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
             WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss,
@@ -91,14 +91,14 @@ namespace game_stuff
         public (TwoDVector? move, Bullet? launchBullet) GoATick(
             TwoDPoint casterPos, TwoDVector casterAim, TwoDVector? approachingVector)
         {
-            // GenVector
+            // 生成攻击运动
             TwoDVector? twoDVector = null;
 
             if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
             {
                 var moveStartTick = _nowOnTick - _moveStartTick;
 
-                twoDVector = _moves[moveStartTick].Item1;
+                twoDVector = _moves[moveStartTick];
                 if (approachingVector != null)
                 {
                     var min = MathTools.Min(approachingVector.X, twoDVector.X);
@@ -106,6 +106,8 @@ namespace game_stuff
                     twoDVector.X = min;
                     twoDVector.Y = max;
                 }
+
+                twoDVector = twoDVector.AntiClockwiseTurn(casterAim);
             }
 
             // GenBullet 生成子弹

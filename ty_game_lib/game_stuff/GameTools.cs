@@ -6,7 +6,7 @@ namespace game_stuff
 {
     public static class GameTools
     {
-        public static (ITwoDTwoP?,Bullet?) BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
+        public static (ITwoDTwoP?, Bullet?) BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
         {
             switch (idPointShape)
             {
@@ -16,6 +16,13 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException(nameof(idPointShape));
             }
+        }
+
+        public static bool IsHit(IHitStuff hitStuff, CharacterBody characterBody)
+        {
+            var characterBodyBodySize = characterBody.BodySize;
+            return hitStuff.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
+                   bulletBox.IsHit(characterBody.NowPos, hitStuff.Pos, hitStuff.Aim);
         }
 
         public static float GetMaxUpSpeed(float? height)
@@ -34,16 +41,16 @@ namespace game_stuff
         {
             var genBulletZone = shape.GenBulletZone(r);
             var genBulletShape = shape.GenBulletShape(r);
-            var bulletBox = new BulletBox(genBulletZone,genBulletShape);
+            var bulletBox = new BulletBox(genBulletZone, genBulletShape);
             return bulletBox;
         }
 
         static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape shape)
         {
-            var bulletBoxes = new Dictionary<BodySize,BulletBox>();
+            var bulletBoxes = new Dictionary<BodySize, BulletBox>();
             foreach (var k in TempConfig.SizeToR)
             {
-                var genRawBulletBox = GenRawBulletBox(shape,k.Value);
+                var genRawBulletBox = GenRawBulletBox(shape, k.Value);
 
                 bulletBoxes[k.Key] = genRawBulletBox;
             }
