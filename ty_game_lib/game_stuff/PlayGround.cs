@@ -7,7 +7,7 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private Dictionary<int, IQSpace> TeamToBodies; //角色放置到四叉树中
+        private readonly Dictionary<int, IQSpace> TeamToBodies; //角色放置到四叉树中
         private readonly SightMap _sightMap; //视野地图
         private readonly WalkMap _walkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody;//todo 简化角色缓存
