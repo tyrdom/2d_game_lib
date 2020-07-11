@@ -68,7 +68,7 @@ namespace game_stuff
             return NowPos;
         }
 
-        public (ITwoDTwoP?, Bullet?) BodyGoATick(Dictionary<int, Operate> gidToOp)
+        public (ITwoDTwoP?, IHitStuff?) BodyGoATick(Dictionary<int, Operate> gidToOp)
         {
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);

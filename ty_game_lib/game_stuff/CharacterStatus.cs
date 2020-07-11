@@ -89,7 +89,7 @@ namespace game_stuff
             NowCastSkill = skill;
         }
 
-        private (TwoDVector? move, Bullet? launchBullet) ActNowSkillATick()
+        private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()
         {
             if (NowCastSkill == null)
             {
@@ -121,7 +121,7 @@ namespace game_stuff
             NextSkill = null;
         }
 
-        public (ITwoDTwoP?, Bullet?) CharGoTick(Operate? operate)
+        public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate)
         {
             if (PauseTick > 0)
             {

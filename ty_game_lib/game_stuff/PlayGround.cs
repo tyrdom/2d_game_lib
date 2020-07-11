@@ -10,18 +10,18 @@ namespace game_stuff
         private readonly Dictionary<int, IQSpace> TeamToBodies; //角色放置到四叉树中
         private readonly SightMap _sightMap; //视野地图
         private readonly WalkMap _walkMap; //碰撞地图
-        private Dictionary<int, CharacterBody> GidToBody;//todo 简化角色缓存
-        private Dictionary<int, List<Bullet>> TeamToBullet;
+        private Dictionary<int, CharacterBody> GidToBody; //todo 简化角色缓存
+        private Dictionary<int, List<IHitStuff>> TeamToBullet;
 
 
         public PlayGround(Dictionary<int, IQSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
-            Dictionary<int, CharacterBody> gidToBody, Dictionary<int, List<Bullet>> teamToBullet)
+            Dictionary<int, CharacterBody> gidToBody)
         {
             TeamToBodies = teamToBodies;
             _sightMap = sightMap;
             _walkMap = walkMap;
             GidToBody = gidToBody;
-            TeamToBullet = teamToBullet;
+            TeamToBullet = new Dictionary<int, List<IHitStuff>>();
         }
 
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) InitPlayGround(
@@ -61,8 +61,7 @@ namespace game_stuff
                 return emptyRootBranch;
             });
 
-            var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                new Dictionary<int, List<Bullet>>());
+            var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies);
             return (playGround, playGround.GenInitMsg());
         }
 
@@ -210,7 +209,8 @@ namespace game_stuff
             {
                 var team = ii.Key;
                 var bullets = ii.Value;
-                foreach (var bullet in bullets)
+                var ofType = bullets.OfType<Bullet>();
+                foreach (var bullet in ofType)
                 {
                     if (!bullet.CanGoATick())
                     {
@@ -305,7 +305,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        TeamToBullet[team] = new List<Bullet> {bullet};
+                        TeamToBullet[team] = new List<IHitStuff> {bullet};
                     }
                 }
             }

@@ -6,7 +6,7 @@ namespace game_stuff
 {
     public static class GameTools
     {
-        public static (ITwoDTwoP?, Bullet?) BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
+        public static (ITwoDTwoP?, IHitStuff?) BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
         {
             switch (idPointShape)
             {

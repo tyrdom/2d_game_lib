@@ -88,7 +88,7 @@ namespace game_stuff
                 : (WeaponSkillStatus?) null;
         }
 
-        public (TwoDVector? move, Bullet? launchBullet) GoATick(
+        public (TwoDVector? move, IHitStuff? launchBullet) GoATick(
             TwoDPoint casterPos, TwoDVector casterAim, TwoDVector? approachingVector)
         {
             // 生成攻击运动
@@ -111,8 +111,14 @@ namespace game_stuff
             }
 
             // GenBullet 生成子弹
-            Bullet? bullet = null;
-            if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
+            IHitStuff? bullet = null;
+            if (_nowOnTick == 0 && _lockArea != null)
+            {
+                bullet = _lockArea;
+            }
+
+
+            else if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
             {
                 bullet = nowBullet.ActiveBullet(casterPos, casterAim);
             }
