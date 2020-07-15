@@ -185,7 +185,10 @@ namespace game_stuff
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
                 if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out var failAntiBuff))
+                {
                     failAntiBuff = null;
+                }
+
                 switch (failAntiBuff)
                 {
                     case CatchAntiActBuffConfig catchAntiActBuffConfig:

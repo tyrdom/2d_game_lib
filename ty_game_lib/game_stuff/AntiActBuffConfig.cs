@@ -13,33 +13,33 @@ namespace game_stuff
 
     public class PushEarthAntiActBuffConfig : IAntiActBuffConfig
     {
-        private float RawTwoDVectorX;
-        private PushType PushType;
-        private TwoDVector pushAboutVector;
+        private float PushForce; //推力
+        private PushType PushType; //方向或者中心
+        private TwoDVector? PushFixVector; //修正向量，中心push为中心点，方向为方向修正
         private int TickLast;
 
-        public PushEarthAntiActBuffConfig(float rawTwoDVectorX, PushType pushType, TwoDVector pushAboutVector,
+        public PushEarthAntiActBuffConfig(float pushForce, PushType pushType, TwoDVector pushFixVector,
             int tickLast)
         {
-            RawTwoDVectorX = rawTwoDVectorX;
+            PushForce = pushForce;
             PushType = pushType;
-            this.pushAboutVector = pushAboutVector;
+            PushFixVector = pushFixVector;
             TickLast = tickLast;
         }
 
-        IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? air, float upSpeed, float friction)
+        private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction)
         {
             var dVector1 = unit.Multi(speed);
 
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
-            if (air == null)
+            if (height == null)
             {
                 var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast);
                 return pushOnEarth;
             }
 
             {
-                var pushOnAir = new PushOnAir(dVector1, air.Value, upSpeed, TickLast);
+                var pushOnAir = new PushOnAir(dVector1, height.Value, upSpeed, TickLast);
                 return pushOnAir;
             }
         }
@@ -47,20 +47,22 @@ namespace game_stuff
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize, CharacterStatus whoDid)
         {
-            var f = TempConfig.SizeToMass[bodySize];
+            var mass = TempConfig.SizeToMass[bodySize];
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDVector = pos.Move(pushAboutVector).GenVector(obPos).GetUnit();
+                    var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector) : pos;
+                    var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit =
-                        GenBuffFromUnit(twoDVector, RawTwoDVectorX / f, height, upSpeed, TempConfig.Friction);
+                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, TempConfig.Friction);
                     return genBuffFromUnit;
 
 
                 case PushType.Vector:
-                    var unit = aim.ClockwiseTurn(pushAboutVector).GetUnit();
+                    var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
+                    var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
-                        GenBuffFromUnit(unit, RawTwoDVectorX / f, height, upSpeed, TempConfig.Friction);
+                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, TempConfig.Friction);
                     return genBuffFromUnit1;
 
                 default:
@@ -71,24 +73,24 @@ namespace game_stuff
 
     public class PushAirAntiActBuffConfig : IAntiActBuffConfig
     {
-        private float RawTwoDVectorX;
+        private float PushForce;
         private PushType PushType;
         private float UpForce;
 
         private TwoDVector pushAboutVector;
         private int TickLast;
 
-        public PushAirAntiActBuffConfig(float rawTwoDVectorX, PushType pushType, float upForce,
+        public PushAirAntiActBuffConfig(float pushForce, PushType pushType, float upForce,
             TwoDVector pushAboutVector, int tickLast)
         {
-            RawTwoDVectorX = rawTwoDVectorX;
+            PushForce = pushForce;
             PushType = pushType;
             UpForce = upForce;
             this.pushAboutVector = pushAboutVector;
             TickLast = tickLast;
         }
 
-        float GenUp(float? air, float bodyMass)
+        private float GenUp(float? air, float bodyMass)
         {
             var maxUp = GameTools.GetMaxUpSpeed(air);
             return MathTools.Min(maxUp, UpForce / bodyMass);
@@ -97,18 +99,18 @@ namespace game_stuff
         public IAntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
             , float upSpeed, BodySize bodySize, CharacterStatus whoDid)
         {
-            var f = TempConfig.SizeToMass[bodySize];
+            var mass = TempConfig.SizeToMass[bodySize];
             switch (PushType)
             {
                 case PushType.Center:
                     var twoDVector = anchor.Move(pushAboutVector).GenVector(obPos).GetUnit();
-                    var genBuffFromUnit = GenBuffFromUnit(twoDVector, RawTwoDVectorX / f, height, upSpeed, f);
+                    var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, mass);
                     return genBuffFromUnit;
 
 
                 case PushType.Vector:
                     var unit = aim.ClockwiseTurn(pushAboutVector).GetUnit();
-                    var genBuffFromUnit1 = GenBuffFromUnit(unit, RawTwoDVectorX / f, height, upSpeed, f);
+                    var genBuffFromUnit1 = GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, mass);
                     return genBuffFromUnit1;
 
                 default:
@@ -132,22 +134,25 @@ namespace game_stuff
 
     public class CatchAntiActBuffConfig : IAntiActBuffConfig
     {
-        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, int lastTick, Skill? trickSkill)
+        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, int lastTick, Skill? trickSkill,
+            IAntiActBuffConfig? lastBuff)
         {
             TwoDVectors = twoDVectors;
             LastTick = lastTick;
             TrickSkill = trickSkill;
+            // LastBuff = lastBuff;
         }
 
-        private TwoDVector[] TwoDVectors;
-        private int LastTick;
-        public Skill? TrickSkill;
+        private TwoDVector[] TwoDVectors { get; }
+        private int LastTick { get; }
+        public Skill? TrickSkill { get; }
+        // public IAntiActBuffConfig? LastBuff { get; }
 
         public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move).ToList();
-            var caught = new Caught(twoDPoints, LastTick, ref whoDid);
+            var caught = new Caught(twoDPoints, LastTick, whoDid);
             return caught;
         }
 

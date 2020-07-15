@@ -110,7 +110,7 @@ namespace game_stuff
         public List<TwoDPoint> MovesOnPoints;
         public CharacterStatus WhoCatchMe;
 
-        public Caught(List<TwoDPoint> movesOnPoints, int restTick, ref CharacterStatus whoCatchMe)
+        public Caught(List<TwoDPoint> movesOnPoints, int restTick,  CharacterStatus whoCatchMe)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
