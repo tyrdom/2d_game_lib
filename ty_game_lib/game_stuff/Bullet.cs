@@ -23,7 +23,6 @@ namespace game_stuff
         public CharacterStatus Caster { get; }
         public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
         public readonly Skill FromSkill;
-        public readonly Skill? SuccessCasterSkillAct;
         public readonly Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf;
 
         public readonly int PauseToCaster;
@@ -38,7 +37,7 @@ namespace game_stuff
         public Bullet(TwoDPoint pos, TwoDVector aim, Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             ref CharacterStatus caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            ObjType targetType, int tough, int restTick, int resId, Skill? successCasterSkillAct, Skill fromSkill)
+            ObjType targetType, int tough, int restTick, int resId, Skill fromSkill)
         {
             Pos = pos;
             Aim = aim;
@@ -54,7 +53,7 @@ namespace game_stuff
             RestTick = restTick;
             ResId = resId;
 
-            SuccessCasterSkillAct = successCasterSkillAct;
+            
             FromSkill = fromSkill;
 
 

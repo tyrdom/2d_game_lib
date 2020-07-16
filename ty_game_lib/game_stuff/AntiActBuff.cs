@@ -110,7 +110,7 @@ namespace game_stuff
         public List<TwoDPoint> MovesOnPoints;
         public CharacterStatus WhoCatchMe;
 
-        public Caught(List<TwoDPoint> movesOnPoints, int restTick,  CharacterStatus whoCatchMe)
+        public Caught(List<TwoDPoint> movesOnPoints, int restTick, CharacterStatus whoCatchMe)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
@@ -135,9 +135,10 @@ namespace game_stuff
             if (count > 0)
             {
                 MovesOnPoints.RemoveAt(0);
+                return (pt, this);
             }
 
-            return (pt, this);
+            return (pt, new PushOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick));
         }
 
         public float HitWall()

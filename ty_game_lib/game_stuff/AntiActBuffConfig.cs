@@ -134,19 +134,18 @@ namespace game_stuff
 
     public class CatchAntiActBuffConfig : IAntiActBuffConfig
     {
-        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, int lastTick, Skill? trickSkill,
-            IAntiActBuffConfig? lastBuff)
+        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, int lastTick, Skill trickSkill
+        )
         {
             TwoDVectors = twoDVectors;
             LastTick = lastTick;
             TrickSkill = trickSkill;
-            // LastBuff = lastBuff;
         }
 
         private TwoDVector[] TwoDVectors { get; }
         private int LastTick { get; }
-        public Skill? TrickSkill { get; }
-        // public IAntiActBuffConfig? LastBuff { get; }
+        public Skill TrickSkill { get; }
+
 
         public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
         {
