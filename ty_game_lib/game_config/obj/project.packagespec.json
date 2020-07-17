@@ -1,10 +1,10 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
+    "projectUniqueName": "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
     "projectName": "game_config",
-    "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
-    "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/obj/",
+    "projectPath": "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
+    "outputPath": "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/obj/",
     "projectStyle": "PackageReference",
     "crossTargeting": true,
     "fallbackFolders": [

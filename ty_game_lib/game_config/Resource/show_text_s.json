@@ -1,1 +1,1 @@
-{"content_name": {"chinese": "配置名字，another_name为关键字，道具配置依靠此翻译为道具货币id"}, "content_info": {"chinese": ""}, "content_schema": {"chinese": "string"}, "content": {"1": {"id": 1, "chinese": "金币"}}}
+{"content_name": {"id": "id", "chinese": "配置名字，another_name为关键字，道具配置依靠此翻译为道具货币id"}, "content_info": {"id": "", "chinese": ""}, "content_schema": {"id": "string", "chinese": "string"}, "content": {"test_string": {"id": "test_string", "chinese": "测试测试"}}}

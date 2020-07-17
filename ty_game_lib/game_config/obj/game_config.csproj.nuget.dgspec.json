@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj": {}
+    "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/game_config.csproj": {}
   },
   "projects": {
-    "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj": {
+    "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/game_config.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
+        "projectUniqueName": "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
         "projectName": "game_config",
-        "projectPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
+        "projectPath": "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/game_config.csproj",
         "packagesPath": "/Users/tianhao/.nuget/packages/",
-        "outputPath": "/Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_config/obj/",
+        "outputPath": "/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_config/obj/",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
         "fallbackFolders": [
