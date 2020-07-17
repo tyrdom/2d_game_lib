@@ -18,9 +18,6 @@ namespace game_stuff
         private readonly TwoDVector[] _moves;
         private readonly uint _moveStartTick;
 
-        private readonly uint _homingStartTick; //可操作帧开始
-        private readonly uint _homingEndTick; //可操作帧结束
-
         private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
@@ -28,12 +25,12 @@ namespace game_stuff
         private readonly WeaponSkillStatus _nextComboMiss;
 
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
-            uint moveStartTick, uint homingStartTick, uint homingEndTick, uint skillMustTick, uint skillMaxTick,
+            uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
             WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss,
             LockArea? lockArea)
         {
-            var b = homingStartTick < homingEndTick && homingEndTick < comboInputStartTick &&
+            var b =  0 < comboInputStartTick &&
                     skillMustTick < skillMaxTick &&
                     moveStartTick + moves.Length < skillMaxTick;
             if (!b)
@@ -46,8 +43,6 @@ namespace game_stuff
             _launchTickToBullet = launchTickToBullet;
             _moves = moves;
             _moveStartTick = moveStartTick;
-            _homingStartTick = homingStartTick;
-            _homingEndTick = homingEndTick;
             _skillMustTick = skillMustTick;
             _skillMaxTick = skillMaxTick;
             _baseTough = baseTough;
@@ -63,11 +58,6 @@ namespace game_stuff
             Casting,
             CanCombo,
             End
-        }
-
-        public bool CanChangeAim()
-        {
-            return _nowOnTick < _homingEndTick && _nowOnTick >= _homingStartTick;
         }
 
         public SkillPeriod InWhichPeriod()
