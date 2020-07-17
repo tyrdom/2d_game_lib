@@ -24,3 +24,17 @@ G:/workspace/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcorea
 G:/workspace/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.csproj.CopyComplete
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_config.dll
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_config.pdb
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_stuff.deps.json
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_stuff.dll
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_stuff.pdb
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/collision_and_rigid.dll
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_config.dll
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/collision_and_rigid.pdb
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/bin/Debug/netcoreapp3.0/game_config.pdb
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.csprojAssemblyReference.cache
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.csproj.CoreCompileInputs.cache
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.AssemblyInfoInputs.cache
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.AssemblyInfo.cs
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.csproj.CopyComplete
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.dll
+/Users/tianhao/Documents/2d_game_lib/ty_game_lib/game_stuff/obj/Debug/netcoreapp3.0/game_stuff.pdb

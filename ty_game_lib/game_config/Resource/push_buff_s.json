@@ -1,1 +1,58 @@
-{"content_name": {"id": "id", "LastTick": "", "BuffType": "0：无UpForce", "PushForce": "", "PushType": "1方向 2中心", "FixVector": "1方向：修正的方向 2：修正的中心点 ", "UpForce": ""}, "content_info": {"id": "", "LastTick": "", "BuffType": "", "PushForce": "", "PushType": "", "FixVector": "", "UpForce": ""}, "content_schema": {"id": "string", "LastTick": "int", "BuffType": "int", "PushForce": "float", "PushType": "int", "FixVector": "{x|float=y|float}[]", "UpForce": "float"}, "content": {"test_l_1_push": {"id": "test_l_1_push", "LastTick": 15, "BuffType": 0, "PushForce": 1.0, "PushType": 1, "FixVector": [], "UpForce": 0.0}, "test_h_1_push": {"id": "test_h_1_push", "LastTick": 20, "BuffType": 0, "PushForce": 1.2, "PushType": 1, "FixVector": [], "UpForce": 0.0}, "test_fail_1_push": {"id": "test_fail_1_push", "LastTick": 12, "BuffType": 0, "PushForce": 0.5, "PushType": 1, "FixVector": [], "UpForce": 0.0}}}
+{
+  "content_name": {
+    "id": "id",
+    "LastTick": "",
+    "BuffType": "0：无UpForce",
+    "PushForce": "",
+    "PushType": "1方向 2中心",
+    "FixVector": "1方向：修正的方向 2：修正的中心点 ",
+    "UpForce": ""
+  },
+  "content_info": {
+    "id": "",
+    "LastTick": "",
+    "BuffType": "",
+    "PushForce": "",
+    "PushType": "",
+    "FixVector": "",
+    "UpForce": ""
+  },
+  "content_schema": {
+    "id": "string",
+    "LastTick": "int",
+    "BuffType": "int",
+    "PushForce": "float",
+    "PushType": "int",
+    "FixVector": "{x|float=y|float}[]",
+    "UpForce": "float"
+  },
+  "content": {
+    "test_l_1_push": {
+      "id": "test_l_1_push",
+      "LastTick": 15,
+      "BuffType": 0,
+      "PushForce": 1.0,
+      "PushType": 1,
+      "FixVector": [],
+      "UpForce": 0.0
+    },
+    "test_h_1_push": {
+      "id": "test_h_1_push",
+      "LastTick": 20,
+      "BuffType": 0,
+      "PushForce": 1.2,
+      "PushType": 1,
+      "FixVector": [],
+      "UpForce": 0.0
+    },
+    "test_fail_1_push": {
+      "id": "test_fail_1_push",
+      "LastTick": 12,
+      "BuffType": 0,
+      "PushForce": 0.5,
+      "PushType": 1,
+      "FixVector": [],
+      "UpForce": 0.0
+    }
+  }
+}

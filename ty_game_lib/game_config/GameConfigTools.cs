@@ -30,7 +30,7 @@ namespace game_config
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
             var stream = assembly.GetManifestResourceStream(ResLocate + name);
             using var reader =
-                new StreamReader(stream ?? throw new Exception("NoResource" + name), Encoding.UTF8);
+                new StreamReader(stream ?? throw new Exception("NoResource:::" + name), Encoding.UTF8);
             var json = reader.ReadToEnd();
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
