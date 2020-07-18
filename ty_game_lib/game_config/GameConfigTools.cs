@@ -21,7 +21,7 @@ namespace game_config
         private static readonly string ResLocate = GetNameSpace()+ ".Resource.";
 
 
-        public static ImmutableDictionary<int, T> GenConfigDict<T>()
+        public static ImmutableDictionary<TK, T> GenConfigDict<TK,T>()
         {
             var namesDictionary = ResNames.NamesDictionary;
             if (!namesDictionary.TryGetValue(typeof(T), out var name))
@@ -34,7 +34,7 @@ namespace game_config
             var json = reader.ReadToEnd();
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
-            var genConfigDict = jToken?.ToObject<ImmutableDictionary<int, T>>();
+            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, T>>();
             return genConfigDict;
         }
     }

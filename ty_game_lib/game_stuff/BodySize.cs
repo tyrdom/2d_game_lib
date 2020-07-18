@@ -2,8 +2,8 @@
 {
     public enum BodySize
     {
-        Small,
-        Medium,
-        Big
+        @Small,
+        @Medium,
+        @Big
     }
 }

@@ -26,6 +26,14 @@
       <EmbeddedResource Include="Resource\item_s.json" />
       <None Remove="Resource\bullet_s.json" />
       <EmbeddedResource Include="Resource\bullet_s.json" />
+      <None Remove="Resource\other_config_s.json" />
+      <EmbeddedResource Include="Resource\other_config_s.json" />
+      <None Remove="Resource\push_buff_s.json" />
+      <EmbeddedResource Include="Resource\push_buff_s.json" />
+      <None Remove="Resource\lock_area_s.json" />
+      <EmbeddedResource Include="Resource\lock_area_s.json" />
+      <None Remove="Resource\caught_buff_s.json" />
+      <EmbeddedResource Include="Resource\caught_buff_s.json" />
     </ItemGroup>
 
 </Project>
