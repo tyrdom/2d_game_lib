@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.Design;
+﻿
 using collision_and_rigid;
 
 namespace game_stuff
