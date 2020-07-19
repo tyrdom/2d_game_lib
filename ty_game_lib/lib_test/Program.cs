@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace lib_test
 {
@@ -104,6 +105,13 @@ namespace lib_test
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 
             Console.WriteLine("!!2!!" + inBlock2);
+            Console.Out.WriteLine("config test~~~~~");
+
+            foreach (var key in Content.push_buffs)
+            {
+                Console.Out.WriteLine($"key::{key.Key}");
+                Console.Out.WriteLine($"pushType::{key.Value.PushType.ToString()}");
+            }
         }
     }
 }

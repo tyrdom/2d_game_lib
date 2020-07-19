@@ -37,3 +37,9 @@ G:/workspace/RiderProjects/2d_game_lib/ty_game_lib/lib_test/obj/Debug/netcoreapp
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/System.Collections.Immutable.dll
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/game_config.dll
 /Users/tianhao/RiderProjects/2d_game_lib/ty_game_lib/lib_test/bin/Debug/netcoreapp3.0/game_config.pdb
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.csprojAssemblyReference.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.csproj.CoreCompileInputs.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.AssemblyInfoInputs.cache
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.AssemblyInfo.cs
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.dll
+G:\workspace\RiderProjects\2d_game_lib\ty_game_lib\lib_test\obj\Debug\netcoreapp3.0\lib_test.pdb
