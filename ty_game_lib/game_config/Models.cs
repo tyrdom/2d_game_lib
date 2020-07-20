@@ -79,8 +79,8 @@ namespace game_config
 
     public enum push_buff_PushType
     {
-        @Center,
-        @Vector
+        @Vector,
+        @Center
     }
 
     public class push_buff : IGameConfig
@@ -130,8 +130,8 @@ namespace game_config
 
     public enum size
     {
-        @small,
         @medium,
+        @small,
         @big
     }
 
