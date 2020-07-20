@@ -30,7 +30,7 @@ namespace game_stuff
         public const int MidTough = 10000;
         public const int WeaponNum = 2;
         public const float TwoSToSeePerTick = 10f;
-        public static readonly PushOnAir OutCought = new PushOnAir(new TwoDVector(0, 0), 0.1f, 0, 6);
+        public static readonly PushOnAir OutCaught = new PushOnAir(new TwoDVector(0, 0), 0.1f, 0, 6);
 
         public const int QSpaceBodyMaxPerLevel = 5;
 

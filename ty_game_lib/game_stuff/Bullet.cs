@@ -115,7 +115,7 @@ namespace game_stuff
                 FromSkill.IsHit = true;
                 Caster.LockingWho ??= targetCharacterStatus;
                 if (targetCharacterStatus.CatchingWho != null)
-                    targetCharacterStatus.CatchingWho.AntiActBuff = TempConfig.OutCought;
+                    targetCharacterStatus.CatchingWho.AntiActBuff = TempConfig.OutCaught;
 
                 targetCharacterStatus.DamageHealStatus.TakeDamage(Damage);
 
