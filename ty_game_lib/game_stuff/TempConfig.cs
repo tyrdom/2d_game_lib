@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -20,27 +21,30 @@ namespace game_stuff
             [BodySize.Big] = 20.25f
         };
 
-
-        public const float MaxHeight = 2f;
+        public static readonly float G = Content.other_configs[1].g_acc;
+        public static readonly float MaxHeight = Content.other_configs[1].max_hegiht;
         public static readonly float MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
-        public const float G = 0.1f;
-        public const float Friction = 1f;
 
-        public const int ToughGrowPerTick = 1000;
-        public const int MidTough = 10000;
-        public const int WeaponNum = 2;
-        public const float TwoSToSeePerTick = 10f;
+        public static readonly float Friction = Content.other_configs[1].friction;
+
+        public static readonly int ToughGrowPerTick = Content.other_configs[1].tough_grow;
+        public static readonly int MidTough = Content.other_configs[1].mid_tough;
+        public static int WeaponNum = Content.other_configs[1].weapon_num;
+        public static readonly float TwoSToSeePerTick = Content.other_configs[1].two_s_to_see_pertick;
         public static readonly PushOnAir OutCaught = new PushOnAir(new TwoDVector(0, 0), 0.1f, 0, 6);
 
-        public const int QSpaceBodyMaxPerLevel = 5;
+        public static readonly int QSpaceBodyMaxPerLevel = Content.other_configs[1].qspace_max_per_level;
 
-        public const int HitWallTickParam = 2;
-        public const int HitWallCatchTickParam = 10;
-        public const int HitWallDmgParam = 2;
-        public const float HitWallCatchDmgParam = 5f;
+        public static readonly int HitWallTickParam = Content.other_configs[1].hit_wall_add_tick_by_speed_param;
+        public static readonly int HitWallCatchTickParam = Content.other_configs[1].hit_wall_catch_tick_param;
+        public static readonly int HitWallDmgParam = Content.other_configs[1].hit_wall_dmg_param;
+        public static readonly float HitWallCatchDmgParam = Content.other_configs[1].hit_wall_catch_dmg_param;
 
-        public const float StandardSightR = 45f;
-        public static TwoDVector StandardVector = new TwoDVector(1f, 1.2f);
+        public static float StandardSightR = Content.other_configs[1].standard_sight_r;
+
+        public static TwoDVector StandardVector =
+            new TwoDVector(Content.other_configs[1].sight_length, Content.other_configs[1].sight_width);
+
         public const int StartHp = 1000;
         public static int TestAtk = 10;
 

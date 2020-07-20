@@ -34,13 +34,19 @@ namespace game_stuff
         public int RestTick;
         public int ResId;
 
-        public Bullet(TwoDPoint pos, TwoDVector aim, Dictionary<BodySize, BulletBox> sizeToBulletCollision,
-            ref CharacterStatus caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
+
+        // public Bullet GenByConfig(game_config.bullet bullet)
+        // {
+        //     
+        // }
+
+        public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
+            CharacterStatus caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int restTick, int resId, Skill fromSkill)
         {
-            Pos = pos;
-            Aim = aim;
+            Pos = TwoDPoint.Zero();
+            Aim = TwoDVector.Zero();
             SizeToBulletCollision = sizeToBulletCollision;
             Caster = caster;
             SuccessAntiActBuffConfigToOpponent = successAntiActBuffConfigToOpponent;
@@ -52,11 +58,7 @@ namespace game_stuff
             Tough = tough;
             RestTick = restTick;
             ResId = resId;
-
-            
             FromSkill = fromSkill;
-
-
             IsActive = false;
         }
 
@@ -183,7 +185,7 @@ namespace game_stuff
                 Caster.NowCastSkill = null;
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
-                if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out var failAntiBuff))
+                if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out IAntiActBuffConfig? failAntiBuff))
                 {
                     failAntiBuff = null;
                 }

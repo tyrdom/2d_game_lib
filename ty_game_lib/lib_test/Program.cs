@@ -112,6 +112,15 @@ namespace lib_test
                 Console.Out.WriteLine($"key::{key.Key}");
                 Console.Out.WriteLine($"pushType::{key.Value.PushType.ToString()}");
             }
+
+            var twoSToSeePertick = Content.other_configs[1].two_s_to_see_pertick;
+            Console.Out.WriteLine($"other_c:::{twoSToSeePertick}");
+
+            foreach (var bodysKey in Content.bodys.Keys)
+            {
+                Console.Out.WriteLine($"{bodysKey.ToString()}");
+            }
+
         }
     }
 }

@@ -34,6 +34,8 @@
       <EmbeddedResource Include="Resource\lock_area_s.json" />
       <None Remove="Resource\caught_buff_s.json" />
       <EmbeddedResource Include="Resource\caught_buff_s.json" />
+      <None Remove="Resource\body_s.json" />
+      <EmbeddedResource Include="Resource\body_s.json" />
     </ItemGroup>
 
 </Project>
