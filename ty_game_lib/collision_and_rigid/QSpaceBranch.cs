@@ -389,35 +389,13 @@ namespace collision_and_rigid
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t)
         {
-            var dicIntToTu = new Dictionary<int, TU>();
-
-            void Act(IIdPointShape id, T tt)
-            {
-                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-                if (withIIdPtsShape == null) return;
-                var i = id.GetId();
-
-                dicIntToTu[i] = withIIdPtsShape;
-            }
-
-            ForeachDoWithOutMove(Act, t);
-            return dicIntToTu;
+            return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t);
         }
 
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t)
         {
-            var dicIntToTu = new HashSet<IIdPointShape>();
-
-            void Act(IIdPointShape id, T tt)
-            {
-                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-
-                if (withIIdPtsShape) dicIntToTu.Add(id);
-            }
-
-            ForeachDoWithOutMove(Act, t);
-            return dicIntToTu;
+            return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t);
         }
     }
 }

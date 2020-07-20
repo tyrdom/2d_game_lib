@@ -60,6 +60,42 @@ namespace collision_and_rigid
             Console.Out.WriteLine("aabb::" + s + "::bbaa");
         }
 
+        public static IEnumerable<IIdPointShape> FilterToGIdPsList<T>(IQSpace qSpace,
+            Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+            T t)
+        {
+            var dicIntToTu = new HashSet<IIdPointShape>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+
+                if (withIIdPtsShape) dicIntToTu.Add(id);
+            }
+
+            qSpace.ForeachDoWithOutMove(Act, t);
+            return dicIntToTu;
+        }
+
+        public static Dictionary<int, TU> MapToDicGidToSthTool<TU, T>(IQSpace qSpaceBranch,
+            Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+            T t)
+        {
+            var dicIntToTu = new Dictionary<int, TU>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+                if (withIIdPtsShape == null) return;
+                var i = id.GetId();
+
+                dicIntToTu[i] = withIIdPtsShape;
+            }
+
+            qSpaceBranch.ForeachDoWithOutMove(Act, t);
+            return dicIntToTu;
+        }
+
         public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes,
             TwoDVectorLine moveLine,
             bool isPush,

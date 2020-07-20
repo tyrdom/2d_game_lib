@@ -105,13 +105,12 @@ namespace lib_test
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 
             Console.WriteLine("!!2!!" + inBlock2);
+            Console.Out.WriteLine("config test~~~~~");
 
-            Console.Out.WriteLine("~~~~~config test!!!");
-
-            var immutableDictionary = Content.Bullets;
-            foreach (var keyValuePair in immutableDictionary)
+            foreach (var key in Content.push_buffs)
             {
-                Console.Out.WriteLine($"key::{keyValuePair.Key}");
+                Console.Out.WriteLine($"key::{key.Key}");
+                Console.Out.WriteLine($"pushType::{key.Value.PushType.ToString()}");
             }
         }
     }

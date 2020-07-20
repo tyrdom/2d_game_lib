@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\tyrdo\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\tyrdo\\.nuget\\packages"
+    ]
+  }
+}

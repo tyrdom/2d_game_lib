@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace game_config
 {
-    public class Bullet : IGameConfig
+    public class bullet : IGameConfig
     {
         public string id { get; set; }
         public int ShapeType { get; set; }
@@ -19,7 +21,7 @@ namespace game_config
         public int Tough { get; set; }
     }
 
-    public class Caught_buff : IGameConfig
+    public class caught_buff : IGameConfig
     {
         public string id { get; set; }
         public int LastTick { get; set; }
@@ -27,7 +29,7 @@ namespace game_config
         public string TrickSkill { get; set; }
     }
 
-    public class Item : IGameConfig
+    public class item : IGameConfig
     {
         public int id { get; set; }
         public bool IsMoney { get; set; }
@@ -37,7 +39,7 @@ namespace game_config
         public string Icon { get; set; }
     }
 
-    public class Lock_area : IGameConfig
+    public class lock_area : IGameConfig
     {
         public string id { get; set; }
         public int ShapeType { get; set; }
@@ -46,24 +48,38 @@ namespace game_config
         public int LocalRotate { get; set; }
     }
 
-    public class Push_buff : IGameConfig
+    public class other_config : IGameConfig
+    {
+        public int id { get; set; }
+    }
+
+    public enum push_buff_PushType
+    {
+        @Center,
+        @Vector
+    }
+
+    public class push_buff : IGameConfig
     {
         public string id { get; set; }
         public int LastTick { get; set; }
         public int BuffType { get; set; }
         public float PushForce { get; set; }
-        public int PushType { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public push_buff_PushType PushType { get; set; }
+
         public Point[] FixVector { get; set; }
         public float UpForce { get; set; }
     }
 
-    public class Show_text : IGameConfig
+    public class show_text : IGameConfig
     {
         public string id { get; set; }
         public string chinese { get; set; }
     }
 
-    public class Skill : IGameConfig
+    public class skill : IGameConfig
     {
         public string id { get; set; }
         public int BaseTough { get; set; }
@@ -80,7 +96,7 @@ namespace game_config
         public int NextCombo { get; set; }
     }
 
-    public class Weapon : IGameConfig
+    public class weapon : IGameConfig
     {
         public string id { get; set; }
         public Dictionary<int, string> Op1 { get; set; }
@@ -92,33 +108,36 @@ namespace game_config
     {
         public static Dictionary<Type, string> NamesDictionary = new Dictionary<Type, string>
         {
-            {typeof(Bullet), "bullet_s.json"}, {typeof(Caught_buff), "caught_buff_s.json"},
-            {typeof(Item), "item_s.json"}, {typeof(Lock_area), "lock_area_s.json"},
-            {typeof(Push_buff), "push_buff_s.json"}, {typeof(Show_text), "show_text_s.json"},
-            {typeof(Skill), "skill_s.json"}, {typeof(Weapon), "weapon_s.json"}
+            {typeof(bullet), "bullet_s.json"}, {typeof(caught_buff), "caught_buff_s.json"},
+            {typeof(item), "item_s.json"}, {typeof(lock_area), "lock_area_s.json"},
+            {typeof(other_config), "other_config_s.json"}, {typeof(push_buff), "push_buff_s.json"},
+            {typeof(show_text), "show_text_s.json"}, {typeof(skill), "skill_s.json"}, {typeof(weapon), "weapon_s.json"}
         };
     }
 
     public static class Content
     {
-        public static ImmutableDictionary<string, Bullet> Bullets = GameConfigTools.GenConfigDict<string, Bullet>();
+        public static ImmutableDictionary<string, bullet> bullets = GameConfigTools.GenConfigDict<string, bullet>();
 
-        public static ImmutableDictionary<string, Caught_buff> Caught_buffs =
-            GameConfigTools.GenConfigDict<string, Caught_buff>();
+        public static ImmutableDictionary<string, caught_buff> caught_buffs =
+            GameConfigTools.GenConfigDict<string, caught_buff>();
 
-        public static ImmutableDictionary<int, Item> Items = GameConfigTools.GenConfigDict<int, Item>();
+        public static ImmutableDictionary<int, item> items = GameConfigTools.GenConfigDict<int, item>();
 
-        public static ImmutableDictionary<string, Lock_area> Lock_areas =
-            GameConfigTools.GenConfigDict<string, Lock_area>();
+        public static ImmutableDictionary<string, lock_area> lock_areas =
+            GameConfigTools.GenConfigDict<string, lock_area>();
 
-        public static ImmutableDictionary<string, Push_buff> Push_buffs =
-            GameConfigTools.GenConfigDict<string, Push_buff>();
+        public static ImmutableDictionary<int, other_config> other_configs =
+            GameConfigTools.GenConfigDict<int, other_config>();
 
-        public static ImmutableDictionary<string, Show_text> Show_texts =
-            GameConfigTools.GenConfigDict<string, Show_text>();
+        public static ImmutableDictionary<string, push_buff> push_buffs =
+            GameConfigTools.GenConfigDict<string, push_buff>();
 
-        public static ImmutableDictionary<string, Skill> Skills = GameConfigTools.GenConfigDict<string, Skill>();
-        public static ImmutableDictionary<string, Weapon> Weapons = GameConfigTools.GenConfigDict<string, Weapon>();
+        public static ImmutableDictionary<string, show_text> show_texts =
+            GameConfigTools.GenConfigDict<string, show_text>();
+
+        public static ImmutableDictionary<string, skill> skills = GameConfigTools.GenConfigDict<string, skill>();
+        public static ImmutableDictionary<string, weapon> weapons = GameConfigTools.GenConfigDict<string, weapon>();
     }
 
     public class Point : IGameConfig
