@@ -118,36 +118,6 @@ namespace game_config
     }
 
     [Serializable]
-    public class lock_area : IGameConfig
-    {
-        public string id { get; set; }
-        public int ShapeType { get; set; }
-        public float[] ShapeParams { get; set; }
-        public Point LocalPos { get; set; }
-        public int LocalRotate { get; set; }
-    }
-
-    [Serializable]
-    public class item : IGameConfig
-    {
-        public int id { get; set; }
-        public bool IsMoney { get; set; }
-        public int ShowType { get; set; }
-        public string Name { get; set; }
-        public string another_name { get; set; }
-        public string Icon { get; set; }
-    }
-
-    [Serializable]
-    public class weapon : IGameConfig
-    {
-        public string id { get; set; }
-        public Dictionary<int, string> Op1 { get; set; }
-        public Dictionary<int, string> Op2 { get; set; }
-        public Dictionary<int, string> Op3 { get; set; }
-    }
-
-    [Serializable]
     public class fish : IGameConfig
     {
         public int id { get; set; }
@@ -202,11 +172,41 @@ namespace game_config
     }
 
     [Serializable]
+    public class lock_area : IGameConfig
+    {
+        public string id { get; set; }
+        public int ShapeType { get; set; }
+        public float[] ShapeParams { get; set; }
+        public Point LocalPos { get; set; }
+        public int LocalRotate { get; set; }
+    }
+
+    [Serializable]
+    public class item : IGameConfig
+    {
+        public int id { get; set; }
+        public bool IsMoney { get; set; }
+        public int ShowType { get; set; }
+        public string Name { get; set; }
+        public string another_name { get; set; }
+        public string Icon { get; set; }
+    }
+
+    [Serializable]
+    public class weapon : IGameConfig
+    {
+        public string id { get; set; }
+        public Dictionary<int, string> Op1 { get; set; }
+        public Dictionary<int, string> Op2 { get; set; }
+        public Dictionary<int, string> Op3 { get; set; }
+    }
+
+    [Serializable]
     public enum size
     {
-        @medium,
+        @small,
         @big,
-        @small
+        @medium
     }
 
     public static class ResNames
@@ -216,8 +216,8 @@ namespace game_config
             {typeof(skill), "skill_s.json"}, {typeof(bad_words), "bad_words_s.json"},
             {typeof(caught_buff), "caught_buff_s.json"}, {typeof(other_config), "other_config_s.json"},
             {typeof(body), "body_s.json"}, {typeof(show_text), "show_text_s.json"}, {typeof(bullet), "bullet_s.json"},
-            {typeof(push_buff), "push_buff_s.json"}, {typeof(lock_area), "lock_area_s.json"},
-            {typeof(item), "item_s.json"}, {typeof(weapon), "weapon_s.json"}, {typeof(fish), "fish_s.json"}
+            {typeof(push_buff), "push_buff_s.json"}, {typeof(fish), "fish_s.json"},
+            {typeof(lock_area), "lock_area_s.json"}, {typeof(item), "item_s.json"}, {typeof(weapon), "weapon_s.json"}
         };
     }
 
@@ -247,6 +247,8 @@ namespace game_config
         public static ImmutableDictionary<string, push_buff> push_buffs { get; set; } =
             GameConfigTools.GenConfigDict<string, push_buff>();
 
+        public static ImmutableDictionary<int, fish> fishs { get; set; } = GameConfigTools.GenConfigDict<int, fish>();
+
         public static ImmutableDictionary<string, lock_area> lock_areas { get; set; } =
             GameConfigTools.GenConfigDict<string, lock_area>();
 
@@ -255,12 +257,53 @@ namespace game_config
         public static ImmutableDictionary<string, weapon> weapons { get; set; } =
             GameConfigTools.GenConfigDict<string, weapon>();
 
-        public static ImmutableDictionary<int, fish> fishs { get; set; } = GameConfigTools.GenConfigDict<int, fish>();
+        public static IDictionary[] all_Immutable_dictionary =
+        {
+            skills, bad_wordss, caught_buffs, other_configs, bodys, show_texts, bullets, push_buffs, fishs, lock_areas,
+            items, weapons
+        };
+    }
+
+    [Serializable]
+    public static class ContentFromByte
+    {
+        public static ImmutableDictionary<string, skill> skills { get; set; } =
+            GameConfigTools.LoadDict<string, skill>();
+
+        public static ImmutableDictionary<int, bad_words> bad_wordss { get; set; } =
+            GameConfigTools.LoadDict<int, bad_words>();
+
+        public static ImmutableDictionary<string, caught_buff> caught_buffs { get; set; } =
+            GameConfigTools.LoadDict<string, caught_buff>();
+
+        public static ImmutableDictionary<int, other_config> other_configs { get; set; } =
+            GameConfigTools.LoadDict<int, other_config>();
+
+        public static ImmutableDictionary<size, body> bodys { get; set; } = GameConfigTools.LoadDict<size, body>();
+
+        public static ImmutableDictionary<string, show_text> show_texts { get; set; } =
+            GameConfigTools.LoadDict<string, show_text>();
+
+        public static ImmutableDictionary<string, bullet> bullets { get; set; } =
+            GameConfigTools.LoadDict<string, bullet>();
+
+        public static ImmutableDictionary<string, push_buff> push_buffs { get; set; } =
+            GameConfigTools.LoadDict<string, push_buff>();
+
+        public static ImmutableDictionary<int, fish> fishs { get; set; } = GameConfigTools.LoadDict<int, fish>();
+
+        public static ImmutableDictionary<string, lock_area> lock_areas { get; set; } =
+            GameConfigTools.LoadDict<string, lock_area>();
+
+        public static ImmutableDictionary<int, item> items { get; set; } = GameConfigTools.LoadDict<int, item>();
+
+        public static ImmutableDictionary<string, weapon> weapons { get; set; } =
+            GameConfigTools.LoadDict<string, weapon>();
 
         public static IDictionary[] all_Immutable_dictionary =
         {
-            skills, bad_wordss, caught_buffs, other_configs, bodys, show_texts, bullets, push_buffs, lock_areas, items,
-            weapons, fishs
+            skills, bad_wordss, caught_buffs, other_configs, bodys, show_texts, bullets, push_buffs, fishs, lock_areas,
+            items, weapons
         };
     }
 

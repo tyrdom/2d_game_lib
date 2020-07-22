@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
         <LangVersion>8</LangVersion>
+        <OutputType>Exe</OutputType>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

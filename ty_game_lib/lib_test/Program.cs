@@ -134,7 +134,7 @@ namespace lib_test
             var fileInfo2 = new FileInfo($".{sep}Bytes{sep}{name}.bytes");
             // Console.Out.WriteLine($"{sep}\n{fileInfo.DirectoryName},\n{mainModuleFileName}");
             if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
-         
+
 
             // GameConfigTools.SaveDict(Content.fishs, fileInfo2);
 
@@ -144,28 +144,9 @@ namespace lib_test
                 Console.Out.WriteLine($"{keyValuePair.Key}");
             }
 
-
-            foreach (var dictionary in Content.all_Immutable_dictionary)
+            foreach (var keyValuePair in ContentFromByte.bad_wordss)
             {
-                var type1 = (from object? key in dictionary.Keys select key?.GetType()).FirstOrDefault();
-                var type2 = (from object? key in dictionary.Values select key?.GetType()).FirstOrDefault();
-                Console.Out.WriteLine($"{type1}");
-                Console.Out.WriteLine($"{type2}");
-                var cName = type2.ToString();
-                var fileInfo3 = new FileInfo($".{sep}Bytes{sep}{cName}.bytes");
-
-                //save dictionary
-                var methodInfo = typeof(GameConfigTools).GetMethod("SaveDictByByte");
-                var makeGenericMethod = methodInfo?.MakeGenericMethod(type1, type2);
-                makeGenericMethod?.Invoke(null, new object[] {dictionary, fileInfo3});
-                Console.Out.WriteLine($"{dictionary.GetType()} saved");
-                // var method = typeof(GameConfigTools).GetMethod("LaodDict");
-                // var genericMethod = method?.MakeGenericMethod(type1, type2);
-                // var invoke = (IDictionary)genericMethod?.Invoke(null, new object?[] {fileInfo3})!;
-                // foreach (DictionaryEntry o in invoke)
-                // {
-                //     Console.Out.WriteLine($"{o}");
-                // }
+                Console.Out.WriteLine($"{keyValuePair.Key}");
             }
 
             // GameConfigTools.LoadDict(fileInfo2, out ImmutableDictionary<int, bad_words> a);
