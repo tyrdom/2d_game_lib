@@ -31,7 +31,7 @@ namespace game_config
         {
             var s = typeof(T).ToString();
 
-            return new FileInfo($".{Sep}Bytes{Sep}{s}.bytes");
+            return new FileInfo($".{ByteDir}{s}.bytes");
         }
 
         public static void SaveDict<TK, TV>(ImmutableDictionary<TK, TV> dictionary)
