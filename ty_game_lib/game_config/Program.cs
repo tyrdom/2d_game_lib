@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace game_config
 {
@@ -8,7 +9,9 @@ namespace game_config
     {
         static void Main(string[] args)
         {
-            foreach (var dictionary in Content.all_Immutable_dictionary)
+            //并发foreach
+            Parallel.ForEach(Content.all_Immutable_dictionary, dictionary =>
+
             {
                 var type1 = (from object? key in dictionary.Keys select key?.GetType()).FirstOrDefault();
                 var type2 = (from object? key in dictionary.Values select key?.GetType()).FirstOrDefault();
@@ -19,7 +22,7 @@ namespace game_config
                 var makeGenericMethod = methodInfo?.MakeGenericMethod(type1, type2);
                 makeGenericMethod?.Invoke(null, new object[] {dictionary});
                 Console.Out.WriteLine($"{dictionary.GetType()} saved");
-            }
+            });
         }
     }
 }
