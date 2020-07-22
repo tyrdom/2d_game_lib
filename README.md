@@ -22,3 +22,7 @@ IBulletShape和IRawBulletShape
     IRawBulletShape使用GenBulletShape,配置角色半径生成IBulletShape；
     IBulletShape使用PtInShape判断角色是否被命中
 
+## game_config
+使用json作为内部资源，配置存到字典
+Models.cs由python脚本生成 //TODO 命令行调脚本，保存json和刷新Models.cs文件
+// TODO 可以保存字典到二进制文件，初步测试可行
