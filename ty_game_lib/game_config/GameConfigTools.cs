@@ -13,6 +13,10 @@ namespace game_config
 {
     public static class GameConfigTools
     {
+        //二进制文件存取位置
+        private static readonly char Sep = Path.DirectorySeparatorChar;
+        private static readonly string ByteDir = $".{Sep}Bytes{Sep}";
+
         public static Dictionary<TK, TV> CovertIDictToDict<TK, TV>(ImmutableDictionary<TK, TV> immutableDictionary)
         {
             return immutableDictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -25,9 +29,9 @@ namespace game_config
 
         public static FileInfo GenFileInfo<T>()
         {
-            var sep = Path.DirectorySeparatorChar;
             var s = typeof(T).ToString();
-            return new FileInfo($".{sep}Bytes{sep}{s}.bytes");
+
+            return new FileInfo($".{Sep}Bytes{Sep}{s}.bytes");
         }
 
         public static void SaveDict<TK, TV>(ImmutableDictionary<TK, TV> dictionary)
