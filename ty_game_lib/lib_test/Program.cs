@@ -1,6 +1,11 @@
 ﻿#nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using collision_and_rigid;
 using game_config;
 
@@ -121,6 +126,56 @@ namespace lib_test
                 Console.Out.WriteLine($"{bodysKey.ToString()}");
             }
 
+
+            var mainModuleFileName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            var sep = Path.DirectorySeparatorChar;
+            var name = Content.fishs.Values.First().GetType().ToString();
+            var fileInfo = new FileInfo($".{sep}Bytes{sep}aaa.bytes");
+            var fileInfo2 = new FileInfo($".{sep}Bytes{sep}{name}.bytes");
+            // Console.Out.WriteLine($"{sep}\n{fileInfo.DirectoryName},\n{mainModuleFileName}");
+            if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
+         
+
+            // GameConfigTools.SaveDict(Content.fishs, fileInfo2);
+
+            var immutableDictionary = GameConfigTools.LoadDictByByte<int, fish>(fileInfo);
+            foreach (var keyValuePair in immutableDictionary)
+            {
+                Console.Out.WriteLine($"{keyValuePair.Key}");
+            }
+
+
+            foreach (var dictionary in Content.all_Immutable_dictionary)
+            {
+                var type1 = (from object? key in dictionary.Keys select key?.GetType()).FirstOrDefault();
+                var type2 = (from object? key in dictionary.Values select key?.GetType()).FirstOrDefault();
+                Console.Out.WriteLine($"{type1}");
+                Console.Out.WriteLine($"{type2}");
+                var cName = type2.ToString();
+                var fileInfo3 = new FileInfo($".{sep}Bytes{sep}{cName}.bytes");
+
+                //save dictionary
+                var methodInfo = typeof(GameConfigTools).GetMethod("SaveDictByByte");
+                var makeGenericMethod = methodInfo?.MakeGenericMethod(type1, type2);
+                makeGenericMethod?.Invoke(null, new object[] {dictionary, fileInfo3});
+                Console.Out.WriteLine($"{dictionary.GetType()} saved");
+                // var method = typeof(GameConfigTools).GetMethod("LaodDict");
+                // var genericMethod = method?.MakeGenericMethod(type1, type2);
+                // var invoke = (IDictionary)genericMethod?.Invoke(null, new object?[] {fileInfo3})!;
+                // foreach (DictionaryEntry o in invoke)
+                // {
+                //     Console.Out.WriteLine($"{o}");
+                // }
+            }
+
+            // GameConfigTools.LoadDict(fileInfo2, out ImmutableDictionary<int, bad_words> a);
+            // foreach (var keyValuePair
+            //     in a)
+            // {
+            //     Console.Out.WriteLine($"{keyValuePair.Key}");
+            // }
+            //
+            // Content.bad_wordss = a;
         }
     }
 }

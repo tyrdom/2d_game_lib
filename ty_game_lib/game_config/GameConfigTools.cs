@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -11,27 +13,61 @@ namespace game_config
 {
     public static class GameConfigTools
     {
-        public static void SaveDict()
+        public static Dictionary<TK, TV> CovertIDictToDict<TK, TV>(ImmutableDictionary<TK, TV> immutableDictionary)
         {
+            return immutableDictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        public static ImmutableDictionary<TK, TV> LoadDict<TK, TV>(string local)
+        public static ImmutableDictionary<TK, TV> CovertDictToIDict<TK, TV>(Dictionary<TK, TV> immutableDictionary)
+        {
+            return immutableDictionary.ToImmutableDictionary(pair => pair.Key, pair => pair.Value);
+        }
+
+        public static FileInfo GenFileInfo<T>()
+        {
+            var sep = Path.DirectorySeparatorChar;
+            var s = typeof(T).ToString();
+            return new FileInfo($".{sep}Bytes{sep}{s}.bytes");
+        }
+
+        public static void SaveDict<TK, TV>(ImmutableDictionary<TK, TV> dictionary)
+        {
+            var fileNameLocation = GenFileInfo<TV>();
+            if (fileNameLocation.Directory != null && !fileNameLocation.Directory.Exists)
+                fileNameLocation.Directory.Create();
+
+            SaveDictByByte(dictionary, fileNameLocation);
+        }
+
+        public static void SaveDictByByte<TK, TV>(ImmutableDictionary<TK, TV> dictionary, FileInfo fileNameLocation)
+        {
+            var vs = dictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
+            var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+
+            using var binaryFile = fileNameLocation.Create();
+            binaryFormatter.Serialize(binaryFile, vs);
+            binaryFile.Flush();
+        }
+
+        public static ImmutableDictionary<TK, TV> LoadDict<TK, TV>()
+        {
+            return LoadDictByByte<TK, TV>(GenFileInfo<TV>());
+        }
+
+        public static ImmutableDictionary<TK, TV> LoadDictByByte<TK, TV>(FileInfo fileInfo)
         {
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 
-            var fi = new FileInfo(@$"{local}");
-            ImmutableDictionary<TK, TV> readBack;
-            using (var binaryFile = fi.OpenRead())
-            {
-                readBack = (ImmutableDictionary<TK, TV>) binaryFormatter.Deserialize(binaryFile);
-            }
-
-            return readBack;
+            using var binaryFile = fileInfo.OpenRead();
+            var readBack = binaryFormatter.Deserialize(binaryFile) as Dictionary<TK, TV>;
+            binaryFile.Flush();
+            Console.Out.WriteLine($"{readBack}");
+            return CovertDictToIDict(readBack);
         }
 
         private static string GetNameSpace()
         {
-            var declaringType = System.Reflection.MethodBase.GetCurrentMethod()?.DeclaringType;
+            var declaringType = MethodBase.GetCurrentMethod()?.DeclaringType;
             return declaringType != null ? declaringType.Namespace : "";
         }
 
@@ -52,6 +88,7 @@ namespace game_config
             var json = reader.ReadToEnd();
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
+            // Console.Out.WriteLine($"{typeof(TK)}==={typeof(T)}");
             var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, T>>();
             return genConfigDict;
         }
