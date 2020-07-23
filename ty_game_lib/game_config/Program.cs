@@ -1,5 +1,7 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,8 +11,9 @@ namespace game_config
     {
         public static void Main(string[] args)
         {
+            var configDictionaries = new ConfigDictionaries(ResModel.Dll);
             //并发foreach
-            Parallel.ForEach(Content.all_Immutable_dictionary, dictionary =>
+            Parallel.ForEach(configDictionaries.all_Immutable_dictionary, dictionary =>
 
             {
                 var type1 = (from object? key in dictionary.Keys select key?.GetType()).FirstOrDefault();

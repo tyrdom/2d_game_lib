@@ -66,7 +66,8 @@ namespace game_config
             var readBack = binaryFormatter.Deserialize(binaryFile) as Dictionary<TK, TV>;
             binaryFile.Flush();
             Console.Out.WriteLine($"{readBack}");
-            return CovertDictToIDict(readBack);
+            if (readBack != null) return CovertDictToIDict(readBack);
+            throw new Exception("ErrorResource:::" + fileInfo);
         }
 
         private static string GetNameSpace()
@@ -75,30 +76,71 @@ namespace game_config
             return declaringType != null ? declaringType.Namespace : "";
         }
 
-        private static readonly string DllName = GetNameSpace() + ".dll";
-        private static readonly string ResLocate = GetNameSpace() + ".Resource.";
+        public static readonly string DllName = GetNameSpace() + ".dll";
+        public static readonly string ResLocate = GetNameSpace() + ".Resource.";
 
 
-        public static ImmutableDictionary<TK, T> GenConfigDict<TK, T>()
+        public static ImmutableDictionary<TK, TV> GenConfigDict<TK, TV>()
         {
             var namesDictionary = ResNames.NamesDictionary;
-            if (!namesDictionary.TryGetValue(typeof(T), out var name))
-                throw new Exception("ErrorTypeOfConfig:" + typeof(T));
+            if (!namesDictionary.TryGetValue(typeof(TV), out var name))
+                throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
             var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), DllName);
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
-            var stream = assembly.GetManifestResourceStream(ResLocate + name);
+            var stream =
+                assembly.GetManifestResourceStream(ResLocate + name);
             using var reader =
                 new StreamReader(stream ?? throw new Exception("NoResource:::" + name), Encoding.UTF8);
             var json = reader.ReadToEnd();
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
+
             // Console.Out.WriteLine($"{typeof(TK)}==={typeof(T)}");
-            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, T>>();
-            return genConfigDict;
+            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
+            if (genConfigDict != null) return genConfigDict;
+            throw new Exception("ErrorResource:::" + name);
+        }
+
+        public static ImmutableDictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
+        {
+            var namesDictionary = ResNames.NamesDictionary;
+            if (!namesDictionary.TryGetValue(typeof(TV), out var name))
+                throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
+            var currentDirectory =
+                jsonPath != ""
+                    ? jsonPath
+                    : Directory.GetCurrentDirectory();
+            var strings = FindFile(currentDirectory, name);
+            var s = strings;
+            Console.Out.WriteLine($"aaa{s} !{currentDirectory} !{name}");
+            var json = File.ReadAllText(s, Encoding.UTF8);
+            var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
+            var jToken = deserializeObject["content"];
+            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
+            if (genConfigDict != null) return genConfigDict;
+            throw new Exception("ErrorResource:::" + name);
+        }
+
+        private static string FindFile(string path, string name)
+        {
+            var strings = Directory.GetFiles(path, name);
+            if (strings.Length > 0)
+            {
+                return strings[0];
+            }
+
+            var directories = Directory.GetDirectories(path);
+
+            return directories.Length > 0
+                ? directories.Select(directory => FindFile(directory, name)).FirstOrDefault(s => s != "")
+                : "";
         }
     }
 
-
+    public enum ResModel
+    {
+        Json,Dll
+    }
     public interface IGameConfig
     {
     }

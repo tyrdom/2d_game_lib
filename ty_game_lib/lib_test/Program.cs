@@ -111,17 +111,17 @@ namespace lib_test
 
             Console.WriteLine("!!2!!" + inBlock2);
             Console.Out.WriteLine("config test~~~~~");
-
-            foreach (var key in Content.push_buffs)
+           var configDictionaries = new ConfigDictionaries(ResModel.Dll);
+            foreach (var key in configDictionaries.push_buffs)
             {
                 Console.Out.WriteLine($"key::{key.Key}");
                 Console.Out.WriteLine($"pushType::{key.Value.PushType.ToString()}");
             }
 
-            var twoSToSeePertick = Content.other_configs[1].two_s_to_see_pertick;
+            var twoSToSeePertick = configDictionaries.other_configs[1].two_s_to_see_pertick;
             Console.Out.WriteLine($"other_c:::{twoSToSeePertick}");
 
-            foreach (var bodysKey in Content.bodys.Keys)
+            foreach (var bodysKey in configDictionaries.bodys.Keys)
             {
                 Console.Out.WriteLine($"{bodysKey.ToString()}");
             }
@@ -129,9 +129,9 @@ namespace lib_test
 
             var mainModuleFileName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             var sep = Path.DirectorySeparatorChar;
-            var name = Content.fishs.Values.First().GetType().ToString();
+            
             var fileInfo = new FileInfo($".{sep}Bytes{sep}aaa.bytes");
-            var fileInfo2 = new FileInfo($".{sep}Bytes{sep}{name}.bytes");
+
             // Console.Out.WriteLine($"{sep}\n{fileInfo.DirectoryName},\n{mainModuleFileName}");
             if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
 
@@ -144,10 +144,6 @@ namespace lib_test
                 Console.Out.WriteLine($"{keyValuePair.Key}");
             }
 
-            foreach (var keyValuePair in ContentFromByte.bad_wordss)
-            {
-                Console.Out.WriteLine($"{keyValuePair.Key}");
-            }
 
             // GameConfigTools.LoadDict(fileInfo2, out ImmutableDictionary<int, bad_words> a);
             // foreach (var keyValuePair

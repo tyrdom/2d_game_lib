@@ -222,89 +222,94 @@ namespace game_config
     }
 
     [Serializable]
-    public static class Content
+    public class ConfigDictionaries
     {
-        public static ImmutableDictionary<string, skill> skills { get; set; } =
-            GameConfigTools.GenConfigDict<string, skill>();
+        public ImmutableDictionary<string, skill> skills { get; set; } = GameConfigTools.GenConfigDict<string, skill>();
 
-        public static ImmutableDictionary<int, bad_words> bad_wordss { get; set; } =
+        public ImmutableDictionary<int, bad_words> bad_wordss { get; set; } =
             GameConfigTools.GenConfigDict<int, bad_words>();
 
-        public static ImmutableDictionary<string, caught_buff> caught_buffs { get; set; } =
+        public ImmutableDictionary<string, caught_buff> caught_buffs { get; set; } =
             GameConfigTools.GenConfigDict<string, caught_buff>();
 
-        public static ImmutableDictionary<int, other_config> other_configs { get; set; } =
+        public ImmutableDictionary<int, other_config> other_configs { get; set; } =
             GameConfigTools.GenConfigDict<int, other_config>();
 
-        public static ImmutableDictionary<size, body> bodys { get; set; } = GameConfigTools.GenConfigDict<size, body>();
+        public ImmutableDictionary<size, body> bodys { get; set; } = GameConfigTools.GenConfigDict<size, body>();
 
-        public static ImmutableDictionary<string, show_text> show_texts { get; set; } =
+        public ImmutableDictionary<string, show_text> show_texts { get; set; } =
             GameConfigTools.GenConfigDict<string, show_text>();
 
-        public static ImmutableDictionary<string, bullet> bullets { get; set; } =
+        public ImmutableDictionary<string, bullet> bullets { get; set; } =
             GameConfigTools.GenConfigDict<string, bullet>();
 
-        public static ImmutableDictionary<string, push_buff> push_buffs { get; set; } =
+        public ImmutableDictionary<string, push_buff> push_buffs { get; set; } =
             GameConfigTools.GenConfigDict<string, push_buff>();
 
-        public static ImmutableDictionary<int, fish> fishs { get; set; } = GameConfigTools.GenConfigDict<int, fish>();
+        public ImmutableDictionary<int, fish> fishs { get; set; } = GameConfigTools.GenConfigDict<int, fish>();
 
-        public static ImmutableDictionary<string, lock_area> lock_areas { get; set; } =
+        public ImmutableDictionary<string, lock_area> lock_areas { get; set; } =
             GameConfigTools.GenConfigDict<string, lock_area>();
 
-        public static ImmutableDictionary<int, item> items { get; set; } = GameConfigTools.GenConfigDict<int, item>();
+        public ImmutableDictionary<int, item> items { get; set; } = GameConfigTools.GenConfigDict<int, item>();
 
-        public static ImmutableDictionary<string, weapon> weapons { get; set; } =
+        public ImmutableDictionary<string, weapon> weapons { get; set; } =
             GameConfigTools.GenConfigDict<string, weapon>();
 
-        public static IDictionary[] all_Immutable_dictionary =
+        public IDictionary[] all_Immutable_dictionary { get; set; }
+
+        public ConfigDictionaries(ResModel model, string jsonPath = "")
         {
-            skills, bad_wordss, caught_buffs, other_configs, bodys, show_texts, bullets, push_buffs, fishs, lock_areas,
-            items, weapons
-        };
-    }
+            switch (model)
+            {
+                case ResModel.Json:
+                    LoadAllByJson(jsonPath);
+                    break;
+                case ResModel.Dll:
+                    LoadAllByDll();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(model), model, null);
+            }
 
-    [Serializable]
-    public static class ContentFromByte
-    {
-        public static ImmutableDictionary<string, skill> skills { get; set; } =
-            GameConfigTools.LoadDict<string, skill>();
+            all_Immutable_dictionary = new IDictionary[]
+            {
+                skills, bad_wordss, caught_buffs, other_configs, bodys, show_texts, bullets, push_buffs, fishs,
+                lock_areas, items, weapons
+            };
+        }
 
-        public static ImmutableDictionary<int, bad_words> bad_wordss { get; set; } =
-            GameConfigTools.LoadDict<int, bad_words>();
-
-        public static ImmutableDictionary<string, caught_buff> caught_buffs { get; set; } =
-            GameConfigTools.LoadDict<string, caught_buff>();
-
-        public static ImmutableDictionary<int, other_config> other_configs { get; set; } =
-            GameConfigTools.LoadDict<int, other_config>();
-
-        public static ImmutableDictionary<size, body> bodys { get; set; } = GameConfigTools.LoadDict<size, body>();
-
-        public static ImmutableDictionary<string, show_text> show_texts { get; set; } =
-            GameConfigTools.LoadDict<string, show_text>();
-
-        public static ImmutableDictionary<string, bullet> bullets { get; set; } =
-            GameConfigTools.LoadDict<string, bullet>();
-
-        public static ImmutableDictionary<string, push_buff> push_buffs { get; set; } =
-            GameConfigTools.LoadDict<string, push_buff>();
-
-        public static ImmutableDictionary<int, fish> fishs { get; set; } = GameConfigTools.LoadDict<int, fish>();
-
-        public static ImmutableDictionary<string, lock_area> lock_areas { get; set; } =
-            GameConfigTools.LoadDict<string, lock_area>();
-
-        public static ImmutableDictionary<int, item> items { get; set; } = GameConfigTools.LoadDict<int, item>();
-
-        public static ImmutableDictionary<string, weapon> weapons { get; set; } =
-            GameConfigTools.LoadDict<string, weapon>();
-
-        public static IDictionary[] all_Immutable_dictionary =
+        public void LoadAllByDll()
         {
-            skills, bad_wordss, caught_buffs, other_configs, bodys, show_texts, bullets, push_buffs, fishs, lock_areas,
-            items, weapons
-        };
+            skills = GameConfigTools.GenConfigDict<string, skill>();
+            bad_wordss = GameConfigTools.GenConfigDict<int, bad_words>();
+            caught_buffs = GameConfigTools.GenConfigDict<string, caught_buff>();
+            other_configs = GameConfigTools.GenConfigDict<int, other_config>();
+            bodys = GameConfigTools.GenConfigDict<size, body>();
+            show_texts = GameConfigTools.GenConfigDict<string, show_text>();
+            bullets = GameConfigTools.GenConfigDict<string, bullet>();
+            push_buffs = GameConfigTools.GenConfigDict<string, push_buff>();
+            fishs = GameConfigTools.GenConfigDict<int, fish>();
+            lock_areas = GameConfigTools.GenConfigDict<string, lock_area>();
+            items = GameConfigTools.GenConfigDict<int, item>();
+            weapons = GameConfigTools.GenConfigDict<string, weapon>();
+        }
+
+        public void LoadAllByJson(string path = "")
+        {
+            skills = GameConfigTools.GenConfigDictByJsonFile<string, skill>(path);
+            bad_wordss = GameConfigTools.GenConfigDictByJsonFile<int, bad_words>(path);
+            caught_buffs = GameConfigTools.GenConfigDictByJsonFile<string, caught_buff>(path);
+            other_configs = GameConfigTools.GenConfigDictByJsonFile<int, other_config>(path);
+            bodys = GameConfigTools.GenConfigDictByJsonFile<size, body>(path);
+            show_texts = GameConfigTools.GenConfigDictByJsonFile<string, show_text>(path);
+            bullets = GameConfigTools.GenConfigDictByJsonFile<string, bullet>(path);
+            push_buffs = GameConfigTools.GenConfigDictByJsonFile<string, push_buff>(path);
+            fishs = GameConfigTools.GenConfigDictByJsonFile<int, fish>(path);
+            lock_areas = GameConfigTools.GenConfigDictByJsonFile<string, lock_area>(path);
+            items = GameConfigTools.GenConfigDictByJsonFile<int, item>(path);
+            weapons = GameConfigTools.GenConfigDictByJsonFile<string, weapon>(path);
+        }
     }
 
     [Serializable]
