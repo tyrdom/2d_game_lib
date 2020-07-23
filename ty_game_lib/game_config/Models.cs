@@ -204,9 +204,9 @@ namespace game_config
     [Serializable]
     public enum size
     {
-        @small,
         @big,
-        @medium
+        @medium,
+        @small
     }
 
     public static class ResNames

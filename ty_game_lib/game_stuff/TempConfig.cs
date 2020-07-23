@@ -31,7 +31,7 @@ namespace game_stuff
         public static readonly int MidTough = Content.other_configs[1].mid_tough;
         public static int WeaponNum = Content.other_configs[1].weapon_num;
         public static readonly float TwoSToSeePerTick = Content.other_configs[1].two_s_to_see_pertick;
-        public static readonly PushOnAir OutCaught = new PushOnAir(new TwoDVector(0, 0), 0.1f, 0, 6);
+        public static readonly PushOnAir OutCaught = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
 
         public static readonly int QSpaceBodyMaxPerLevel = Content.other_configs[1].qspace_max_per_level;
 

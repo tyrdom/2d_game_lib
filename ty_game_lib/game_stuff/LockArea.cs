@@ -14,12 +14,11 @@ namespace game_stuff
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus Caster { get; }
 
-        public LockArea(bool isActive, TwoDPoint pos, TwoDVector aim,
-            Dictionary<BodySize, BulletBox> sizeToBulletCollision, CharacterStatus caster)
+        public LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision, CharacterStatus caster)
         {
-            IsActive = isActive;
-            Pos = pos;
-            Aim = aim;
+            IsActive = false;
+            Pos = TwoDPoint.Zero();
+            Aim = TwoDVector.Zero();
             SizeToBulletCollision = sizeToBulletCollision;
             Caster = caster;
         }
@@ -39,7 +38,6 @@ namespace game_stuff
                     {
                         Caster.LockingWho =
                             characterBody1.CharacterStatus;
-                 
                     }
 
                     return isHit;

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace game_config
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             //并发foreach
             Parallel.ForEach(Content.all_Immutable_dictionary, dictionary =>
