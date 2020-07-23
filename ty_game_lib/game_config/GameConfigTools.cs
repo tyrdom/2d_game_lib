@@ -86,7 +86,13 @@ namespace game_config
             if (!namesDictionary.TryGetValue(typeof(TV), out var name))
                 throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
             var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), DllName);
-            var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
+            var assembly =
+#if NETSTANDARD
+                Assembly.Load(assemblyPath);
+#else
+             AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
+#endif
+
             var stream =
                 assembly.GetManifestResourceStream(ResLocate + name);
             using var reader =
@@ -139,8 +145,10 @@ namespace game_config
 
     public enum ResModel
     {
-        Json,Dll
+        Json,
+        Dll
     }
+
     public interface IGameConfig
     {
     }

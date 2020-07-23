@@ -6,7 +6,7 @@ namespace collision_and_rigid
     {
         public static float Min(float a, float b)
         {
-#if NETCOREAPP3
+#if NETCOREAPP
             return MathF.Min(a, b);
 #else
             return (float) Math.Min(a, b);
@@ -24,16 +24,16 @@ namespace collision_and_rigid
 
         public static float Sqrt(float a)
         {
-#if NETCOREAPP3
-            return MathF.Sqrt(a, b);
+#if NETCOREAPP
+            return MathF.Sqrt(a);
 #else
             return (float) Math.Sqrt(a);
 #endif
         }
         public static float Acos(float a)
         {
-#if NETCOREAPP3
-            return MathF.Sqrt(a, b);
+#if NETCOREAPP
+            return MathF.Acos(a);
 #else
             return (float) Math.Acos(a);
 #endif
