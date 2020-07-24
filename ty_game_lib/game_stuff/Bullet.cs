@@ -72,7 +72,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public bool HitBody(IIdPointShape targetBody)
+        public bool IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -100,52 +100,69 @@ namespace game_stuff
             var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == Skill.SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) <= 0; // 是否从背后攻击
-            var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough; //如果对手正在释放技能
-            var b3 = !isActSkill && Tough < TempConfig.MidTough; //如果对手不在释放技能
+            var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
+            var b3 = !isActSkill && Tough < TempConfig.MidTough; //如果对手不在释放技能，攻击坚韧小于中值，攻击成功
 
             if (protecting)
             {
                 return;
             }
 
-            //AttackOk 攻击成功
             var characterBodyBodySize = targetCharacterStatus.CharacterBody.BodySize;
+            //AttackOk 攻击成功
             if (opponentIsStun || b2 || b3 || b4)
             {
+                // 目标速度重置
+                targetCharacterStatus.ResetSpeed();
+                // 我方按配置添加攻击停帧
                 Caster.PauseTick = PauseToCaster;
-                FromSkill.IsHit = true;
-                Caster.LockingWho ??= targetCharacterStatus;
-                if (targetCharacterStatus.CatchingWho != null)
-                    targetCharacterStatus.CatchingWho.AntiActBuff = TempConfig.OutCaught;
 
+                FromSkill.IsHit = true;
+                //如果没有锁定目标，则锁定当前命中的目标
+                Caster.LockingWho ??= targetCharacterStatus;
+                //如果对手有抓取对象
+                if (targetCharacterStatus.CatchingWho != null)
+                {
+                    //抓取脱手
+                    targetCharacterStatus.CatchingWho.AntiActBuff = TempConfig.OutCaught;
+                    targetCharacterStatus.CatchingWho = null;
+                }
+
+                //对手承受伤害
                 targetCharacterStatus.DamageHealStatus.TakeDamage(Damage);
 
+
+                void InitBuff()
+                {
+                    if (PauseToOpponent > targetCharacterStatus.PauseTick)
+                    {
+                        targetCharacterStatus.PauseTick = PauseToOpponent;
+                    }
+
+                    targetCharacterStatus.AntiActBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos,
+                        targetCharacterStatus.GetPos(),
+                        Aim,
+                        null, 0,
+                        characterBodyBodySize, Caster);
+                }
+
+                // 对手状态
+                IAntiActBuff genBuff;
                 switch (opponentCharacterStatusAntiActBuff)
                 {
                     case null:
-                        if (PauseToOpponent > targetCharacterStatus.PauseTick)
-                        {
-                            targetCharacterStatus.PauseTick = PauseToOpponent;
-                        }
+                        InitBuff();
 
                         break;
+                    //对手被其他人抓取时，不在添加停顿帧和改变其buff 除非是自己抓的目标
                     case Caught _:
                         if (Caster.CatchingWho == targetCharacterStatus)
                         {
-                            if (PauseToOpponent > targetCharacterStatus.PauseTick)
-                            {
-                                targetCharacterStatus.PauseTick = PauseToOpponent;
-                            }
-
-                            var genBuff1 = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos,
-                                targetCharacterStatus.GetPos(),
-                                Aim,
-                                null, 0,
-                                characterBodyBodySize, Caster);
-                            targetCharacterStatus.AntiActBuff = genBuff1;
+                            InitBuff();
                         }
 
                         break;
+                    // 其他情况刷新buff
                     case PushOnAir pushOnAir:
                         if (PauseToOpponent > targetCharacterStatus.PauseTick)
                         {
@@ -163,16 +180,7 @@ namespace game_stuff
                         break;
                     case PushOnEarth _:
 
-                        if (PauseToOpponent > targetCharacterStatus.PauseTick)
-                        {
-                            targetCharacterStatus.PauseTick = PauseToOpponent;
-                        }
-
-                        var genBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos, targetCharacterStatus.GetPos(),
-                            Aim,
-                            null, 0,
-                            characterBodyBodySize, Caster);
-                        targetCharacterStatus.AntiActBuff = genBuff;
+                        InitBuff();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(opponentCharacterStatusAntiActBuff));
@@ -208,7 +216,7 @@ namespace game_stuff
 
         public HashSet<int> HitTeam(IQSpace qSpace)
         {
-            var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.HitBody(body),
+            var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.IsHitBody(body),
                 this);
             return SomeTools.ListToHashSet(mapToGidList.Select(x => x.GetId()));
         }

@@ -2,7 +2,7 @@ using System;
 
 namespace collision_and_rigid
 {
-    public class MathTools
+    public static class MathTools
     {
         public static float Min(float a, float b)
         {

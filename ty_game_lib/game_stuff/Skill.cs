@@ -70,8 +70,9 @@ namespace game_stuff
             return _nowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
         }
 
-        public int? ComboInputRes() //可以
+        public int? ComboInputRes() //可以连击，返回 下一个动作
         {
+            // 如果命中返回命中连击状态id，如果不是返回miss连击id，大部分是一样的
             var weaponSkillStatus = IsHit ? _nextComboHit : _nextComboMiss;
             return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick
                 ? weaponSkillStatus

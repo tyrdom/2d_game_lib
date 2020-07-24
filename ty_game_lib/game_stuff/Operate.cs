@@ -25,7 +25,20 @@ namespace game_stuff
 
         public OpAction? GetAction()
         {
+            if (ActOrMove == null)
+            {
+                return null;
+            }
             return ActOrMove.IsLeft() ? ActOrMove.Left() : (OpAction?) null;
+        }
+
+        public TwoDVector? GetMove()
+        {
+            if (ActOrMove == null)
+            {
+                return null;
+            }
+            return ActOrMove.IsRight() ? ActOrMove.Right() : null;
         }
     }
 

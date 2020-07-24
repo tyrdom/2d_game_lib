@@ -17,12 +17,6 @@ namespace game_stuff
 
         public float NowMoveSpeed;
 
-        // OpBuffer
-        public Operate? Op1;
-
-        public Operate? Op2;
-        //
-        
         public readonly int GId;
 
         public int PauseTick;
@@ -72,6 +66,7 @@ namespace game_stuff
             NowMoveSpeed = 0f;
         }
 
+
         private void LoadSkill(TwoDVector? aim, Skill skill)
         {
             if (aim != null)
@@ -83,6 +78,10 @@ namespace game_stuff
             NowCastSkill = skill;
         }
 
+        public void ResetSpeed()
+        {
+            NowMoveSpeed = _minMoveSpeed;
+        }
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()
         {
             if (NowCastSkill == null)
@@ -90,7 +89,7 @@ namespace game_stuff
                 return (null, null);
             }
 
-            //在有锁定目标时，会根据与当前目标的向量调整有一定程度的防止穿模型
+            //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
             var limitV
                 = LockingWho == null
                     ? null
@@ -125,7 +124,7 @@ namespace game_stuff
                 return (null, null);
             }
 
-            //  被持续攻击状态 输入无效
+            //  被硬直状态 输入无效
             var dPoint = GetPos();
             if (AntiActBuff != null)
             {
@@ -134,22 +133,30 @@ namespace game_stuff
                 return (twoDPoint, null);
             }
 
+            // 当前技能结束检查
             if (NowCastSkill?.InWhichPeriod() == Skill.SkillPeriod.End) NowCastSkill = null;
 
+            // 当前技能的释放时候
+            var opAction = operate?.GetAction();
             if (NowCastSkill != null)
             {
+                // 技能进行一个tick
                 var (move, launchBullet) = ActNowSkillATick();
-
+                // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
                 ComboByNext();
 
-                if (operate?.ActOrMove == null) return (move, launchBullet);
+                //没有更多Act操作，则返回
+                if (opAction == null) return (move, launchBullet);
+
+                //有Act操作，则检测出下一个状态id
 
                 var weaponSkillStatus = NowCastSkill.ComboInputRes();
 
+                // 状态可用，则执行连技操作
                 if (weaponSkillStatus != null)
                 {
                     var status = weaponSkillStatus.Value;
-                    var b = operate.GetAction() == OpAction.Switch;
+                    var b = opAction == OpAction.Switch;
                     var toUse = NowWeapon;
                     if (b)
                     {
@@ -161,18 +168,17 @@ namespace game_stuff
                         ? weapon
                         : Weapons.First().Value;
 
-                    var operateAction = operate.GetAction();
-
-
-                    if (!nowWeapon.SkillGroups.TryGetValue(operateAction.Value, out var skills) ||
+                    if (!nowWeapon.SkillGroups.TryGetValue(opAction.Value, out var skills) ||
                         !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
                     switch (NowCastSkill.InWhichPeriod())
                     {
                         case Skill.SkillPeriod.Casting:
-                            NextSkill = (operate.Aim, skill, b);
+
+                            NextSkill ??= (operate?.Aim, skill, b);
+
                             break;
                         case Skill.SkillPeriod.CanCombo:
-                            LoadSkill(operate.Aim, skill);
+                            LoadSkill(operate?.Aim, skill);
                             NowWeapon = toUse;
                             break;
                         case Skill.SkillPeriod.End:
@@ -186,33 +192,43 @@ namespace game_stuff
                 }
             }
 
+            // 没有技能在释放
+            // 没有任何操作
             if (operate == null)
             {
                 return (null, null);
             }
 
-
+            // 有操作
+            // 转换视野方向
             if (operate.Aim != null)
             {
                 CharacterBody.Sight.OpChangeAim(operate.Aim);
             }
 
-            if (operate.GetAction() == null) return (null, null);
+            if (opAction != null)
             {
-                if (operate.GetAction() == OpAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                // 非连击状态瞬间切换
+                if (opAction == OpAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                // 发动当前武器技能组的起始技能0
                 else
                 {
                     if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
-                        !weapon.SkillGroups.TryGetValue((OpAction) operate?.GetAction(), out var value) ||
+                        !weapon.SkillGroups.TryGetValue(opAction.Value, out var value) ||
                         !value.TryGetValue(0, out var skill)) return (null, null);
                     LoadSkill(null, skill);
                     var actNowSkillATick = ActNowSkillATick();
                     return actNowSkillATick;
                 }
             }
+            //其他移动操作
+            var twoDVector = operate.GetMove();
+            if (twoDVector == null) return (null, null);
+            // 加速跑步运动，有上限
+            var dVector = twoDVector.Multi(NowMoveSpeed);
+            NowMoveSpeed = MathTools.Min(_maxMoveSpeed,NowMoveSpeed+_addMoveSpeed);
+            return (dVector, null);
 
-
-            return (null, null);
         }
 
         public TwoDPoint GetPos()
