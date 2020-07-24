@@ -9,12 +9,18 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+#if UNITY_2018_4_OR_NEWER
+using UnityEngine;
+#endif
+
 namespace game_config
 {
     public static class GameConfigTools
     {
-        //二进制文件存取位置
         private static readonly char Sep = Path.DirectorySeparatorChar;
+#if UNITY_2018_4_OR_NEWER
+#else
+        //二进制文件存取位置
         private static readonly string ByteDir = $".{Sep}Bytes{Sep}";
 
         public static Dictionary<TK, TV> CovertIDictToDict<TK, TV>(ImmutableDictionary<TK, TV> immutableDictionary)
@@ -78,8 +84,8 @@ namespace game_config
 
         public static readonly string DllName = GetNameSpace() + ".dll";
         public static readonly string ResLocate = GetNameSpace() + ".Resource.";
-
-
+#endif
+#if NETCOREAPP
         public static ImmutableDictionary<TK, TV> GenConfigDict<TK, TV>()
         {
             var namesDictionary = ResNames.NamesDictionary;
@@ -87,11 +93,7 @@ namespace game_config
                 throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
             var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), DllName);
             var assembly =
-#if NETSTANDARD
-                Assembly.Load(assemblyPath);
-#else
-             AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
-#endif
+                AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
 
             var stream =
                 assembly.GetManifestResourceStream(ResLocate + name);
@@ -106,7 +108,37 @@ namespace game_config
             if (genConfigDict != null) return genConfigDict;
             throw new Exception("ErrorResource:::" + name);
         }
+#endif
 
+#if UNITY_2018_4_OR_NEWER
+        public static string JsonRead(string path, string name)
+        {
+            string json = "";
+            var replace = name.Replace(".json", "");
+            var sep = path + Sep + replace;
+            Debug.Log(sep);
+            TextAsset text = Resources.Load<TextAsset>(sep);
+            json = text.text;
+            if (string.IsNullOrEmpty(json)) return null;
+            return json;
+        }
+
+        public static ImmutableDictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
+        {
+            var namesDictionary = ResNames.NamesDictionary;
+            if (!namesDictionary.TryGetValue(typeof(TV), out var name))
+                throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
+
+
+            var json = JsonRead(jsonPath, name);
+
+            var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
+            var jToken = deserializeObject["content"];
+            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
+            if (genConfigDict != null) return genConfigDict;
+            throw new Exception("ErrorResource:::" + name);
+        }
+#else
         public static ImmutableDictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
         {
             var namesDictionary = ResNames.NamesDictionary;
@@ -141,6 +173,7 @@ namespace game_config
                 ? directories.Select(directory => FindFile(directory, name)).FirstOrDefault(s => s != "")
                 : "";
         }
+#endif
     }
 
     public enum ResModel

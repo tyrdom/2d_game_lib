@@ -37,7 +37,6 @@ namespace game_stuff
 
         // public Bullet GenByConfig(game_config.bullet bullet)
         // {
-        //     
         // }
 
         public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,

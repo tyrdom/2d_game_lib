@@ -5,18 +5,6 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public enum WeaponSkillStatus
-    {
-        Normal,
-        Catching,
-        P1,
-        P2,
-        P3,
-        P4,
-        P5,
-        Switch
-    }
-
     public class CharacterStatus
     {
         public CharacterBody CharacterBody;
@@ -29,6 +17,12 @@ namespace game_stuff
 
         public float NowMoveSpeed;
 
+        // OpBuffer
+        public Operate? Op1;
+
+        public Operate? Op2;
+        //
+        
         public readonly int GId;
 
         public int PauseTick;
@@ -95,6 +89,7 @@ namespace game_stuff
             {
                 return (null, null);
             }
+
             //在有锁定目标时，会根据与当前目标的向量调整有一定程度的防止穿模型
             var limitV
                 = LockingWho == null
@@ -121,14 +116,16 @@ namespace game_stuff
             NextSkill = null;
         }
 
-        public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate)
+        public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
         {
+            // 命中停帧 输入无效
             if (PauseTick > 0)
             {
                 PauseTick -= 1;
                 return (null, null);
             }
 
+            //  被持续攻击状态 输入无效
             var dPoint = GetPos();
             if (AntiActBuff != null)
             {
@@ -145,18 +142,18 @@ namespace game_stuff
 
                 ComboByNext();
 
-                if (operate?.Action == null) return (move, launchBullet);
+                if (operate?.ActOrMove == null) return (move, launchBullet);
 
                 var weaponSkillStatus = NowCastSkill.ComboInputRes();
 
                 if (weaponSkillStatus != null)
                 {
                     var status = weaponSkillStatus.Value;
-                    var b = operate.Action == OpAction.Switch;
+                    var b = operate.GetAction() == OpAction.Switch;
                     var toUse = NowWeapon;
                     if (b)
                     {
-                        status = WeaponSkillStatus.Switch;
+                        status = 0;
                         toUse = (toUse + 1) % Weapons.Count;
                     }
 
@@ -164,10 +161,10 @@ namespace game_stuff
                         ? weapon
                         : Weapons.First().Value;
 
-                    var operateAction = operate.Action.Value;
+                    var operateAction = operate.GetAction();
 
 
-                    if (!nowWeapon.SkillGroups.TryGetValue(operateAction, out var skills) ||
+                    if (!nowWeapon.SkillGroups.TryGetValue(operateAction.Value, out var skills) ||
                         !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
                     switch (NowCastSkill.InWhichPeriod())
                     {
@@ -200,14 +197,14 @@ namespace game_stuff
                 CharacterBody.Sight.OpChangeAim(operate.Aim);
             }
 
-            if (operate.Action == null) return (null, null);
+            if (operate.GetAction() == null) return (null, null);
             {
-                if (operate.Action.Value == OpAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                if (operate.GetAction() == OpAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
                 else
                 {
                     if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
-                        !weapon.SkillGroups.TryGetValue(operate.Action.Value, out var value) ||
-                        !value.TryGetValue(WeaponSkillStatus.Normal, out var skill)) return (null, null);
+                        !weapon.SkillGroups.TryGetValue((OpAction) operate?.GetAction(), out var value) ||
+                        !value.TryGetValue(0, out var skill)) return (null, null);
                     LoadSkill(null, skill);
                     var actNowSkillATick = ActNowSkillATick();
                     return actNowSkillATick;
@@ -250,40 +247,6 @@ namespace game_stuff
         }
     }
 
-
-    public class Combo
-    {
-        public WeaponSkillStatus WeaponSkillStatus;
-
-        public int? ComboTick;
-
-        public Combo(WeaponSkillStatus weaponSkillStatus, int? comboTick)
-        {
-            WeaponSkillStatus = weaponSkillStatus;
-            ComboTick = comboTick;
-        }
-
-        public static Combo NewZeroCombo()
-        {
-            return new Combo(WeaponSkillStatus.Normal, null);
-        }
-
-        public void Reset()
-        {
-            WeaponSkillStatus = WeaponSkillStatus.Normal;
-            ComboTick = null;
-        }
-
-        public WeaponSkillStatus GetWStatus()
-        {
-            if (ComboTick == null || ComboTick <= 0)
-            {
-                return WeaponSkillStatus.Normal;
-            }
-
-            return WeaponSkillStatus;
-        }
-    }
 
     public class Heal
     {

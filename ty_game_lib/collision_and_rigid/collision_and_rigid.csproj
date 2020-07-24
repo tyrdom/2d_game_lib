@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="csharp-monad" Version="1.0.1" />
+      <PackageReference Include="FSharpx.Core" Version="1.8.32" />
+    </ItemGroup>
+
 </Project>

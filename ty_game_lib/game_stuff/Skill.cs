@@ -21,16 +21,16 @@ namespace game_stuff
         private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
-        private readonly WeaponSkillStatus _nextComboHit;
-        private readonly WeaponSkillStatus _nextComboMiss;
+        private readonly int _nextComboHit;
+        private readonly int _nextComboMiss;
 
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
-            WeaponSkillStatus nextComboHit, uint comboInputStartTick, WeaponSkillStatus nextComboMiss,
+            int nextComboHit, uint comboInputStartTick, int nextComboMiss,
             LockArea? lockArea)
         {
-            var b =  0 < comboInputStartTick &&
+            var b = 0 < comboInputStartTick &&
                     skillMustTick < skillMaxTick &&
                     moveStartTick + moves.Length < skillMaxTick;
             if (!b)
@@ -70,12 +70,12 @@ namespace game_stuff
             return _nowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
         }
 
-        public WeaponSkillStatus? ComboInputRes()
+        public int? ComboInputRes() //可以
         {
             var weaponSkillStatus = IsHit ? _nextComboHit : _nextComboMiss;
             return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick
                 ? weaponSkillStatus
-                : (WeaponSkillStatus?) null;
+                : (int?) null;
         }
 
         public (TwoDVector? move, IHitStuff? launchBullet) GoATick(

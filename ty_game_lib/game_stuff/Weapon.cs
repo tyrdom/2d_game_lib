@@ -5,9 +5,9 @@ namespace game_stuff
 {
     public class Weapon
     {
-        public readonly ImmutableDictionary<OpAction, ImmutableDictionary<WeaponSkillStatus, Skill>> SkillGroups;
+        public readonly ImmutableDictionary<OpAction, ImmutableDictionary<int, Skill>> SkillGroups;
 
-        public Weapon(ImmutableDictionary<OpAction, ImmutableDictionary<WeaponSkillStatus, Skill>> skillGroups)
+        public Weapon(ImmutableDictionary<OpAction, ImmutableDictionary<int, Skill>> skillGroups)
         {
             SkillGroups = skillGroups;
         }
