@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -24,6 +26,7 @@ namespace game_stuff
         private readonly int _nextComboHit;
         private readonly int _nextComboMiss;
 
+     
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough,
@@ -52,7 +55,14 @@ namespace game_stuff
             _lockArea = lockArea;
             IsHit = false;
         }
+        public static Skill GenSkillByConfig(skill skill)
+        {
+            var twoDVectors = skill.Moves.Select(GameTools.GenVectorByConfig).ToArray();
 
+            skill.LaunchTickToBullet.ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            throw new ArgumentOutOfRangeException();
+        }
         public enum SkillPeriod
         {
             Casting,

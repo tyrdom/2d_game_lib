@@ -111,39 +111,18 @@ namespace lib_test
 
             Console.WriteLine("!!2!!" + inBlock2);
             Console.Out.WriteLine("config test~~~~~");
-           var configDictionaries = new ConfigDictionaries(ResModel.Dll);
-            foreach (var key in configDictionaries.push_buffs)
+
+            var configDictionaries = new ConfigDictionaries(ResModel.Dll);
+            var configDictionariesBullets = configDictionaries.bullets;
+            foreach (KeyValuePair<string,bullet> configDictionariesBullet in configDictionariesBullets)
             {
-                Console.Out.WriteLine($"key::{key.Key}");
-                Console.Out.WriteLine($"pushType::{key.Value.PushType.ToString()}");
+                var key = configDictionariesBullet.Key;
+                Console.Out.WriteLine($"{key}");
+                foreach (var keyValuePair in configDictionariesBullet.Value.FailActBuffConfigToSelf)
+                {
+                    Console.Out.WriteLine($"{keyValuePair.size}");
+                }
             }
-
-            var twoSToSeePertick = configDictionaries.other_configs[1].two_s_to_see_pertick;
-            Console.Out.WriteLine($"other_c:::{twoSToSeePertick}");
-
-            foreach (var bodysKey in configDictionaries.bodys.Keys)
-            {
-                Console.Out.WriteLine($"{bodysKey.ToString()}");
-            }
-
-
-            var mainModuleFileName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            var sep = Path.DirectorySeparatorChar;
-            
-            var fileInfo = new FileInfo($".{sep}Bytes{sep}aaa.bytes");
-
-            // Console.Out.WriteLine($"{sep}\n{fileInfo.DirectoryName},\n{mainModuleFileName}");
-            if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
-
-
-            // GameConfigTools.SaveDict(Content.fishs, fileInfo2);
-
-            var immutableDictionary = GameConfigTools.LoadDictByByte<int, fish>(fileInfo);
-            foreach (var keyValuePair in immutableDictionary)
-            {
-                Console.Out.WriteLine($"{keyValuePair.Key}");
-            }
-
 
             // GameConfigTools.LoadDict(fileInfo2, out ImmutableDictionary<int, bad_words> a);
             // foreach (var keyValuePair

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -45,17 +47,43 @@ namespace game_stuff
             return bulletBox;
         }
 
-        static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape shape)
+        public static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
         {
-            var bulletBoxes = new Dictionary<BodySize, BulletBox>();
-            foreach (var k in TempConfig.SizeToR)
-            {
-                var genRawBulletBox = GenRawBulletBox(shape, k.Value);
+            return
+                TempConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
+                    new BulletBox(rawBulletShape.GenBulletZone(pair.Value),
+                        rawBulletShape.GenBulletShape(pair.Value)));
+        }
 
-                bulletBoxes[k.Key] = genRawBulletBox;
+        public static TwoDVector GenVectorByConfig(Point pt)
+        {
+            return new TwoDVector(pt.x, pt.y);
+        }
+
+        public static IAntiActBuffConfig GenBuffByConfig(push_buff pushBuff)
+        {
+            var pushType = pushBuff.PushType switch
+            {
+                game_config.PushType.Vector => PushType.Vector,
+                game_config.PushType.Center => PushType.Center,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            var pushAboutVector = GenVectorByConfig(pushBuff.FixVector.First());
+            if (pushBuff.UpForce > 0)
+            {
+                return new PushAirAntiActBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
+                    pushBuff.LastTick);
             }
 
-            return bulletBoxes;
+            return new PushEarthAntiActBuffConfig(pushBuff.PushForce, pushType, pushAboutVector, pushBuff.LastTick);
+        }
+
+        public static IAntiActBuffConfig GenBuffByConfig(caught_buff caughtBuff)
+        {
+            var twoDVectors = caughtBuff.CatchPoints.Select(GenVectorByConfig);
+
+            return new CatchAntiActBuffConfig(twoDVectors.ToArray(), caughtBuff.LastTick,
+                Skill.GenSkillByConfig(TempConfig.configs.skills[caughtBuff.TrickSkill]));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 
+
 namespace collision_and_rigid
 {
     public class Sector : IRawBulletShape
@@ -10,6 +11,21 @@ namespace collision_and_rigid
         public Sector(ClockwiseBalanceAngle aob, float r)
         {
             AOB = aob;
+            R = r;
+        }
+
+        public Sector(float r, float y ,TwoDVector move ,TwoDVector rotate)
+        {
+            var o = TwoDPoint.Zero().Move(move);
+            var f1 = y / 2;
+
+            var f = MathTools.Sqrt(r * r - f1
+                * f1);
+
+            var a = new TwoDPoint(f, f1).ClockTurnAboutZero(rotate).Move(move);
+            var b = new TwoDPoint(f, -f1).ClockTurnAboutZero(rotate).Move(move);
+            var clockwiseBalanceAngle = new ClockwiseBalanceAngle(a, o, b);
+            AOB = clockwiseBalanceAngle;
             R = r;
         }
 

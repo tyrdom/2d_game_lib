@@ -12,7 +12,7 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        public CharacterStatus Caster { get; }
+        public CharacterStatus? Caster { get; set; }
 
         public LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision, CharacterStatus caster)
         {
@@ -34,7 +34,7 @@ namespace game_stuff
             {
                 case CharacterBody characterBody1:
                     var isHit = IsHit(characterBody1);
-                    if (isHit)
+                    if (isHit && Caster!=null)
                     {
                         Caster.LockingWho =
                             characterBody1.CharacterStatus;

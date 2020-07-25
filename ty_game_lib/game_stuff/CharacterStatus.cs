@@ -15,7 +15,7 @@ namespace game_stuff
 
         private readonly float _addMoveSpeed;
 
-        public float NowMoveSpeed;
+        private float NowMoveSpeed;
 
         public readonly int GId;
 
@@ -69,6 +69,8 @@ namespace game_stuff
 
         private void LoadSkill(TwoDVector? aim, Skill skill)
         {
+            //装载技能时，重置速度
+            ResetSpeed();
             if (aim != null)
             {
                 CharacterBody.Sight.OpChangeAim(aim);
@@ -82,6 +84,7 @@ namespace game_stuff
         {
             NowMoveSpeed = _minMoveSpeed;
         }
+
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()
         {
             if (NowCastSkill == null)
@@ -221,14 +224,14 @@ namespace game_stuff
                     return actNowSkillATick;
                 }
             }
+
             //其他移动操作
             var twoDVector = operate.GetMove();
             if (twoDVector == null) return (null, null);
             // 加速跑步运动，有上限
             var dVector = twoDVector.Multi(NowMoveSpeed);
-            NowMoveSpeed = MathTools.Min(_maxMoveSpeed,NowMoveSpeed+_addMoveSpeed);
+            NowMoveSpeed = MathTools.Min(_maxMoveSpeed, NowMoveSpeed + _addMoveSpeed);
             return (dVector, null);
-
         }
 
         public TwoDPoint GetPos()

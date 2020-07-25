@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -20,7 +23,7 @@ namespace game_stuff
         public TwoDVector Aim { get; set; }
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        public CharacterStatus Caster { get; }
+        public CharacterStatus? Caster { get; set; }
         public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
         public readonly Skill FromSkill;
         public readonly Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf;
@@ -35,19 +38,88 @@ namespace game_stuff
         public int ResId;
 
 
-        // public Bullet GenByConfig(game_config.bullet bullet)
-        // {
-        // }
+        public static Bullet GenByBulletId(string id)
+        {
+            if (TempConfig.configs.bullets.TryGetValue(id, out var bullet))
+            {
+                return GenByConfig(bullet);
+            }
+
+            throw new ArgumentOutOfRangeException();
+        }
+
+        public static Bullet GenByConfig(bullet bullet)
+        {
+            var bulletShapeParams = bullet.ShapeParams;
+
+            var bulletLocalRotate = bullet.LocalRotate;
+            var twoDPoint = new TwoDVector(bullet.LocalPos.x, bullet.LocalPos.y);
+            var cos = MathTools.Cos(bulletLocalRotate * 180 / MathTools.Pi());
+            var sin = MathTools.Sin(bulletLocalRotate * 180 / MathTools.Pi());
+            var rotate = new TwoDVector(cos, sin);
+            IRawBulletShape rawBulletShape = bullet.ShapeType switch
+            {
+                raw_shape.rectangle => new Rectangle2(bulletShapeParams[0], bulletShapeParams[1], twoDPoint,
+                    rotate),
+                raw_shape.sector => new Sector(bulletShapeParams[0], bulletShapeParams[1], twoDPoint, rotate),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            var dictionary =
+                GameTools.GenDicBulletBox(rawBulletShape);
+
+            buff_type bulletSuccessAntiActBuffConfigToOpponentType = bullet.SuccessAntiActBuffConfigToOpponentType;
+            var bulletSuccessAntiActBuffConfigToOpponent = bullet.SuccessAntiActBuffConfigToOpponent;
+
+
+            Func<buff_type, string, IAntiActBuffConfig> func = (buffConfigToOpponentType, configToOpponent) =>
+                buffConfigToOpponentType switch
+                {
+                    buff_type.push_buff => GameTools.GenBuffByConfig(
+                        TempConfig.configs.push_buffs[configToOpponent]),
+                    buff_type.caught_buff => GameTools.GenBuffByConfig(
+                        TempConfig.configs.caught_buffs[configToOpponent]),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+            var antiActBuffConfig = func(bulletSuccessAntiActBuffConfigToOpponentType,
+                bulletSuccessAntiActBuffConfigToOpponent);
+
+            var bulletFailActBuffConfigToSelf = bullet.FailActBuffConfigToSelf;
+            var antiActBuffConfigs = TempConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
+            {
+                switch (pair.Key)
+                {
+                    case BodySize.Small:
+                        var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                            x.size == size.small || x.size == size.@default);
+                        return func(firstOrDefault.buff_type, firstOrDefault.buff_id);
+
+                    case BodySize.Medium:
+                        var firstOrDefault2 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                            x.size == size.medium || x.size == size.@default);
+                        return func(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
+                    case BodySize.Big:
+                        var firstOrDefault3 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                            x.size == size.big || x.size == size.@default);
+                        return func(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            });
+
+            throw new ArgumentOutOfRangeException();
+            // return new Bullet(dictionary,);
+        }
 
         public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
-            CharacterStatus caster, IAntiActBuffConfig successAntiActBuffConfigToOpponent,
+            IAntiActBuffConfig successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int restTick, int resId, Skill fromSkill)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
             SizeToBulletCollision = sizeToBulletCollision;
-            Caster = caster;
+            Caster = null;
             SuccessAntiActBuffConfigToOpponent = successAntiActBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
             PauseToCaster = pauseToCaster;
@@ -77,7 +149,7 @@ namespace game_stuff
             switch (targetBody)
             {
                 case CharacterBody characterBody1:
-                    var isHit = IsHit(characterBody1);
+                    var isHit = Caster != null && IsHit(characterBody1);
                     if (isHit)
                     {
                         HitOne(characterBody1.CharacterStatus);
@@ -115,7 +187,7 @@ namespace game_stuff
                 // 目标速度重置
                 targetCharacterStatus.ResetSpeed();
                 // 我方按配置添加攻击停帧
-                Caster.PauseTick = PauseToCaster;
+                Caster!.PauseTick = PauseToCaster;
 
                 FromSkill.IsHit = true;
                 //如果没有锁定目标，则锁定当前命中的目标
@@ -189,7 +261,7 @@ namespace game_stuff
             else
             {
                 //AttackFail 
-                Caster.NowCastSkill = null;
+                Caster!.NowCastSkill = null;
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
                 if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out IAntiActBuffConfig? failAntiBuff))

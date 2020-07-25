@@ -9,7 +9,7 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        public CharacterStatus Caster { get; }
+        public CharacterStatus? Caster { get; set; }
 
         public bool IsHit(CharacterBody characterBody);
     }

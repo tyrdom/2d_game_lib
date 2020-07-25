@@ -12,7 +12,24 @@ namespace collision_and_rigid
             return (float) Math.Min(a, b);
 #endif
         }
+        public static float Cos(float a)
+        {
+#if NETCOREAPP
+            return MathF.Cos(a);
+#else
+            return (float) Math.Cos(a);
+#endif
+        }
 
+        public static float Sin(float a)
+        {
+#if NETCOREAPP
+            return MathF.Sin(a);
+#else
+            return (float) Math.Sin(a);
+#endif
+        }
+        
         public static float Max(float a, float b)
         {
 #if NETCOREAPP
@@ -36,6 +53,15 @@ namespace collision_and_rigid
             return MathF.Acos(a);
 #else
             return (float) Math.Acos(a);
+#endif
+        }
+
+        public static float Pi()
+        {
+#if NETCOREAPP
+            return MathF.PI;
+#else
+            return (float) Math.PI;
 #endif
         }
     }

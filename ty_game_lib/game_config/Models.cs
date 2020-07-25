@@ -83,23 +83,23 @@ namespace game_config
     public class bullet : IGameConfig
     {
         public string id { get; set; }
-        public int ShapeType { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public raw_shape ShapeType { get; set; }
+
         public float[] ShapeParams { get; set; }
         public Point LocalPos { get; set; }
         public int LocalRotate { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public buff_type SuccessAntiActBuffConfigToOpponentType { get; set; }
+
         public string SuccessAntiActBuffConfigToOpponent { get; set; }
-        public Dictionary<string, Buff> FailActBuffConfigToSelf { get; set; }
+        public SimpleObj1[] FailActBuffConfigToSelf { get; set; }
         public int PauseToCaster { get; set; }
         public int PauseToOpponent { get; set; }
         public int TargetType { get; set; }
         public int Tough { get; set; }
-    }
-
-    [Serializable]
-    public enum push_buff_PushType
-    {
-        @Center,
-        @Vector
     }
 
     [Serializable]
@@ -111,7 +111,7 @@ namespace game_config
         public float PushForce { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public push_buff_PushType PushType { get; set; }
+        public PushType PushType { get; set; }
 
         public Point[] FixVector { get; set; }
         public float UpForce { get; set; }
@@ -134,7 +134,7 @@ namespace game_config
         public bool yellow_BG { get; set; }
         public string res_pack { get; set; }
         public float scale { get; set; }
-        public SimpleObj1[] ring_pos { get; set; }
+        public SimpleObj2[] ring_pos { get; set; }
         public Point anchor_multi { get; set; }
         public float animation_play_time_span { get; set; }
         public int deep { get; set; }
@@ -145,7 +145,7 @@ namespace game_config
         public int turning_mode { get; set; }
         public float appear_time { get; set; }
         public bool is_3d_model { get; set; }
-        public SimpleObj2 param_for_3D { get; set; }
+        public SimpleObj3 param_for_3D { get; set; }
         public string[] dead_sound_list { get; set; }
         public string appear_sound { get; set; }
         public string change_bgm { get; set; }
@@ -153,8 +153,8 @@ namespace game_config
         public float appear_loop { get; set; }
         public int special_fish_type { get; set; }
         public string show_game { get; set; }
-        public SimpleObj4 rectangle_collider_anchor { get; set; }
-        public SimpleObj5 rectangle_collider { get; set; }
+        public SimpleObj5 rectangle_collider_anchor { get; set; }
+        public SimpleObj6 rectangle_collider { get; set; }
         public int spawn_rate { get; set; }
         public int size { get; set; }
         public int common_spawn_gap { get; set; }
@@ -175,7 +175,10 @@ namespace game_config
     public class lock_area : IGameConfig
     {
         public string id { get; set; }
-        public int ShapeType { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public raw_shape ShapeType { get; set; }
+
         public float[] ShapeParams { get; set; }
         public Point LocalPos { get; set; }
         public int LocalRotate { get; set; }
@@ -204,9 +207,31 @@ namespace game_config
     [Serializable]
     public enum size
     {
+        @medium,
+        @default,
         @big,
-        @small,
-        @medium
+        @small
+    }
+
+    [Serializable]
+    public enum raw_shape
+    {
+        @sector,
+        @rectangle
+    }
+
+    [Serializable]
+    public enum buff_type
+    {
+        @push_buff,
+        @caught_buff
+    }
+
+    [Serializable]
+    public enum PushType
+    {
+        @Vector,
+        @Center
     }
 
     public static class ResNames
@@ -303,33 +328,22 @@ namespace game_config
     }
 
     [Serializable]
-    public class Buff : IGameConfig
-    {
-        public string buff_type { get; set; }
-        public string buff_id { get; set; }
-    }
-
-    [Serializable]
     public class SimpleObj1 : IGameConfig
     {
-        public int x { get; set; }
-        public int y { get; set; }
-        public float scale { get; set; }
-    }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public size size { get; set; }
 
-    [Serializable]
-    public class SimpleObj3 : IGameConfig
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public int z { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public buff_type buff_type { get; set; }
+
+        public string buff_id { get; set; }
     }
 
     [Serializable]
     public class SimpleObj2 : IGameConfig
     {
-        public SimpleObj3 pos { get; set; }
-        public SimpleObj3 rotate { get; set; }
+        public int x { get; set; }
+        public int y { get; set; }
         public float scale { get; set; }
     }
 
@@ -338,10 +352,26 @@ namespace game_config
     {
         public int x { get; set; }
         public int y { get; set; }
+        public int z { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj3 : IGameConfig
+    {
+        public SimpleObj4 pos { get; set; }
+        public SimpleObj4 rotate { get; set; }
+        public float scale { get; set; }
     }
 
     [Serializable]
     public class SimpleObj5 : IGameConfig
+    {
+        public int x { get; set; }
+        public int y { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj6 : IGameConfig
     {
         public int width { get; set; }
         public int height { get; set; }

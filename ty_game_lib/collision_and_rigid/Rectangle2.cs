@@ -19,7 +19,7 @@ namespace collision_and_rigid
             MidRotate = midRotate;
         }
 
-        Poly GenPoly()
+        private Poly GenPoly()
         {
             var p1 = new TwoDPoint(-Width / 2f, -Height / 2f);
             var p2 = new TwoDPoint(-Width / 2f, Height / 2f);

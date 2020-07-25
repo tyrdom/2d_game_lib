@@ -77,7 +77,7 @@ namespace game_stuff
         private PushType PushType;
         private float UpForce;
 
-        private TwoDVector pushAboutVector;
+        private TwoDVector PushAboutVector;
         private int TickLast;
 
         public PushAirAntiActBuffConfig(float pushForce, PushType pushType, float upForce,
@@ -86,7 +86,7 @@ namespace game_stuff
             PushForce = pushForce;
             PushType = pushType;
             UpForce = upForce;
-            this.pushAboutVector = pushAboutVector;
+            PushAboutVector = pushAboutVector;
             TickLast = tickLast;
         }
 
@@ -103,13 +103,13 @@ namespace game_stuff
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDVector = anchor.Move(pushAboutVector).GenVector(obPos).GetUnit();
+                    var twoDVector = anchor.Move(PushAboutVector).GenVector(obPos).GetUnit();
                     var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, mass);
                     return genBuffFromUnit;
 
 
                 case PushType.Vector:
-                    var unit = aim.ClockwiseTurn(pushAboutVector).GetUnit();
+                    var unit = aim.ClockwiseTurn(PushAboutVector).GetUnit();
                     var genBuffFromUnit1 = GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, mass);
                     return genBuffFromUnit1;
 

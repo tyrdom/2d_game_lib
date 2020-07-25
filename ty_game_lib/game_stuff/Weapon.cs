@@ -11,7 +11,11 @@ namespace game_stuff
         {
             SkillGroups = skillGroups;
         }
-        
+
+        public void PickWeapon(CharacterStatus characterStatus)
+        {
+            
+        }
         
     }
 }

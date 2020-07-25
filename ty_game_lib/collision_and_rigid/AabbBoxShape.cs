@@ -84,7 +84,7 @@ namespace collision_and_rigid
                             if (item1 != null)
                             {
                                 var t1 = (2, new AabbBoxShape(item1.Value, Shape));
-                                var t2 = (1, new AabbBoxShape(item2.Value, Shape));
+                                var t2 = (1, new AabbBoxShape(item2!.Value, Shape));
                                 z1234.Add(t1);
                                 z1234.Add(t2);
                             }
@@ -111,7 +111,7 @@ namespace collision_and_rigid
                             if (lZones != null)
                             {
                                 z1234.Add((3, new AabbBoxShape(lZones.Value, Shape)));
-                                z1234.Add((4, new AabbBoxShape(rZones.Value, Shape)));
+                                z1234.Add((4, new AabbBoxShape(rZones!.Value, Shape)));
                             }
                             else
                             {
