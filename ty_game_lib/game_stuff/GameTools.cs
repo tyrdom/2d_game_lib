@@ -20,6 +20,25 @@ namespace game_stuff
             }
         }
 
+        public static Dictionary<BodySize, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
+            Point localPoint, raw_shape rawShape)
+        {
+            var twoDPoint = GenVectorByConfig(localPoint);
+
+            var cos = MathTools.Cos(bulletLocalRotate * 180 / MathTools.Pi());
+            var sin = MathTools.Sin(bulletLocalRotate * 180 / MathTools.Pi());
+            var rotate = new TwoDVector(cos, sin);
+            IRawBulletShape rawBulletShape = rawShape switch
+            {
+                raw_shape.rectangle => new Rectangle2(bulletShapeParams[0], bulletShapeParams[1], twoDPoint,
+                    rotate),
+                raw_shape.sector => new Sector(bulletShapeParams[0], bulletShapeParams[1], twoDPoint, rotate),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            return
+                GenDicBulletBox(rawBulletShape);
+        }
+
         public static bool IsHit(IHitStuff hitStuff, CharacterBody characterBody)
         {
             var characterBodyBodySize = characterBody.BodySize;

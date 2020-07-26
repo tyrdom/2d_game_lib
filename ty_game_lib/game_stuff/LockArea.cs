@@ -14,13 +14,21 @@ namespace game_stuff
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
 
-        public LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision, CharacterStatus caster)
+        public LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
         {
             IsActive = false;
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
             SizeToBulletCollision = sizeToBulletCollision;
-            Caster = caster;
+            Caster = null;
+        }
+
+        public static LockArea GenByConfig(game_config.lock_area lockArea)
+        {
+            var genBulletShapes = GameTools.GenBulletShapes(lockArea.ShapeParams, lockArea.LocalRotate,
+                lockArea.LocalPos, lockArea.ShapeType);
+
+            return new LockArea(genBulletShapes);
         }
 
         public bool IsHit(CharacterBody characterBody)
@@ -34,7 +42,7 @@ namespace game_stuff
             {
                 case CharacterBody characterBody1:
                     var isHit = IsHit(characterBody1);
-                    if (isHit && Caster!=null)
+                    if (isHit && Caster != null)
                     {
                         Caster.LockingWho =
                             characterBody1.CharacterStatus;

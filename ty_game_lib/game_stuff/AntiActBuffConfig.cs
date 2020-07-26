@@ -8,6 +8,8 @@ namespace game_stuff
     {
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize, CharacterStatus whoDid);
+
+        public void PickBySomeOne(CharacterStatus characterStatus);
     }
 
 
@@ -69,6 +71,10 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public void PickBySomeOne(CharacterStatus characterStatus)
+        {
+        }
     }
 
     public class PushAirAntiActBuffConfig : IAntiActBuffConfig
@@ -118,6 +124,10 @@ namespace game_stuff
             }
         }
 
+        public void PickBySomeOne(CharacterStatus characterStatus)
+        {
+        }
+
         private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
         {
             var max = MathTools.Max(GenUp(height, f), upSpeed);
@@ -160,6 +170,11 @@ namespace game_stuff
         {
             var antiActBuff = GenABuff(pos, aim, whoDid);
             return antiActBuff;
+        }
+
+        public void PickBySomeOne(CharacterStatus characterStatus)
+        {
+            TrickSkill.PickedBySomeOne(characterStatus);
         }
     }
 }

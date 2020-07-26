@@ -25,7 +25,6 @@ namespace game_stuff
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
         public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
-        public readonly Skill FromSkill;
         public readonly Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf;
 
         public readonly int PauseToCaster;
@@ -48,40 +47,31 @@ namespace game_stuff
             throw new ArgumentOutOfRangeException();
         }
 
+        public void PickBySomeOne(CharacterStatus characterStatus)
+        {
+            Caster = characterStatus;
+            
+        }
         public static Bullet GenByConfig(bullet bullet)
         {
-            var bulletShapeParams = bullet.ShapeParams;
+            var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
+                bullet.ShapeType);
 
-            var bulletLocalRotate = bullet.LocalRotate;
-            var twoDPoint = new TwoDVector(bullet.LocalPos.x, bullet.LocalPos.y);
-            var cos = MathTools.Cos(bulletLocalRotate * 180 / MathTools.Pi());
-            var sin = MathTools.Sin(bulletLocalRotate * 180 / MathTools.Pi());
-            var rotate = new TwoDVector(cos, sin);
-            IRawBulletShape rawBulletShape = bullet.ShapeType switch
-            {
-                raw_shape.rectangle => new Rectangle2(bulletShapeParams[0], bulletShapeParams[1], twoDPoint,
-                    rotate),
-                raw_shape.sector => new Sector(bulletShapeParams[0], bulletShapeParams[1], twoDPoint, rotate),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            var dictionary =
-                GameTools.GenDicBulletBox(rawBulletShape);
 
             buff_type bulletSuccessAntiActBuffConfigToOpponentType = bullet.SuccessAntiActBuffConfigToOpponentType;
             var bulletSuccessAntiActBuffConfigToOpponent = bullet.SuccessAntiActBuffConfigToOpponent;
 
 
-            Func<buff_type, string, IAntiActBuffConfig> func = (buffConfigToOpponentType, configToOpponent) =>
+            static IAntiActBuffConfig GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent) =>
                 buffConfigToOpponentType switch
                 {
-                    buff_type.push_buff => GameTools.GenBuffByConfig(
-                        TempConfig.configs.push_buffs[configToOpponent]),
+                    buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.configs.push_buffs[configToOpponent]),
                     buff_type.caught_buff => GameTools.GenBuffByConfig(
                         TempConfig.configs.caught_buffs[configToOpponent]),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-            var antiActBuffConfig = func(bulletSuccessAntiActBuffConfigToOpponentType,
+            var antiActBuffConfig = GenBuffByC(bulletSuccessAntiActBuffConfigToOpponentType,
                 bulletSuccessAntiActBuffConfigToOpponent);
 
             var bulletFailActBuffConfigToSelf = bullet.FailActBuffConfigToSelf;
@@ -92,29 +82,35 @@ namespace game_stuff
                     case BodySize.Small:
                         var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                             x.size == size.small || x.size == size.@default);
-                        return func(firstOrDefault.buff_type, firstOrDefault.buff_id);
+                        return GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
 
                     case BodySize.Medium:
                         var firstOrDefault2 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                             x.size == size.medium || x.size == size.@default);
-                        return func(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
+                        return GenBuffByC(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
                     case BodySize.Big:
                         var firstOrDefault3 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                             x.size == size.big || x.size == size.@default);
-                        return func(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
+                        return GenBuffByC(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             });
 
-            throw new ArgumentOutOfRangeException();
-            // return new Bullet(dictionary,);
+            ObjType objType = bullet.TargetType switch
+            {
+                target_type.other_team => ObjType.OtherTeam,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
+                bullet.PauseToOpponent, objType, bullet.Tough, 1, 1);
         }
 
         public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             IAntiActBuffConfig successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            ObjType targetType, int tough, int restTick, int resId, Skill fromSkill)
+            ObjType targetType, int tough, int restTick, int resId)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -129,7 +125,6 @@ namespace game_stuff
             Tough = tough;
             RestTick = restTick;
             ResId = resId;
-            FromSkill = fromSkill;
             IsActive = false;
         }
 
@@ -189,7 +184,6 @@ namespace game_stuff
                 // 我方按配置添加攻击停帧
                 Caster!.PauseTick = PauseToCaster;
 
-                FromSkill.IsHit = true;
                 //如果没有锁定目标，则锁定当前命中的目标
                 Caster.LockingWho ??= targetCharacterStatus;
                 //如果对手有抓取对象

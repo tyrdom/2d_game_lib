@@ -13,7 +13,7 @@ namespace game_stuff
 
         public int NowTough;
 
-        public bool IsHit;
+        // public bool IsHit;
         private readonly int _baseTough;
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
@@ -23,14 +23,12 @@ namespace game_stuff
         private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
-        private readonly int _nextComboHit;
-        private readonly int _nextComboMiss;
+        private readonly int _nextCombo;
 
-     
+
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
-            int baseTough,
-            int nextComboHit, uint comboInputStartTick, int nextComboMiss,
+            int baseTough, uint comboInputStartTick, int nextCombo,
             LockArea? lockArea)
         {
             var b = 0 < comboInputStartTick &&
@@ -49,20 +47,42 @@ namespace game_stuff
             _skillMustTick = skillMustTick;
             _skillMaxTick = skillMaxTick;
             _baseTough = baseTough;
-            _nextComboHit = nextComboHit;
             _comboInputStartTick = comboInputStartTick;
-            _nextComboMiss = nextComboMiss;
+            _nextCombo = nextCombo;
             _lockArea = lockArea;
-            IsHit = false;
         }
+
+
+        public void PickedBySomeOne(CharacterStatus characterStatus)
+        {
+            if (_lockArea != null) _lockArea.Caster = characterStatus;
+            foreach (var bullet in _launchTickToBullet.Select(keyValuePair => keyValuePair.Value))
+            {
+                bullet.Caster = characterStatus;
+            }
+        }
+
+
         public static Skill GenSkillByConfig(skill skill)
         {
             var twoDVectors = skill.Moves.Select(GameTools.GenVectorByConfig).ToArray();
 
-            skill.LaunchTickToBullet.ToDictionary(pair => pair.Key, pair => pair.Value);
-
-            throw new ArgumentOutOfRangeException();
+            var dictionary = skill.LaunchTickToBullet.ToDictionary(pair => pair.Key, pair =>
+            {
+                var pairValue = pair.Value;
+                var immutableDictionary = TempConfig.configs.bullets;
+                var bullet = immutableDictionary[pairValue];
+                var genByConfig = Bullet.GenByConfig(bullet);
+                return genByConfig;
+            });
+            var configsLockAreas = TempConfig.configs.lock_areas;
+            var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
+                ? LockArea.GenByConfig(lockArea)
+                : null;
+            return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
+                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig);
         }
+
         public enum SkillPeriod
         {
             Casting,
@@ -83,7 +103,7 @@ namespace game_stuff
         public int? ComboInputRes() //可以连击，返回 下一个动作
         {
             // 如果命中返回命中连击状态id，如果不是返回miss连击id，大部分是一样的
-            var weaponSkillStatus = IsHit ? _nextComboHit : _nextComboMiss;
+            var weaponSkillStatus = _nextCombo;
             return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick
                 ? weaponSkillStatus
                 : (int?) null;
@@ -135,7 +155,7 @@ namespace game_stuff
 
         public void LaunchSkill()
         {
-            IsHit = false;
+            // IsHit = false;
             NowTough = _baseTough;
             _nowOnTick = 0;
         }

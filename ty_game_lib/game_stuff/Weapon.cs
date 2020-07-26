@@ -1,5 +1,5 @@
-﻿
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
+using System.Linq;
 
 namespace game_stuff
 {
@@ -12,10 +12,13 @@ namespace game_stuff
             SkillGroups = skillGroups;
         }
 
-        public void PickWeapon(CharacterStatus characterStatus)
+        public void PickedBySomebody(CharacterStatus characterStatus)
         {
-            
+            foreach (var skill in SkillGroups.Select(keyValuePair => keyValuePair.Value)
+                .SelectMany(immutableDictionary => immutableDictionary.Select(valuePair => valuePair.Value)))
+            {
+                skill.PickedBySomeOne(characterStatus);
+            }
         }
-        
     }
 }
