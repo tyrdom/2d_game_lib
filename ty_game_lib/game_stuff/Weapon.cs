@@ -36,13 +36,17 @@ namespace game_stuff
 
         public static Weapon GenByConfig(weapon weapon)
         {
-            var dictionary = weapon.Op1.ToDictionary(pair => pair.Key, pair => Skill.GenSkillById(pair.Value))
+            var dictionary = weapon.Op1.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
-            var dictionary2 = weapon.Op2.ToDictionary(pair => pair.Key, pair => Skill.GenSkillById(pair.Value))
+            var dictionary2 = weapon.Op2.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
-            var dictionary3 = weapon.Op3.ToDictionary(pair => pair.Key, pair => Skill.GenSkillById(pair.Value))
+            var dictionary3 = weapon.Op3.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
-            var dictionary4 = weapon.Switch.ToDictionary(pair => pair.Key, pair => Skill.GenSkillById(pair.Value))
+            var dictionary4 = weapon.Switch.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
 
             var immutableDictionary =
