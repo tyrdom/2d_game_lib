@@ -1,4 +1,4 @@
-# 2d_game_lib
+# ty_game_lib
 ## collision_and_rigid快速四叉树碰撞算法
 简介：关于地图碰撞，刚体控制方面的库，游戏对象都是射到2d平面
 WalkBlock碰撞地图
