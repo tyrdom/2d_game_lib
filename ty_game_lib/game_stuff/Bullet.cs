@@ -50,8 +50,8 @@ namespace game_stuff
         public void PickBySomeOne(CharacterStatus characterStatus)
         {
             Caster = characterStatus;
-            
         }
+
         public static Bullet GenByConfig(bullet bullet)
         {
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
@@ -212,8 +212,7 @@ namespace game_stuff
                         characterBodyBodySize, Caster);
                 }
 
-                // 对手状态
-                IAntiActBuff genBuff;
+                // 对手动作状态buff刷新
                 switch (opponentCharacterStatusAntiActBuff)
                 {
                     case null:
@@ -254,29 +253,40 @@ namespace game_stuff
             }
             else
             {
-                //AttackFail 
+                //AttackFail 需要分两种情况 
                 Caster!.NowCastSkill = null;
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
-                if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out IAntiActBuffConfig? failAntiBuff))
-                {
-                    failAntiBuff = null;
-                }
 
-                switch (failAntiBuff)
+                if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
                 {
-                    case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                        targetCharacterStatus.CatchingWho = Caster;
-                        targetCharacterStatus.NowCastSkill = catchAntiActBuffConfig.TrickSkill;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
-                }
+                    if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out var failAntiBuff))
+                    {
+                        failAntiBuff = null;
+                    }
 
-                var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(), Aim,
-                    null,
-                    0, Caster.CharacterBody.BodySize, targetCharacterStatus);
-                Caster.AntiActBuff = antiActBuff;
+                    switch (failAntiBuff)
+                    {
+                        case CatchAntiActBuffConfig catchAntiActBuffConfig:
+                            targetCharacterStatus.CatchingWho = Caster;
+                            targetCharacterStatus.NowCastSkill = catchAntiActBuffConfig.TrickSkill;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
+                    }
+
+                    var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(), Aim,
+                        null,
+                        0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                    Caster.AntiActBuff = antiActBuff;
+                }
+                else //在攻击状态，通过通用buff读取
+                {
+                    var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
+                        Caster.GetPos(), Aim,
+                        null, 0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                    Caster.AntiActBuff = antiActBuff;
+                }
             }
         }
 
@@ -289,7 +299,7 @@ namespace game_stuff
 
         public BulletMsg GenMsg()
         {
-            return new BulletMsg(Pos, Aim, ResId, Caster.GetPos());
+            return new BulletMsg(Pos, Aim, ResId, Caster?.GetPos());
         }
 
         public Bullet? ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim)

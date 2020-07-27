@@ -42,10 +42,13 @@ namespace game_stuff
         public static readonly int HitWallDmgParam = configs.other_configs[1].hit_wall_dmg_param;
         public static readonly float HitWallCatchDmgParam = configs.other_configs[1].hit_wall_catch_dmg_param;
 
-        public static float StandardSightR = configs.other_configs[1].standard_sight_r;
+        public static readonly float StandardSightR = configs.other_configs[1].standard_sight_r;
 
-        public static TwoDVector StandardVector =
+        public static readonly TwoDVector StandardSightVector =
             new TwoDVector(configs.other_configs[1].sight_length, configs.other_configs[1].sight_width);
+
+        public static readonly IAntiActBuffConfig CommonBuffConfig =
+            GameTools.GenBuffByConfig(configs.push_buffs[configs.other_configs[1].common_fail_antibuff]);
 
         public const int StartHp = 1000;
         public static int TestAtk = 10;

@@ -14,7 +14,7 @@ namespace game_stuff
 
         public static AngleSight StandardAngleSight()
         {
-            return new AngleSight(TempConfig.StandardSightR,TempConfig.StandardVector);
+            return new AngleSight(TempConfig.StandardSightR,TempConfig.StandardSightVector);
         }
         public AngleSight(float r, TwoDVector upLeft)
         {

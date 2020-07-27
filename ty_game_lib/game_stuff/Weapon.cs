@@ -21,6 +21,17 @@ namespace game_stuff
             {
                 skill.PickedBySomeOne(characterStatus);
             }
+
+            if (characterStatus.Weapons.Count < TempConfig.WeaponNum)
+            {
+                characterStatus.Weapons.Add(characterStatus.Weapons.Count, this);
+            }
+            else
+            {
+                var characterStatusNowWeapon = (characterStatus.NowWeapon + 1) % TempConfig.WeaponNum;
+                characterStatus.Weapons[characterStatusNowWeapon] = this;
+                characterStatus.NowWeapon = characterStatusNowWeapon;
+            }
         }
 
         public static Weapon GenByConfig(weapon weapon)
@@ -35,7 +46,7 @@ namespace game_stuff
                 .ToImmutableDictionary();
 
             var immutableDictionary =
-                new Dictionary<OpAction, ImmutableDictionary<int, Skill>>()
+                new Dictionary<OpAction, ImmutableDictionary<int, Skill>>
                 {
                     {OpAction.Op1, dictionary}, {OpAction.Op2, dictionary2}, {OpAction.Op3, dictionary3},
                     {OpAction.Switch, dictionary4}

@@ -47,6 +47,7 @@ namespace game_stuff
         Op1,
         Op2,
         Op3,
-        Switch
+        Switch,
+        Pick //  far away TODO
     }
 }
