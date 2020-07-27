@@ -23,8 +23,7 @@ namespace collision_and_rigid
         public void Remove(AabbBoxShape boxShape);
         public IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
         public bool LineIsBlockSight(TwoDVectorLine line);
-
-
+        
         public IQSpace TryCovToLimitQSpace(int limit);
         public (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();

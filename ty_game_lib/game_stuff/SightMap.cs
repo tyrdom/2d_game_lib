@@ -14,10 +14,14 @@ namespace game_stuff
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }
 
-        public static void GenByConfig(List<(Poly, bool)> lp, TwoDVectorLine[] lines) //todo
+        public static SightMap GenByConfig(IEnumerable<(Poly, bool)> lp, IEnumerable<TwoDVectorLine> lines)
         {
             var twoDVectorLines = lp.SelectMany(x => x.Item1.CovToLines(x.Item2));
             twoDVectorLines.ToList().AddRange(lines);
+            var aabbBoxShapes = twoDVectorLines.Select(x => x.CovToAabbPackBox());
+            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), 5);
+            var sightMap = new SightMap(qSpaceByAabbBoxShapes);
+            return sightMap;
         }
 
         public bool IsBlockSightLine(TwoDVectorLine s)
