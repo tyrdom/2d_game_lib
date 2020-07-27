@@ -61,7 +61,12 @@ namespace game_stuff
                 bullet.Caster = characterStatus;
             }
         }
-
+        
+        public static Skill GenSkillById(string id)
+        {
+            var configsSkill = TempConfig.configs.skills[id];
+            return GenSkillByConfig(configsSkill);
+        }
 
         public static Skill GenSkillByConfig(skill skill)
         {

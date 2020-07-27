@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using collision_and_rigid;
-using FSharpx.DataStructures;
 using Monad;
 
 
@@ -29,6 +27,7 @@ namespace game_stuff
             {
                 return null;
             }
+
             return ActOrMove.IsLeft() ? ActOrMove.Left() : (OpAction?) null;
         }
 
@@ -38,6 +37,7 @@ namespace game_stuff
             {
                 return null;
             }
+
             return ActOrMove.IsRight() ? ActOrMove.Right() : null;
         }
     }

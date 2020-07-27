@@ -29,14 +29,6 @@
           }
         }
       },
-      "FSharpx.Core/1.8.32": {
-        "runtime": {
-          "lib/40/FSharpx.Core.dll": {
-            "assemblyVersion": "1.8.32.0",
-            "fileVersion": "1.8.32.0"
-          }
-        }
-      },
       "Microsoft.NETCore.Platforms/1.1.1": {},
       "Microsoft.NETCore.Targets/1.1.3": {},
       "Newtonsoft.Json/12.0.3": {
@@ -154,9 +146,6 @@
         }
       },
       "collision_and_rigid/1.0.0": {
-        "dependencies": {
-          "FSharpx.Core": "1.8.32"
-        },
         "runtime": {
           "collision_and_rigid.dll": {}
         }
@@ -196,13 +185,6 @@
       "sha512": "sha512-HQy+FKyxpQFQYzzD11SEcZWm35G+uSCG7EqeS30mCQKyNCF3IqdVHveYfzbExc8Zg+GXHzvPDTv3ojU4ZNAgJw==",
       "path": "csharp-monad/1.0.1",
       "hashPath": "csharp-monad.1.0.1.nupkg.sha512"
-    },
-    "FSharpx.Core/1.8.32": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-dARjgndmTFIUQsuhTL8PljQbvO50Yhmz3woMGHJtAkDOIgN5qlFUsEmowBgrgolBUzAWIFWHdj/yIU/sSZ2esw==",
-      "path": "fsharpx.core/1.8.32",
-      "hashPath": "fsharpx.core.1.8.32.nupkg.sha512"
     },
     "Microsoft.NETCore.Platforms/1.1.1": {
       "type": "package",

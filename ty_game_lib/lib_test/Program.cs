@@ -1,11 +1,6 @@
 ﻿#nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using collision_and_rigid;
 using game_config;
 
@@ -35,7 +30,7 @@ namespace lib_test
             SomeTools.LogPt(anotherPoint);
             SomeTools.LogPt(crossPoint);
             SomeTools.LogPt(point);
-            Console.WriteLine("Block test!!!");
+            Console.Out.WriteLine("Block test!!!");
 
 //
 //            var pt1 = new TwoDPoint(1.5f, 1.3f);

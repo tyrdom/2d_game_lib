@@ -102,7 +102,7 @@ namespace game_stuff
             var twoDVectors = caughtBuff.CatchPoints.Select(GenVectorByConfig);
 
             return new CatchAntiActBuffConfig(twoDVectors.ToArray(), caughtBuff.LastTick,
-                Skill.GenSkillByConfig(TempConfig.configs.skills[caughtBuff.TrickSkill]));
+                Skill.GenSkillById(caughtBuff.TrickSkill));
         }
     }
 }
