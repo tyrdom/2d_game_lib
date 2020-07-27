@@ -1,5 +1,6 @@
-# 2d_game_lib
+# ty_game_lib
 ## collision_and_rigid快速四叉树碰撞算法
+简介：关于地图碰撞，刚体控制方面的库，游戏对象都是射到2d平面
 WalkBlock碰撞地图
     
     角色抽象为限定为半径一定的圆
@@ -23,6 +24,20 @@ IBulletShape和IRawBulletShape
     IBulletShape使用PtInShape判断角色是否被命中
 
 ## game_config
+简介：配置文件专门工程
 使用json作为内部资源，配置存到字典
-Models.cs由python脚本生成 //TODO 命令行调脚本，保存json和刷新Models.cs文件
-// TODO 可以保存字典到二进制文件，初步测试可行
+    
+    var configDictionaries = new ConfigDictionaries(ResModel.Dll, "");
+也可以使用json文件
+
+    var configDictionaries = new ConfigDictionaries(ResModel.Json, "");
+    //使用.net core 时有自动递归寻找功能
+
+可以在unity中使用resources读取json 如果json在使用
+        
+    var configDictionaries = new ConfigDictionaries(ResModel.Json, $"{PathInResources}");
+    //unity中不会自动递归寻找
+    
+## game_stuff
+简介：动作游戏抽象运行逻辑，目的为多端运行
+        
