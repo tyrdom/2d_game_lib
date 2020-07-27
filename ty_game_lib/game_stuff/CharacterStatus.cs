@@ -47,6 +47,7 @@ namespace game_stuff
         public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, Dictionary<int, Weapon> weapons,
             DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
         {
+            
             CharacterBody = null!;
             _maxMoveSpeed = maxMoveSpeed;
             GId = gId;

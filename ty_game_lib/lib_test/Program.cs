@@ -118,15 +118,12 @@ namespace lib_test
                     Console.Out.WriteLine($"{keyValuePair.size}");
                 }
             }
-
-            // GameConfigTools.LoadDict(fileInfo2, out ImmutableDictionary<int, bad_words> a);
-            // foreach (var keyValuePair
-            //     in a)
-            // {
-            //     Console.Out.WriteLine($"{keyValuePair.Key}");
-            // }
-            //
-            // Content.bad_wordss = a;
+            
+            
+            
+            
+           
+            
         }
     }
 }

@@ -22,7 +22,7 @@ namespace collision_and_rigid
         public void InsertBox(AabbBoxShape boxShape);
         public void Remove(AabbBoxShape boxShape);
         public IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
-        public bool LineIsCross(TwoDVectorLine line);
+        public bool LineIsBlockSight(TwoDVectorLine line);
 
 
         public IQSpace TryCovToLimitQSpace(int limit);

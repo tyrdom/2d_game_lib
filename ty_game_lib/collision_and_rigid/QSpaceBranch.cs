@@ -174,7 +174,7 @@ namespace collision_and_rigid
             return aabbBoxes;
         }
 
-        public bool LineIsCross(TwoDVectorLine line)
+        public bool LineIsBlockSight(TwoDVectorLine line)
         {
             var notCross = line.GenZone().NotCross(Zone);
             if (notCross) return false;
@@ -182,7 +182,7 @@ namespace collision_and_rigid
             return (from aabbPackBoxShape in AabbPackBoxShapes
                 let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
-                select line.IsTouchAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
+                select line.IsSightBlockByAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
         }
 
         public IQSpace TryCovToLimitQSpace(int limit)

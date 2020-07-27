@@ -119,7 +119,7 @@ namespace game_config
             Debug.Log(sep);
             TextAsset text = Resources.Load<TextAsset>(sep);
             json = text.text;
-            if (string.IsNullOrEmpty(json)) return null;
+            if (string.IsNullOrEmpty(json)) return "";
             return json;
         }
 

@@ -168,18 +168,13 @@ namespace collision_and_rigid
             return 0;
         }
 
-        public bool IsTouchAnother(IShape another)
+        public bool IsSightBlockByAnother(IShape another)
         {
-            switch (another)
+            return another switch
             {
-                case TwoDVectorLine twoDVectorLine:
-                    return IsCrossAnother(twoDVectorLine);
-
-                default:
-                {
-                    throw new ArgumentOutOfRangeException(nameof(another));
-                }
-            }
+                TwoDVectorLine twoDVectorLine => IsSightBlockByAnother(twoDVectorLine),
+                _ => throw new ArgumentOutOfRangeException(nameof(another))
+            };
         }
 
         public TwoDVector GetVector()
@@ -307,6 +302,28 @@ namespace collision_and_rigid
             return A.GetPosOf(lineB) == Pt2LinePos.Right && B.GetPosOf(lineB) != Pt2LinePos.Right;
         }
 
+
+        public bool IsSightBlockByAnother(TwoDVectorLine lineB)
+        {
+            var c = lineB.A;
+            var d = lineB.B;
+            var getposOnLineA = A.GetPosOf(lineB);
+            var getposOnLineB = B.GetPosOf(lineB);
+            var getposOnLineC = c.GetPosOf(this);
+            var getposOnLineD = d.GetPosOf(this);
+            return getposOnLineA switch
+                   {
+                       Pt2LinePos.Left => getposOnLineB == Pt2LinePos.Right,
+                       _ => false
+                   }
+                   &&
+                   getposOnLineC switch
+                   {
+                       Pt2LinePos.Left => getposOnLineD == Pt2LinePos.Right,
+                       Pt2LinePos.Right => getposOnLineD == Pt2LinePos.Left,
+                       _ => false
+                   };
+        }
 
         public bool IsCrossAnother(TwoDVectorLine lineB)
         {
@@ -456,8 +473,7 @@ namespace collision_and_rigid
 
             if (!(rdR > 0)) return (null, twoDPoint);
 
-            var sqrt =  MathTools.Sqrt(rdR);
-
+            var sqrt = MathTools.Sqrt(rdR);
 
 
             var twoDVector = GetVector().GetUnit();

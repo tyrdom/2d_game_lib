@@ -12,10 +12,13 @@ namespace game_stuff
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }
 
+        public static void GenByConfig()
+        {
+        }
 
         public bool IsBlockSightLine(TwoDVectorLine s)
         {
-            var isTouchBy = Lines.LineIsCross(s);
+            var isTouchBy = Lines.LineIsBlockSight(s);
             return isTouchBy;
         }
     }
