@@ -1,6 +1,6 @@
 ﻿using System;
 using collision_and_rigid;
-using Monad;
+
 
 
 namespace game_stuff
@@ -12,33 +12,26 @@ namespace game_stuff
         // public TwoDVector? Move;
         public TwoDVector? Aim;
 
-        public Either<OpAction, TwoDVector>? ActOrMove;
+        public OpAction? Action;
+
+        public TwoDVector? Move;
 
 
-        public Operate(TwoDVector aim, Either<OpAction, TwoDVector>? actOrMove)
+        public Operate(TwoDVector? aim, OpAction? action, TwoDVector? move)
         {
             Aim = aim;
-            ActOrMove = actOrMove;
+            Action = action;
+            Move = move;
         }
 
         public OpAction? GetAction()
         {
-            if (ActOrMove == null)
-            {
-                return null;
-            }
-
-            return ActOrMove.IsLeft() ? ActOrMove.Left() : (OpAction?) null;
+            return Action;
         }
 
         public TwoDVector? GetMove()
         {
-            if (ActOrMove == null)
-            {
-                return null;
-            }
-
-            return ActOrMove.IsRight() ? ActOrMove.Right() : null;
+            return Action == null ? Move : null;
         }
     }
 

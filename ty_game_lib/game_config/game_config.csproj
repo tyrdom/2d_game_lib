@@ -14,34 +14,34 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Resource" />
+      <Folder Include="Resources" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="Resource\weapon_s.json" />
-      <EmbeddedResource Include="Resource\weapon_s.json" />
+      <EmbeddedResource Include="Resources\weapon_s.json" />
       <None Remove="Resource\show_text_s.json" />
-      <EmbeddedResource Include="Resource\show_text_s.json" />
+      <EmbeddedResource Include="Resources\show_text_s.json" />
       <None Remove="Resource\skill_s.json" />
-      <EmbeddedResource Include="Resource\skill_s.json" />
+      <EmbeddedResource Include="Resources\skill_s.json" />
       <None Remove="Resource\item_s.json" />
-      <EmbeddedResource Include="Resource\item_s.json" />
+      <EmbeddedResource Include="Resources\item_s.json" />
       <None Remove="Resource\bullet_s.json" />
-      <EmbeddedResource Include="Resource\bullet_s.json" />
+      <EmbeddedResource Include="Resources\bullet_s.json" />
       <None Remove="Resource\other_config_s.json" />
-      <EmbeddedResource Include="Resource\other_config_s.json" />
+      <EmbeddedResource Include="Resources\other_config_s.json" />
       <None Remove="Resource\push_buff_s.json" />
-      <EmbeddedResource Include="Resource\push_buff_s.json" />
+      <EmbeddedResource Include="Resources\push_buff_s.json" />
       <None Remove="Resource\lock_area_s.json" />
-      <EmbeddedResource Include="Resource\lock_area_s.json" />
+      <EmbeddedResource Include="Resources\lock_area_s.json" />
       <None Remove="Resource\caught_buff_s.json" />
-      <EmbeddedResource Include="Resource\caught_buff_s.json" />
+      <EmbeddedResource Include="Resources\caught_buff_s.json" />
       <None Remove="Resource\body_s.json" />
-      <EmbeddedResource Include="Resource\body_s.json" />
+      <EmbeddedResource Include="Resources\body_s.json" />
       <None Remove="Resource\bad_words_s.json" />
-      <EmbeddedResource Include="Resource\bad_words_s.json" />
+      <EmbeddedResource Include="Resources\bad_words_s.json" />
       <None Remove="Resource\fish_s.json" />
-      <EmbeddedResource Include="Resource\fish_s.json" />
+      <EmbeddedResource Include="Resources\fish_s.json" />
     </ItemGroup>
 
 </Project>

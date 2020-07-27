@@ -9,7 +9,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-#if UNITY_2018_4_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -18,7 +18,7 @@ namespace game_config
     public static class GameConfigTools
     {
         private static readonly char Sep = Path.DirectorySeparatorChar;
-#if UNITY_2018_4_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
 #else
         //二进制文件存取位置
         private static readonly string ByteDir = $".{Sep}Bytes{Sep}";
@@ -83,7 +83,7 @@ namespace game_config
         }
 
         public static readonly string DllName = GetNameSpace() + ".dll";
-        public static readonly string ResLocate = GetNameSpace() + ".Resource.";
+        public static readonly string ResLocate = GetNameSpace() + ".Resources.";
 #endif
 #if NETCOREAPP
         public static ImmutableDictionary<TK, TV> GenConfigDict<TK, TV>()
@@ -110,7 +110,7 @@ namespace game_config
         }
 #endif
 
-#if UNITY_2018_4_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
         public static string JsonRead(string path, string name)
         {
             string json = "";

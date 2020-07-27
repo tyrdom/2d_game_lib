@@ -7,7 +7,7 @@ namespace game_stuff
 {
     public static class TempConfig
     {
-        public static readonly ConfigDictionaries configs = new ConfigDictionaries(ResModel.Dll);
+        public static ConfigDictionaries configs { get; set; } = new ConfigDictionaries(ResModel.Dll);
 
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
