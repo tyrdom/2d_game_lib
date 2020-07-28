@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using collision_and_rigid;
 using game_config;
 
@@ -7,8 +8,12 @@ namespace game_stuff
 {
     public static class TempConfig
     {
-        public static ConfigDictionaries configs { get; set; } = new ConfigDictionaries();
-
+        public static ConfigDictionaries Configs { get; set; }
+#if NETCOREAPP
+            = new ConfigDictionaries();
+#else
+            = new ConfigDictionaries("");
+#endif
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
             [BodySize.Small] = 1.5f,
@@ -23,37 +28,84 @@ namespace game_stuff
             [BodySize.Big] = 20.25f
         };
 
-        public static readonly float G = configs.other_configs[1].g_acc;
-        public static readonly float MaxHeight = configs.other_configs[1].max_hegiht;
-        public static readonly float MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
+        public static float G = 1;
 
-        public static readonly float Friction = configs.other_configs[1].friction;
+        public static float MaxHeight { get; private set; } = 2;
+        public static float MaxUpSpeed { get; private set; } = MathTools.Sqrt(2f * G * MaxHeight);
 
-        public static readonly int ToughGrowPerTick = configs.other_configs[1].tough_grow;
-        public static readonly int MidTough = configs.other_configs[1].mid_tough;
-        public static int WeaponNum = configs.other_configs[1].weapon_num;
-        public static readonly float TwoSToSeePerTick = configs.other_configs[1].two_s_to_see_pertick;
-        public static readonly PushOnAir OutCaught = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
+        public static float Friction { get; private set; } = 1f;
 
-        public static readonly int QSpaceBodyMaxPerLevel = configs.other_configs[1].qspace_max_per_level;
+        public static int ToughGrowPerTick { get; private set; } = 100;
+        public static int MidTough { get; private set; } = 1000;
+        public static int WeaponNum { get; private set; } = 2;
+        public static float TwoSToSeePerTick { get; private set; } = 20f;
+        public static PushOnAir OutCaught { get; set; } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
 
-        public static readonly int HitWallTickParam = configs.other_configs[1].hit_wall_add_tick_by_speed_param;
-        public static readonly int HitWallCatchTickParam = configs.other_configs[1].hit_wall_catch_tick_param;
-        public static readonly int HitWallDmgParam = configs.other_configs[1].hit_wall_dmg_param;
-        public static readonly float HitWallCatchDmgParam = configs.other_configs[1].hit_wall_catch_dmg_param;
+        public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
 
-        public static readonly float StandardSightR = configs.other_configs[1].standard_sight_r;
+        public static int HitWallTickParam { get; private set; } = 10;
+        public static int HitWallCatchTickParam { get; private set; } = 5;
+        public static int HitWallDmgParam { get; private set; } = 10;
+        public static float HitWallCatchDmgParam { get; private set; } = 5f;
 
-        public static readonly TwoDVector StandardSightVector =
-            new TwoDVector(configs.other_configs[1].sight_length, configs.other_configs[1].sight_width);
 
-        public static readonly IAntiActBuffConfig CommonBuffConfig =
-            GameTools.GenBuffByConfig(configs.push_buffs[configs.other_configs[1].common_fail_antibuff]);
+        public static TwoDVector StandardSightVector { get; private set; } =
+            new TwoDVector(15, 10);
 
-        public const int StartHp = 1000;
-        public static int TestAtk = 10;
+        public static IAntiActBuffConfig CommonBuffConfig { get; private set; } =
+            new PushEarthAntiActBuffConfig(1f, PushType.Center, null, 12);
 
-        public static int TrickProtect = 100;
-        public static int ProtectTick = 10;
+        public static int StartHp { get; private set; } = 1000;
+        private static int TestAtk { get; set; } = 10;
+
+        private static int TrickProtect { get; set; } = 100;
+        private static int ProtectTick { get; set; } = 10;
+
+        private static void ReLoadP(ConfigDictionaries configs)
+        {
+            G = configs.other_configs[1].g_acc;
+
+            MaxHeight = configs.other_configs[1].max_hegiht;
+            MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
+
+            Friction = configs.other_configs[1].friction;
+
+            ToughGrowPerTick = configs.other_configs[1].tough_grow;
+            MidTough = configs.other_configs[1].mid_tough;
+            WeaponNum = configs.other_configs[1].weapon_num;
+            TwoSToSeePerTick = configs.other_configs[1].two_s_to_see_pertick;
+
+            QSpaceBodyMaxPerLevel = configs.other_configs[1].qspace_max_per_level;
+
+            HitWallTickParam = configs.other_configs[1].hit_wall_add_tick_by_speed_param;
+            HitWallCatchTickParam = configs.other_configs[1].hit_wall_catch_tick_param;
+            HitWallDmgParam = configs.other_configs[1].hit_wall_dmg_param;
+            HitWallCatchDmgParam = configs.other_configs[1].hit_wall_catch_dmg_param;
+
+            StandardSightVector =
+                new TwoDVector(configs.other_configs[1].sight_length, configs.other_configs[1].sight_width);
+
+            CommonBuffConfig =
+                GameTools.GenBuffByConfig(configs.push_buffs[configs.other_configs[1].common_fail_antibuff]);
+
+            StartHp = 1000;
+            TestAtk = 10;
+
+            TrickProtect = 100;
+            ProtectTick = 10;
+        }
+#if NETCOREAPP
+        public static void LoadConfig()
+        {
+            var configs = new ConfigDictionaries();
+            ReLoadP(configs);
+        }
+#else
+        public static void LoadConfig(Dictionary<string, string> jsons)
+        {
+            var configs = new ConfigDictionaries(jsons);
+            ReLoadP(configs);
+        }
+#endif
     }
 }

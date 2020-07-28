@@ -64,7 +64,7 @@ namespace game_stuff
         
         public static Skill GenSkillById(string id)
         {
-            var configsSkill = TempConfig.configs.skills[id];
+            var configsSkill = TempConfig.Configs.skills[id];
             return GenSkillByConfig(configsSkill);
         }
 
@@ -75,12 +75,12 @@ namespace game_stuff
             var dictionary = skill.LaunchTickToBullet.ToDictionary(pair => pair.Key, pair =>
             {
                 var pairValue = pair.Value;
-                var immutableDictionary = TempConfig.configs.bullets;
+                var immutableDictionary = TempConfig.Configs.bullets;
                 var bullet = immutableDictionary[pairValue];
                 var genByConfig = Bullet.GenByConfig(bullet);
                 return genByConfig;
             });
-            var configsLockAreas = TempConfig.configs.lock_areas;
+            var configsLockAreas = TempConfig.Configs.lock_areas;
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;

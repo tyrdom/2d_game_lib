@@ -20,7 +20,7 @@ namespace game_stuff
         private TwoDVector? PushFixVector; //修正向量，中心push为中心点，方向为方向修正
         private int TickLast;
 
-        public PushEarthAntiActBuffConfig(float pushForce, PushType pushType, TwoDVector pushFixVector,
+        public PushEarthAntiActBuffConfig(float pushForce, PushType pushType, TwoDVector? pushFixVector,
             int tickLast)
         {
             PushForce = pushForce;
@@ -83,16 +83,16 @@ namespace game_stuff
         private PushType PushType;
         private float UpForce;
 
-        private TwoDVector PushAboutVector;
+        private TwoDVector? PushFixVector;
         private int TickLast;
 
         public PushAirAntiActBuffConfig(float pushForce, PushType pushType, float upForce,
-            TwoDVector pushAboutVector, int tickLast)
+            TwoDVector? pushFixVector, int tickLast)
         {
             PushForce = pushForce;
             PushType = pushType;
             UpForce = upForce;
-            PushAboutVector = pushAboutVector;
+            PushFixVector = pushFixVector;
             TickLast = tickLast;
         }
 
@@ -109,13 +109,15 @@ namespace game_stuff
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDVector = anchor.Move(PushAboutVector).GenVector(obPos).GetUnit();
+                    var twoDPoint = PushFixVector != null ? anchor.Move(PushFixVector) : anchor;
+                    var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, mass);
                     return genBuffFromUnit;
 
 
                 case PushType.Vector:
-                    var unit = aim.ClockwiseTurn(PushAboutVector).GetUnit();
+                    var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
+                    var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 = GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, mass);
                     return genBuffFromUnit1;
 

@@ -39,7 +39,7 @@ namespace game_stuff
 
         public static Bullet GenByBulletId(string id)
         {
-            if (TempConfig.configs.bullets.TryGetValue(id, out var bullet))
+            if (TempConfig.Configs.bullets.TryGetValue(id, out var bullet))
             {
                 return GenByConfig(bullet);
             }
@@ -65,9 +65,9 @@ namespace game_stuff
             static IAntiActBuffConfig GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent) =>
                 buffConfigToOpponentType switch
                 {
-                    buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.configs.push_buffs[configToOpponent]),
+                    buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.Configs.push_buffs[configToOpponent]),
                     buff_type.caught_buff => GameTools.GenBuffByConfig(
-                        TempConfig.configs.caught_buffs[configToOpponent]),
+                        TempConfig.Configs.caught_buffs[configToOpponent]),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 

@@ -147,22 +147,19 @@ namespace game_config
 
         public static ImmutableDictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
         {
+            if (jsonPath == "")
+                return new Dictionary<TK, TV>().ToImmutableDictionary();
             var namesDictionary = ResNames.NamesDictionary;
             if (!namesDictionary.TryGetValue(typeof(TV), out var name))
                 throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
-            var currentDirectory =
-                jsonPath != ""
-                    ? jsonPath
-                    : Directory.GetCurrentDirectory();
-            var strings = FindFile(currentDirectory, name);
+            var strings = FindFile(jsonPath, name);
             var s = strings;
-            Console.Out.WriteLine($"aaa{s} !{currentDirectory} !{name}");
+            Console.Out.WriteLine($"aaa{s} !{jsonPath} !{name}");
             var json = File.ReadAllText(s, Encoding.UTF8);
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
             var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
-            if (genConfigDict != null) return genConfigDict;
-            throw new Exception("ErrorResource:::" + name);
+            return genConfigDict ?? new Dictionary<TK, TV>().ToImmutableDictionary();
         }
 
         private static string FindFile(string path, string name)

@@ -14,16 +14,17 @@ namespace game_stuff
 
         public static AngleSight StandardAngleSight()
         {
-            return new AngleSight(TempConfig.StandardSightR,TempConfig.StandardSightVector);
+            return new AngleSight(TempConfig.StandardSightVector);
         }
-        public AngleSight(float r, TwoDVector upLeft)
+        public AngleSight( TwoDVector upLeft)
         {
             Aim = new TwoDVector(1f, 0f);
-            _nowR = r;
+            var nowR = upLeft.Norm();
+            _nowR = nowR;
             var vector = upLeft.GetUnit();
             _upLeft = vector;
             _upRight = new TwoDVector(vector.X, -vector.Y);
-            _maxR = r;
+            _maxR = nowR;
             var cosA = vector.X;
             var cos2A = 2 * cosA * cosA - 1;
             _theta = MathTools.Acos(cos2A);

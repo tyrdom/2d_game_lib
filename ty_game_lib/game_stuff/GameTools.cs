@@ -87,7 +87,8 @@ namespace game_stuff
                 game_config.PushType.Center => PushType.Center,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            var pushAboutVector = GenVectorByConfig(pushBuff.FixVector.First());
+            var pushAboutVector = pushBuff.FixVector.Any() ? GenVectorByConfig(pushBuff.FixVector.First()) : null;
+
             if (pushBuff.UpForce > 0)
             {
                 return new PushAirAntiActBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,

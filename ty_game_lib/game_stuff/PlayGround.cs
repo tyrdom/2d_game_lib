@@ -12,7 +12,9 @@ namespace game_stuff
         private readonly WalkMap _walkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody; //gid到玩家地图实体对应
         private Dictionary<int, List<IHitStuff>> TeamToBullet;
-        
+
+        // private TempConfig TempConfig { get; }
+
         public PlayGround(Dictionary<int, IQSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody)
         {
