@@ -58,15 +58,7 @@ namespace game_stuff
             return MathTools.Sqrt(f);
         }
 
-        private static BulletBox GenRawBulletBox(IRawBulletShape shape, float r)
-        {
-            var genBulletZone = shape.GenBulletZone(r);
-            var genBulletShape = shape.GenBulletShape(r);
-            var bulletBox = new BulletBox(genBulletZone, genBulletShape);
-            return bulletBox;
-        }
-
-        public static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
+        private static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
         {
             return
                 TempConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
@@ -97,6 +89,7 @@ namespace game_stuff
 
             return new PushEarthAntiActBuffConfig(pushBuff.PushForce, pushType, pushAboutVector, pushBuff.LastTick);
         }
+
 
         public static IAntiActBuffConfig GenBuffByConfig(caught_buff caughtBuff)
         {

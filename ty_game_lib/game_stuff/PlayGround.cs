@@ -25,6 +25,7 @@ namespace game_stuff
             TeamToBullet = new Dictionary<int, List<IHitStuff>>();
         }
 
+        //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) InitPlayGround(
             IEnumerable<PlayerInitData> playerInitData, MapInitData mapInitData)
         {
@@ -51,25 +52,29 @@ namespace game_stuff
                 }
             }
 
-            var spaces = bodies.ToDictionary(p => p.Key, p =>
-            {
-                var hashSet = p.Value;
-                var zone = mapInitData.GetZone();
-                var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
-                var aabbBoxShapes =
-                    SomeTools.ListToHashSet(hashSet.Select(x => x.CovToAabbPackBox()));
-                emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
-                return emptyRootBranch;
-            });
+            var spaces = bodies.ToDictionary(p => p.Key,
+                p =>
+                {
+                    var hashSet = p.Value;
+                    var zone = mapInitData.GetZone();
+                    var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
+                    var aabbBoxShapes =
+                        SomeTools.ListToHashSet(hashSet.Select(x => x.CovToAabbPackBox()));
+                    emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
+                    return emptyRootBranch;
+                });
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies);
             return (playGround, playGround.GenInitMsg());
         }
 
-        Dictionary<int, HashSet<CharInitMsg>> GenInitMsg()
+        // 初始化状态消息输出
+        private Dictionary<int, HashSet<CharInitMsg>> GenInitMsg()
         {
             var dictionary = new Dictionary<int, HashSet<CharInitMsg>>();
-            var charInitMsgs = GidToBody.ToDictionary(p => p.Key, p => p.Value.GenInitMsg());
+            var charInitMsgs =
+                GidToBody.ToDictionary(p => p.Key,
+                    p => p.Value.GenInitMsg());
             foreach (var kv in charInitMsgs)
             {
                 if (dictionary.TryGetValue(kv.Key, out var charInitMsglist))
@@ -85,7 +90,7 @@ namespace game_stuff
             return dictionary;
         }
 
-        public Dictionary<int, Dictionary<int, Operate>> SepOperatesToTeam(Dictionary<int, Operate> gidToOperates)
+        private Dictionary<int, Dictionary<int, Operate>> SepOperatesToTeam(Dictionary<int, Operate> gidToOperates)
         {
             var dictionary = new Dictionary<int, Dictionary<int, Operate>>();
 
@@ -315,27 +320,6 @@ namespace game_stuff
         }
     }
 
-
-    public class MapInitData
-    {
-        public SightMap SightMap;
-        public WalkMap WalkMap;
-        public Dictionary<int, StartPts> TeamToStartPt;
-
-        public Zone GetZone()
-        {
-            return WalkMap.SizeToEdge.Cast<WalkBlock>().Select(walkBlock => walkBlock.QSpace?.Zone ?? Zone.Zero())
-                .Aggregate(
-                    SightMap.Lines.Zone, (current, qSpaceZone) => current.Join(qSpaceZone));
-        }
-
-        public MapInitData(SightMap sightMap, WalkMap walkMap, Dictionary<int, StartPts> teamToStartPt)
-        {
-            SightMap = sightMap;
-            WalkMap = walkMap;
-            TeamToStartPt = teamToStartPt;
-        }
-    }
 
     public class StartPts
     {

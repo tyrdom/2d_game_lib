@@ -14,6 +14,7 @@ namespace game_stuff
 #else
             = new ConfigDictionaries("");
 #endif
+
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
             [BodySize.Small] = 1.5f,
@@ -31,19 +32,25 @@ namespace game_stuff
         public static float G = 1;
 
         public static float MaxHeight { get; private set; } = 2;
+
         public static float MaxUpSpeed { get; private set; } = MathTools.Sqrt(2f * G * MaxHeight);
 
         public static float Friction { get; private set; } = 1f;
 
         public static int ToughGrowPerTick { get; private set; } = 100;
+
         public static int MidTough { get; private set; } = 1000;
+
         public static int WeaponNum { get; private set; } = 2;
+
         public static float TwoSToSeePerTick { get; private set; } = 20f;
+
         public static PushOnAir OutCaught { get; set; } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
 
         public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
 
         public static int HitWallTickParam { get; private set; } = 10;
+
         public static int HitWallCatchTickParam { get; private set; } = 5;
         public static int HitWallDmgParam { get; private set; } = 10;
         public static float HitWallCatchDmgParam { get; private set; } = 5f;
@@ -107,5 +114,48 @@ namespace game_stuff
             ReLoadP(configs);
         }
 #endif
+        
+        // public MapInitData TestInitData(){}
+        public static WalkMap TestMap()
+        {
+            var pt1 = new TwoDPoint(0.0f, 0.0f);
+            var pt2 = new TwoDPoint(1.0f, 1.0f);
+            var pt3 = new TwoDPoint(2f, 0f);
+            var pt4 = new TwoDPoint(3.0f, 1f);
+            var pt5 = new TwoDPoint(4.0f, 0f);
+
+            var pt6 = new TwoDPoint(2.0f, -2.0f);
+            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
+            var poly = new Poly(twoDPoints);
+            var tuples = new List<(Poly, bool)>
+            {
+                (poly, false)
+            };
+            var mapByPolys = WalkMap.CreateMapByPolys(tuples);
+            return mapByPolys;
+        }
+
+
+        public static SightMap TestSightMap()
+        {
+            var pt1 = new TwoDPoint(0.0f, 0.0f);
+            var pt2 = new TwoDPoint(1.0f, 1.0f);
+            var pt3 = new TwoDPoint(2f, 0f);
+            var pt4 = new TwoDPoint(3.0f, 1f);
+            var pt5 = new TwoDPoint(4.0f, 0f);
+
+            var pt6 = new TwoDPoint(2.0f, -2.0f);
+            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
+            var poly = new Poly(twoDPoints);
+            var tuples = new List<(Poly, bool)>
+            {
+                (poly, false)
+            };
+            var mapByPolys = SightMap.GenByConfig(tuples, new TwoDVectorLine[] { });
+            return mapByPolys;
+        }
+        
+        
+        
     }
 }

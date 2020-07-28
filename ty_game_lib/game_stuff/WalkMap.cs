@@ -11,7 +11,7 @@ namespace game_stuff
         {
             SizeToEdge = sizeToEdge;
         }
-
+        
         public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp)
         {
             var sizeToR = TempConfig.SizeToR;

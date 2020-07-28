@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
+using game_stuff;
 
 namespace lib_test
 {
@@ -118,9 +119,6 @@ namespace lib_test
                     Console.Out.WriteLine($"{keyValuePair.size}");
                 }
             }
-            
-            
-            
             
            
             
