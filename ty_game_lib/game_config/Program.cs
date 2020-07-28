@@ -11,7 +11,7 @@ namespace game_config
     {
         public static void Main(string[] args)
         {
-            var configDictionaries = new ConfigDictionaries(ResModel.Dll);
+            var configDictionaries = new ConfigDictionaries();
             //并发foreach
             Parallel.ForEach(configDictionaries.all_Immutable_dictionary, dictionary =>
 

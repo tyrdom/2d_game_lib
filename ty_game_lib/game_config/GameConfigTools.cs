@@ -100,15 +100,19 @@ namespace game_config
             using var reader =
                 new StreamReader(stream ?? throw new Exception("NoResource:::" + name), Encoding.UTF8);
             var json = reader.ReadToEnd();
-            var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
-            var jToken = deserializeObject["content"];
-
-            // Console.Out.WriteLine($"{typeof(TK)}==={typeof(T)}");
-            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
-            if (genConfigDict != null) return genConfigDict;
-            throw new Exception("ErrorResource:::" + name);
+            return GenConfigDictByJsonString<TK, TV>(json);
         }
 #endif
+        public static ImmutableDictionary<TK, TV> GenConfigDictByJsonString<TK, TV>(string jsonSting)
+        {
+            var deserializeObject = JsonConvert.DeserializeObject<JObject>(jsonSting);
+            var jToken = deserializeObject["content"];
+
+            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
+            if (genConfigDict != null) return genConfigDict;
+            throw new Exception("ErrorResource:::" + jsonSting);
+        }
+
 
 #if UNITY_2018_1_OR_NEWER
         public static string JsonRead(string path, string name)
@@ -139,6 +143,8 @@ namespace game_config
             throw new Exception("ErrorResource:::" + name);
         }
 #else
+
+
         public static ImmutableDictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
         {
             var namesDictionary = ResNames.NamesDictionary;
@@ -174,12 +180,6 @@ namespace game_config
                 : "";
         }
 #endif
-    }
-
-    public enum ResModel
-    {
-        Json,
-        Dll
     }
 
     public interface IGameConfig

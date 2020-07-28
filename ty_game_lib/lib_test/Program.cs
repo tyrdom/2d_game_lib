@@ -107,7 +107,7 @@ namespace lib_test
             Console.WriteLine("!!2!!" + inBlock2);
             Console.Out.WriteLine("config test~~~~~");
 
-            var configDictionaries = new ConfigDictionaries(ResModel.Dll);
+            var configDictionaries = new ConfigDictionaries();
             var configDictionariesBullets = configDictionaries.bullets;
             foreach (KeyValuePair<string,bullet> configDictionariesBullet in configDictionariesBullets)
             {
