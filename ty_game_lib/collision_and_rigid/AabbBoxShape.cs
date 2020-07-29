@@ -47,7 +47,9 @@ namespace collision_and_rigid
         {
             var z1234 = new List<(int, AabbBoxShape)>();
             var z = Zone;
-
+#if DEBUG
+            
+#endif
 
             if (z.Down >= horizon)
             {
@@ -61,14 +63,18 @@ namespace collision_and_rigid
                     {
                         case ClockwiseTurning clockwiseTurning:
 //
-
+#if DEBUG
+                            Console.Out.WriteLine($"{z.LogSide()}");
+                            Console.Out.WriteLine($"{clockwiseTurning.LogPt()}:::{vertical}");
+#endif
 
                             var (lZones, rZones) = clockwiseTurning.CutByV(vertical, z);
+
 //                            Console.Out.WriteLine("L:::" + lZones.Count);
 //                            lZones.ForEach(zzz => { Console.Out.WriteLine(SomeTools.ZoneLog(zzz)); });
 //
 //                            rZones.ForEach(zzz => { Console.Out.WriteLine(SomeTools.ZoneLog(zzz)); });
-                            if (lZones != null )
+                            if (lZones != null)
                             {
                                 z1234.Add((2, new AabbBoxShape(lZones.Value, Shape)));
                                 z1234.Add((1, new AabbBoxShape(rZones!.Value, Shape)));

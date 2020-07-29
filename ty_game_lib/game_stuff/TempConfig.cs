@@ -114,47 +114,8 @@ namespace game_stuff
             ReLoadP(configs);
         }
 #endif
-        
-        // public MapInitData TestInitData(){}
-        public static WalkMap TestMap()
-        {
-            var pt1 = new TwoDPoint(0.0f, 0.0f);
-            var pt2 = new TwoDPoint(1.0f, 1.0f);
-            var pt3 = new TwoDPoint(2f, 0f);
-            var pt4 = new TwoDPoint(3.0f, 1f);
-            var pt5 = new TwoDPoint(4.0f, 0f);
 
-            var pt6 = new TwoDPoint(2.0f, -2.0f);
-            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
-            var poly = new Poly(twoDPoints);
-            var tuples = new List<(Poly, bool)>
-            {
-                (poly, false)
-            };
-            var mapByPolys = WalkMap.CreateMapByPolys(tuples);
-            return mapByPolys;
-        }
-
-
-        public static SightMap TestSightMap()
-        {
-            var pt1 = new TwoDPoint(0.0f, 0.0f);
-            var pt2 = new TwoDPoint(1.0f, 1.0f);
-            var pt3 = new TwoDPoint(2f, 0f);
-            var pt4 = new TwoDPoint(3.0f, 1f);
-            var pt5 = new TwoDPoint(4.0f, 0f);
-
-            var pt6 = new TwoDPoint(2.0f, -2.0f);
-            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
-            var poly = new Poly(twoDPoints);
-            var tuples = new List<(Poly, bool)>
-            {
-                (poly, false)
-            };
-            var mapByPolys = SightMap.GenByConfig(tuples, new TwoDVectorLine[] { });
-            return mapByPolys;
-        }
-        
+     
         
         
     }

@@ -68,7 +68,7 @@ namespace game_stuff
         }
 
 
-        private void LoadSkill(TwoDVector? aim, Skill skill)
+        public void LoadSkill(TwoDVector? aim, Skill skill)
         {
             //装载技能时，重置速度
             ResetSpeed();

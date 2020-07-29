@@ -9,7 +9,7 @@ namespace game_stuff
     {
         public int Gid;
         public int TeamId;
-        private Dictionary<int, Weapon> WeaponConfigs;
+        private Dictionary<int, Weapon> Weapons;
         private BodySize BodySize;
         private float MaxSpeed;
         private float MinSpeed;
@@ -37,12 +37,12 @@ namespace game_stuff
             return new PlayerInitData(gid, teamId, dictionary, bz, maxSpeed, minSpeed, addSpeed);
         }
 
-        public PlayerInitData(int gid, int teamId, Dictionary<int, Weapon> weaponConfigs, BodySize bodySize,
+        public PlayerInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize,
             float maxSpeed, float minSpeed, float addSpeed)
         {
             Gid = gid;
             TeamId = teamId;
-            WeaponConfigs = weaponConfigs;
+            Weapons = weapons;
             BodySize = bodySize;
             MaxSpeed = maxSpeed;
             MinSpeed = minSpeed;
@@ -51,8 +51,13 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
-            var characterStatus = new CharacterStatus(MaxSpeed, Gid, 0, WeaponConfigs,
+            var characterStatus = new CharacterStatus(MaxSpeed, Gid, 0, Weapons,
                 DamageHealStatus.StartDamageHealAbout(), 0, AddSpeed, MinSpeed);
+            foreach (var keyValuePair in Weapons)
+            {
+                keyValuePair.Value.PickedBySomebody(characterStatus);
+            }
+
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
                 AngleSight.StandardAngleSight(),
                 TeamId);

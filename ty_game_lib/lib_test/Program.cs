@@ -110,7 +110,7 @@ namespace lib_test
 
             var configDictionaries = new ConfigDictionaries();
             var configDictionariesBullets = configDictionaries.bullets;
-            foreach (KeyValuePair<string,bullet> configDictionariesBullet in configDictionariesBullets)
+            foreach (KeyValuePair<string, bullet> configDictionariesBullet in configDictionariesBullets)
             {
                 var key = configDictionariesBullet.Key;
                 Console.Out.WriteLine($"{key}");
@@ -120,8 +120,13 @@ namespace lib_test
                 }
             }
             
-           
             
+            
+            var testPlayGround = TestStuff.TestPlayGround();
+            foreach (var keyValuePair in testPlayGround.Item2)
+            {
+                Console.Out.WriteLine($"{keyValuePair.Key}");
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace game_stuff
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
-        public readonly IAntiActBuffConfig SuccessAntiActBuffConfigToOpponent;
+        public readonly Dictionary<BodySize, IAntiActBuffConfig> SuccessAntiActBuffConfigToOpponent;
         public readonly Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf;
 
         public readonly int PauseToCaster;
@@ -58,46 +58,57 @@ namespace game_stuff
                 bullet.ShapeType);
 
 
-            buff_type bulletSuccessAntiActBuffConfigToOpponentType = bullet.SuccessAntiActBuffConfigToOpponentType;
             var bulletSuccessAntiActBuffConfigToOpponent = bullet.SuccessAntiActBuffConfigToOpponent;
 
+
+            var antiActBuffConfig = GAntiActBuffConfigs(
+                bulletSuccessAntiActBuffConfigToOpponent);
+
+            var bulletFailActBuffConfigToSelf = bullet.FailActBuffConfigToSelf;
+
+            var antiActBuffConfigs = GAntiActBuffConfigs(bulletFailActBuffConfigToSelf);
 
             static IAntiActBuffConfig GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent) =>
                 buffConfigToOpponentType switch
                 {
                     buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.Configs.push_buffs[configToOpponent]),
                     buff_type.caught_buff => GameTools.GenBuffByConfig(
-                        TempConfig.Configs.caught_buffs[configToOpponent]),
+                        TempConfig.Configs.caught_buffs![configToOpponent]),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-            var antiActBuffConfig = GenBuffByC(bulletSuccessAntiActBuffConfigToOpponentType,
-                bulletSuccessAntiActBuffConfigToOpponent);
+         
+            static Dictionary<BodySize, IAntiActBuffConfig>
+                GAntiActBuffConfigs(IEnumerable<Buff> bulletFailActBuffConfigToSelf)
+            {   
+               
+                var actBuffConfigs = TempConfig.SizeToR.ToDictionary(
+                    pair => pair.Key, pair =>
+                    {
+                        switch (pair.Key)
+                        {
+                            case BodySize.Small:
+                                var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                                    x.size == size.small || x.size == size.@default);
+                                return GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
 
-            var bulletFailActBuffConfigToSelf = bullet.FailActBuffConfigToSelf;
-            var antiActBuffConfigs = TempConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
-            {
-                switch (pair.Key)
-                {
-                    case BodySize.Small:
-                        var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
-                            x.size == size.small || x.size == size.@default);
-                        return GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
+                            case BodySize.Medium:
+                                var firstOrDefault2 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                                    x.size == size.medium || x.size == size.@default);
+                                return GenBuffByC(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
+                            case BodySize.Big:
+                                var firstOrDefault3 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                                    x.size == size.big || x.size == size.@default);
+                                return GenBuffByC(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    });
+                return actBuffConfigs;
+            }
 
-                    case BodySize.Medium:
-                        var firstOrDefault2 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
-                            x.size == size.medium || x.size == size.@default);
-                        return GenBuffByC(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
-                    case BodySize.Big:
-                        var firstOrDefault3 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
-                            x.size == size.big || x.size == size.@default);
-                        return GenBuffByC(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            });
 
-            ObjType objType = bullet.TargetType switch
+            var objType = bullet.TargetType switch
             {
                 target_type.other_team => ObjType.OtherTeam,
                 _ => throw new ArgumentOutOfRangeException()
@@ -108,7 +119,7 @@ namespace game_stuff
         }
 
         public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
-            IAntiActBuffConfig successAntiActBuffConfigToOpponent,
+            Dictionary<BodySize, IAntiActBuffConfig> successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int restTick, int resId)
         {
@@ -120,7 +131,7 @@ namespace game_stuff
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
             PauseToCaster = pauseToCaster;
             PauseToOpponent = pauseToOpponent;
-            Damage = new Damage(1);
+            Damage = new Damage(0);
             TargetType = targetType;
             Tough = tough;
             RestTick = restTick;
@@ -175,7 +186,7 @@ namespace game_stuff
                 return;
             }
 
-            var characterBodyBodySize = targetCharacterStatus.CharacterBody.BodySize;
+            var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.BodySize;
             //AttackOk 攻击成功
             if (opponentIsStun || b2 || b3 || b4)
             {
@@ -198,6 +209,8 @@ namespace game_stuff
                 targetCharacterStatus.DamageHealStatus.TakeDamage(Damage);
 
 
+                var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
+
                 void InitBuff()
                 {
                     if (PauseToOpponent > targetCharacterStatus.PauseTick)
@@ -205,11 +218,24 @@ namespace game_stuff
                         targetCharacterStatus.PauseTick = PauseToOpponent;
                     }
 
-                    targetCharacterStatus.AntiActBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos,
-                        targetCharacterStatus.GetPos(),
-                        Aim,
-                        null, 0,
-                        characterBodyBodySize, Caster);
+
+                    targetCharacterStatus.AntiActBuff = antiActBuffConfig
+                        .GenBuff(Pos,
+                            targetCharacterStatus.GetPos(),
+                            Aim,
+                            null, 0,
+                            targetCharacterBodyBodySize, Caster);
+                    //初始化buff时，如果是抓取技能，会触发技能
+                    switch (antiActBuffConfig)
+                    {
+                        case CatchAntiActBuffConfig catchAntiActBuffConfig:
+                            Caster.LoadSkill(null, catchAntiActBuffConfig.TrickSkill);
+                            Caster.NextSkill = null;
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
 
                 // 对手动作状态buff刷新
@@ -236,11 +262,11 @@ namespace game_stuff
 
                         var height = pushOnAir.Height;
 
-                        var antiActBuff = SuccessAntiActBuffConfigToOpponent.GenBuff(Pos,
+                        var antiActBuff = antiActBuffConfig.GenBuff(Pos,
                             targetCharacterStatus.GetPos(),
                             Aim,
                             height,
-                            pushOnAir.UpSpeed, characterBodyBodySize, Caster);
+                            pushOnAir.UpSpeed, targetCharacterBodyBodySize, Caster);
                         targetCharacterStatus.AntiActBuff = antiActBuff;
                         break;
                     case PushOnEarth _:
@@ -260,16 +286,18 @@ namespace game_stuff
 
                 if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
                 {
-                    if (!FailActBuffConfigToSelf.TryGetValue(characterBodyBodySize, out var failAntiBuff))
+                    if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff))
                     {
                         failAntiBuff = null;
                     }
 
+                    //如果为抓取技能，会马上装载抓取buff附带的触发技能
                     switch (failAntiBuff)
                     {
                         case CatchAntiActBuffConfig catchAntiActBuffConfig:
                             targetCharacterStatus.CatchingWho = Caster;
-                            targetCharacterStatus.NowCastSkill = catchAntiActBuffConfig.TrickSkill;
+                            targetCharacterStatus.LoadSkill(null, catchAntiActBuffConfig.TrickSkill);
+                            targetCharacterStatus.NextSkill = null;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));

@@ -65,6 +65,11 @@ namespace collision_and_rigid
                    Up < anotherZone.Down || anotherZone.Up < Down;
         }
 
+        public string LogSide()
+        {
+            return $"[{Up}|{Down}|{Left}|{Right}]";
+        }
+
         public Zone Inter(Zone another)
         {
             var nUp = Math.Min(Up, another.Up);

@@ -14,6 +14,11 @@ namespace collision_and_rigid
             Y = y;
         }
 
+        public string LogPt()
+        {
+            return $"[{X}|{Y}]";
+        }
+
         public TwoDPoint ClockTurnAboutZero(TwoDVector v)
         {
             var vX = X * v.X + Y * v.Y;
