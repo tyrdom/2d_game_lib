@@ -27,17 +27,13 @@ IBulletShape和IRawBulletShape
 简介：配置文件专门工程
 使用json作为内部资源，配置存到字典
     
-    var configDictionaries = new ConfigDictionaries(ResModel.Dll, "");
+    var configDictionaries = new ConfigDictionaries();
 也可以使用json文件
 
-    var configDictionaries = new ConfigDictionaries(ResModel.Json, "");
+    var configDictionaries = new ConfigDictionaries("{jsonPath}");
     //使用.net core 时有自动递归寻找功能
 
-可以在unity中使用resources读取json 如果json在使用
-        
-    var configDictionaries = new ConfigDictionaries(ResModel.Json, $"{PathInResources}");
-    //unity中不会自动递归寻找
+可以在unity中使用字符串字典来装载配置，比如有对应命名的json文件中的content中有对应配置,查看unity_sample中的脚本范例，需要用.net standard 2.0的库来使用
     
 ## game_stuff
-简介：动作游戏抽象运行逻辑，目的为多端运行
-        
+简介：动作游戏玩法抽象运行逻辑，目的为多端运行
