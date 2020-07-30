@@ -46,11 +46,8 @@ namespace collision_and_rigid
             if (f < 0) return (null, null);
 
             if (!(f > 0)) return (null, O.Y);
-#if NETCOREAPP
-            var sqrt = MathF.Sqrt(f);
-#else
-            var sqrt = (float) Math.Sqrt(f);
-#endif
+
+            var sqrt = MathTools.Sqrt(f);
 
             return (O.Y - sqrt, O.Y + sqrt);
         }

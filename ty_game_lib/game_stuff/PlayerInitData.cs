@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -51,11 +52,18 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
-            var characterStatus = new CharacterStatus(MaxSpeed, Gid, 0, Weapons,
+            var characterStatus = new CharacterStatus(MaxSpeed, Gid, 0, new Dictionary<int, Weapon>(),
                 DamageHealStatus.StartDamageHealAbout(), 0, AddSpeed, MinSpeed);
-            foreach (var keyValuePair in Weapons)
+
+            foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {
-                keyValuePair.Value.PickedBySomebody(characterStatus);
+#if DEBUG
+                Console.Out.WriteLine($"{weapon.LogUserString()}");
+#endif
+                weapon.PickedBySomebody(characterStatus);
+#if DEBUG
+                Console.Out.WriteLine($"{weapon.LogUserString()}");
+#endif
             }
 
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,

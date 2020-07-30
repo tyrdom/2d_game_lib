@@ -26,6 +26,13 @@ namespace game_stuff
         private readonly int _nextCombo;
 
 
+        public string LogUser()
+        {
+            return _launchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
+                .Select(characterStatus => characterStatus?.ToString() == null ? "!null!" : characterStatus.ToString())
+                .Aggregate("", (current, @null) => current + @null);
+        }
+
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough, uint comboInputStartTick, int nextCombo,

@@ -13,7 +13,8 @@ namespace game_stuff
         
         public Zone GetZone()
         {
-            return WalkMap.SizeToEdge.Cast<WalkBlock>().Select(walkBlock => walkBlock.QSpace?.Zone ?? Zone.Zero())
+            return WalkMap.SizeToEdge.Values
+                .Select(walkBlock => walkBlock.QSpace?.Zone ?? Zone.Zero())
                 .Aggregate(
                     SightMap.Lines.Zone, (current, qSpaceZone) => current.Join(qSpaceZone));
         }

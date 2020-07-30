@@ -476,11 +476,16 @@ namespace collision_and_rigid
             var o = Aob.O;
             var round = new Round(o, R);
             var (item1, item2) = round.GetY(v);
-
+#if DEBUG
+            Console.Out.WriteLine($"{item1}AND{item2}");
+#endif
             if (item1 == null || item2 == null) return (null, null);
 
-            var b1 = item1.Value < z.Up && item1.Value > z.Down;
-            var b2 = item2.Value < z.Up && item2.Value > z.Down;
+            var b1 = item1.Value <= z.Up && item1.Value >= z.Down;
+            var b2 = item2.Value <= z.Up && item2.Value >= z.Down;
+#if DEBUG
+            Console.Out.WriteLine($"{b1}{b2}");
+#endif
             if (b1)
             {
                 var pt = new TwoDPoint(v, item1.Value);

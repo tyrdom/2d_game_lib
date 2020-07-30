@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection.Metadata;
 using game_config;
 
 namespace game_stuff
@@ -12,6 +13,14 @@ namespace game_stuff
         public Weapon(ImmutableDictionary<OpAction, ImmutableDictionary<int, Skill>> skillGroups)
         {
             SkillGroups = skillGroups;
+        }
+
+        public string LogUserString()
+        {
+            return (from variable in SkillGroups
+                from keyValuePair in variable.Value
+                select keyValuePair.Value.LogUser())
+                .Aggregate("", (current, logUser) => current + logUser);
         }
 
         public void PickedBySomebody(CharacterStatus characterStatus)
