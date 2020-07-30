@@ -21,6 +21,11 @@ namespace collision_and_rigid
             Y = b;
         }
 
+        public string LogVector()
+        {
+            return $"[{X}||{Y}]";
+        }
+
         public float X { get; set; }
 
         public float Y { get; set; }
@@ -58,7 +63,7 @@ namespace collision_and_rigid
         public TwoDVector AddX(float x)
         {
             X += x;
-           
+
             return this;
         }
 

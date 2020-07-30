@@ -105,7 +105,7 @@ namespace lib_test
 
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 
-            Console.WriteLine("!!2!!" + inBlock2);
+            Console.Out.WriteLine("!!2!!" + inBlock2);
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();
@@ -119,13 +119,19 @@ namespace lib_test
                     Console.Out.WriteLine($"{keyValuePair.size}");
                 }
             }
-            
-            
-            
+
             var testPlayGround = TestStuff.TestPlayGround();
             foreach (var keyValuePair in testPlayGround.Item2)
             {
                 Console.Out.WriteLine($"{keyValuePair.Key}");
+                var charInitMsgs = keyValuePair.Value;
+                foreach (var charInitMsg in charInitMsgs)
+                {
+                    var gId = charInitMsg.GId;
+                    var logPt = charInitMsg.Pos.LogPt();
+                    var twoDVector = charInitMsg.Aim.LogVector();
+                    Console.Out.WriteLine($"{gId}::{logPt}::{twoDVector}");
+                }
             }
         }
     }

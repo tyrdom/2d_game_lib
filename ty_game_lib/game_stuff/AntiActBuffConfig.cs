@@ -162,7 +162,8 @@ namespace game_stuff
         public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
-                .Select(anchor.Move).ToList();
+                .Select(anchor.Move)
+                .ToList();
             var caught = new Caught(twoDPoints, LastTick, whoDid);
             return caught;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -29,7 +30,8 @@ namespace game_stuff
         public string LogUser()
         {
             return _launchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
-                .Select(characterStatus => characterStatus?.ToString() == null ? "!null!" : characterStatus.ToString())
+                .Select(characterStatus =>
+                    characterStatus?.GId.ToString() == null ? "!null!" : characterStatus.GId.ToString())
                 .Aggregate("", (current, @null) => current + @null);
         }
 
@@ -71,8 +73,12 @@ namespace game_stuff
 
         public static Skill GenSkillById(string id)
         {
-            var configsSkill = TempConfig.Configs.skills[id];
-            return GenSkillByConfig(configsSkill);
+            if (TempConfig.Configs.skills.TryGetValue(id, out var configsSkill))
+            {
+                return GenSkillByConfig(configsSkill);
+            }
+
+            throw new InvalidDataException($"not such skill id{id}");
         }
 
         public static Skill GenSkillByConfig(skill skill)
