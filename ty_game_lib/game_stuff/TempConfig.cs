@@ -29,7 +29,7 @@ namespace game_stuff
             [BodySize.Big] = 20.25f
         };
 
-        public static float G = 1;
+        public static float G { get; private set; } = 1;
 
         public static float MaxHeight { get; private set; } = 2;
 
@@ -70,6 +70,7 @@ namespace game_stuff
 
         private static void ReLoadP(ConfigDictionaries configs)
         {
+            Configs = configs;
             G = configs.other_configs[1].g_acc;
 
             MaxHeight = configs.other_configs[1].max_hegiht;
@@ -114,9 +115,5 @@ namespace game_stuff
             ReLoadP(configs);
         }
 #endif
-
-     
-        
-        
     }
 }

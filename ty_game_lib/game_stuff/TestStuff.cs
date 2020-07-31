@@ -18,14 +18,14 @@ namespace game_stuff
         {
             var keyValuePair = TempConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
-            return PlayerInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 5, 2, 0.2f);
+            return PlayerInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 5/10f, 2/10f, 0.1f);
         }
 
         private static PlayerInitData TestPlayer2()
         {
             var keyValuePair = TempConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
-            return PlayerInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 5, 2, 0.2f);
+            return PlayerInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 5/10f, 2/10f, 0.1f);
         }
 
         private static MapInitData TestInitData()
