@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using collision_and_rigid;
 using game_config;
 using game_stuff;
@@ -139,19 +138,24 @@ namespace lib_test
             var operate = new Operate(null, null,
                 new TwoDVector(MathTools.Cos(pi), MathTools.Sin(pi)));
             var logVector = operate.Move?.LogVector();
-            Console.Out.WriteLine($"move op{logVector}");
+            Console.Out.WriteLine($"move op ::{logVector}");
             var dictionary = new Dictionary<int, Operate>() {{1, operate}};
 
             var playGround = testPlayGround.Item1;
             var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
-            foreach (var logPt in from keyValuePair in playGroundGoATick.Item2
-                from charTickMsg in keyValuePair.Value
-                select charTickMsg.Pos
-                into twoDPoint
-                select twoDPoint.LogPt())
+            foreach (var keyValuePair in playGroundGoATick.Item2)
             {
-                Console.Out.WriteLine($"a tick after pos {logPt}");
+                foreach (var charTickMsg in keyValuePair.Value)
+                {
+                    var twoDPoint = charTickMsg.Pos;
+                    var logPt = twoDPoint.LogPt();
+                    var log = charTickMsg.Aim.Log();
+                    Console.Out.WriteLine($"a tick after pos {logPt} aim {log}");
+                    
+                    
+                }
             }
         }
     }
 }
+

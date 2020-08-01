@@ -24,6 +24,7 @@ namespace game_stuff
             Move = move;
         }
 
+       
         public OpAction? GetAction()
         {
             return Action;

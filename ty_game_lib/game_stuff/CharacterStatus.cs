@@ -230,10 +230,14 @@ namespace game_stuff
 
             if (twoDVector == null) return (null, null);
             // 加速跑步运动，有上限
-           
+            if (operate.Aim == null)
+            {
+                CharacterBody.Sight.OpChangeAim(twoDVector);
+            }
+
             NowMoveSpeed = MathTools.Max(_minMoveSpeed, MathTools.Min(_maxMoveSpeed, NowMoveSpeed + _addMoveSpeed));
             var dVector = twoDVector.Multi(NowMoveSpeed);
-       
+
             return (dVector, null);
         }
 
