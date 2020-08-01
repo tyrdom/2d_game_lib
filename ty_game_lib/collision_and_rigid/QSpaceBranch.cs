@@ -179,10 +179,16 @@ namespace collision_and_rigid
             var notCross = line.GenZone().NotCross(Zone);
             if (notCross) return false;
 
-            return (from aabbPackBoxShape in AabbPackBoxShapes
+            var lineIsBlockSight = (from aabbPackBoxShape in AabbPackBoxShapes
                 let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
                 select line.IsSightBlockByAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
+
+            var isBlockSight = QuadOne.LineIsBlockSight(line) ||
+                               QuadTwo.LineIsBlockSight(line) ||
+                               QuadThree.LineIsBlockSight(line) ||
+                               QuadFour.LineIsBlockSight(line);
+            return lineIsBlockSight || isBlockSight;
         }
 
         public IQSpace TryCovToLimitQSpace(int limit)

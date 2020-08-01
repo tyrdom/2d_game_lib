@@ -22,6 +22,7 @@ namespace collision_and_rigid
 
     public interface ITwoDTwoP
     {
+        string Log();
     }
 
     public interface IIdPointShape : IShape

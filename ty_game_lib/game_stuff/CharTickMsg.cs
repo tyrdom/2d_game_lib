@@ -5,9 +5,9 @@ namespace game_stuff
 {
     public class CharTickMsg
     {
-        int Gid;
-        TwoDPoint Pos;
-        TwoDVector Aim;
+        public int Gid;
+        public TwoDPoint Pos;
+        public TwoDVector Aim;
 
         private DamageHealStatus _damageHealStatus;
 

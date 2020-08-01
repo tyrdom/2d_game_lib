@@ -96,9 +96,16 @@ namespace game_stuff
 
             foreach (var kv in gidToOperates)
             {
-                if (GidToBody.TryGetValue(kv.Key, out var characterBody))
+                if (!GidToBody.TryGetValue(kv.Key, out var characterBody)) continue;
+                if (dictionary.TryGetValue(characterBody.Team, out var gidToOp
+                    )
+                )
                 {
-                    dictionary[characterBody.Team][kv.Key] = kv.Value;
+                    gidToOp[kv.Key] = kv.Value;
+                }
+                else
+                {
+                    dictionary[characterBody.Team] = new Dictionary<int, Operate>() {{kv.Key, kv.Value}};
                 }
             }
 

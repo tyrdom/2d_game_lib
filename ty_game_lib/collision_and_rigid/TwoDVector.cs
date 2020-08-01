@@ -146,6 +146,11 @@ namespace collision_and_rigid
             var twoDPoint = new TwoDPoint(X, Y);
             return twoDPoint;
         }
+
+        public string Log()
+        {
+            return LogVector();
+        }
     }
 
     public enum Pt2LinePos

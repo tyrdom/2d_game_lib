@@ -73,6 +73,7 @@ namespace game_stuff
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
+
             return charGoTick;
         }
 

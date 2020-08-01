@@ -132,7 +132,13 @@ namespace collision_and_rigid
 
         public bool LineIsBlockSight(TwoDVectorLine line)
         {
-            throw new NotImplementedException();
+            var notCross = line.GenZone().NotCross(Zone);
+            if (notCross) return false;
+
+            return (from aabbPackBoxShape in AabbPackBoxShapes
+                let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
+                where !notCross2
+                select line.IsSightBlockByAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
         }
 
         public void InsertBox(AabbBoxShape boxShape)

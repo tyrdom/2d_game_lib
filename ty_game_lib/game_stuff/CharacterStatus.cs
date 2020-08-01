@@ -47,7 +47,6 @@ namespace game_stuff
         public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, Dictionary<int, Weapon> weapons,
             DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
         {
-            
             CharacterBody = null!;
             _maxMoveSpeed = maxMoveSpeed;
             GId = gId;
@@ -228,10 +227,13 @@ namespace game_stuff
 
             //其他移动操作
             var twoDVector = operate.GetMove();
+
             if (twoDVector == null) return (null, null);
             // 加速跑步运动，有上限
+           
+            NowMoveSpeed = MathTools.Max(_minMoveSpeed, MathTools.Min(_maxMoveSpeed, NowMoveSpeed + _addMoveSpeed));
             var dVector = twoDVector.Multi(NowMoveSpeed);
-            NowMoveSpeed = MathTools.Min(_maxMoveSpeed, NowMoveSpeed + _addMoveSpeed);
+       
             return (dVector, null);
         }
 
