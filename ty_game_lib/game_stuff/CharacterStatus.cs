@@ -82,7 +82,7 @@ namespace game_stuff
 
         public void ResetSpeed()
         {
-            NowMoveSpeed = _minMoveSpeed;
+            NowMoveSpeed = 0;
         }
 
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()
@@ -199,6 +199,7 @@ namespace game_stuff
             // 没有任何操作
             if (operate == null)
             {
+                ResetSpeed();
                 return (null, null);
             }
 
@@ -228,7 +229,12 @@ namespace game_stuff
             //其他移动操作
             var twoDVector = operate.GetMove();
 
-            if (twoDVector == null) return (null, null);
+            if (twoDVector == null)
+            {
+                ResetSpeed();
+                return (null, null);
+            }
+
             // 加速跑步运动，有上限
             if (operate.Aim == null)
             {

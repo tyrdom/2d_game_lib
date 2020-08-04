@@ -144,17 +144,17 @@ namespace game_stuff
             {
                 var key = kv.Key;
                 var characterBody = kv.Value;
-#if DEBUG
-                Console.Out.WriteLine($"gid::{characterBody.GetId()}");
-#endif
+// #if DEBUG
+//                 Console.Out.WriteLine($"gid::{characterBody.GetId()}");
+// #endif
                 var characterBodies = new HashSet<CharacterBody>();
                 foreach (var kv2 in TeamToBodies)
                 {
                     var bTeam = kv2.Key;
                     var qSpace = kv2.Value;
-#if DEBUG
-                    Console.Out.WriteLine($"team{bTeam}:have:{qSpace.Count()} body");
-#endif
+// #if DEBUG
+//                     Console.Out.WriteLine($"team{bTeam}:have:{qSpace.Count()} body");
+// #endif
                     if (characterBody.Team == bTeam)
                     {
                         var filterToGIdPsList =
@@ -166,15 +166,14 @@ namespace game_stuff
                     }
                     else
                     {
-
                         var filterToGIdPsList =
                             qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, _sightMap),
                                 characterBody);
                         var bodies = filterToGIdPsList.OfType<CharacterBody>();
-                        
-#if DEBUG
-                        Console.Out.WriteLine($" {characterBody.Team}:other:{bTeam}::{qSpace.Count()}::{bodies.Count()}");
-#endif
+
+// #if DEBUG
+//                         Console.Out.WriteLine($" {characterBody.Team}:other:{bTeam}::{qSpace.Count()}::{bodies.Count()}");
+// #endif
                         characterBodies.UnionWith(bodies);
                     }
                 }
@@ -198,8 +197,18 @@ namespace game_stuff
                                 var characterBodyBodySize = characterBody.BodySize;
                                 if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
+
+
                                     ITwoDTwoP? pushOutToPt =
                                         walkBlock.PushOutToPt(characterBody.LastPos, characterBody.NowPos);
+                                    
+#if DEBUG
+                                    if (walkBlock.QSpace != null)
+                                        Console.Out.WriteLine(
+                                            $" check:: {qSpace.Count()} map{walkBlock.QSpace.Count()}");
+                                    Console.Out.WriteLine(
+                                        $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
+#endif
                                     if (pushOutToPt != null)
                                     {
                                         characterBody.HitWall();
