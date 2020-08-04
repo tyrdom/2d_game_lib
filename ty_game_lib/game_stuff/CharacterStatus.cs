@@ -15,7 +15,7 @@ namespace game_stuff
 
         private readonly float _addMoveSpeed;
 
-        private float NowMoveSpeed;
+        public float NowMoveSpeed;
 
         public readonly int GId;
 
@@ -82,7 +82,7 @@ namespace game_stuff
 
         public void ResetSpeed()
         {
-            NowMoveSpeed = 0;
+            NowMoveSpeed = _minMoveSpeed;
         }
 
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()

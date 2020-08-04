@@ -111,15 +111,15 @@ namespace game_stuff
                 }
                 else
                 {
-                    dictionary[characterBody.Team] = new Dictionary<int, Operate>() {{kv.Key, kv.Value}};
+                    dictionary[characterBody.Team] = new Dictionary<int, Operate> {{kv.Key, kv.Value}};
                 }
             }
 
             return dictionary;
         }
 
-        public (Dictionary<int, IEnumerable<BulletMsg>>, Dictionary<int, IEnumerable<CharTickMsg>>
-            ) PlayGroundGoATick(Dictionary<int, Operate> gidToOperates)
+        public (Dictionary<int, IEnumerable<BulletMsg>>, Dictionary<int, IEnumerable<CharTickMsg>>) PlayGroundGoATick(
+            Dictionary<int, Operate> gidToOperates)
         {
             var everyBodyGoATick = EveryBodyGoATick(gidToOperates);
             var gidToWhichBulletHit = BulletsDo();
@@ -197,11 +197,9 @@ namespace game_stuff
                                 var characterBodyBodySize = characterBody.BodySize;
                                 if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
-
-
                                     ITwoDTwoP? pushOutToPt =
                                         walkBlock.PushOutToPt(characterBody.LastPos, characterBody.NowPos);
-                                    
+
 #if DEBUG
                                     if (walkBlock.QSpace != null)
                                         Console.Out.WriteLine(
@@ -313,9 +311,11 @@ namespace game_stuff
             {
                 var team = tq.Key;
                 var qSpace = tq.Value;
-                if (!sepOperatesToTeam.TryGetValue(team, out var gidToOp)) continue;
-                var mapToDicGidToSth = qSpace.MapToDicGidToSth(GameTools.BodyGoATick, gidToOp);
+                var gto = sepOperatesToTeam.TryGetValue(team, out var gidToOp)
+                    ? gidToOp
+                    : new Dictionary<int, Operate>();
 
+                var mapToDicGidToSth = qSpace.MapToDicGidToSth(GameTools.BodyGoATick, gto);
                 foreach (var gtb in mapToDicGidToSth)
                 {
                     // (gid, (twoDTwoP, bullet))

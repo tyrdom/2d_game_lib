@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 using game_stuff;
@@ -153,6 +154,18 @@ namespace lib_test
 
             var (item1, item2) = playGround.PlayGroundGoATick(operates);
             LogCPos(item2);
+            var range = Enumerable.Range(1, 100).ToArray();
+            foreach (var i in range)
+            {
+
+                var (_, item3) = i % 20 != 0
+                    ? playGround.PlayGroundGoATick(dictionary)
+                    : playGround.PlayGroundGoATick(operates);
+                Console.Out.WriteLine($"{i}");
+                LogCPos(item3);
+                
+                
+            }
         }
 
         public static void LogCPos(Dictionary<int, IEnumerable<CharTickMsg>> item2)
@@ -164,8 +177,9 @@ namespace lib_test
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();
                     var log = charTickMsg.Aim.Log();
+
                     Console.Out.WriteLine(
-                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid}  pos {logPt} aim {log}");
+                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid}  pos {logPt} aim {log} speed :{charTickMsg.Speed}");
                 }
             }
         }
