@@ -6,6 +6,7 @@ namespace collision_and_rigid
 {
     public interface IQSpace
     {
+        public int Count();
         public Quad? TheQuad { get; set; }
         public QSpaceBranch? Father { get; set; }
         public Zone Zone { get; set; }

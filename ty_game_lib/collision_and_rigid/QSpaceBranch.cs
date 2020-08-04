@@ -27,6 +27,11 @@ namespace collision_and_rigid
         }
 
 
+        public int Count()
+        {
+            return AabbPackBoxShapes.Count + QuadOne.Count() + QuadFour.Count() + QuadThree.Count() + QuadTwo.Count();
+        }
+
         public Quad? TheQuad { get; set; }
         public QSpaceBranch? Father { get; set; }
 
@@ -110,7 +115,14 @@ namespace collision_and_rigid
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBoxShapes, Zone);
             AabbPackBoxShapes = inZone;
 
-            Father?.AddIdPoint(outZone, limit);
+            if (Father != null)
+            {
+                Father.AddIdPoint(outZone, limit);
+            }
+            else
+            {
+                AabbPackBoxShapes.UnionWith(outZone);
+            }
 
             QuadOne.MoveIdPoint(gidToMove, limit);
             QuadTwo.MoveIdPoint(gidToMove, limit);

@@ -160,6 +160,10 @@ namespace collision_and_rigid
                                 outZone.Add(aabbPackBoxShape);
                             }
                         }
+                        else
+                        {
+                            inZone.Add(aabbPackBoxShape);
+                        }
 
                         break;
                     default:

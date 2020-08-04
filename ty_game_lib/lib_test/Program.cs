@@ -134,28 +134,40 @@ namespace lib_test
                 }
             }
 
-            var pi = MathTools.Pi() / 6;
+            var f = MathTools.Pi();
+            var pi = f / 6;
             var operate = new Operate(null, null,
                 new TwoDVector(MathTools.Cos(pi), MathTools.Sin(pi)));
             var logVector = operate.Move?.LogVector();
             Console.Out.WriteLine($"move op ::{logVector}");
-            var dictionary = new Dictionary<int, Operate>() {{1, operate}};
+            var operate1 = new Operate(new TwoDVector(-1, 0), null, null);
+
+            var dictionary = new Dictionary<int, Operate> {{1, operate}};
 
             var playGround = testPlayGround.Item1;
             var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
-            foreach (var keyValuePair in playGroundGoATick.Item2)
+
+            LogCPos(playGroundGoATick.Item2);
+
+            var operates = new Dictionary<int, Operate> {{2, operate1}};
+
+            var (item1, item2) = playGround.PlayGroundGoATick(operates);
+            LogCPos(item2);
+        }
+
+        public static void LogCPos(Dictionary<int, IEnumerable<CharTickMsg>> item2)
+        {
+            foreach (var keyValuePair in item2)
             {
                 foreach (var charTickMsg in keyValuePair.Value)
                 {
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();
                     var log = charTickMsg.Aim.Log();
-                    Console.Out.WriteLine($"a tick after pos {logPt} aim {log}");
-                    
-                    
+                    Console.Out.WriteLine(
+                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid}  pos {logPt} aim {log}");
                 }
             }
         }
     }
 }
-

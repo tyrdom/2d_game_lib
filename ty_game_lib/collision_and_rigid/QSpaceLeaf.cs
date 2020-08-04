@@ -14,6 +14,12 @@ namespace collision_and_rigid
             AabbPackBoxShapes = aabbPackPackBoxShapes;
         }
 
+        public int Count()
+        {
+            var count = AabbPackBoxShapes.Count;
+            return count;
+        }
+
         public Quad? TheQuad { get; set; }
         public QSpaceBranch? Father { get; set; }
         public Zone Zone { get; set; }
@@ -109,9 +115,16 @@ namespace collision_and_rigid
         public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBoxShapes, Zone);
-            AabbPackBoxShapes = inZone;
 
-            Father?.AddIdPoint(outZone, limit);
+            AabbPackBoxShapes = inZone;
+            if (Father != null)
+            {
+                Father.AddIdPoint(outZone, limit);
+            }
+            else
+            {
+                AabbPackBoxShapes.UnionWith(outZone);
+            }
         }
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)

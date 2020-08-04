@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using collision_and_rigid;
 
@@ -63,7 +64,12 @@ namespace game_stuff
                     emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return emptyRootBranch;
                 });
-
+#if DEBUG
+            foreach (var qSpace in spaces)
+            {
+                Console.Out.WriteLine($"init:{qSpace.Key} team : {qSpace.Value.Count()} body");
+            }
+#endif
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies);
             return (playGround, playGround.GenInitMsg());
         }
@@ -138,37 +144,38 @@ namespace game_stuff
             {
                 var key = kv.Key;
                 var characterBody = kv.Value;
+#if DEBUG
+                Console.Out.WriteLine($"gid::{characterBody.GetId()}");
+#endif
                 var characterBodies = new HashSet<CharacterBody>();
                 foreach (var kv2 in TeamToBodies)
                 {
                     var bTeam = kv2.Key;
                     var qSpace = kv2.Value;
-
+#if DEBUG
+                    Console.Out.WriteLine($"team{bTeam}:have:{qSpace.Count()} body");
+#endif
                     if (characterBody.Team == bTeam)
                     {
-                        var filterToGIdPsList = qSpace.FilterToGIdPsList((x, y) => true, true).Select(x =>
-                        {
-                            return x switch
-                            {
-                                CharacterBody aCharacterBody => aCharacterBody,
-                                _ => throw new ArgumentOutOfRangeException(nameof(x))
-                            };
-                        });
+                        var filterToGIdPsList =
+                            qSpace.FilterToGIdPsList((x, y) => true, true).OfType<CharacterBody>();
+// #if DEBUG
+//                         Console.Out.WriteLine($"list::{filterToGIdPsList.ToArray().Length}");
+// #endif
                         characterBodies.UnionWith(filterToGIdPsList);
                     }
                     else
                     {
+
                         var filterToGIdPsList =
                             qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, _sightMap),
                                 characterBody);
-                        characterBodies.UnionWith(filterToGIdPsList.Select(x =>
-                        {
-                            return x switch
-                            {
-                                CharacterBody characterBody1 => characterBody1,
-                                _ => throw new ArgumentOutOfRangeException(nameof(x))
-                            };
-                        }));
+                        var bodies = filterToGIdPsList.OfType<CharacterBody>();
+                        
+#if DEBUG
+                        Console.Out.WriteLine($" {characterBody.Team}:other:{bTeam}::{qSpace.Count()}::{bodies.Count()}");
+#endif
+                        characterBodies.UnionWith(bodies);
                     }
                 }
 

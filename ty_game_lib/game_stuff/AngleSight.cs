@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -16,7 +16,8 @@ namespace game_stuff
         {
             return new AngleSight(TempConfig.StandardSightVector);
         }
-        public AngleSight( TwoDVector upLeft)
+
+        public AngleSight(TwoDVector upLeft)
         {
             Aim = new TwoDVector(1f, 0f);
             var nowR = upLeft.Norm();
@@ -32,12 +33,23 @@ namespace game_stuff
 
         public bool InSight(TwoDVectorLine sLine, SightMap map)
         {
+
+
+
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
             var c1 = twoDVector.Cross(_upLeft);
             var c2 = twoDVector.Cross(_upRight);
             var b = twoDVector.SqNorm() <= _nowR * _nowR;
             var isBlockSightLine = map.IsBlockSightLine(sLine);
-            return c1 >= 0 && c2 <= 0 && b && isBlockSightLine;
+            
+
+            var blockSightLine = c1 >= 0 && c2 <= 0 && b && !isBlockSightLine;
+
+// #if DEBUG
+//             Console.Out.WriteLine($" start {sLine.A.Log()}:: end {sLine.B.Log()}");
+//             Console.Out.WriteLine($"isBLock::{!isBlockSightLine}");
+// #endif
+            return blockSightLine;
         }
 
         public void OpChangeAim(TwoDVector newAim)
