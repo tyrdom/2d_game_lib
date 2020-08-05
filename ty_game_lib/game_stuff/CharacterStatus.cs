@@ -241,7 +241,14 @@ namespace game_stuff
                 CharacterBody.Sight.OpChangeAim(twoDVector);
             }
 
-            NowMoveSpeed = MathTools.Max(_minMoveSpeed, MathTools.Min(_maxMoveSpeed, NowMoveSpeed + _addMoveSpeed));
+            var dot = twoDVector.Dot(CharacterBody.Sight.Aim);
+            var normalSpeedMinCos = MathTools.Max(0f, MathTools.Min(1f,
+                (dot + TempConfig.DecreaseMinCos) / (TempConfig.DecreaseMinCos + TempConfig.NormalSpeedMinCos)
+            ));
+            var moveDecreaseMinMulti = TempConfig.MoveDecreaseMinMulti +
+                                       (1f - TempConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
+            var maxMoveSpeed = _maxMoveSpeed * moveDecreaseMinMulti;
+            NowMoveSpeed = MathTools.Max(_minMoveSpeed, MathTools.Min(maxMoveSpeed, NowMoveSpeed + _addMoveSpeed));
             var dVector = twoDVector.Multi(NowMoveSpeed);
 
             return (dVector, null);

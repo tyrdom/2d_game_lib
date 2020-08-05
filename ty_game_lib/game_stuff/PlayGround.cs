@@ -201,16 +201,17 @@ namespace game_stuff
                                         walkBlock.PushOutToPt(characterBody.LastPos, characterBody.NowPos);
 
 #if DEBUG
-                                    if (walkBlock.QSpace != null)
-                                        Console.Out.WriteLine(
-                                            $" check:: {qSpace.Count()} map{walkBlock.QSpace.Count()}");
-                                    Console.Out.WriteLine(
-                                        $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
+                                    // if (walkBlock.QSpace != null)
+                                    //     Console.Out.WriteLine(
+                                    //         $" check:: {qSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
+                                    // Console.Out.WriteLine(
+                                    //     $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
 #endif
-                                    if (pushOutToPt != null)
-                                    {
-                                        characterBody.HitWall();
-                                    }
+                                    if (pushOutToPt == null) return pushOutToPt;
+                                    characterBody.HitWall();
+                                    var coverPoint = walkBlock.CoverPoint((TwoDPoint) pushOutToPt);
+                                    if (coverPoint) pushOutToPt = characterBody.LastPos;
+
 
                                     return pushOutToPt;
                                 }

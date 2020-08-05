@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 
@@ -131,16 +132,20 @@ namespace collision_and_rigid
         }
 
 
-        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
+        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
+
             if (notCross) return null;
 
-            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush, safe);
+            var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, safe);
             if (a != null) return a;
+#if DEBUG
 
+            Console.Out.WriteLine($"not cross Branch Zone {notCross}::: {AabbPackBoxShapes.Count}");
+#endif
             var qSpaces = new[] {QuadOne, QuadTwo, QuadThree, QuadFour};
-            return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, isPush, safe))
+            return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, safe))
                 .FirstOrDefault(twoDPoint => twoDPoint != null);
         }
 
@@ -194,7 +199,7 @@ namespace collision_and_rigid
             var lineIsBlockSight = (from aabbPackBoxShape in AabbPackBoxShapes
                 let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
-                select line.IsSightBlockByAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
+                select line.IsSightBlockByWall(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
 
             var isBlockSight = QuadOne.LineIsBlockSight(line) ||
                                QuadTwo.LineIsBlockSight(line) ||

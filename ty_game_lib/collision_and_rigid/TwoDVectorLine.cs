@@ -6,8 +6,8 @@ namespace collision_and_rigid
 {
     public class TwoDVectorLine : IShape, IBlockShape, IRawBulletShape
     {
-        public bool AOut;
-        public bool BOut;
+        private readonly bool AOut;
+        private readonly bool BOut;
 
         public TwoDVectorLine(TwoDPoint a, TwoDPoint b, bool aOut = false, bool bOut = false)
         {
@@ -24,6 +24,11 @@ namespace collision_and_rigid
         public bool IsEmpty()
         {
             return A.Same(B);
+        }
+
+        public string Log()
+        {
+            return $"{A.Log()}--{B.Log()}";
         }
 
         public List<(TwoDPoint, CondAfterCross, CondAfterCross)>
@@ -168,11 +173,11 @@ namespace collision_and_rigid
             return 0;
         }
 
-        public bool IsSightBlockByAnother(IShape another)
+        public bool IsSightBlockByWall(IShape another)
         {
             return another switch
             {
-                TwoDVectorLine twoDVectorLine => IsSightBlockByAnother(twoDVectorLine),
+                TwoDVectorLine twoDVectorLine => IsSightBlockByWall(twoDVectorLine),
                 _ => throw new ArgumentOutOfRangeException(nameof(another))
             };
         }
@@ -297,23 +302,28 @@ namespace collision_and_rigid
         }
 
 
-        public bool SimpleIsCross(TwoDVectorLine lineB)
+        public bool IsGoTrough(TwoDVectorLine lineB)
         {
-            return A.GetPosOf(lineB) == Pt2LinePos.Right && B.GetPosOf(lineB) != Pt2LinePos.Right;
+            var pt2LinePos = A.GetPosOf(lineB);
+            var b = pt2LinePos != Pt2LinePos.Right;
+            var b1 = B.GetPosOf(lineB) == Pt2LinePos.Right;
+
+            return b && b1;
         }
 
 
-        public bool IsSightBlockByAnother(TwoDVectorLine lineB)
+        public bool IsSightBlockByWall(TwoDVectorLine wall)
         {
-            var c = lineB.A;
-            var d = lineB.B;
-            var getposOnLineA = A.GetPosOf(lineB);
-            var getposOnLineB = B.GetPosOf(lineB);
+            var c = wall.A;
+            var d = wall.B;
+            var getposOnLineA = A.GetPosOf(wall);
+            var getposOnLineB = B.GetPosOf(wall);
             var getposOnLineC = c.GetPosOf(this);
             var getposOnLineD = d.GetPosOf(this);
             return getposOnLineA switch
                    {
                        Pt2LinePos.Left => getposOnLineB == Pt2LinePos.Right,
+
                        _ => false
                    }
                    &&
@@ -498,11 +508,19 @@ namespace collision_and_rigid
             var dot = twoDVector.Dot(dVector);
             var norm = dVector.SqNorm();
             var f = dot / norm;
-            if (f <= 0f) return AOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : A;
+            var gap = dVector.GetUnit().AntiClockwiseTurn(new TwoDVector(0, 1)).Multi(0.01f);
+// #if DEBUG
+//             Console.Out.WriteLine($"ffffffffffffff::::{f}");
+// #endif
+            if (f <= 0f) return AOut && !safe ? A.Move(dVector.Multi(f)) : A.Move(gap);
 
-            if (f >= 1f) return BOut && !safe ? A.Move(dVector.GetUnit().Multi(f)) : B;
+            if (f >= 1f) return BOut && !safe ? A.Move(dVector.Multi(f)) : B.Move(gap);
 
-            return A.Move(dVector.GetUnit().Multi(f));
+            var twoDPoint = A.Move(dVector.Multi(f)).Move(gap);
+// #if DEBUG
+//             Console.Out.WriteLine($"ffffffffffffff::::lllllllllllll{twoDPoint.Log()}");
+// #endif
+            return twoDPoint;
         }
 
 

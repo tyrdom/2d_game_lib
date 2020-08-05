@@ -127,10 +127,25 @@ namespace collision_and_rigid
             }
         }
 
-        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true)
+        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)
         {
             var notCross = Zone.NotCross(line.GenZone());
-            return notCross ? line.B : SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, isPush, safe);
+
+
+            TwoDPoint? slideTwoDPoint;
+            if (notCross)
+            {
+#if DEBUG
+
+                Console.Out.WriteLine($"not cross Leaf Zone {notCross}::: {AabbPackBoxShapes.Count}");
+#endif
+                slideTwoDPoint = null;
+            }
+            else
+
+                slideTwoDPoint = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, safe);
+
+            return slideTwoDPoint;
         }
 
         public void Remove(AabbBoxShape boxShape)
@@ -151,7 +166,7 @@ namespace collision_and_rigid
             return (from aabbPackBoxShape in AabbPackBoxShapes
                 let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
-                select line.IsSightBlockByAnother(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
+                select line.IsSightBlockByWall(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
         }
 
         public void InsertBox(AabbBoxShape boxShape)

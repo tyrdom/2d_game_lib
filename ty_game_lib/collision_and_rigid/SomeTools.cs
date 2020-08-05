@@ -98,29 +98,41 @@ namespace collision_and_rigid
 
         public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes,
             TwoDVectorLine moveLine,
-            bool isPush,
             bool safe)
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
                 var notCross = moveLine.GenZone().NotCross(aabbBoxShape.Zone);
+// #if DEBUG
+//
+//                 Console.Out.WriteLine($"{moveLine.Log()} not cross sssssssssssssss shape {notCross}");
+// #endif
                 if (notCross) continue;
+                var moveLineB = moveLine.B;
                 switch (aabbBoxShape.Shape)
                 {
                     case ClockwiseTurning blockClockwiseTurning:
                         var isCross = blockClockwiseTurning.IsCross(moveLine);
                         if (isCross)
                         {
-                            var twoDPoint = blockClockwiseTurning.Slide(isPush ? moveLine.B : moveLine.A, safe);
+                            var twoDPoint = blockClockwiseTurning.Slide(moveLineB, safe);
                             return twoDPoint;
                         }
 
                         break;
                     case TwoDVectorLine blockLine:
-                        var isCrossAnother = blockLine.SimpleIsCross(moveLine);
+                        var isCrossAnother = moveLine.IsGoTrough(blockLine);
+
                         if (isCrossAnother)
                         {
-                            var twoDPoint = blockLine.Slide(isPush ? moveLine.B : moveLine.A, safe);
+#if DEBUG
+
+                            Console.Out.WriteLine(
+                                $" {moveLine.Log()}cross {blockLine.Log()} qqqqqqqqqqq shape {isCrossAnother}");
+                           
+                           
+#endif
+                            var twoDPoint = blockLine.Slide(moveLineB, safe);
                             return twoDPoint;
                         }
 

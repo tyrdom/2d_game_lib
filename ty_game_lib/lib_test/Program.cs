@@ -107,6 +107,15 @@ namespace lib_test
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 
             Console.Out.WriteLine("!!2!!" + inBlock2);
+            
+            TwoDPoint a=new TwoDPoint(0f,0f);
+            TwoDPoint b=new TwoDPoint(1f,1f);
+            TwoDPoint c=new TwoDPoint(0.5f,0.5f);
+            TwoDPoint d=new TwoDPoint(0f,1f);
+            var bLine = new TwoDVectorLine(a,b);
+            var cLine = new TwoDVectorLine(c,d);
+            var isGoTrough = cLine.IsGoTrough(bLine);
+            Console.Out.WriteLine($"is go tr {isGoTrough}");
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();
@@ -135,8 +144,10 @@ namespace lib_test
                 }
             }
 
+            
+            
             var f = MathTools.Pi();
-            var pi = f / 6;
+            var pi = -f /2.1f;
             var operate = new Operate(null, null,
                 new TwoDVector(MathTools.Cos(pi), MathTools.Sin(pi)));
             var logVector = operate.Move?.LogVector();

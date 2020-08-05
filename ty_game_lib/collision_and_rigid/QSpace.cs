@@ -18,7 +18,7 @@ namespace collision_and_rigid
         public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
 
-        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool isPush, bool safe = true);
+        public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true);
 
         public void InsertBox(AabbBoxShape boxShape);
         public void Remove(AabbBoxShape boxShape);

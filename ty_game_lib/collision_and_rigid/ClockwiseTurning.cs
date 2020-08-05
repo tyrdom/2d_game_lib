@@ -266,7 +266,7 @@ namespace collision_and_rigid
                         case Pt2LinePos.On:
                             return b;
                         case Pt2LinePos.Left:
-                            var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R);
+                            var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R + 0.01f);
                             return o.Move(ovr);
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -663,28 +663,17 @@ namespace collision_and_rigid
 
         public bool IsCross(TwoDVectorLine twoDVectorLine)
         {
-            var sPoint = twoDVectorLine.A;
-            var ePoint = twoDVectorLine.B;
-            var lP = Aob.A;
-            var rP = Aob.B;
-            var getPosOnLine = sPoint.GetPosOf(_tangentA);
-
-            var pt2LinePos = sPoint.GetPosOf(_tangentB);
-            if (getPosOnLine == Pt2LinePos.Left)
+            var round = new Round(Aob.O, R);
+            var (item1, item2) = twoDVectorLine.CrossPtWithRound(round);
+            var inRound = twoDVectorLine.B.InRound(round);
+            if (item1 == null || item2 == null || !inRound)
             {
-                var slLine = new TwoDVectorLine(sPoint, lP);
-                var linePos = ePoint.GetPosOf(slLine);
-                if (linePos != Pt2LinePos.Left) return false;
+                return false;
             }
 
-            if (pt2LinePos == Pt2LinePos.Left)
-            {
-                var srLine = new TwoDVectorLine(sPoint, rP);
-                var linePos = ePoint.GetPosOf(srLine);
-                if (linePos == Pt2LinePos.Left) return false;
-            }
-
-            return true;
+            var cover = Aob.Cover(item1) || Aob.Cover(item2);
+            return cover;
+          
         }
     }
 }

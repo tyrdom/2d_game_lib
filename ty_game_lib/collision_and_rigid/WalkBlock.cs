@@ -36,7 +36,7 @@ namespace collision_and_rigid
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
             if (QSpace == null) return null;
-            var apt = QSpace.GetSlidePoint(inLine, true, safe);
+            var apt = QSpace.GetSlidePoint(inLine, safe);
 
             if (safe) return apt;
             if (apt != null)

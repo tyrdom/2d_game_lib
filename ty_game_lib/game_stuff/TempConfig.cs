@@ -68,6 +68,13 @@ namespace game_stuff
         private static int TrickProtect { get; set; } = 100;
         private static int ProtectTick { get; set; } = 10;
 
+
+        public static float MoveDecreaseMinMulti { get; set; } = 0.1f;
+
+        public static float NormalSpeedMinCos { get; set; } = 0.7f;
+
+        public static float DecreaseMinCos { get; set; } = -0.1f;
+
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
