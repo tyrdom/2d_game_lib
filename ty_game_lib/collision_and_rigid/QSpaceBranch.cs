@@ -140,10 +140,10 @@ namespace collision_and_rigid
 
             var a = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, safe);
             if (a != null) return a;
-#if DEBUG
-
-            Console.Out.WriteLine($"not cross Branch Zone {notCross}::: {AabbPackBoxShapes.Count}");
-#endif
+// #if DEBUG
+//
+//             Console.Out.WriteLine($"not cross Branch Zone {notCross}::: {AabbPackBoxShapes.Count}");
+// #endif
             var qSpaces = new[] {QuadOne, QuadTwo, QuadThree, QuadFour};
             return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, safe))
                 .FirstOrDefault(twoDPoint => twoDPoint != null);

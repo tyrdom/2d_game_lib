@@ -150,21 +150,22 @@ namespace lib_test
             var pi = -f /2.1f;
             var operate = new Operate(null, null,
                 new TwoDVector(MathTools.Cos(pi), MathTools.Sin(pi)));
-            var logVector = operate.Move?.LogVector();
-            Console.Out.WriteLine($"move op ::{logVector}");
-            var operate1 = new Operate(new TwoDVector(-1, 0), null, null);
+            var operate2 = new Operate(null ,OpAction.Op1,null);
+            // var logVector = operate.Move?.LogVector();
+            // Console.Out.WriteLine($"move op ::{logVector}");
+            var operate1 = new Operate(new TwoDVector(1, 0), null, null);
 
-            var dictionary = new Dictionary<int, Operate> {{1, operate}};
+            var dictionary = new Dictionary<int, Operate> {{1, operate2}};
 
             var playGround = testPlayGround.Item1;
-            var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
-
-            LogCPos(playGroundGoATick.Item2);
+            // var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
+            //
+            // LogCPos(playGroundGoATick.Item2);
 
             var operates = new Dictionary<int, Operate> {{2, operate1}};
 
-            var (item1, item2) = playGround.PlayGroundGoATick(operates);
-            LogCPos(item2);
+            // var (item1, item2) = playGround.PlayGroundGoATick(operates);
+            // LogCPos(item2);
             var range = Enumerable.Range(1, 100).ToArray();
             foreach (var i in range)
             {

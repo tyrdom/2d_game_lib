@@ -37,14 +37,17 @@ namespace game_stuff
 
             var push = PushVector;
             var twoDVector = push.Minus(DecreasePerTick);
+
             var dot = push.Dot(twoDVector);
-            if (dot > 0)
+            if (dot <= 0)
             {
                 twoDVector = new TwoDVector(0f, 0f);
             }
 
             PushVector = twoDVector;
-
+#if DEBUG
+            Console.Out.WriteLine($"push::{push.Log()}");
+#endif
             return (push, this);
         }
 

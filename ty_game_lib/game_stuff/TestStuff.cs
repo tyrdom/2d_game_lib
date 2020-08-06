@@ -33,7 +33,7 @@ namespace game_stuff
             var testMap = TestMap();
             var testSightMap = TestSightMap();
             var pt1 = new TwoDPoint(3.0f, 0.0f);
-            var pt2 = new TwoDPoint(7.0f, 0.0f);
+            var pt2 = new TwoDPoint(7f, 0.0f);
             var startPts = new StartPts(new List<TwoDPoint> {pt1});
             var startPts2 = new StartPts(new List<TwoDPoint> {pt2});
 

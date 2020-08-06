@@ -125,13 +125,11 @@ namespace collision_and_rigid
 
                         if (isCrossAnother)
                         {
-#if DEBUG
-
-                            Console.Out.WriteLine(
-                                $" {moveLine.Log()}cross {blockLine.Log()} qqqqqqqqqqq shape {isCrossAnother}");
-                           
-                           
-#endif
+// #if DEBUG
+//                             Console.Out.WriteLine(
+//                                 $" {moveLine.Log()}cross {blockLine.Log()} qqqqqqqqqqq shape {isCrossAnother}");
+//                             
+// #endif
                             var twoDPoint = blockLine.Slide(moveLineB, safe);
                             return twoDPoint;
                         }

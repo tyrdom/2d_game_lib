@@ -135,10 +135,10 @@ namespace collision_and_rigid
             TwoDPoint? slideTwoDPoint;
             if (notCross)
             {
-#if DEBUG
-
-                Console.Out.WriteLine($"not cross Leaf Zone {notCross}::: {AabbPackBoxShapes.Count}");
-#endif
+// #if DEBUG
+//
+//                 Console.Out.WriteLine($"not cross Leaf Zone {notCross}::: {AabbPackBoxShapes.Count}");
+// #endif
                 slideTwoDPoint = null;
             }
             else

@@ -10,7 +10,7 @@ namespace game_stuff
     public class Skill
     {
         private LockArea? _lockArea;
-        private uint _nowOnTick;
+        public uint _nowOnTick;
 
         public int NowTough;
 
@@ -135,15 +135,16 @@ namespace game_stuff
 
             if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
             {
-                var moveStartTick = _nowOnTick - _moveStartTick;
+                var moveOnTick = _nowOnTick - _moveStartTick;
 
-                twoDVector = _moves[moveStartTick];
+                twoDVector = _moves[moveOnTick];
                 if (approachingVector != null)
                 {
+                    var movesLengthRest = (float) _moves.Length - moveOnTick;
                     var min = MathTools.Min(approachingVector.X, twoDVector.X);
-                    var max = MathTools.Max(approachingVector.Y, twoDVector.Y);
-                    twoDVector.X = min;
-                    twoDVector.Y = max;
+                    var max = MathTools.Max(approachingVector.Y, twoDVector.Y) / movesLengthRest;
+
+                    twoDVector = new TwoDVector(min, max);
                 }
 
                 twoDVector = twoDVector.AntiClockwiseTurn(casterAim);
@@ -153,7 +154,7 @@ namespace game_stuff
             IHitStuff? bullet = null;
             if (_nowOnTick == 0 && _lockArea != null)
             {
-                bullet = _lockArea;
+                bullet = _lockArea.ActiveArea(casterPos, casterAim);
             }
 
 

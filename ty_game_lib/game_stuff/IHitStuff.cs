@@ -5,12 +5,14 @@ namespace game_stuff
 {
     public interface IHitStuff
     {
-        public bool IsActive { get; set; }
+        
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
-
+        public HashSet<int> HitTeam(IQSpace qSpace);
+        public ObjType TargetType { get; }
+        public bool CanGoNextTick();
         public bool IsHit(CharacterBody characterBody);
     }
 }

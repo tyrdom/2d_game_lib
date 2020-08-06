@@ -18,7 +18,6 @@ namespace game_stuff
 
     public class Bullet : IHitStuff
     {
-        public bool IsActive { get; set; }
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
 
@@ -31,7 +30,7 @@ namespace game_stuff
         public readonly int PauseToOpponent;
         public Damage Damage;
         public int Tough;
-        public readonly ObjType TargetType;
+        public ObjType TargetType { get; }
 
         public int RestTick;
         public int ResId;
@@ -77,11 +76,10 @@ namespace game_stuff
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-         
+
             static Dictionary<BodySize, IAntiActBuffConfig>
                 GAntiActBuffConfigs(IEnumerable<Buff> bulletFailActBuffConfigToSelf)
-            {   
-               
+            {
                 var actBuffConfigs = TempConfig.SizeToR.ToDictionary(
                     pair => pair.Key, pair =>
                     {
@@ -136,10 +134,9 @@ namespace game_stuff
             Tough = tough;
             RestTick = restTick;
             ResId = resId;
-            IsActive = false;
         }
 
-        public bool CanGoATick()
+        public bool CanGoNextTick()
         {
             RestTick -= 1;
             return RestTick >= 0;
@@ -330,9 +327,8 @@ namespace game_stuff
             return new BulletMsg(Pos, Aim, ResId, Caster?.GetPos());
         }
 
-        public Bullet? ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim)
+        public Bullet ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim)
         {
-            IsActive = true;
             Pos = casterPos;
             Aim = casterAim;
             return this;

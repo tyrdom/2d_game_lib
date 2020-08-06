@@ -130,7 +130,7 @@ namespace game_stuff
 
             BodiesRePlace();
             var playerSee = GetPlayerSee();
-            var gidToBulletsMsg = gidToWhichBulletHit.ToDictionary(pair => pair.Key, pair => pair.Value
+            var gidToBulletsMsg = gidToWhichBulletHit.ToDictionary(pair => pair.Key, pair => pair.Value.OfType<Bullet>()
                 .Select(x => x.GenMsg()));
             var playerSeeMsg = playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg()));
             var valueTuple = (gidToBulletsMsg, playerSeeMsg);
@@ -230,22 +230,15 @@ namespace game_stuff
         }
 
 
-        public Dictionary<int, HashSet<Bullet>> BulletsDo()
+        public Dictionary<int, HashSet<IHitStuff>> BulletsDo()
         {
-            var whoHitGid = new Dictionary<int, HashSet<Bullet>>();
+            var whoHitGid = new Dictionary<int, HashSet<IHitStuff>>();
             foreach (var ii in TeamToBullet)
             {
                 var team = ii.Key;
                 var bullets = ii.Value;
-                var ofType = bullets.OfType<Bullet>();
-                foreach (var bullet in ofType)
+                foreach (var bullet in bullets)
                 {
-                    if (!bullet.CanGoATick())
-                    {
-                        bullets.Remove(bullet);
-                        continue;
-                    }
-
                     switch (bullet.TargetType)
                     {
                         case ObjType.OtherTeam:
@@ -264,7 +257,7 @@ namespace game_stuff
                                 }
                                 else
                                 {
-                                    whoHitGid[i] = new HashSet<Bullet> {bullet};
+                                    whoHitGid[i] = new HashSet<IHitStuff> {bullet};
                                 }
                             }
 
@@ -289,7 +282,7 @@ namespace game_stuff
                                 }
                                 else
                                 {
-                                    whoHitGid[i] = new HashSet<Bullet> {bullet};
+                                    whoHitGid[i] = new HashSet<IHitStuff> {bullet};
                                 }
                             }
 
@@ -298,6 +291,8 @@ namespace game_stuff
                             throw new ArgumentOutOfRangeException();
                     }
                 }
+
+                bullets.RemoveAll(x => !x.CanGoNextTick());
             }
 
             return whoHitGid;

@@ -17,16 +17,16 @@ namespace game_stuff
 
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
-            [BodySize.Small] = 1.5f,
-            [BodySize.Medium] = 3f,
-            [BodySize.Big] = 4.5f
+            [BodySize.Small] = 1f,
+            [BodySize.Medium] = 2f,
+            [BodySize.Big] = 3f
         };
 
         public static readonly Dictionary<BodySize, float> SizeToMass = new Dictionary<BodySize, float>
         {
-            [BodySize.Small] = 2.25f,
-            [BodySize.Medium] = 9f,
-            [BodySize.Big] = 20.25f
+            [BodySize.Small] = 1f,
+            [BodySize.Medium] = 4f,
+            [BodySize.Big] = 9f
         };
 
         public static float G { get; private set; } = 1;
@@ -35,7 +35,7 @@ namespace game_stuff
 
         public static float MaxUpSpeed { get; private set; } = MathTools.Sqrt(2f * G * MaxHeight);
 
-        public static float Friction { get; private set; } = 1f;
+        public static float Friction { get; private set; } = 0.24f;
 
         public static int ToughGrowPerTick { get; private set; } = 100;
 
@@ -69,11 +69,11 @@ namespace game_stuff
         private static int ProtectTick { get; set; } = 10;
 
 
-        public static float MoveDecreaseMinMulti { get; set; } = 0.1f;
+        public static float MoveDecreaseMinMulti { get; set; } = 0.3f;
 
         public static float NormalSpeedMinCos { get; set; } = 0.7f;
 
-        public static float DecreaseMinCos { get; set; } = -0.1f;
+        public static float DecreaseMinCos { get; set; } = -0.3f;
 
         private static void ReLoadP(ConfigDictionaries configs)
         {
