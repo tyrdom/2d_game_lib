@@ -4,6 +4,15 @@ namespace collision_and_rigid
 {
     public static class MathTools
     {
+        public static float Abs(float a)
+        {
+#if NETCOREAPP
+            return MathF.Abs(a);
+#else
+            return (float) Math.Abs(a);
+#endif
+        }
+
         public static float Min(float a, float b)
         {
 #if NETCOREAPP
@@ -12,6 +21,7 @@ namespace collision_and_rigid
             return (float) Math.Min(a, b);
 #endif
         }
+
         public static float Cos(float a)
         {
 #if NETCOREAPP
@@ -29,7 +39,7 @@ namespace collision_and_rigid
             return (float) Math.Sin(a);
 #endif
         }
-        
+
         public static float Max(float a, float b)
         {
 #if NETCOREAPP
@@ -47,12 +57,14 @@ namespace collision_and_rigid
             return (float) Math.Sqrt(a);
 #endif
         }
+
         public static float Acos(float a)
         {
+            var min = Min(1, Max(-1, a));
 #if NETCOREAPP
-            return MathF.Acos(a);
+            return MathF.Acos(min);
 #else
-            return (float) Math.Acos(a);
+            return (float) Math.Acos(min);
 #endif
         }
 

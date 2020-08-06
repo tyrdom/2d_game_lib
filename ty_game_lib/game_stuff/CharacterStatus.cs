@@ -218,6 +218,7 @@ namespace game_stuff
             if (operate == null)
             {
                 ResetSpeed();
+                CharacterBody.Sight.OpChangeAim(null);
                 return (null, null);
             }
 

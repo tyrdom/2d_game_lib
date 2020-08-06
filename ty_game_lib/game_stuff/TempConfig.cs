@@ -57,7 +57,7 @@ namespace game_stuff
 
 
         public static TwoDVector StandardSightVector { get; private set; } =
-            new TwoDVector(15, 10);
+            new TwoDVector(10, 7);
 
         public static IAntiActBuffConfig CommonBuffConfig { get; private set; } =
             new PushEarthAntiActBuffConfig(1f, PushType.Center, null, 12);

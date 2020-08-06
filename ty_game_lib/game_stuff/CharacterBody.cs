@@ -94,7 +94,7 @@ namespace game_stuff
         {
             var type = CharacterStatus.AntiActBuff?.GetType();
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
-                CharacterStatus.NowCastSkill != null, type, CharacterStatus.NowMoveSpeed);
+                CharacterStatus.NowCastSkill != null, type, CharacterStatus.NowMoveSpeed, Sight._nowR);
         }
 
         public CharInitMsg GenInitMsg()

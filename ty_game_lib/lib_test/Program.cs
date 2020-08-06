@@ -107,13 +107,13 @@ namespace lib_test
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 
             Console.Out.WriteLine("!!2!!" + inBlock2);
-            
-            TwoDPoint a=new TwoDPoint(0f,0f);
-            TwoDPoint b=new TwoDPoint(1f,1f);
-            TwoDPoint c=new TwoDPoint(0.5f,0.5f);
-            TwoDPoint d=new TwoDPoint(0f,1f);
-            var bLine = new TwoDVectorLine(a,b);
-            var cLine = new TwoDVectorLine(c,d);
+
+            TwoDPoint a = new TwoDPoint(0f, 0f);
+            TwoDPoint b = new TwoDPoint(1f, 1f);
+            TwoDPoint c = new TwoDPoint(0.5f, 0.5f);
+            TwoDPoint d = new TwoDPoint(0f, 1f);
+            var bLine = new TwoDVectorLine(a, b);
+            var cLine = new TwoDVectorLine(c, d);
             var isGoTrough = cLine.IsGoTrough(bLine);
             Console.Out.WriteLine($"is go tr {isGoTrough}");
             Console.Out.WriteLine("config test~~~~~");
@@ -144,18 +144,26 @@ namespace lib_test
                 }
             }
 
-            
-            
-            var f = MathTools.Pi();
-            var pi = -f /2.1f;
-            var operate = new Operate(null, null,
-                new TwoDVector(MathTools.Cos(pi), MathTools.Sin(pi)));
-            var operate2 = new Operate(null ,OpAction.Op1,null);
+
+            var pi = MathTools.Pi();
+            var aa = pi;
+            var bb = pi / 2f;
+            var aVector = new TwoDVector(MathTools.Cos(aa), MathTools.Sin(aa));
+            var bVector = new TwoDVector(MathTools.Cos(bb), MathTools.Sin(bb));
+            var cVector = new TwoDVector(1, 0);
+
+            var move = new Operate(null, null,
+                aVector);
+            var skill = new Operate(null, OpAction.Op1, null);
+            var turn = new Operate(bVector, null, null);
+            var turn2 = new Operate(aVector, null, null);
             // var logVector = operate.Move?.LogVector();
             // Console.Out.WriteLine($"move op ::{logVector}");
-            var operate1 = new Operate(new TwoDVector(1, 0), null, null);
+            var operate1 = new Operate(cVector, null, null);
+            var operates1 = new[] {operate1, turn2, turn, turn2, operate1};
+            var dictionary = new Dictionary<int, Operate> {{1, skill}};
 
-            var dictionary = new Dictionary<int, Operate> {{1, operate2}};
+            var enumerable = operates1.Select(x => new Dictionary<int, Operate> {{1, x}}).ToArray();
 
             var playGround = testPlayGround.Item1;
             // var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
@@ -169,14 +177,11 @@ namespace lib_test
             var range = Enumerable.Range(1, 100).ToArray();
             foreach (var i in range)
             {
-
-                var (_, item3) = i % 20 != 0
-                    ? playGround.PlayGroundGoATick(dictionary)
+                var (_, item3) = (i % 20 != 0 && i < 60)
+                    ? playGround.PlayGroundGoATick(enumerable[i % enumerable.Length])
                     : playGround.PlayGroundGoATick(operates);
                 Console.Out.WriteLine($"{i}");
                 LogCPos(item3);
-                
-                
             }
         }
 

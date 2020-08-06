@@ -9,7 +9,7 @@ namespace game_stuff
         private readonly TwoDVector _upRight;
         public TwoDVector Aim;
         private readonly float _maxR;
-        private float _nowR;
+        public float _nowR;
         private readonly float _theta;
 
         public static AngleSight StandardAngleSight()
@@ -33,31 +33,30 @@ namespace game_stuff
 
         public bool InSight(TwoDVectorLine sLine, SightMap map)
         {
-
-
-
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
             var c1 = twoDVector.Cross(_upLeft);
             var c2 = twoDVector.Cross(_upRight);
             var b = twoDVector.SqNorm() <= _nowR * _nowR;
+
             var isBlockSightLine = map.IsBlockSightLine(sLine);
-            
+
 
             var blockSightLine = c1 >= 0 && c2 <= 0 && b && !isBlockSightLine;
 
-// #if DEBUG
-//             Console.Out.WriteLine($" start {sLine.A.Log()}:: end {sLine.B.Log()}");
-//             Console.Out.WriteLine($"isBLock::{!isBlockSightLine}");
-// #endif
+#if DEBUG
+            Console.Out.WriteLine($" _nowR ::: {_nowR}");
+
+#endif
             return blockSightLine;
         }
 
-        public void OpChangeAim(TwoDVector newAim)
+        public void OpChangeAim(TwoDVector? newAim)
         {
             var oldAim = Aim;
-            Aim = newAim.GetUnit();
 
-            var cosT = newAim.GetUnit().Dot(oldAim) / oldAim.Norm();
+            if (newAim != null) Aim = newAim.GetUnit();
+
+            var cosT = Aim.GetUnit().Dot(oldAim) / oldAim.Norm();
             var cosA = _upLeft.X;
             var cos2A = 2 * cosA * cosA - 1;
             var t = cosT > cos2A ? MathTools.Acos(cosT) : _theta;
