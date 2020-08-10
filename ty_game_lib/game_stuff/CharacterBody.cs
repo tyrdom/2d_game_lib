@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -13,6 +14,7 @@ namespace game_stuff
         public TwoDPoint NowPos;
         public AngleSight Sight;
         public int Team;
+
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
@@ -94,7 +96,7 @@ namespace game_stuff
         {
             var type = CharacterStatus.AntiActBuff?.GetType();
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
-                CharacterStatus.NowCastSkill != null, type, CharacterStatus.NowMoveSpeed, Sight._nowR);
+                CharacterStatus.IsSkillOn, type, CharacterStatus.NowMoveSpeed, Sight._nowR);
         }
 
         public CharInitMsg GenInitMsg()

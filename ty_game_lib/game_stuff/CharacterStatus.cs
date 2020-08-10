@@ -30,6 +30,7 @@ namespace game_stuff
         public Dictionary<int, Weapon> Weapons { get; }
 
         //
+        public bool IsSkillOn { get; set; }
         public Skill? NowCastSkill { get; set; }
 
         public (TwoDVector? Aim, Skill skill, bool is_switch)? NextSkill { get; set; }
@@ -64,6 +65,7 @@ namespace game_stuff
             _addMoveSpeed = addMoveSpeed;
             _minMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
+            IsSkillOn = false;
         }
 
 
@@ -78,6 +80,7 @@ namespace game_stuff
             }
 
             skill.LaunchSkill();
+            IsSkillOn = true;
             NowCastSkill = skill;
         }
 
@@ -134,6 +137,7 @@ namespace game_stuff
 
         public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
         {
+            if (IsSkillOn) IsSkillOn = false;
             // 命中停帧 输入无效
             if (PauseTick > 0)
             {
