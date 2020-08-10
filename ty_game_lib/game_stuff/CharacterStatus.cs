@@ -104,6 +104,10 @@ namespace game_stuff
             var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GId.ToString();
             Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV?.Log()}");
 #endif
+            if (limitV != null)
+            {
+                limitV.X = MathTools.Max(0, limitV.X);
+            }
 
             return NowCastSkill
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);

@@ -17,7 +17,7 @@ namespace game_stuff
 
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
-            [BodySize.Small] = 1f,
+            [BodySize.Small] = 0.5f,
             [BodySize.Medium] = 2f,
             [BodySize.Big] = 3f
         };
