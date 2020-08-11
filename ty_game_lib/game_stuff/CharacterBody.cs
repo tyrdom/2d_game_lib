@@ -94,9 +94,14 @@ namespace game_stuff
 
         public CharTickMsg GenTickMsg()
         {
-            var type = CharacterStatus.AntiActBuff?.GetType();
+            var isStun = CharacterStatus.AntiActBuff != null;
+            var skillAct = CharacterStatus.NowCastSkill != null;
+            var characterStatusIsOnHitBySomeOne = CharacterStatus.IsOnHitBySomeOne;
+            CharacterStatus.IsOnHitBySomeOne = false;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
-                CharacterStatus.IsSkillOn, type, CharacterStatus.NowMoveSpeed, Sight._nowR);
+                CharacterStatus.IsSkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight._nowR,
+                CharacterStatus.IsPause,
+                skillAct, characterStatusIsOnHitBySomeOne);
         }
 
         public CharInitMsg GenInitMsg()

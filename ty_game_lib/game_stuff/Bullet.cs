@@ -194,6 +194,7 @@ namespace game_stuff
 
                 //如果没有锁定目标，则锁定当前命中的目标
                 Caster.LockingWho ??= targetCharacterStatus;
+                targetCharacterStatus.IsOnHitBySomeOne = true;
                 //如果对手有抓取对象
                 if (targetCharacterStatus.CatchingWho != null)
                 {

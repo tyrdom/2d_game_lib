@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using collision_and_rigid;
 
@@ -30,7 +31,7 @@ namespace game_stuff
         public Dictionary<int, Weapon> Weapons { get; }
 
         //
-        public bool IsSkillOn { get; set; }
+
         public Skill? NowCastSkill { get; set; }
 
         public (TwoDVector? Aim, Skill skill, bool is_switch)? NextSkill { get; set; }
@@ -44,6 +45,14 @@ namespace game_stuff
         public DamageHealStatus DamageHealStatus;
 
         public int ProtectTick;
+
+
+        // for_tick_msg
+        public bool IsSkillLaunch { get; private set; }
+
+        public bool IsPause { get; private set; }
+
+        public bool IsOnHitBySomeOne { get; set; }
 
         public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, Dictionary<int, Weapon> weapons,
             DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
@@ -65,7 +74,9 @@ namespace game_stuff
             _addMoveSpeed = addMoveSpeed;
             _minMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
-            IsSkillOn = false;
+            IsSkillLaunch = false;
+            IsPause = false;
+            IsOnHitBySomeOne = false;
         }
 
 
@@ -80,7 +91,7 @@ namespace game_stuff
             }
 
             skill.LaunchSkill();
-            IsSkillOn = true;
+            IsSkillLaunch = true;
             NowCastSkill = skill;
         }
 
@@ -137,9 +148,11 @@ namespace game_stuff
 
         public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
         {
-            if (IsSkillOn) IsSkillOn = false;
+            if (IsSkillLaunch) IsSkillLaunch = false;
             // 命中停帧 输入无效
-            if (PauseTick > 0)
+            var b1 = PauseTick > 0;
+            IsPause = b1;
+            if (b1)
             {
                 PauseTick -= 1;
                 return (null, null);

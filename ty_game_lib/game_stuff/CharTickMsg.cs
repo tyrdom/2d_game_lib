@@ -10,22 +10,26 @@ namespace game_stuff
         public TwoDVector Aim;
         public float Speed;
         private DamageHealStatus _damageHealStatus;
-
+        public bool IsPause;
         public float SightR;
-        private bool SkillOn;
-        private Type? AntiBuff;
-
+        public bool SkillOn;
+        public bool SkillAct;
+        public bool IsStun;
+        public bool IsOnHit;
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, bool skillOn,
-            Type? antiBuff, float speed, float sightR)
+            bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, bool isOnHit)
         {
             Gid = gid;
             Pos = pos;
             Aim = aim;
             _damageHealStatus = damageHealStatus;
             SkillOn = skillOn;
-            AntiBuff = antiBuff;
+            IsStun = antiBuff;
             Speed = speed;
             SightR = sightR;
+            IsPause = isPause;
+            SkillAct = skillAct;
+            IsOnHit = isOnHit;
         }
     }
 }
