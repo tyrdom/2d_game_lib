@@ -281,12 +281,11 @@ namespace game_stuff
                 Caster!.NowCastSkill = null;
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
-
+                Caster.IsOnHitBySomeOne = true;
                 if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
                 {
                     if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff))
                     {
-                        failAntiBuff = null;
                     }
 
                     //如果为抓取技能，会马上装载抓取buff附带的触发技能

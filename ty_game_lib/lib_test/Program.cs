@@ -178,7 +178,7 @@ namespace lib_test
             foreach (var i in range)
             {
                 var (_, item3) = (i % 20 != 0 && i < 60)
-                    ? playGround.PlayGroundGoATick(enumerable[i % enumerable.Length])
+                    ? playGround.PlayGroundGoATick(dictionary)
                     : playGround.PlayGroundGoATick(operates);
                 Console.Out.WriteLine($"{i}");
                 LogCPos(item3);
@@ -194,9 +194,10 @@ namespace lib_test
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();
                     var log = charTickMsg.Aim.Log();
-
+                    var isOnHit = charTickMsg.IsOnHit;
+                    var isStun = charTickMsg.IsStun;
                     Console.Out.WriteLine(
-                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid}  pos {logPt} aim {log} speed :{charTickMsg.Speed}");
+                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid}  pos {logPt} aim {log} speed :{charTickMsg.Speed} is on hit::{isOnHit} is stun :: {isStun}");
                 }
             }
         }

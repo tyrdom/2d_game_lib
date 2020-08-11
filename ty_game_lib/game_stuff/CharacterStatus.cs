@@ -149,6 +149,8 @@ namespace game_stuff
         public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
         {
             if (IsSkillLaunch) IsSkillLaunch = false;
+            if (IsOnHitBySomeOne) IsOnHitBySomeOne = false;
+
             // 命中停帧 输入无效
             var b1 = PauseTick > 0;
             IsPause = b1;
