@@ -194,7 +194,12 @@ namespace game_stuff
 
                 //如果没有锁定目标，则锁定当前命中的目标
                 Caster.LockingWho ??= targetCharacterStatus;
-                targetCharacterStatus.IsOnHitBySomeOne = true;
+                //生成击中受击消息数据缓存
+
+                targetCharacterStatus.IsBeHitBySomeOne =
+                    TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos);
+
+                Caster.IsHitSome = true;
                 //如果对手有抓取对象
                 if (targetCharacterStatus.CatchingWho != null)
                 {
@@ -278,10 +283,14 @@ namespace game_stuff
             else
             {
                 //AttackFail 需要分两种情况 
+                //清除技能数据
                 Caster!.NowCastSkill = null;
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
-                Caster.IsOnHitBySomeOne = true;
+                //生成击中受击消息数据缓存
+                Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Caster.GetPos());
+                targetCharacterStatus.IsHitSome = true;
+
                 if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
                 {
                     if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff))

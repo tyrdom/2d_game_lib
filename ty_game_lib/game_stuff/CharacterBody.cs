@@ -96,11 +96,11 @@ namespace game_stuff
         {
             var isStun = CharacterStatus.AntiActBuff != null;
             var skillAct = CharacterStatus.NowCastSkill != null;
-            var characterStatusIsOnHitBySomeOne = CharacterStatus.IsOnHitBySomeOne;
+            var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
                 CharacterStatus.IsSkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight._nowR,
                 CharacterStatus.IsPause,
-                skillAct, characterStatusIsOnHitBySomeOne);
+                skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome);
         }
 
         public CharInitMsg GenInitMsg()

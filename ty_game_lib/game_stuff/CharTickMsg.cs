@@ -15,9 +15,11 @@ namespace game_stuff
         public bool SkillOn;
         public bool SkillAct;
         public bool IsStun;
-        public bool IsOnHit;
+        public TwoDVector? IsBeHit;
+        public bool IsHitSome;
+
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, bool skillOn,
-            bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, bool isOnHit)
+            bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, TwoDVector? isBeHit, bool isHitSome)
         {
             Gid = gid;
             Pos = pos;
@@ -29,7 +31,8 @@ namespace game_stuff
             SightR = sightR;
             IsPause = isPause;
             SkillAct = skillAct;
-            IsOnHit = isOnHit;
+            IsBeHit = isBeHit;
+            IsHitSome = isHitSome;
         }
     }
 }

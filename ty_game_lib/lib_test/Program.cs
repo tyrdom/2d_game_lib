@@ -194,10 +194,10 @@ namespace lib_test
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();
                     var log = charTickMsg.Aim.Log();
-                    var isOnHit = charTickMsg.IsOnHit;
+                    var isOnHit = charTickMsg.IsBeHit;
                     var isStun = charTickMsg.IsStun;
                     Console.Out.WriteLine(
-                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid} , pos {logPt}, aim {log}, speed :{charTickMsg.Speed}, is on hit::{isOnHit} , is stun :: {isStun}");
+                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid} , pos {logPt}, aim {log}, speed :{charTickMsg.Speed}, is on hit::{isOnHit?.Log()} , is stun :: {isStun}");
                 }
             }
         }

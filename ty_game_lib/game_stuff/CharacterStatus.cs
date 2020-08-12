@@ -52,7 +52,10 @@ namespace game_stuff
 
         public bool IsPause { get; private set; }
 
-        public bool IsOnHitBySomeOne { get; set; }
+        public TwoDVector? IsBeHitBySomeOne { get; set; }
+
+
+        public bool IsHitSome { get; set; }
 
         public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, Dictionary<int, Weapon> weapons,
             DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
@@ -76,7 +79,8 @@ namespace game_stuff
             NowMoveSpeed = 0f;
             IsSkillLaunch = false;
             IsPause = false;
-            IsOnHitBySomeOne = false;
+            IsBeHitBySomeOne = null;
+            IsHitSome = false;
         }
 
 
@@ -148,8 +152,10 @@ namespace game_stuff
 
         public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
         {
+            //清理消息缓存
             if (IsSkillLaunch) IsSkillLaunch = false;
-            if (IsOnHitBySomeOne) IsOnHitBySomeOne = false;
+            if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
+            if (IsHitSome) IsHitSome = false;
 
             // 命中停帧 输入无效
             var b1 = PauseTick > 0;
