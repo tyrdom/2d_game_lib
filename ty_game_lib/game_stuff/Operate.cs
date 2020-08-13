@@ -2,7 +2,6 @@
 using collision_and_rigid;
 
 
-
 namespace game_stuff
 {
     [Serializable]
@@ -12,20 +11,20 @@ namespace game_stuff
         // public TwoDVector? Move;
         public TwoDVector? Aim;
 
-        public OpAction? Action;
+        public SkillAction? Action;
 
         public TwoDVector? Move;
 
 
-        public Operate(TwoDVector? aim, OpAction? action, TwoDVector? move)
+        public Operate(TwoDVector? aim, SkillAction? action, TwoDVector? move)
         {
             Aim = aim;
             Action = action;
             Move = move;
         }
 
-       
-        public OpAction? GetAction()
+
+        public SkillAction? GetAction()
         {
             return Action;
         }
@@ -36,12 +35,13 @@ namespace game_stuff
         }
     }
 
-    public enum OpAction
+    public enum SkillAction
     {
         Op1,
         Op2,
         Op3,
         Switch,
+        CatchTrick,
         Pick //  far away TODO
     }
 }

@@ -51,7 +51,7 @@ namespace collision_and_rigid
         public TwoDVector GetUnit()
         {
             var f = Norm();
-            return new TwoDVector(X / f, Y / f);
+            return f <= 0 ? new TwoDVector(0f, 0f) : new TwoDVector(X / f, Y / f);
         }
 
         public TwoDVector Minus(TwoDVector another)

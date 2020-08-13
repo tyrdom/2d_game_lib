@@ -139,7 +139,7 @@ namespace game_stuff
         public bool CanGoNextTick()
         {
             RestTick -= 1;
-            return RestTick >= 0;
+            return RestTick > 0;
         }
 
         public bool IsHit(CharacterBody characterBody)
@@ -158,6 +158,9 @@ namespace game_stuff
                         HitOne(characterBody1.CharacterStatus);
                     }
 
+// #if DEBUG
+//                     Console.Out.WriteLine($"bullet hit::{isHit}");
+// #endif
                     return isHit;
 
                 default:
@@ -174,10 +177,13 @@ namespace game_stuff
             var opponentIsStun = opponentCharacterStatusAntiActBuff != null;
             var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == Skill.SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
-            var b4 = twoDVector.Dot(Aim) <= 0; // 是否从背后攻击
+            var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
             var b3 = !isActSkill && Tough < TempConfig.MidTough; //如果对手不在释放技能，攻击坚韧小于中值，攻击成功
-
+#if DEBUG
+            Console.Out.WriteLine(
+                $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{TempConfig.MidTough}");
+#endif
             if (protecting)
             {
                 return;
@@ -232,10 +238,9 @@ namespace game_stuff
                     switch (antiActBuffConfig)
                     {
                         case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                            Caster.LoadSkill(null, catchAntiActBuffConfig.TrickSkill);
+                            Caster.LoadSkill(null, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick);
                             Caster.NextSkill = null;
                             break;
-
                         default:
                             break;
                     }
@@ -302,20 +307,25 @@ namespace game_stuff
                     {
                         case CatchAntiActBuffConfig catchAntiActBuffConfig:
                             targetCharacterStatus.CatchingWho = Caster;
-                            targetCharacterStatus.LoadSkill(null, catchAntiActBuffConfig.TrickSkill);
+                            targetCharacterStatus.LoadSkill(null, catchAntiActBuffConfig.TrickSkill,
+                                SkillAction.CatchTrick);
                             targetCharacterStatus.NextSkill = null;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
                     }
 
-                    var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(), Aim,
+                    var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
+                        targetCharacterStatus.GetAim(),
                         null,
                         0, Caster.CharacterBody.BodySize, targetCharacterStatus);
                     Caster.AntiActBuff = antiActBuff;
                 }
-                else //在攻击状态，通过通用buff读取
+                else //在攻击状态，通过通用失败buff读取
                 {
+#if DEBUG
+                    Console.Out.WriteLine($"Gen Common Back");
+#endif
                     var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
                         Caster.GetPos(), Aim,
                         null, 0, Caster.CharacterBody.BodySize, targetCharacterStatus);

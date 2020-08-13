@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -7,16 +8,16 @@ namespace game_stuff
     public interface IAntiActBuff
     {
         public int RestTick { get; set; }
-
-        public (ITwoDTwoP?, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt);
+        public ITwoDTwoP GetItp();
+        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt);
 
         public float HitWall();
     }
 
     class PushOnEarth : IAntiActBuff
     {
-        public TwoDVector PushVector;
-        public TwoDVector DecreasePerTick;
+        private TwoDVector PushVector;
+        private TwoDVector DecreasePerTick { get; }
 
         public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, int restTick)
         {
@@ -27,6 +28,11 @@ namespace game_stuff
 
         public int RestTick { get; set; }
 
+        public ITwoDTwoP GetItp()
+        {
+            return PushVector;
+        }
+
         public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             RestTick -= 1;
@@ -36,8 +42,14 @@ namespace game_stuff
             }
 
             var push = PushVector;
-            var twoDVector = push.Minus(DecreasePerTick);
+#if DEBUG
+            Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector.Log()}");
+#endif
 
+            var twoDVector = push.Minus(DecreasePerTick);
+#if DEBUG
+            Console.Out.WriteLine($" {GetType()} Decrease~~{DecreasePerTick.Log()}  PV  mid::{twoDVector.Log()}");
+#endif
             var dot = push.Dot(twoDVector);
             if (dot <= 0)
             {
@@ -46,7 +58,7 @@ namespace game_stuff
 
             PushVector = twoDVector;
 #if DEBUG
-            Console.Out.WriteLine($"push::{push.Log()}");
+            Console.Out.WriteLine($"PV after::{PushVector.Log()}");
 #endif
             return (push, this);
         }
@@ -77,6 +89,11 @@ namespace game_stuff
 
         public int RestTick { get; set; }
 
+        public ITwoDTwoP GetItp()
+        {
+            return PushVector;
+        }
+
         public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             var nowHeight = Height + UpSpeed;
@@ -88,8 +105,13 @@ namespace game_stuff
 
             if (nowHeight <= 0)
             {
+                var decreasePerTick = PushVector.GetUnit().Multi(TempConfig.Friction);
+#if DEBUG
+                Console.Out.WriteLine($"{PushVector.Log()}~~~~~air gen_earth buff~~~~~~{decreasePerTick.Log()}");
+
+#endif
                 var pushOnEarth =
-                    new PushOnEarth(PushVector, PushVector.GetUnit().Multi(TempConfig.Friction), RestTick);
+                    new PushOnEarth(PushVector, decreasePerTick, RestTick);
                 return (PushVector, pushOnEarth);
             }
 
@@ -122,6 +144,11 @@ namespace game_stuff
 
         public int RestTick { get; set; }
 
+        public ITwoDTwoP GetItp()
+        {
+            return MovesOnPoints.Count > 0 ? MovesOnPoints[0] : TwoDPoint.Zero();
+        }
+
         public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             RestTick -= 1;
@@ -129,19 +156,23 @@ namespace game_stuff
 
             var pt = count <= 0 ? oldPt : MovesOnPoints[0];
 
-            if (RestTick <= 0)
-            {
-                WhoCatchMe.CatchingWho = null;
-                return (pt, null);
-            }
 
             if (count > 0)
             {
                 MovesOnPoints.RemoveAt(0);
                 return (pt, this);
             }
+#if DEBUG
+            Console.Out.WriteLine($"~~~~~caught gen_earth buff~~~~~~{pt.Log()}");
+#endif
+            if (RestTick > 0)
+            {
+                WhoCatchMe.CatchingWho = null;
+                return (pt, new PushOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick));
+            }
 
-            return (pt, new PushOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick));
+            WhoCatchMe.CatchingWho = null;
+            return (pt, null);
         }
 
         public float HitWall()

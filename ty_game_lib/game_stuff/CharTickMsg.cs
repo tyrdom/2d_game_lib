@@ -12,20 +12,20 @@ namespace game_stuff
         private DamageHealStatus _damageHealStatus;
         public bool IsPause;
         public float SightR;
-        public bool SkillOn;
+        public SkillAction? SkillLaunch;
         public bool SkillAct;
         public bool IsStun;
         public TwoDVector? IsBeHit;
         public bool IsHitSome;
 
-        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, bool skillOn,
+        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, TwoDVector? isBeHit, bool isHitSome)
         {
             Gid = gid;
             Pos = pos;
             Aim = aim;
             _damageHealStatus = damageHealStatus;
-            SkillOn = skillOn;
+            SkillLaunch = skillLaunch;
             IsStun = antiBuff;
             Speed = speed;
             SightR = sightR;

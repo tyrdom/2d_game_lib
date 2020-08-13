@@ -11,7 +11,7 @@ namespace game_stuff
     {
         private LockArea? _lockArea;
         public uint _nowOnTick;
-
+        
         public int NowTough;
 
         // public bool IsHit;
@@ -25,8 +25,7 @@ namespace game_stuff
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
         private readonly int _nextCombo;
-
-
+        
         public string LogUser()
         {
             return _launchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)

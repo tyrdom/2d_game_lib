@@ -75,7 +75,9 @@ namespace game_stuff
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
-
+            #if DEBUG
+            Console.Out.WriteLine($"bgt::{charGoTick.Item1?.Log()}");            
+#endif
             return charGoTick;
         }
 
@@ -98,7 +100,7 @@ namespace game_stuff
             var skillAct = CharacterStatus.NowCastSkill != null;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
-                CharacterStatus.IsSkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight._nowR,
+                CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight._nowR,
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome);
         }

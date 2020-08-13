@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 
 namespace collision_and_rigid
@@ -14,19 +15,15 @@ namespace collision_and_rigid
             R = r;
         }
 
-        public Sector(float r, float y ,TwoDVector move ,TwoDVector rotate)
+        public Sector(float x, float y, TwoDVector move, TwoDVector rotate)
         {
             var o = TwoDPoint.Zero().Move(move);
-            var f1 = y / 2;
 
-            var f = MathTools.Sqrt(r * r - f1
-                * f1);
-
-            var a = new TwoDPoint(f, f1).ClockTurnAboutZero(rotate).Move(move);
-            var b = new TwoDPoint(f, -f1).ClockTurnAboutZero(rotate).Move(move);
+            var a = new TwoDPoint(x, y).ClockTurnAboutZero(rotate).Move(move);
+            var b = new TwoDPoint(x, -y).ClockTurnAboutZero(rotate).Move(move);
             var clockwiseBalanceAngle = new ClockwiseBalanceAngle(a, o, b);
             AOB = clockwiseBalanceAngle;
-            R = r;
+            R = MathTools.Sqrt(x * x + y * y);
         }
 
         private List<IBlockShape> GenBlockShapes(float r)
@@ -82,6 +79,8 @@ namespace collision_and_rigid
         {
             var genBlockShapes = GenBlockShapes(r);
             var genBlockAabbBoxShapes = Poly.GenBlockAabbBoxShapes(genBlockShapes);
+
+
             var simpleBlocks = new SimpleBlocks(genBlockAabbBoxShapes);
             return simpleBlocks;
         }

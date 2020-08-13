@@ -34,7 +34,7 @@ namespace game_stuff
 
         public Skill? NowCastSkill { get; set; }
 
-        public (TwoDVector? Aim, Skill skill, bool is_switch)? NextSkill { get; set; }
+        public (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
 
         public IAntiActBuff? AntiActBuff;
@@ -48,7 +48,7 @@ namespace game_stuff
 
 
         // for_tick_msg
-        public bool IsSkillLaunch { get; private set; }
+        public SkillAction? SkillLaunch { get; private set; }
 
         public bool IsPause { get; private set; }
 
@@ -77,14 +77,14 @@ namespace game_stuff
             _addMoveSpeed = addMoveSpeed;
             _minMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
-            IsSkillLaunch = false;
+            SkillLaunch = null;
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
         }
 
 
-        public void LoadSkill(TwoDVector? aim, Skill skill)
+        public void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
         {
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
@@ -95,7 +95,7 @@ namespace game_stuff
             }
 
             skill.LaunchSkill();
-            IsSkillLaunch = true;
+            SkillLaunch = skillAction;
             NowCastSkill = skill;
         }
 
@@ -134,18 +134,22 @@ namespace game_stuff
         private void ComboByNext()
         {
             if (NextSkill == null || NowCastSkill == null ||
-                NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo) return;
+                NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo)
+            {
+                CharacterBody.Sight.OpChangeAim(null);
+                return;
+            }
 #if DEBUG
             Console.Out.WriteLine($"{GId} ::skill next start {NextSkill.Value.skill._nowOnTick}");
 #endif
-            if (NextSkill.Value.is_switch)
+            if (NextSkill.Value.opAction == SkillAction.Switch)
             {
                 NowWeapon = (NowWeapon + 1) % Weapons.Count;
             }
 
             var aim = NextSkill.Value.Aim;
 
-            LoadSkill(aim, NextSkill.Value.skill);
+            LoadSkill(aim, NextSkill.Value.skill, NextSkill.Value.opAction);
 
             NextSkill = null;
         }
@@ -153,7 +157,7 @@ namespace game_stuff
         public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
         {
             //清理消息缓存
-            if (IsSkillLaunch) IsSkillLaunch = false;
+            if (SkillLaunch != null) SkillLaunch = null;
             if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
             if (IsHitSome) IsHitSome = false;
 
@@ -163,6 +167,7 @@ namespace game_stuff
             if (b1)
             {
                 PauseTick -= 1;
+
                 return (null, null);
             }
 
@@ -171,10 +176,14 @@ namespace game_stuff
             if (AntiActBuff != null)
             {
 #if DEBUG
-                Console.Out.WriteLine($"{GId} ::anti buff :: {AntiActBuff.RestTick}");
+                Console.Out.WriteLine(
+                    $"{GId}  {AntiActBuff.GetType()} ::antiv::{AntiActBuff.GetItp().Log()}::anti buff :: {AntiActBuff.RestTick}");
 #endif
                 var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(dPoint);
                 AntiActBuff = antiActBuff;
+#if DEBUG
+                Console.Out.WriteLine($"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.Log()} ::anti buff :: {AntiActBuff?.RestTick}");
+#endif
                 return (twoDPoint, null);
             }
 
@@ -189,10 +198,10 @@ namespace game_stuff
 
                 var (move, launchBullet) = ActNowSkillATick();
 #if DEBUG
-                Console.Out.WriteLine($"skill on {NowCastSkill._nowOnTick}");
+                Console.Out.WriteLine($"{GId} skill on {NowCastSkill._nowOnTick}");
                 Console.Out.WriteLine($"skill move {move?.Log()}");
                 if (launchBullet != null)
-                    Console.Out.WriteLine($"launch IHitAble{launchBullet.Aim.Log()}||{launchBullet.Pos.Log()}");
+                    Console.Out.WriteLine($"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.Log()}||{launchBullet.Pos.Log()}");
 #endif
                 // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
                 ComboByNext();
@@ -207,7 +216,7 @@ namespace game_stuff
                 // 状态可用，则执行连技操作
                 if (weaponSkillStatus == null) return (move, launchBullet);
                 var status = weaponSkillStatus.Value;
-                var b = opAction == OpAction.Switch;
+                var b = opAction == SkillAction.Switch;
                 var toUse = NowWeapon;
                 if (b)
                 {
@@ -225,11 +234,11 @@ namespace game_stuff
                 {
                     case Skill.SkillPeriod.Casting:
 
-                        NextSkill ??= (operate?.Aim, skill, b);
+                        NextSkill ??= (operate?.Aim, skill, opAction.Value);
 
                         break;
                     case Skill.SkillPeriod.CanCombo:
-                        LoadSkill(operate?.Aim, skill);
+                        LoadSkill(operate?.Aim, skill, opAction.Value);
                         NowWeapon = toUse;
                         break;
                     case Skill.SkillPeriod.End:
@@ -265,14 +274,14 @@ namespace game_stuff
 #endif
 
                 // 非连击状态瞬间切换
-                if (opAction == OpAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                if (opAction == SkillAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
                 // 发动当前武器技能组的起始技能0
                 else
                 {
                     if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
                         !weapon.SkillGroups.TryGetValue(opAction.Value, out var value) ||
                         !value.TryGetValue(0, out var skill)) return (null, null);
-                    LoadSkill(null, skill);
+                    LoadSkill(null, skill, opAction.Value);
                     var actNowSkillATick = ActNowSkillATick();
                     return actNowSkillATick;
                 }
@@ -310,6 +319,11 @@ namespace game_stuff
         public TwoDPoint GetPos()
         {
             return CharacterBody.NowPos;
+        }
+
+        public TwoDVector GetAim()
+        {
+            return CharacterBody.Sight.Aim;
         }
     }
 

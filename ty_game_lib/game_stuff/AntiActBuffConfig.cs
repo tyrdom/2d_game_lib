@@ -34,6 +34,10 @@ namespace game_stuff
             var dVector1 = unit.Multi(speed);
 
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
+
+#if DEBUG
+            Console.Out.WriteLine($" vector1~~~~ {vector1.Log()}");
+#endif
             if (height == null)
             {
                 var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast);
@@ -159,11 +163,23 @@ namespace game_stuff
         public Skill TrickSkill { get; }
 
 
-        public IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
+        private IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move)
                 .ToList();
+#if DEBUG
+            Console.Out.WriteLine($"pos {anchor.Log()} aim {aim.Log()}");
+            foreach (var twoDVector in TwoDVectors)
+            {
+                Console.Out.WriteLine($"{twoDVector.Log()}");
+            }
+
+            foreach (var twoDPoint in twoDPoints)
+            {
+                Console.Out.WriteLine($"{twoDPoint.Log()}");
+            }
+#endif
             var caught = new Caught(twoDPoints, LastTick, whoDid);
             return caught;
         }

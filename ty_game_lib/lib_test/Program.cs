@@ -130,6 +130,7 @@ namespace lib_test
                 }
             }
 
+
             var testPlayGround = TestStuff.TestPlayGround();
             foreach (var keyValuePair in testPlayGround.Item2)
             {
@@ -150,11 +151,12 @@ namespace lib_test
             var bb = pi / 2f;
             var aVector = new TwoDVector(MathTools.Cos(aa), MathTools.Sin(aa));
             var bVector = new TwoDVector(MathTools.Cos(bb), MathTools.Sin(bb));
-            var cVector = new TwoDVector(1, 0);
+            var cVector = new TwoDVector(-1, 0);
 
             var move = new Operate(null, null,
                 aVector);
-            var skill = new Operate(null, OpAction.Op1, null);
+            var skill = new Operate(null, SkillAction.Op2, null);
+            var skill2 = new Operate(null, SkillAction.Op1, null);
             var turn = new Operate(bVector, null, null);
             var turn2 = new Operate(aVector, null, null);
             // var logVector = operate.Move?.LogVector();
@@ -162,7 +164,7 @@ namespace lib_test
             var operate1 = new Operate(cVector, null, null);
             var operates1 = new[] {operate1, turn2, turn, turn2, operate1};
             var dictionary = new Dictionary<int, Operate> {{1, skill}};
-
+            var dictionary2 = new Dictionary<int, Operate> {{1, skill2}};
             var enumerable = operates1.Select(x => new Dictionary<int, Operate> {{1, x}}).ToArray();
 
             var playGround = testPlayGround.Item1;
@@ -170,16 +172,25 @@ namespace lib_test
             //
             // LogCPos(playGroundGoATick.Item2);
 
-            var operates = new Dictionary<int, Operate> {{2, operate1}};
+            var operates = new Dictionary<int, Operate> {{1, operate1}};
 
             // var (item1, item2) = playGround.PlayGroundGoATick(operates);
             // LogCPos(item2);
             var range = Enumerable.Range(1, 100).ToArray();
             foreach (var i in range)
             {
-                var (_, item3) = (i % 20 != 0 && i < 60)
-                    ? playGround.PlayGroundGoATick(dictionary)
-                    : playGround.PlayGroundGoATick(operates);
+                var (_, item3) =
+                    i == 1
+                        ? playGround.PlayGroundGoATick(operates)
+                        : i < 30
+                            ? playGround.PlayGroundGoATick(dictionary)
+                            : playGround.PlayGroundGoATick(dictionary2);
+
+                // if (i == 1) playGround.PlayGroundGoATick(operates);
+                //
+                // var (_, item3) = (i % 20 != 1 && i < 60)
+                //     ? playGround.PlayGroundGoATick(dictionary)
+                //     : playGround.PlayGroundGoATick(operates);
                 Console.Out.WriteLine($"{i}");
                 LogCPos(item3);
             }
@@ -196,8 +207,10 @@ namespace lib_test
                     var log = charTickMsg.Aim.Log();
                     var isOnHit = charTickMsg.IsBeHit;
                     var isStun = charTickMsg.IsStun;
+                    var skillLaunch = charTickMsg.SkillLaunch == null ? "null" : charTickMsg.SkillLaunch.ToString();
                     Console.Out.WriteLine(
-                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid} , pos {logPt}, aim {log}, speed :{charTickMsg.Speed}, is on hit::{isOnHit?.Log()} , is stun :: {isStun}");
+                        $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid} , pos {logPt}, aim {log}, " +
+                        $"speed :{charTickMsg.Speed}, is on hit::{isOnHit?.Log()} , is stun :: {isStun},skill launch {skillLaunch}");
                 }
             }
         }

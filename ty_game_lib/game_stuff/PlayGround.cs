@@ -320,6 +320,9 @@ namespace game_stuff
                     var bullet = gtb.Value.Item2;
                     if (twoDTwoP != null)
                     {
+#if DEBUG
+                        Console.Out.WriteLine($" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.Log()}");
+#endif
                         twoDTwoPs[gid] = twoDTwoP;
                     }
 

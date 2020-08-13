@@ -8,9 +8,9 @@ namespace game_stuff
 {
     public class Weapon
     {
-        public readonly ImmutableDictionary<OpAction, ImmutableDictionary<int, Skill>> SkillGroups;
+        public readonly ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> SkillGroups;
 
-        public Weapon(ImmutableDictionary<OpAction, ImmutableDictionary<int, Skill>> skillGroups)
+        public Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups)
         {
             SkillGroups = skillGroups;
         }
@@ -59,10 +59,10 @@ namespace game_stuff
                 .ToImmutableDictionary();
 
             var immutableDictionary =
-                new Dictionary<OpAction, ImmutableDictionary<int, Skill>>
+                new Dictionary<SkillAction, ImmutableDictionary<int, Skill>>
                 {
-                    {OpAction.Op1, dictionary}, {OpAction.Op2, dictionary2}, {OpAction.Op3, dictionary3},
-                    {OpAction.Switch, dictionary4}
+                    {SkillAction.Op1, dictionary}, {SkillAction.Op2, dictionary2}, {SkillAction.Op3, dictionary3},
+                    {SkillAction.Switch, dictionary4}
                 }.ToImmutableDictionary();
 
             var weapon1 = new Weapon(immutableDictionary);
