@@ -69,7 +69,7 @@ namespace game_stuff
         private static int ProtectTick { get; set; } = 10;
 
 
-        public static float MoveDecreaseMinMulti { get; set; } = 0.5f;
+        public static float MoveDecreaseMinMulti { get; set; } = 0.4f;
 
         public static float NormalSpeedMinCos { get; set; } = 0.7f;
 
