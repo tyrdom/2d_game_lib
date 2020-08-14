@@ -51,7 +51,7 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public static Bullet GenByConfig(bullet bullet)
+        public static Bullet GenByConfig(bullet bullet, uint pairKey = 0)
         {
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
                 bullet.ShapeType);
@@ -111,9 +111,14 @@ namespace game_stuff
                 target_type.other_team => ObjType.OtherTeam,
                 _ => throw new ArgumentOutOfRangeException()
             };
+            var tough = bullet.Tough;
+            if (bullet.Tough == -1)
+            {
+                tough = (int) (pairKey * TempConfig.ToughGrowPerTick);
+            }
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
-                bullet.PauseToOpponent, objType, bullet.Tough, 1, 1);
+                bullet.PauseToOpponent, objType, tough, 1, 1);
         }
 
         public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
@@ -298,21 +303,23 @@ namespace game_stuff
 
                 if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
                 {
-                    if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff))
+                    if (FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff))
                     {
-                    }
+                        var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
 
-                    //如果为抓取技能，会马上装载抓取buff附带的触发技能
-                    switch (failAntiBuff)
-                    {
-                        case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                            targetCharacterStatus.CatchingWho = Caster;
-                            targetCharacterStatus.LoadSkill(null, catchAntiActBuffConfig.TrickSkill,
-                                SkillAction.CatchTrick);
-                            targetCharacterStatus.NextSkill = null;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
+                        //如果为抓取技能，会马上装载抓取buff附带的触发技能
+                        switch (failAntiBuff)
+                        {
+                            case CatchAntiActBuffConfig catchAntiActBuffConfig:
+                                targetCharacterStatus.CatchingWho = Caster;
+
+                                targetCharacterStatus.LoadSkill(aim, catchAntiActBuffConfig.TrickSkill,
+                                    SkillAction.CatchTrick);
+                                targetCharacterStatus.NextSkill = null;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
+                        }
                     }
 
                     var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),

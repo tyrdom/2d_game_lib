@@ -89,7 +89,7 @@ namespace game_stuff
                 var pairValue = pair.Value;
                 var immutableDictionary = TempConfig.Configs.bullets;
                 var bullet = immutableDictionary[pairValue];
-                var genByConfig = Bullet.GenByConfig(bullet);
+                var genByConfig = Bullet.GenByConfig(bullet,pair.Key);
                 return genByConfig;
             });
             var configsLockAreas = TempConfig.Configs.lock_areas;
