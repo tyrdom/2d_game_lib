@@ -298,7 +298,7 @@ namespace game_stuff
                 Caster.NextSkill = null;
                 Caster.LockingWho = null;
                 //生成击中受击消息数据缓存
-                Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Caster.GetPos());
+                Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(Caster.GetPos(), targetCharacterStatus.GetPos());
                 targetCharacterStatus.IsHitSome = true;
 
                 if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
