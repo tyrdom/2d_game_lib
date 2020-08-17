@@ -113,7 +113,6 @@ namespace collision_and_rigid
                 case CondAfterCross.OutToIn:
                     if (nowCond == CondAfterCross.InToOut)
                         Console.Out.WriteLine("Cond Error at end pt:::" + nowCond + " and " + endCond);
-
                     break;
                 case CondAfterCross.InToOut:
                     var twoDVectorLine = new TwoDVectorLine(nPt, B, false, true);
@@ -419,7 +418,7 @@ namespace collision_and_rigid
 
         public (Zone?, Zone?) CutByV(float v, Zone z)
         {
-            var y = GetX(v);
+            var y = GetY(v);
             var twoDVector = GetVector();
             var b = twoDVector.IsAlmostRightUp();
             if (y == null) return (null, null);

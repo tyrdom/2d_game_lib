@@ -320,13 +320,18 @@ namespace game_stuff
                             default:
                                 throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
                         }
+                        var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
+                            targetCharacterStatus.GetAim(),
+                            null,
+                            0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                        Caster.AntiActBuff = antiActBuff;
                     }
 
-                    var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
-                        targetCharacterStatus.GetAim(),
-                        null,
-                        0, Caster.CharacterBody.BodySize, targetCharacterStatus);
-                    Caster.AntiActBuff = antiActBuff;
+                    // var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
+                    //     targetCharacterStatus.GetAim(),
+                    //     null,
+                    //     0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                    // Caster.AntiActBuff = antiActBuff;
                 }
                 else //在攻击状态，通过通用失败buff读取
                 {

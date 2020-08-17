@@ -18,7 +18,7 @@ namespace collision_and_rigid
         {
             if (QSpace == null) return true;
 
-            var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
+            var (item1, _) = QSpace.TouchWithARightShootPoint(p);
 
 //            Console.Out.WriteLine("num::" + item1);
 

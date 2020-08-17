@@ -20,10 +20,10 @@ namespace collision_and_rigid
             var qSpaceBranch = new QSpaceBranch(null, null, zone, new HashSet<AabbBoxShape>(
                 )
                 ,
-                ref qs1,
-                ref qs2,
-                ref qs3,
-                ref qs4
+                qs1,
+                qs2,
+                qs3,
+                qs4
             );
             return qSpaceBranch;
         }
@@ -196,19 +196,27 @@ namespace collision_and_rigid
             List<IBlockShape> l2,
             bool l2IsBlockIn)
         {
-//            foreach (var blockShape in l2)
-//            {
-//                var twoDPoint = blockShape.GetEndPt();
-//                Console.Out.WriteLine("raw end pt::X" + twoDPoint.X + "   Y::" + twoDPoint.Y);
-//            }
+            if (l2.Count == 0)
+            {
+                return (l1, l1IsBlockIn);
+            }
+#if DEBUG
 
+            foreach (var blockShape in l2)
+            {
+                var twoDPoint = blockShape.GetEndPt();
+                Console.Out.WriteLine("raw end pt::X::" + twoDPoint.X + "   Y::" + twoDPoint.Y);
+            }
+#endif
             //record points
             var dicL1 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
             var dicL2 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
 
             for (var i = 0; i < l1.Count; i++)
             {
-//                    Console.Out.WriteLine("s dic::::" + i);
+#if DEBUG
+                Console.Out.WriteLine("s dic::::" + i);
+#endif
 
 
                 var blockShapeFromL1 = l1[i];
@@ -219,7 +227,9 @@ namespace collision_and_rigid
 
                 for (var j = 0; j < l2.Count; j++)
                 {
-//                    Console.Out.WriteLine("l1::"+i+"  l2::"+j);
+// #if DEBUG
+//                     Console.Out.WriteLine("l1::"+i+"  l2::"+j);
+// #endif
                     var blockShapeFromL2 = l2[j];
                     var crossAnotherBlockShapeReturnIsChangeAndBlocks =
                         blockShapeFromL1.CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(blockShapeFromL2);
@@ -249,23 +259,27 @@ namespace collision_and_rigid
                     if (df1 != null) dicL1[i] = df1;
                 }
             }
+#if DEBUG
+            Console.Out.WriteLine("In dic1::\n" + dicL1.Count);
+            foreach (var keyValuePair in dicL1)
+            {
+                Console.Out.WriteLine("key::" + keyValuePair.Key + "  Count::" + (keyValuePair.Value?.Count ?? 0));
+            }
 
-//            Console.Out.WriteLine("In dic1::\n" + dicL1.Count);
-//            foreach (var (key, value) in dicL1)
-//            {
-//                Console.Out.WriteLine("key::" + key + "  Count::" + (value?.Count ?? 0));
-//            }
-//
-//            Console.Out.WriteLine("In dic2::\n" + dicL2.Count);
-//            foreach (var (key, value) in dicL2)
-//            {
-//                Console.Out.WriteLine("key::" + key + "  Count::" + (value?.Count ?? 0));
-//            }
-
+            Console.Out.WriteLine("In dic2::\n" + dicL2.Count);
+            foreach (var keyValuePair in dicL2)
+            {
+                Console.Out.WriteLine("key::" + keyValuePair.Key + "  Count::" + (keyValuePair.Value?.Count ?? 0));
+            }
+#endif
             var resL1 = new List<IBlockShape>();
             var resL2 = new List<IBlockShape>();
 
+
             var l1StartPt = l1[0].GetStartPt();
+#if DEBUG
+            Console.Out.WriteLine($"l1::{l1.Count}   l2::{l2.Count}");
+#endif
             var l2StartPt = l2[0].GetStartPt();
 
             var l1QSpace = CreateQSpaceByAabbBoxShapes(Poly.GenBlockAabbBoxShapes(l1).ToArray(), 100);
@@ -433,8 +447,12 @@ namespace collision_and_rigid
 
         public static WalkBlock GenWalkBlockByPolys(List<(Poly, bool)> rawData, float r, int limit)
         {
-//            rawData = CenterPolys(rawData);
             var (firstPoly, item2) = rawData[0];
+
+#if DEBUG
+
+#endif
+
             var genBlockShapes = (firstPoly.GenBlockShapes(r, item2), item2);
 
             for (var i = 1; i < rawData.Count; i++)
@@ -481,10 +499,11 @@ namespace collision_and_rigid
         {
             var joinAabbZone = JoinAabbZone(aabbBoxShapes);
 
-
             var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
 
+
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
+            Console.Out.WriteLine($"aabb num::{qSpace.AabbPackBoxShapes.Count}");
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 

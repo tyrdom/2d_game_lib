@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
@@ -32,8 +33,8 @@ namespace game_stuff
         {
             var testMap = TestMap();
             var testSightMap = TestSightMap();
-            var pt1 = new TwoDPoint(10f, 0.0f);
-            var pt2 = new TwoDPoint(7f, 0.0f);
+            var pt1 = new TwoDPoint(0f, 0.0f);
+            var pt2 = new TwoDPoint(5f, 0.0f);
             var startPts = new StartPts(new List<TwoDPoint> {pt1});
             var startPts2 = new StartPts(new List<TwoDPoint> {pt2});
 
@@ -48,22 +49,48 @@ namespace game_stuff
         {
             var tuples = new List<(Poly, bool)>
             {
-                (TestPoly(), false)
+                (TestPoly(), false), (TestPoly2(), true), (TestPoly3(), true)
             };
-
+#if DEBUG
+            Console.Out.WriteLine("test_walk_map");
+#endif
             var mapByPolys = WalkMap.CreateMapByPolys(tuples);
             return mapByPolys;
         }
 
-        private static Poly TestPoly()
+        public static Poly TestPoly()
         {
-            var pt1 = new TwoDPoint(0.0f, 0.0f);
-            var pt2 = new TwoDPoint(10.0f, 10.0f);
-            var pt3 = new TwoDPoint(20f, 0f);
-            var pt4 = new TwoDPoint(30.0f, 10f);
-            var pt5 = new TwoDPoint(40.0f, 0f);
-            var pt6 = new TwoDPoint(20.0f, -20.0f);
-            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
+            var pt1 = new TwoDPoint(10.0f, 10.0f);
+            var pt2 = new TwoDPoint(10f, -10f);
+            var pt3 = new TwoDPoint(-10.0f, -10f);
+            var pt4 = new TwoDPoint(-10.0f, 10f);
+
+            var twoDPoints = new[] {pt1, pt2, pt3, pt4};
+
+            var poly = new Poly(twoDPoints);
+            return poly;
+        }
+
+        public static Poly TestPoly2()
+        {
+            var pt1 = new TwoDPoint(2.0f, 10.0f);
+            var pt2 = new TwoDPoint(2.0f, 2.0f);
+            var pt3 = new TwoDPoint(-2.0f, 2.0f);
+            var pt4 = new TwoDPoint(-2.0f, 10.0f);
+
+            var twoDPoints = new[] {pt1, pt2, pt3, pt4};
+
+            var poly = new Poly(twoDPoints);
+            return poly;
+        }
+
+        public static Poly TestPoly3()
+        {
+            var pt1 = new TwoDPoint(2.0f, -10.0f);
+            var pt2 = new TwoDPoint(2.0f, -2.0f);
+            var pt3 = new TwoDPoint(-2.0f, -2.0f);
+            var pt4 = new TwoDPoint(-2.0f, -10.0f);
+            var twoDPoints = new[] {pt1, pt2, pt3, pt4};
 
             var poly = new Poly(twoDPoints);
             return poly;
@@ -73,7 +100,7 @@ namespace game_stuff
         {
             var tuples = new List<(Poly, bool)>
             {
-                (TestPoly(), false)
+                (TestPoly(), false), (TestPoly2(), true), (TestPoly3(), true)
             };
 
             var mapByPolys = SightMap.GenByConfig(tuples, new TwoDVectorLine[] { });

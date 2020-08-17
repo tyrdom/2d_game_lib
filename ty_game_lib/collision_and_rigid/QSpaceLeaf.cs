@@ -84,8 +84,8 @@ namespace collision_and_rigid
                 IQSpace qsl2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], q2);
                 IQSpace qsl3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], q3);
                 IQSpace qsl4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], q4);
-                var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, ref qsl1, ref qsl2,
-                    ref qsl3, ref qsl4);
+                var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, qsl1, qsl2,
+                    qsl3, qsl4);
 
                 if (Father != null)
                 {
@@ -181,7 +181,7 @@ namespace collision_and_rigid
                 return this;
             }
 
-            var tryCovToBranch = TryCovToBranch();
+            var tryCovToBranch = TryCovToBranch(limit);
             return tryCovToBranch switch
             {
                 QSpaceBranch qSpaceBranch => qSpaceBranch.TryCovToLimitQSpace(limit),
@@ -225,38 +225,43 @@ namespace collision_and_rigid
         }
 
 
-        public IQSpace TryCovToBranch()
+        public IQSpace TryCovToBranch(int limit)
         {
             var one = new HashSet<AabbBoxShape>();
             var two = new HashSet<AabbBoxShape>();
             var three = new HashSet<AabbBoxShape>();
             var four = new HashSet<AabbBoxShape>();
+            // var toCut = new HashSet<AabbBoxShape>();
             var zone = new HashSet<AabbBoxShape>();
             var (item1, item2) = Zone.GetMid();
-            foreach (var intTBoxShapes in AabbPackBoxShapes.Select(aabbBoxShape =>
+            // foreach (var aabbPackBoxShape in AabbPackBoxShapes)
+            // {  
+            // }
+
+            foreach (var intTBoxShapes in AabbPackBoxShapes.SelectMany(aabbBoxShape =>
                 aabbBoxShape.SplitByQuads(item1, item2)))
             {
-                foreach (var (i, aabbBoxShape1) in intTBoxShapes)
-                    switch (i)
-                    {
-                        case 0:
-                            zone.Add(aabbBoxShape1);
-                            break;
-                        case 1:
-                            one.Add(aabbBoxShape1);
-                            break;
-                        case 2:
-                            two.Add(aabbBoxShape1);
-                            break;
-                        case 3:
-                            three.Add(aabbBoxShape1);
-                            break;
-                        case 4:
-                            four.Add(aabbBoxShape1);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                var (i, aabbBoxShape1) = intTBoxShapes;
+                switch (i)
+                {
+                    case 0:
+                        zone.Add(aabbBoxShape1);
+                        break;
+                    case 1:
+                        one.Add(aabbBoxShape1);
+                        break;
+                    case 2:
+                        two.Add(aabbBoxShape1);
+                        break;
+                    case 3:
+                        three.Add(aabbBoxShape1);
+                        break;
+                    case 4:
+                        four.Add(aabbBoxShape1);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             if (zone.Count == AabbPackBoxShapes.Count) return this;
@@ -269,10 +274,10 @@ namespace collision_and_rigid
             IQSpace qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
             IQSpace qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
             var tryCovToBranch = new QSpaceBranch(TheQuad, Father, Zone, zone,
-                ref qs1,
-                ref qs2,
-                ref qs3,
-                ref qs4);
+                qs1,
+                qs2,
+                qs3,
+                qs4);
             tryCovToBranch.QuadOne.Father = tryCovToBranch;
             tryCovToBranch.QuadTwo.Father = tryCovToBranch;
             tryCovToBranch.QuadThree.Father = tryCovToBranch;

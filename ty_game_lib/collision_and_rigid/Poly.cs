@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace collision_and_rigid
@@ -110,8 +111,9 @@ namespace collision_and_rigid
         public bool IsFlush()
         {
             var n = GetACovPointNum();
+
             var ptsLength = Pts.Length;
-            var m = (n - 1) % ptsLength;
+            var m = (n + ptsLength - 1) % ptsLength;
             var o = (n + 1) % ptsLength;
             var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[n]);
             var pt2LinePos = Pts[o].GetPosOf(twoDVectorLine1);
@@ -126,29 +128,39 @@ namespace collision_and_rigid
 
         public Poly StartWithACovAndClockwise()
         {
-            Poly poly;
-            if (!IsFlush())
-            {
-                var twoDPoints = Pts.Reverse();
-                poly = new Poly(twoDPoints.ToArray()).ToNotCrossPoly();
-            }
-            else
-            {
-                poly = ToNotCrossPoly();
-            }
-
-            var n = poly.GetACovPointNum();
+            var n = GetACovPointNum();
             var ptsLength = Pts.Length;
 
-            return new Poly(Enumerable.Range(0, ptsLength).Select(i => (n + i) % ptsLength).Select(p => Pts[p])
-                .ToArray());
+            var dPoints = Enumerable.Range(0, ptsLength).Select(i => (n + i) % ptsLength).Select(p => Pts[p])
+                .ToArray();
+            var pp = new Poly(dPoints);
+
+            var isFlush = pp.IsFlush();
+
+            if (!isFlush)
+            {
+                Console.Out.WriteLine($"Is Flush {isFlush}");
+                var twoDPoints = pp.Pts.Reverse();
+                return new Poly(twoDPoints.ToArray()).ToNotCrossPoly();
+            }
+
+            return pp.ToNotCrossPoly();
         }
 
 
         public List<TwoDVectorLine> CovToLines(bool isBlockIn)
         {
             var startWithACovAndFlush = StartWithACovAndClockwise();
+// #if DEBUG
+//             Console.Out.WriteLine("poly ::");
+//             foreach (var twoDPoint in startWithACovAndFlush.Pts)
+//             {
+//                 Console.Out.WriteLine($"poly pt::{twoDPoint.Log()}");
+//             }
+// #endif
             var pts = isBlockIn ? startWithACovAndFlush.Pts : startWithACovAndFlush.Pts.Reverse().ToArray();
+
+
             var aabbBoxShapes = new List<TwoDVectorLine>();
 
             for (var i = 0; i < pts.Length - 1; i++)
@@ -167,12 +179,18 @@ namespace collision_and_rigid
             var shapes = new List<IBlockShape>();
 
             var startWithACovNotFlush = StartWithACovAndClockwise();
-//            startWithACovNotFlush.ShowPts();
+#if DEBUG
+            Console.Out.WriteLine("poly ::~~~");
+            foreach (var twoDPoint in startWithACovNotFlush.Pts)
+            {
+                Console.Out.WriteLine($"poly pt::{twoDPoint.Log()}");
+            }
+#endif
             var pPts = isBlockIn ? startWithACovNotFlush.Pts : startWithACovNotFlush.Pts.Reverse().ToArray();
-//            foreach (var twoDPoint in pPts)
-//            {
-//                Console.Out.WriteLine("poly x::" + twoDPoint.X + "    y::" + twoDPoint.Y);
-//            }
+            // foreach (var twoDPoint in pPts)
+            // {
+            //     Console.Out.WriteLine("poly x::" + twoDPoint.X + "    y::" + twoDPoint.Y);
+            // }
 
             var skip = false;
             var pPtsLength = pPts.Length;
@@ -279,6 +297,9 @@ namespace collision_and_rigid
 
         public static WalkBlock GenWalkBlockByBlockShapes(int limit, bool isBlockIn, List<IBlockShape> genBlockShapes)
         {
+#if DEBUG
+            Console.Out.WriteLine($"blk ::{genBlockShapes.Count}");
+#endif
             var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
 
             var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(genBlockAabbBoxShapes.ToArray(), limit);

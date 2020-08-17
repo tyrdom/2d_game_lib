@@ -9,8 +9,8 @@ namespace collision_and_rigid
     public class QSpaceBranch : IQSpace
     {
         public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<AabbBoxShape> aabbPackBoxes,
-            ref IQSpace quadOne, ref IQSpace quadTwo,
-            ref IQSpace quadThree, ref IQSpace quadFour)
+             IQSpace quadOne,  IQSpace quadTwo,
+             IQSpace quadThree,  IQSpace quadFour)
         {
             Father = father;
             TheQuad = quad;
@@ -214,9 +214,9 @@ namespace collision_and_rigid
             var tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, ref tryCovToLimitQSpace1,
-                ref tryCovToLimitQSpace2,
-                ref tryCovToLimitQSpace3, ref tryCovToLimitQSpace4);
+            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes,  tryCovToLimitQSpace1,
+                 tryCovToLimitQSpace2,
+                 tryCovToLimitQSpace3,  tryCovToLimitQSpace4);
         }
 
         public int FastTouchWithARightShootPoint(TwoDPoint p)
@@ -334,21 +334,13 @@ namespace collision_and_rigid
 
         public string OutZones()
         {
-            var s = "Branch:::";
-            foreach (var aabbBoxShape in AabbPackBoxShapes)
-            {
-                var zone = aabbBoxShape.Zone;
-                s += SomeTools.ZoneLog(zone) + "\n";
-            }
+            var s = AabbPackBoxShapes.Select(aabbBoxShape => aabbBoxShape.Zone).Aggregate("Branch:::\n",
+                (current, zone) => current + (SomeTools.ZoneLog(zone) + "\n"));
 
             var qSpaces = new[] {QuadOne, QuadTwo, QuadThree, QuadFour};
-            foreach (var qSpace in qSpaces)
-            {
-                var zones = qSpace.OutZones();
-                s += zones + "\n";
-            }
 
-            return s;
+            return qSpaces.Select(qSpace => qSpace.OutZones())
+                .Aggregate(s, (current, zones) => current + (zones + "\n"));
         }
 
         public void InsertBox(AabbBoxShape boxShape)

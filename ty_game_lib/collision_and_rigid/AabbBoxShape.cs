@@ -48,7 +48,7 @@ namespace collision_and_rigid
             var z1234 = new List<(int, AabbBoxShape)>();
             var z = Zone;
 #if DEBUG
-            
+
 #endif
 
             if (z.Down >= horizon)
@@ -87,6 +87,11 @@ namespace collision_and_rigid
                             break;
                         case TwoDVectorLine twoDVectorLine:
                             var (item1, item2) = twoDVectorLine.CutByV(vertical, z);
+#if DEBUG
+                            Console.Out.WriteLine($"{z.LogSide()}");
+                            Console.Out.WriteLine(
+                                $"line cut by v{twoDVectorLine.Log()}:::{vertical} so res {item1?.LogSide()} || {item2?.LogSide()}");
+#endif
                             if (item1 != null)
                             {
                                 var t1 = (2, new AabbBoxShape(item1.Value, Shape));

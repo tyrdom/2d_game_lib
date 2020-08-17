@@ -32,6 +32,7 @@ namespace lib_test
             SomeTools.LogPt(anotherPoint);
             SomeTools.LogPt(crossPoint);
             SomeTools.LogPt(point);
+
             Console.Out.WriteLine("Block test!!!");
 
 //
@@ -55,7 +56,7 @@ namespace lib_test
 //                Console.Out.WriteLine("res:" + twoDPoint.X);
 //            }
 
-            var poly = new Poly(twoDPoints);
+            var poly = TestStuff.TestPoly();
 
 //            var blockShapes = poly.GenBlockShapes(0.2f, false);
 //            foreach (var blockShape in blockShapes)
@@ -80,10 +81,11 @@ namespace lib_test
             var pp3 = new TwoDPoint(2, -1.5f);
             var pp4 = new TwoDPoint(1.5f, -1f);
             var dPoints = new[] {pp1, pp2, pp3, pp4};
-            var poly1 = new Poly(dPoints);
+            var poly1 = TestStuff.TestPoly2();
+            var poly2 = TestStuff.TestPoly3();
             var tuples = new List<(Poly, bool)>
             {
-                (poly, false), (poly1, true)
+                (poly, false), (poly1, true), (poly2, true)
             };
 
 //            var genBlockShapes = poly1.GenBlockShapes(0.2f, true);
@@ -98,7 +100,7 @@ namespace lib_test
 //            var outZones = genWalkBlockByPoly.QSpace.OutZones();
 //            Console.Out.WriteLine("zones!!!:::"+outZones);
 
-            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.2f, 7);
+            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.5f, 6);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
             if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
             else
@@ -106,6 +108,12 @@ namespace lib_test
 
             var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
 
+            var sPt = new TwoDPoint(-0.1f, -1.45f);
+            var ePt = new TwoDPoint(0.2f, -1.55f);
+
+            var pushOutToPt = genWalkBlockByPolys.PushOutToPt(sPt, ePt);
+
+            Console.Out.WriteLine($"push out pt {pushOutToPt?.Log()}");
             Console.Out.WriteLine("!!2!!" + inBlock2);
 
             TwoDPoint a = new TwoDPoint(0f, 0f);
@@ -130,6 +138,7 @@ namespace lib_test
                 }
             }
 
+            Console.Out.WriteLine("game test~~~~~");
 
             var testPlayGround = TestStuff.TestPlayGround();
             foreach (var keyValuePair in testPlayGround.Item2)

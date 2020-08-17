@@ -17,6 +17,7 @@ namespace game_stuff
         public static SightMap GenByConfig(IEnumerable<(Poly, bool)> lp, IEnumerable<TwoDVectorLine> lines)
         {
             var twoDVectorLines = lp.SelectMany(x => x.Item1.CovToLines(x.Item2));
+
             var dVectorLines = twoDVectorLines as TwoDVectorLine[] ?? twoDVectorLines.ToArray();
             dVectorLines.ToList().AddRange(lines);
             var aabbBoxShapes = dVectorLines.Select(x => x.CovToAabbPackBox());
