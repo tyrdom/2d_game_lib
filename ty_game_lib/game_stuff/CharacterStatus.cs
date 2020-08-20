@@ -206,8 +206,8 @@ namespace game_stuff
                         $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.Log()}||{launchBullet.Pos.Log()}");
 #endif
 
-                var operateAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
-                ComboByNext(operateAim);
+                var skillAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
+                ComboByNext(skillAim);
 
                 //没有更多Act操作，则返回
                 if (opAction == null) return (move, launchBullet);
@@ -238,11 +238,11 @@ namespace game_stuff
                 {
                     case Skill.SkillPeriod.Casting:
 
-                        NextSkill ??= (operateAim, skill, opAction.Value);
+                        NextSkill ??= (skillAim, skill, opAction.Value);
 
                         break;
                     case Skill.SkillPeriod.CanCombo:
-                        LoadSkill(operateAim, skill, opAction.Value);
+                        LoadSkill(skillAim, skill, opAction.Value);
                         NowWeapon = toUse;
                         break;
                     case Skill.SkillPeriod.End:
