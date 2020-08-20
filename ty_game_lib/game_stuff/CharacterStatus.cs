@@ -131,7 +131,7 @@ namespace game_stuff
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);
         }
 
-        private void ComboByNext()
+        private void ComboByNext(TwoDVector? operateAim)
         {
             if (NextSkill == null || NowCastSkill == null ||
                 NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo)
@@ -147,7 +147,7 @@ namespace game_stuff
                 NowWeapon = (NowWeapon + 1) % Weapons.Count;
             }
 
-            var aim = NextSkill.Value.Aim;
+            var aim = operateAim ?? NextSkill.Value.Aim;
 
             LoadSkill(aim, NextSkill.Value.skill, NextSkill.Value.opAction);
 
@@ -182,7 +182,8 @@ namespace game_stuff
                 var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(dPoint);
                 AntiActBuff = antiActBuff;
 #if DEBUG
-                Console.Out.WriteLine($"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.Log()} ::anti buff :: {AntiActBuff?.RestTick}");
+                Console.Out.WriteLine(
+                    $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.Log()} ::anti buff :: {AntiActBuff?.RestTick}");
 #endif
                 return (twoDPoint, null);
             }
@@ -201,10 +202,12 @@ namespace game_stuff
                 Console.Out.WriteLine($"{GId} skill on {NowCastSkill._nowOnTick}");
                 Console.Out.WriteLine($"skill move {move?.Log()}");
                 if (launchBullet != null)
-                    Console.Out.WriteLine($"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.Log()}||{launchBullet.Pos.Log()}");
+                    Console.Out.WriteLine(
+                        $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.Log()}||{launchBullet.Pos.Log()}");
 #endif
-                // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
-                ComboByNext();
+
+                var operateAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
+                ComboByNext(operateAim);
 
                 //没有更多Act操作，则返回
                 if (opAction == null) return (move, launchBullet);
@@ -230,7 +233,7 @@ namespace game_stuff
 
                 if (!nowWeapon.SkillGroups.TryGetValue(opAction.Value, out var skills) ||
                     !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
-                var operateAim = operate?.Aim ?? operate?.Move;
+
                 switch (NowCastSkill.InWhichPeriod())
                 {
                     case Skill.SkillPeriod.Casting:
