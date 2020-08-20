@@ -230,15 +230,16 @@ namespace game_stuff
 
                 if (!nowWeapon.SkillGroups.TryGetValue(opAction.Value, out var skills) ||
                     !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
+                var operateAim = operate?.Aim ?? operate?.Move;
                 switch (NowCastSkill.InWhichPeriod())
                 {
                     case Skill.SkillPeriod.Casting:
 
-                        NextSkill ??= (operate?.Aim, skill, opAction.Value);
+                        NextSkill ??= (operateAim, skill, opAction.Value);
 
                         break;
                     case Skill.SkillPeriod.CanCombo:
-                        LoadSkill(operate?.Aim, skill, opAction.Value);
+                        LoadSkill(operateAim, skill, opAction.Value);
                         NowWeapon = toUse;
                         break;
                     case Skill.SkillPeriod.End:
