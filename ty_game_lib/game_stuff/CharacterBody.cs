@@ -7,13 +7,13 @@ namespace game_stuff
 {
     public class CharacterBody : IIdPointShape
     {
-        public BodySize BodySize;
-        public CharacterStatus CharacterStatus;
-        public TwoDPoint LastPos;
+        public BodySize BodySize { get; }
+        public CharacterStatus CharacterStatus { get; }
+        public TwoDPoint LastPos { get; private set; }
 
-        public TwoDPoint NowPos;
-        public AngleSight Sight;
-        public int Team;
+        public TwoDPoint NowPos { get; private set; }
+        public AngleSight Sight { get; }
+        public int Team { get; }
 
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
@@ -75,8 +75,8 @@ namespace game_stuff
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
-            #if DEBUG
-            Console.Out.WriteLine($"bgt::{charGoTick.Item1?.Log()}");            
+#if DEBUG
+            Console.Out.WriteLine($"bgt::{charGoTick.Item1?.Log()}");
 #endif
             return charGoTick;
         }

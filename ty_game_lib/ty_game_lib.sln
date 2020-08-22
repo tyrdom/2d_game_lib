@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "game_config", "game_config\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_test", "lib_test\lib_test.csproj", "{6DBFBEF2-57B2-4F66-8F58-3A19DEFDFFAE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "game_bot", "game_bot\game_bot.csproj", "{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{6DBFBEF2-57B2-4F66-8F58-3A19DEFDFFAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DBFBEF2-57B2-4F66-8F58-3A19DEFDFFAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DBFBEF2-57B2-4F66-8F58-3A19DEFDFFAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
