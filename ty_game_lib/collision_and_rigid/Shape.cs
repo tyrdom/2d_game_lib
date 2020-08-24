@@ -34,18 +34,19 @@ namespace collision_and_rigid
 
     public interface IBlockShape
     {
+        string Log();
         int TouchByRightShootPointInAAbbBox(TwoDPoint p);
         bool IsEmpty();
 
 
-        List<(TwoDPoint, CondAfterCross, CondAfterCross)> CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(
+        List<(TwoDPoint crossPt, CondAfterCross shape1AfterCond, CondAfterCross shape2AfterCond)> CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(
             IBlockShape blockShape);
 
         TwoDPoint GetStartPt();
         TwoDPoint GetEndPt();
 
         (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
-            CondAfterCross nowCond,
+            CondAfterCross startCond,
             List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond);
 
         bool CheckAfter(IBlockShape another);
@@ -56,8 +57,8 @@ namespace collision_and_rigid
 
     public enum CondAfterCross
     {
-        OutToIn,
-        InToOut,
+        ToIn,
+        ToOut,
         MaybeOutToIn
     }
 }

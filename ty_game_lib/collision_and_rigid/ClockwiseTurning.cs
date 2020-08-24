@@ -6,15 +6,13 @@ namespace collision_and_rigid
 {
     public class ClockwiseTurning : IShape, IBlockShape
     {
-        private readonly TwoDVectorLine _tangentA;
-        private readonly TwoDVectorLine _tangentB;
         public readonly ClockwiseBalanceAngle Aob;
         public readonly TwoDVectorLine? Last;
         public readonly TwoDVectorLine? Next;
         public readonly float R;
 
 
-        public string LogPt()
+        public string Log()
         {
             return $"{Aob.A.LogPt()}{Aob.O.LogPt()}{Aob.B.LogPt()}";
         }
@@ -24,8 +22,6 @@ namespace collision_and_rigid
             if (aob.CheckTuring())
             {
                 Aob = aob;
-                _tangentA = new TwoDVectorLine(Aob.A, Aob.O).CounterClockwiseHalfPi();
-                _tangentB = new TwoDVectorLine(Aob.B, Aob.O).CounterClockwiseHalfPi();
             }
             else
             {
@@ -44,9 +40,8 @@ namespace collision_and_rigid
             return same;
         }
 
-        public List<(TwoDPoint, CondAfterCross, CondAfterCross)>
-            CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(
-                IBlockShape blockShape)
+        public List<(TwoDPoint crossPt, CondAfterCross shape1AfterCond, CondAfterCross shape2AfterCond)>
+            CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(IBlockShape blockShape)
         {
             switch (blockShape)
             {
@@ -70,7 +65,7 @@ namespace collision_and_rigid
         }
 
         public (List<IBlockShape>, CondAfterCross, List<IBlockShape>) CutByPointReturnGoodBlockCondAndTemp(
-            CondAfterCross nowCond,
+            CondAfterCross startCond,
             List<(TwoDPoint, CondAfterCross)>? ptsAndCond, List<IBlockShape> temp, CondAfterCross endCond)
         {
             if (ptsAndCond == null)
@@ -100,7 +95,7 @@ namespace collision_and_rigid
             {
                 switch (cond)
                 {
-                    case CondAfterCross.OutToIn:
+                    case CondAfterCross.ToIn:
                     {
                         var twoDVectorLine = GetAPiece(nPt, pt);
                         if (temp.Count > 0) blockShapes.AddRange(temp);
@@ -108,13 +103,13 @@ namespace collision_and_rigid
                         blockShapes.Add(twoDVectorLine);
                         break;
                     }
-                    case CondAfterCross.InToOut:
+                    case CondAfterCross.ToOut:
                         temp.Clear();
                         break;
                     default:
                     {
-                        if ((nowCond == CondAfterCross.InToOut ||
-                             nowCond == CondAfterCross.MaybeOutToIn) &&
+                        if ((startCond == CondAfterCross.ToOut ||
+                             startCond == CondAfterCross.MaybeOutToIn) &&
                             cond == CondAfterCross.MaybeOutToIn)
                         {
                             var twoDVectorLine = GetAPiece(nPt, pt);
@@ -131,24 +126,31 @@ namespace collision_and_rigid
                 }
 
 
-                nowCond = cond;
+                startCond = cond;
                 nPt = pt;
             }
 
             switch (endCond)
             {
-                case CondAfterCross.OutToIn:
-                    if (nowCond == CondAfterCross.InToOut)
-                        Console.Out.WriteLine("Cond Error" + nowCond + " and " + endCond);
+                case CondAfterCross.ToIn:
+                    if (startCond == CondAfterCross.ToOut)
+                    {
+                        var selectMany = ptsAndCond.Aggregate("cutPt::",
+                            (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
+
+
+                        Console.Out.WriteLine(
+                            $" Cond Error {Log()} with {selectMany}" + startCond + " and " + endCond);
+                    }
 
                     break;
-                case CondAfterCross.InToOut:
+                case CondAfterCross.ToOut:
                     var twoDVectorLine = GetAPiece(nPt, Aob.B);
                     blockShapes.Add(twoDVectorLine);
-                    nowCond = CondAfterCross.InToOut;
+                    startCond = CondAfterCross.ToOut;
                     break;
                 case CondAfterCross.MaybeOutToIn:
-                    if (nowCond != CondAfterCross.OutToIn)
+                    if (startCond != CondAfterCross.ToIn)
                     {
                         var twoDVectorLine2 = GetAPiece(nPt, Aob.B);
                         temp.Add(twoDVectorLine2);
@@ -157,11 +159,11 @@ namespace collision_and_rigid
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(nowCond), nowCond, null);
+                    throw new ArgumentOutOfRangeException(nameof(startCond), startCond, null);
             }
 
 
-            return (blockShapes, nowCond, temp);
+            return (blockShapes, startCond, temp);
         }
 
         public bool CheckAfter(IBlockShape another)
@@ -347,35 +349,43 @@ namespace collision_and_rigid
 
             var p1InAngel = Aob.BlockUseCover(p1);
             var p2InAngel = Aob.BlockUseCover(p2);
+#if DEBUG
+            Console.Out.WriteLine($"{Log()} CT maybe have cross line{line.Log()} pt {p1.Log()}  " + f1 +
+                                  $" == {p2.Log()}  " + f2);
+
+#endif
             if (f1 < f2)
             {
                 var b1 = f1 >= 0 && f1 < 1;
                 var b2 = f2 > 0 && f2 <= 1;
 
                 var p1B = b1 && p1InAngel;
-                if (p1B) pts.Add((p1, CondAfterCross.InToOut, CondAfterCross.OutToIn));
+                if (p1B) pts.Add((p1, CondAfterCross.ToOut, CondAfterCross.ToIn));
 
                 var p2B = b2 && p2InAngel;
                 if (p2B)
                     pts.Add(Aob.RealLessThanEnd(p2)
-                        ? (p2, CondAfterCross.OutToIn, CondAfterCross.InToOut)
-                        : (p2, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                        ? (p2, CondAfterCross.ToIn, CondAfterCross.ToOut)
+                        : (p2, CondAfterCross.MaybeOutToIn, CondAfterCross.ToOut));
             }
             else
             {
-                var b2 = f1 >= 0 && f1 < 1;
-                var b1 = f2 > 0 && f2 <= 1;
+                var b2 = f2 >= 0 && f2 < 1;
+                var b1 = f1 > 0 && f1 <= 1;
 
                 var p1B = b1 && p1InAngel;
                 if (p1B)
                     pts.Add(Aob.RealLessThanEnd(p1)
-                        ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
-                        : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                        ? (p1, CondAfterCross.ToIn, CondAfterCross.ToOut)
+                        : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.ToOut));
 
                 var p2B = b2 && p2InAngel;
-                if (p2B) pts.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
+                if (p2B) pts.Add((p2, CondAfterCross.ToOut, CondAfterCross.ToIn));
             }
-
+#if DEBUG
+            var aggregate = pts.Aggregate("out pts::", (s, x) => s + x.Item1.Log());
+            Console.Out.WriteLine($"{aggregate}");
+#endif
             return pts;
         }
 
@@ -406,10 +416,10 @@ namespace collision_and_rigid
             var p2Bb = p2B1 && p2B2 && p2InAngel1;
             if (p1Bb)
                 twoDPoints.Add(Aob.RealLessThanEnd(p1)
-                    ? (p1, CondAfterCross.OutToIn, CondAfterCross.InToOut)
-                    : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.InToOut));
+                    ? (p1, CondAfterCross.ToIn, CondAfterCross.ToOut)
+                    : (p1, CondAfterCross.MaybeOutToIn, CondAfterCross.ToOut));
 
-            if (p2Bb) twoDPoints.Add((p2, CondAfterCross.InToOut, CondAfterCross.OutToIn));
+            if (p2Bb) twoDPoints.Add((p2, CondAfterCross.ToOut, CondAfterCross.ToIn));
 
             return twoDPoints;
         }
@@ -673,7 +683,6 @@ namespace collision_and_rigid
 
             var cover = Aob.Cover(item1) || Aob.Cover(item2);
             return cover;
-          
         }
     }
 }

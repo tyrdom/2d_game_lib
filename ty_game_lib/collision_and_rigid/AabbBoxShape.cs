@@ -65,7 +65,7 @@ namespace collision_and_rigid
 //
 #if DEBUG
                             Console.Out.WriteLine($"{z.LogSide()}");
-                            Console.Out.WriteLine($"{clockwiseTurning.LogPt()}:::{vertical}");
+                            Console.Out.WriteLine($"{clockwiseTurning.Log()}:::{vertical}");
 #endif
 
                             var (lZones, rZones) = clockwiseTurning.CutByV(vertical, z);
