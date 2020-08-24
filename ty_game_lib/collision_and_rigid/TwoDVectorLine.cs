@@ -139,7 +139,14 @@ namespace collision_and_rigid
             {
                 case CondAfterCross.ToIn:
                     if (startCond == CondAfterCross.ToOut)
-                        Console.Out.WriteLine($"Cond Error at end pt:::{nPt.Log()}" + startCond + " and " + endCond);
+                    {           var selectMany = ptsAndCond.Aggregate("cutPt::",
+                            (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
+
+                        Console.Out.WriteLine($" Cond end InTOut~~~{Log()}  {selectMany} :::");
+                        throw new Exception($" Cond end IntTOut~~~{Log()}  {selectMany} :::");
+                       
+                    }
+
                     break;
                 case CondAfterCross.ToOut:
                     var twoDVectorLine = new TwoDVectorLine(nPt, B, false, true);

@@ -186,9 +186,8 @@ namespace collision_and_rigid
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
         {
             var o = Aob.O;
-            var ox = p.X - o.X;
-            var oy = p.Y - o.Y;
-            if (ox * ox + oy * oy < R * R) return -1;
+            var sqNorm = TwoDVector.TwoDVectorByPt(o, p).SqNorm();
+            if (sqNorm < R * R) return -1;
 
             {
                 return -2;

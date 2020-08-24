@@ -101,34 +101,31 @@ namespace collision_and_rigid
             {
                 var zone = aabbBoxShape.Zone;
 //                Console.Out.WriteLine("XY:::" + X + "  " + Y + "\n zone：：" + SomeTools.ZoneLog(zone));
-                if (Y <= zone.Up && Y > zone.Down
-                )
-                {
-//                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
+                if (!(Y <= zone.Up) || !(Y > zone.Down)) continue;
+                //                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
 
-                    if (X < zone.Left)
-                    {
+                if (X < zone.Left)
+                {
 //                        Console.Out.WriteLine("!TOUCH::" + SomeTools.ZoneLog(zone));
-                        n++;
-                    }
-                    else if (X >= zone.Left && X < zone.Right)
+                    n++;
+                }
+                else if (X >= zone.Left && X <= zone.Right)
+                {
+                    aShape = aabbBoxShape;
+                    var shape = aabbBoxShape.Shape;
+                    var touchByRightShootPointInAAbbBox = shape switch
                     {
-                        aShape = aabbBoxShape;
-                        var shape = aabbBoxShape.Shape;
-                        var touchByRightShootPointInAAbbBox = shape switch
-                        {
-                            ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBox(this),
-                            TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBox(this),
-                            _ => throw new ArgumentOutOfRangeException(nameof(shape))
-                        };
+                        ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBox(this),
+                        TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBox(this),
+                        _ => throw new ArgumentOutOfRangeException(nameof(shape))
+                    };
 
 //                        Console.Out.WriteLine("a num:" + touchByRightShootPointInAAbbBox + "zone: " +
 //                                              SomeTools.ZoneLog(aabbBoxShape.Zone));
 //
 //                        Console.Out.WriteLine(SomeTools.ZoneLog(zone));
-                        if (touchByRightShootPointInAAbbBox < 0) return (touchByRightShootPointInAAbbBox, aShape);
-                        n += touchByRightShootPointInAAbbBox;
-                    }
+                    if (touchByRightShootPointInAAbbBox < 0) return (touchByRightShootPointInAAbbBox, aShape);
+                    n += touchByRightShootPointInAAbbBox;
                 }
             }
 

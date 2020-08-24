@@ -1,3 +1,5 @@
+using System;
+
 #nullable enable
 namespace collision_and_rigid
 {
@@ -18,11 +20,12 @@ namespace collision_and_rigid
         {
             if (QSpace == null) return true;
 
-            var (item1, _) = QSpace.TouchWithARightShootPoint(p);
-
-//            Console.Out.WriteLine("num::" + item1);
-
-//            Console.Out.WriteLine("box::" + SomeTools.ZoneLog(aabbBoxShape.Zone));
+            var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
+#if DEBUG
+            Console.Out.WriteLine("num::" + item1);
+            var logSide = aabbBoxShape == null ? "" : aabbBoxShape.Zone.LogSide();
+            Console.Out.WriteLine($"{p.Log()}  box::{logSide}");
+#endif
             if (item1 >= 0)
             {
                 var inBlock = item1 % 2 != 0;

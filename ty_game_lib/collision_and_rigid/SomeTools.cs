@@ -309,11 +309,12 @@ namespace collision_and_rigid
                 ptsAndCond ??= new List<(TwoDPoint, CondAfterCross)>();
                 var startPt = blockShape.GetStartPt();
                 var b1 = block2.CoverPoint(startPt);
+                
                 var startCond = b1 ? CondAfterCross.ToIn : CondAfterCross.ToOut;
                 var endPt = blockShape.GetEndPt();
                 var b = block2.CoverPoint(endPt);
                 var endCond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
-
+                Console.Out.WriteLine($"{blockShape.Log()}is startPt in {b1} end in {b}");
                 var (blockShapes, _, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond, temp1, endCond);
                 resL1.AddRange(blockShapes);
