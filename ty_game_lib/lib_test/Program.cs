@@ -100,7 +100,7 @@ namespace lib_test
 //            var outZones = genWalkBlockByPoly.QSpace.OutZones();
 //            Console.Out.WriteLine("zones!!!:::"+outZones);
 
-            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 3f, 6);
+            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.5f, 6);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
             if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
             else

@@ -228,7 +228,7 @@ namespace collision_and_rigid
                         break;
                     case Pt2LinePos.On:
                         skip = true;
-                        shapes.Add(new TwoDVectorLine(fl1.A, fl2.B));
+                        shapes.Add(new TwoDVectorLine(fl1.A, fl2.B, true, true));
                         break;
                     case Pt2LinePos.Left:
                         shapes.Add(fl1);

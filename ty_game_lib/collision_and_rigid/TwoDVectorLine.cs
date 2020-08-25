@@ -29,7 +29,7 @@ namespace collision_and_rigid
 
         public string Log()
         {
-            return $"{A.Log()}--{B.Log()}";
+            return $"{A.Log()}|{AOut}--{B.Log()}{BOut}";
         }
 
         public List<(TwoDPoint crossPt, CondAfterCross shape1AfterCond, CondAfterCross shape2AfterCond)>
@@ -90,7 +90,7 @@ namespace collision_and_rigid
                             throw new Exception($" Cond InTIn~~~{Log()}  {selectMany} :::{i}");
                         }
 #endif
-                        var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
+                        var twoDVectorLine = new TwoDVectorLine(nPt, pt, AOut && i == 0);
                         if (temp.Count > 0) blockShapes.AddRange(temp);
                         temp.Clear();
                         blockShapes.Add(twoDVectorLine);
@@ -116,7 +116,7 @@ namespace collision_and_rigid
                              startCond == CondAfterCross.MaybeOutToIn) &&
                             cond == CondAfterCross.MaybeOutToIn)
                         {
-                            var twoDVectorLine = new TwoDVectorLine(nPt, pt, i == 0);
+                            var twoDVectorLine = new TwoDVectorLine(nPt, pt, AOut && i == 0);
 
                             temp.Add(twoDVectorLine);
                         }
@@ -139,24 +139,24 @@ namespace collision_and_rigid
             {
                 case CondAfterCross.ToIn:
                     if (startCond == CondAfterCross.ToOut)
-                    {           var selectMany = ptsAndCond.Aggregate("cutPt::",
+                    {
+                        var selectMany = ptsAndCond.Aggregate("cutPt::",
                             (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
 
                         Console.Out.WriteLine($" Cond end InTOut~~~{Log()}  {selectMany} :::");
                         throw new Exception($" Cond end IntTOut~~~{Log()}  {selectMany} :::");
-                       
                     }
 
                     break;
                 case CondAfterCross.ToOut:
-                    var twoDVectorLine = new TwoDVectorLine(nPt, B, false, true);
+                    var twoDVectorLine = new TwoDVectorLine(nPt, B, nPt == A && AOut, BOut);
                     blockShapes.Add(twoDVectorLine);
                     startCond = CondAfterCross.ToOut;
                     break;
                 case CondAfterCross.MaybeOutToIn:
                     if (startCond != CondAfterCross.ToIn)
                     {
-                        var twoDVectorLine2 = new TwoDVectorLine(nPt, B, false, true);
+                        var twoDVectorLine2 = new TwoDVectorLine(nPt, B, nPt == A && AOut, BOut);
                         temp.Add(twoDVectorLine2);
                     }
 
@@ -315,7 +315,7 @@ namespace collision_and_rigid
 
         public TwoDVectorLine MoveVector(TwoDVector v)
         {
-            return new TwoDVectorLine(A.Move(v), B.Move(v));
+            return new TwoDVectorLine(A.Move(v), B.Move(v), AOut, BOut);
         }
 
         public bool IsPointOnAnother(TwoDVectorLine lineB)
@@ -534,20 +534,20 @@ namespace collision_and_rigid
             return get2S / GetVector().Norm();
         }
 
-        public TwoDPoint Slide(TwoDPoint p, bool safe)
+        public TwoDPoint Slide(TwoDPoint p)
         {
             var twoDVector = new TwoDVectorLine(A, p).GetVector();
             var dVector = GetVector();
             var dot = twoDVector.Dot(dVector);
-            var norm = dVector.SqNorm();
-            var f = dot / norm;
+            var sqNorm = dVector.SqNorm();
+            var f = dot / sqNorm;
             var gap = dVector.GetUnit().AntiClockwiseTurn(new TwoDVector(0, 1)).Multi(0.01f);
 // #if DEBUG
 //             Console.Out.WriteLine($"ffffffffffffff::::{f}");
 // #endif
-            if (f <= 0f) return AOut && !safe ? A.Move(dVector.Multi(f)) : A.Move(gap);
+            if (f <= 0f) return AOut ? A.Move(dVector.Multi(f)) : A.Move(gap);
 
-            if (f >= 1f) return BOut && !safe ? A.Move(dVector.Multi(f)) : B.Move(gap);
+            if (f >= 1f) return BOut ? A.Move(dVector.Multi(f)) : B.Move(gap);
 
             var twoDPoint = A.Move(dVector.Multi(f)).Move(gap);
 // #if DEBUG

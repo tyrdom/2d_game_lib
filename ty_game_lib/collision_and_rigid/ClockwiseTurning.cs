@@ -263,7 +263,7 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null && !safe ? Next.Slide(p, false) : b;
+                            return Next != null && !safe ? Next.Slide(p) : b;
                         case Pt2LinePos.On:
                             return b;
                         case Pt2LinePos.Left:
@@ -277,7 +277,7 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null && !safe ? Next.Slide(p, false) : b;
+                            return Next != null && !safe ? Next.Slide(p) : b;
                         case Pt2LinePos.On:
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
                                 .Multi(R);
@@ -301,17 +301,17 @@ namespace collision_and_rigid
                             var mPos = p.GetPosOf(om);
                             return mPos switch
                                 {
-                                    Pt2LinePos.Right => Next != null && !safe ? Next.Slide(p, false) : b,
+                                    Pt2LinePos.Right => Next != null && !safe ? Next.Slide(p) : b,
                                     Pt2LinePos.On => m,
-                                    Pt2LinePos.Left => Last != null && !safe ? Last.Slide(p, false) : a,
+                                    Pt2LinePos.Left => Last != null && !safe ? Last.Slide(p) : a,
                                     _ => throw new ArgumentOutOfRangeException()
                                 }
                                 ;
 
                         case Pt2LinePos.On:
-                            return Last != null && !safe ? Last.Slide(p, false) : a;
+                            return Last != null && !safe ? Last.Slide(p) : a;
                         case Pt2LinePos.Left:
-                            return Last != null && !safe ? Last.Slide(p, false) : a;
+                            return Last != null && !safe ? Last.Slide(p) : a;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }

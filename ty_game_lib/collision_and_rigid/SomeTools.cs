@@ -130,7 +130,7 @@ namespace collision_and_rigid
 //                                 $" {moveLine.Log()}cross {blockLine.Log()} qqqqqqqqqqq shape {isCrossAnother}");
 //                             
 // #endif
-                            var twoDPoint = blockLine.Slide(moveLineB, safe);
+                            var twoDPoint = blockLine.Slide(moveLineB);
                             return twoDPoint;
                         }
 
