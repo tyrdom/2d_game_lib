@@ -43,7 +43,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public bool HitBody(IIdPointShape targetBody)
+        private bool HitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
