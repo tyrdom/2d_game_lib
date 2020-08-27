@@ -208,20 +208,37 @@ namespace collision_and_rigid
             }
 #if DEBUG
             Console.Out.WriteLine("blk 1");
+            var blk1F = true;
+            TwoDPoint edPt1 = null!;
             foreach (var blockShape in l1)
             {
-                var twoDPoint = blockShape.GetEndPt();
                 var twoPp = blockShape.GetStartPt();
-                Console.Out.WriteLine($"a blk start {twoPp.Log()} end {twoDPoint.Log()}");
+
+                var b = edPt1 == null || edPt1 == twoPp;
+                blk1F = blk1F && b;
+
+                var twoDPoint = blockShape.GetEndPt();
+
+                edPt1 = twoDPoint;
+                Console.Out.WriteLine($"a blk start {twoPp.Log()} end {twoDPoint.Log()} now flush is {b}");
             }
 
+            Console.Out.WriteLine($"blk 1~~~~ is flush {blk1F}");
+
             Console.Out.WriteLine("blk 2");
+            var blk2F = true;
+            TwoDPoint edPt2 = null!;
             foreach (var blockShape in l2)
             {
-                var twoDPoint = blockShape.GetEndPt();
                 var twoPp = blockShape.GetStartPt();
-                Console.Out.WriteLine($"a blk start {twoPp.Log()} end {twoDPoint.Log()}");
+                var b = edPt2 == null || edPt2 == twoPp;
+                blk2F = blk2F && b;
+                var twoDPoint = blockShape.GetEndPt();
+                edPt2 = twoDPoint;
+                Console.Out.WriteLine($"a blk start {twoPp.Log()} end {twoDPoint.Log()} now flush is {b}");
             }
+
+            Console.Out.WriteLine($"blk 2~~~~ is flush {blk2F}");
 #endif
             //record points
             var dicL1 = new Dictionary<int, List<(TwoDPoint, CondAfterCross)>>();
@@ -309,12 +326,14 @@ namespace collision_and_rigid
                 ptsAndCond ??= new List<(TwoDPoint, CondAfterCross)>();
                 var startPt = blockShape.GetStartPt();
                 var b1 = block2.CoverPoint(startPt);
-                
+
                 var startCond = b1 ? CondAfterCross.ToIn : CondAfterCross.ToOut;
                 var endPt = blockShape.GetEndPt();
                 var b = block2.CoverPoint(endPt);
                 var endCond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
+#if DEBUG
                 Console.Out.WriteLine($"{blockShape.Log()}is startPt in {b1} end in {b}");
+#endif
                 var (blockShapes, _, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond, temp1, endCond);
                 resL1.AddRange(blockShapes);
@@ -336,10 +355,9 @@ namespace collision_and_rigid
 
                 var b = block1.CoverPoint(endPt);
                 var cond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
-//
-//                Console.Out.WriteLine("l2 do on::" + i + "  endPt::X" + endPt.X + "::Y" + endPt.Y + "  start cond:::" +
-//                                      nowL2Cond + "  end cond:::" + cond);
-//
+#if DEBUG
+                Console.Out.WriteLine($"stPt {startPt.Log()} is {startCond} edPt {endPt.Log()} is {cond}");
+#endif
                 var (blockShapes, condAfterCross, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond2, temp2, cond);
                 resL2.AddRange(blockShapes);
@@ -513,7 +531,9 @@ namespace collision_and_rigid
 
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
+#if DEBUG
             Console.Out.WriteLine($"aabb num::{qSpace.AabbPackBoxShapes.Count}");
+#endif
             return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 

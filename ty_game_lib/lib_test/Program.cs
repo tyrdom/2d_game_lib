@@ -83,9 +83,21 @@ namespace lib_test
             var dPoints = new[] {pp1, pp2, pp3, pp4};
             var poly1 = TestStuff.TestPoly2();
             var poly2 = TestStuff.TestPoly3();
+            var poly3 = new Poly(new[]
+                {new TwoDPoint(2, 2), new TwoDPoint(4, 2), new TwoDPoint(4, -2), new TwoDPoint(2, -2),});
+
+            var poly4 = new Poly(new[]
+                {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
+
+            var poly5 = new Poly(new[]
+            {
+                new TwoDPoint(-2, -2), new TwoDPoint(-2, -4), new TwoDPoint(-4, -4), new TwoDPoint(-4, -2)
+            });
+
             var tuples = new List<(Poly, bool)>
             {
-                (poly, false), (poly1, true), (poly2, true)
+                (poly, false), (poly3, true)
+                , (poly4, true) , (poly5, true)
             };
 
 //            var genBlockShapes = poly1.GenBlockShapes(0.2f, true);
@@ -100,7 +112,7 @@ namespace lib_test
 //            var outZones = genWalkBlockByPoly.QSpace.OutZones();
 //            Console.Out.WriteLine("zones!!!:::"+outZones);
 
-            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 3f, 6);
+            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 1f, 6);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
             if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
             else

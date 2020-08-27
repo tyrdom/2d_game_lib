@@ -12,6 +12,11 @@ namespace collision_and_rigid
         public readonly float R;
 
 
+        public List<AabbBoxShape> GenAabbBoxShape()
+        {
+            return CovToVertAabbPackBoxes();
+        }
+
         public string Log()
         {
             return $"{Aob.A.LogPt()}v{Aob.O.LogPt()}v{Aob.B.LogPt()}";
@@ -25,7 +30,7 @@ namespace collision_and_rigid
             }
             else
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException($"{aob.Log()} not clock turing");
             }
 
             R = r;
@@ -91,6 +96,7 @@ namespace collision_and_rigid
 
             var blockShapes = new List<IBlockShape>();
             var nPt = Aob.A;
+
             foreach (var (pt, cond) in ptsAndCond)
             {
                 switch (cond)
@@ -130,6 +136,7 @@ namespace collision_and_rigid
                 nPt = pt;
             }
 
+
             switch (endCond)
             {
                 case CondAfterCross.ToIn:
@@ -139,7 +146,7 @@ namespace collision_and_rigid
                             (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
 
 
-                        Console.Out.WriteLine(
+                        throw new Exception(
                             $" Cond Error {Log()} with {selectMany}" + startCond + " and " + endCond);
                     }
 
@@ -339,6 +346,7 @@ namespace collision_and_rigid
             var pts = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
             if (item1 == null || item2 == null) return pts;
 
+
             var o1 = Aob.O;
             var oi1 = new TwoDVectorLine(o1, item1);
             var (p1, p2) = item2.GetPosOf(oi1) == Pt2LinePos.Right ? (item1, item2) : (item2, item1);
@@ -381,6 +389,7 @@ namespace collision_and_rigid
                 var p2B = b2 && p2InAngel;
                 if (p2B) pts.Add((p2, CondAfterCross.ToOut, CondAfterCross.ToIn));
             }
+
 // #if DEBUG
 //             var aggregate = pts.Aggregate("out pts::", (s, x) => s + x.Item1.Log());
 //             Console.Out.WriteLine($"{aggregate}");
@@ -428,8 +437,12 @@ namespace collision_and_rigid
         {
             var clockwiseBalanceAngle = new ClockwiseBalanceAngle(a, Aob.O, b);
 
-            return new ClockwiseTurning(clockwiseBalanceAngle, R, a.Same(Aob.A) ? Last : null,
+            var clockwiseTurning = new ClockwiseTurning(clockwiseBalanceAngle, R, a.Same(Aob.A) ? Last : null,
                 b.Same(Aob.B) ? Next : null);
+            // Console.Out.WriteLine($"ptc {Aob.B} {Aob.A == a} vs {clockwiseTurning.GetStartPt()==Aob.A} ");
+
+
+            return clockwiseTurning;
         }
 
         public (Zone?, Zone?) CutByH(float h, Zone z)

@@ -27,6 +27,11 @@ namespace collision_and_rigid
             return A.Same(B);
         }
 
+        public List<AabbBoxShape> GenAabbBoxShape()
+        {
+            return new List<AabbBoxShape>() {CovToAabbPackBox()};
+        }
+
         public string Log()
         {
             return $"{A.Log()}|{AOut}--{B.Log()}{BOut}";
@@ -193,17 +198,27 @@ namespace collision_and_rigid
             if (twoDVector.Y > 0)
             {
                 var getposOnLine = p.GetPosOf(this);
-                return getposOnLine == Pt2LinePos.Left ? 1 : 0;
+                return getposOnLine switch
+                {
+                    Pt2LinePos.Right => 0,
+                    Pt2LinePos.On => -2,
+                    Pt2LinePos.Left => 1,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
 
-            if (twoDVector.Y < 0)
+            if (!(twoDVector.Y < 0)) return -2;
             {
                 var getposOnLine = p.GetPosOf(this);
-
-                return getposOnLine == Pt2LinePos.Right ? 1 : 0;
+                return getposOnLine switch
+                {
+                    Pt2LinePos.Right => 1,
+                    Pt2LinePos.On => -2,
+                    Pt2LinePos.Left => 0,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
 
-            return 0;
         }
 
         public bool IsSightBlockByWall(IShape another)
@@ -615,7 +630,12 @@ namespace collision_and_rigid
             var cAobA = clockwiseTurning.Aob.A;
             var (item1, item2) = CrossPtWithRound(rd);
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
+// #if DEBUG
+//             Console.Out.WriteLine($" line {Log()} vs cross {rd.Log()} pt {item1?.Log()} :: {item2?.Log()} ");
+//
+// #endif
             if (item1 == null || item2 == null) return twoDPoints;
+
 
             var f1 = GetScaleInPt(item1);
             var f2 = GetScaleInPt(item2);

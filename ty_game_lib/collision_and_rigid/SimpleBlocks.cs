@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace collision_and_rigid
 {
@@ -12,9 +13,25 @@ namespace collision_and_rigid
             AabbBoxShapes = aabbBoxShapes;
         }
 
+        public SimpleBlocks(IEnumerable<IBlockShape> blockShapes)
+        {
+            AabbBoxShapes = blockShapes.SelectMany(x => x.GenAabbBoxShape()).ToList();
+        }
+
+        public bool IsEmpty()
+        {
+            return AabbBoxShapes.Count <= 0;
+        }
+
+        public HashSet<IBlockShape> GetBlockShapes()
+        {
+            var blockShapes = AabbBoxShapes.Select(x => x.Shape).OfType<IBlockShape>().ToList();
+            var listToHashSet = SomeTools.ListToHashSet(blockShapes);
+            return listToHashSet;
+        }
+
         public bool PtInShape(TwoDPoint point)
         {
-
             var (item1, _) = point.GenARightShootCrossALotAabbBoxShape(AabbBoxShapes);
             if (item1 >= 0)
             {

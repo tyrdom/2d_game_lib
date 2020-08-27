@@ -34,6 +34,7 @@ namespace collision_and_rigid
 
     public interface IBlockShape
     {
+        List<AabbBoxShape> GenAabbBoxShape();
         string Log();
         int TouchByRightShootPointInAAbbBox(TwoDPoint p);
         bool IsEmpty();

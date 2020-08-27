@@ -81,7 +81,7 @@ namespace collision_and_rigid
                             }
                             else
                             {
-                                throw new Exception("no good zone");
+                                throw new Exception("lz no good zone");
                             }
 
                             break;
@@ -126,7 +126,7 @@ namespace collision_and_rigid
                             }
                             else
                             {
-                                throw new Exception("no good zone");
+                                throw new Exception($"lz2 no good zone {clockwiseTurning.Log()} cut by v {vertical} ");
                             }
 
                             break;

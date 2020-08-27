@@ -123,5 +123,10 @@ namespace collision_and_rigid
         {
             return TwoDVector.TwoDVectorByPt(O, point).SqNorm() <= R * R;
         }
+
+        public string Log()
+        {
+            return $"O:: {O.Log()} R::{R}";
+        }
     }
 }

@@ -1,19 +1,56 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace collision_and_rigid
 {
-    public struct BlockUnit
+    public class PathCovPoly
     {
-        private List<IBlockShape> BlockShapes;
-        private List<List<IBlockShape>> Children;
+        private List<(int linkId, TwoDVectorLine goThroughLine)> Links;
+
+        private int PathId;
+
+
+        public PathCovPoly(List<(int, TwoDVectorLine)> links, int pathId)
+        {
+            Links = links;
+            PathId = pathId;
+        }
+    }
+
+    public class BlockUnit
+    {
+        public SimpleBlocks ShellBlocks { get; }
+        public List<IBlockShape> ShellRaw { get; }
+        public readonly List<List<IBlockShape>> ChildrenRaw;
+
+        public List<SimpleBlocks> ChildrenBLocks;
+
 
         public BlockUnit(List<List<IBlockShape>> children, List<IBlockShape> blockShapes)
         {
-            Children = children;
-            BlockShapes = blockShapes;
+            ChildrenRaw = children;
+            ShellRaw = blockShapes;
+            ShellBlocks = new SimpleBlocks(blockShapes);
+            ChildrenBLocks = children.Select(x => new SimpleBlocks(x)).ToList();
+        }
+
+
+        public void AddChildren(List<IBlockShape> shapes)
+        {
+            ChildrenRaw.Add(shapes);
+            ChildrenBLocks.Add(new SimpleBlocks(shapes));
+        }
+
+        public List<IBlockShape> GetShellBlocks()
+        {
+            return ShellBlocks.GetBlockShapes().ToList();
+        }
+
+        public void GenFlushBlocks()
+        {
         }
     }
 
@@ -23,22 +60,36 @@ namespace collision_and_rigid
 
 
         //合并阻挡 去除环结构
-        static void GenPathPolygons(List<List<IBlockShape>> bs, bool isBlockIn)
+        static List<BlockUnit> GenPathPolygons(List<List<IBlockShape>> bs, bool isBlockIn)
         {
-            var blockUnits = new List<BlockUnit>();
             var firstBlockUnit = isBlockIn
                 ? new BlockUnit(new List<List<IBlockShape>>(), new List<IBlockShape>())
                 : new BlockUnit(new List<List<IBlockShape>>(), bs.First());
 
-            
-            
+            var blockUnits = new List<BlockUnit> {firstBlockUnit};
             for (var i = 1; i < bs.Count; i++)
             {
                 var shapes = bs[i];
-                
+                var twoDPoint = shapes.First().GetStartPt();
+                var beChild = false;
+                foreach (var blockUnit in from blockUnit in blockUnits
+                    where blockUnit.ShellBlocks.IsEmpty() || blockUnit.ShellBlocks.PtInShape(twoDPoint)
+                    let all = blockUnit.ChildrenBLocks.All(x => !x.PtInShape(twoDPoint))
+                    where all
+                    select blockUnit)
+                {
+                    blockUnit.AddChildren(shapes);
+                    beChild = true;
+                }
+
+                if (beChild) continue;
+                {
+                    var blockUnit = new BlockUnit(new List<List<IBlockShape>>(), shapes);
+                    blockUnits.Add(blockUnit);
+                }
             }
-            
-            
+
+            return blockUnits;
         }
 
         //找连续阻挡，分组
@@ -122,12 +173,12 @@ namespace collision_and_rigid
                     Console.Out.WriteLine($" finding new ed  {edPt.Log()} vs {startPt.Log()}");
 #endif
                     if (startPt == edPt
-                        || startPt.Same(edPt)
+                        // || startPt.Same(edPt)
                     )
                     {
                         tList.Add(blockShape);
                         if (endPt == lstPt
-                            || endPt.Same(lstPt)
+                            // || endPt.Same(lstPt)
                         )
                         {
 #if DEBUG
@@ -151,11 +202,9 @@ namespace collision_and_rigid
                     }
                 }
 #if DEBUG
-                if (!find)
-                {
-                    var aggregate = rawList.Aggregate("", (s, x) => s + x.Log());
-                    Console.Out.WriteLine($" not found {edPt.Log()} in {aggregate}");
-                }
+                if (find) return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
+                var aggregate = rawList.Aggregate("", (s, x) => s + x.Log());
+                Console.Out.WriteLine($" not found {edPt.Log()} in {aggregate}");
 #endif
                 return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
             }

@@ -139,7 +139,9 @@ namespace collision_and_rigid
 
             if (!isFlush)
             {
+#if DEBUG
                 Console.Out.WriteLine($"Is Flush {isFlush}");
+#endif
                 var twoDPoints = pp.Pts.Reverse();
                 return new Poly(twoDPoints.ToArray()).ToNotCrossPoly();
             }
@@ -192,61 +194,68 @@ namespace collision_and_rigid
             //     Console.Out.WriteLine("poly x::" + twoDPoint.X + "    y::" + twoDPoint.Y);
             // }
 
-            var skip = false;
-            var pPtsLength = pPts.Length;
-            for (var i = 0; i < pPtsLength; i++)
-            {
-                if (skip)
-                {
-                    skip = false;
-                    continue;
-                }
 
+            var pPtsLength = pPts.Length;
+
+            var fLine = new TwoDVectorLine(pPts[0], pPts[1], true, true);
+            var unitF = fLine.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+            var firstBlock = fLine.MoveVector(unitF);
+            var nowOnLine = fLine;
+            var nowOnBlock = firstBlock;
+
+            for (var i = 1; i < pPtsLength; i++)
+            {
                 var aPoint = pPts[i];
-//                Console.Out.WriteLine("apx:" + aPoint.X + "!" + aPoint.Y);
                 var bPoint = pPts[(i + 1) % pPtsLength];
-                var cPoint = pPts[(i + 2) % pPtsLength];
 
                 var line1 = new TwoDVectorLine(aPoint, bPoint, true, true);
-                var line2 = new TwoDVectorLine(bPoint, cPoint, true, true);
                 var unitV1 = line1.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
-                var unitV2 = line2.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
-
                 var fl1 = line1.MoveVector(unitV1);
 
-                var fl2 = line2.MoveVector(unitV2);
-
-                var posOf = cPoint.GetPosOf(line1);
+                var posOf = bPoint.GetPosOf(nowOnLine);
                 switch (posOf)
                 {
                     case Pt2LinePos.Right:
-//                            Console.Out.WriteLine("fl1:::" + fl1.A.X + "|" + fl1.A.Y + "----"+ fl1.B.X + '|' + fl1.B.Y);
-                        shapes.Add(fl1);
-                        var angle = new ClockwiseBalanceAngle(fl1.B, bPoint, fl2.A);
-                        var clockwiseTurning = new ClockwiseTurning(angle, r, fl1, fl2);
+                        shapes.Add(nowOnBlock);
+                        var angle = new ClockwiseBalanceAngle(nowOnBlock.B, aPoint, fl1.A);
+                        var clockwiseTurning = new ClockwiseTurning(angle, r, nowOnBlock, fl1);
                         shapes.Add(clockwiseTurning);
+                        nowOnBlock = fl1;
+                        nowOnLine = line1;
                         break;
                     case Pt2LinePos.On:
-                        skip = true;
-                        shapes.Add(new TwoDVectorLine(fl1.A, fl2.B, true, true));
+                        nowOnBlock = new TwoDVectorLine(nowOnBlock.A, fl1.B, true, true);
+                        nowOnLine = line1;
                         break;
                     case Pt2LinePos.Left:
-                        shapes.Add(fl1);
+                        shapes.Add(nowOnBlock);
+                        nowOnBlock = fl1;
+                        nowOnLine = line1;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-//
-//            Console.Out.WriteLine("!!!!!" + shapes.Count);
-//            foreach (var blockShape in shapes)
-//            {
-//                var twoDPoint = blockShape.GetStartPt();
-//                var dPoint = blockShape.GetEndPt();
-//                Console.Out.WriteLine("start::" + twoDPoint.X + '|' + twoDPoint.Y + "  end::" + dPoint.X + '|' +
-//                                      dPoint.Y);
-//            }
+            var pt2LinePos = fLine.B.GetPosOf(nowOnLine);
+            switch (pt2LinePos)
+            {
+                case Pt2LinePos.Right:
+                    shapes.Add(nowOnBlock);
+                    var angle = new ClockwiseBalanceAngle(nowOnBlock.B, fLine.A, firstBlock.A);
+                    var clockwiseTurning = new ClockwiseTurning(angle, r, nowOnBlock, firstBlock);
+                    shapes.Add(clockwiseTurning);
+
+                    break;
+                case Pt2LinePos.On:
+                    shapes[0] = new TwoDVectorLine(nowOnBlock.A, firstBlock.B, true, true);
+                    break;
+                case Pt2LinePos.Left:
+                    shapes.Add(nowOnBlock);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
 
             var resShapes = SomeTools.CutInSingleShapeList(shapes);
 //            Console.Out.WriteLine("?????" + resShapes.Count);

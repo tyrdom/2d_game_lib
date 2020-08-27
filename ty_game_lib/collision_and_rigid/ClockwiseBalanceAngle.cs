@@ -16,6 +16,11 @@ namespace collision_and_rigid
             B = b;
         }
 
+        public string Log()
+        {
+            return $"{A.Log()}\\{O.Log()}/{B.Log()}";
+        }
+
         public bool CheckTuring()
         {
             var twoDVectorLine = new TwoDVectorLine(A, O);
