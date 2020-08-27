@@ -101,9 +101,12 @@ namespace collision_and_rigid
             {
                 var zone = aabbBoxShape.Zone;
 //                Console.Out.WriteLine("XY:::" + X + "  " + Y + "\n zone：：" + SomeTools.ZoneLog(zone));
-                if (!(Y <= zone.Up) || !(Y > zone.Down)) continue;
-                //                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
+                if (zone.Up <= zone.Down && zone.IncludePt(this))
+                {
+                    return (-2, aabbBoxShape);
+                }
 
+                if (!(Y <= zone.Up) || !(Y > zone.Down)) continue;
                 if (X < zone.Left)
                 {
 //                        Console.Out.WriteLine("!TOUCH::" + SomeTools.ZoneLog(zone));
@@ -127,6 +130,8 @@ namespace collision_and_rigid
                     if (touchByRightShootPointInAAbbBox < 0) return (touchByRightShootPointInAAbbBox, aShape);
                     n += touchByRightShootPointInAAbbBox;
                 }
+
+                //                    Console.Out.WriteLine("@@@" + X + "?<?" + zone.Left);
             }
 
             return (n, aShape);
