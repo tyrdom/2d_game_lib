@@ -37,6 +37,19 @@ namespace collision_and_rigid
             ChildrenBLocks = children.Select(x => new SimpleBlocks(x)).ToList();
         }
 
+        public override string ToString()
+        {
+            var shellString = ShellRaw.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var cStr = "";
+            for (var i = 0; i < ChildrenRaw.Count; i++)
+            {
+                var child = ChildrenRaw[i].Aggregate("", (s, x) => s + x.Log() + "\n");
+
+                cStr += $"child{i} : \n" + child;
+            }
+
+            return $"shell : \n {shellString} \n{cStr}";
+        }
 
         public void AddChildren(List<IBlockShape> shapes)
         {
@@ -51,6 +64,20 @@ namespace collision_and_rigid
 
         public void GenFlushBlocks()
         {
+            //child逐个合并到shell上
+
+            foreach (var blockShapes in ChildrenRaw)
+            {
+                foreach (var blockShape in blockShapes)
+                {
+                    var twoDPoint = blockShape.GetStartPt();
+
+                    foreach (var shape in ShellRaw)
+                    {
+                        shape.GetStartPt();
+                    }
+                }
+            }
         }
     }
 
@@ -60,7 +87,7 @@ namespace collision_and_rigid
 
 
         //合并阻挡 去除环结构
-        static List<BlockUnit> GenPathPolygons(List<List<IBlockShape>> bs, bool isBlockIn)
+        public static List<BlockUnit> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
         {
             var firstBlockUnit = isBlockIn
                 ? new BlockUnit(new List<List<IBlockShape>>(), new List<IBlockShape>())

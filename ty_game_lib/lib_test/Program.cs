@@ -84,7 +84,7 @@ namespace lib_test
             var poly1 = TestStuff.TestPoly2();
             var poly2 = TestStuff.TestPoly3();
             var poly3 = new Poly(new[]
-                {new TwoDPoint(2, 2), new TwoDPoint(4, 2), new TwoDPoint(4, -2), new TwoDPoint(2, -2),});
+                {new TwoDPoint(2, 10), new TwoDPoint(4, 10), new TwoDPoint(4, -10), new TwoDPoint(2, -10),});
 
             var poly4 = new Poly(new[]
                 {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
@@ -155,6 +155,12 @@ namespace lib_test
                                      list.Aggregate("", (s2, x) => s2 + x.Log() + "\n") + "\n");
 
                 Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
+
+                var genBlockUnits = PathMap.GenBlockUnits(genFromBlocks,genWalkBlockByPolys.IsBlockIn);
+
+                var s1 = genBlockUnits.Aggregate("", (s, x) => s + x.ToString());
+
+                Console.Out.WriteLine($"BLockUnits\n{s1}");
             }
 
 
