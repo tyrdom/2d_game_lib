@@ -9,8 +9,8 @@ namespace collision_and_rigid
     public class QSpaceBranch : IQSpace
     {
         public QSpaceBranch(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<AabbBoxShape> aabbPackBoxes,
-             IQSpace quadOne,  IQSpace quadTwo,
-             IQSpace quadThree,  IQSpace quadFour)
+            IQSpace quadOne, IQSpace quadTwo,
+            IQSpace quadThree, IQSpace quadFour)
         {
             Father = father;
             TheQuad = quad;
@@ -214,9 +214,9 @@ namespace collision_and_rigid
             var tryCovToLimitQSpace2 = QuadTwo.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace3 = QuadThree.TryCovToLimitQSpace(limit);
             var tryCovToLimitQSpace4 = QuadFour.TryCovToLimitQSpace(limit);
-            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes,  tryCovToLimitQSpace1,
-                 tryCovToLimitQSpace2,
-                 tryCovToLimitQSpace3,  tryCovToLimitQSpace4);
+            return new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, tryCovToLimitQSpace1,
+                tryCovToLimitQSpace2,
+                tryCovToLimitQSpace3, tryCovToLimitQSpace4);
         }
 
         public int FastTouchWithARightShootPoint(TwoDPoint p)
@@ -399,6 +399,18 @@ namespace collision_and_rigid
 
             ForeachDoWithOutMove(Act, true);
             return dicIntToTu;
+        }
+
+        public HashSet<IBlockShape> GetAllIBlocks()
+        {
+            var blockShapes =
+                AabbPackBoxShapes.Select(x => x.Shape).OfType<IBlockShape>().ToList();
+            var allIBlocks = QuadOne.GetAllIBlocks();
+            var iBlocks = QuadTwo.GetAllIBlocks();
+            var hashSet = QuadThree.GetAllIBlocks();
+            var blocks = QuadFour.GetAllIBlocks();
+            var enumerable = blockShapes.Union(allIBlocks).Union(iBlocks).Union(hashSet).Union(blocks).ToList();
+            return SomeTools.ListToHashSet(enumerable);
         }
 
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,

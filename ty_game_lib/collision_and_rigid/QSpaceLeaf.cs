@@ -300,6 +300,13 @@ namespace collision_and_rigid
             return dicIntToTu;
         }
 
+        public HashSet<IBlockShape> GetAllIBlocks()
+        {
+            var blockShapes =
+                AabbPackBoxShapes.Select(x => x.Shape).OfType<IBlockShape>().ToList();
+            return SomeTools.ListToHashSet(blockShapes);
+        }
+
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t)
         {

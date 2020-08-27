@@ -40,6 +40,8 @@ namespace collision_and_rigid
 
         public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
         );
+
+        public HashSet<IBlockShape> GetAllIBlocks();
     }
 
 

@@ -14,7 +14,7 @@ namespace collision_and_rigid
 
         public string Log()
         {
-            return $"{Aob.A.LogPt()}{Aob.O.LogPt()}{Aob.B.LogPt()}";
+            return $"{Aob.A.LogPt()}v{Aob.O.LogPt()}v{Aob.B.LogPt()}";
         }
 
         public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
@@ -381,10 +381,10 @@ namespace collision_and_rigid
                 var p2B = b2 && p2InAngel;
                 if (p2B) pts.Add((p2, CondAfterCross.ToOut, CondAfterCross.ToIn));
             }
-#if DEBUG
-            var aggregate = pts.Aggregate("out pts::", (s, x) => s + x.Item1.Log());
-            Console.Out.WriteLine($"{aggregate}");
-#endif
+// #if DEBUG
+//             var aggregate = pts.Aggregate("out pts::", (s, x) => s + x.Item1.Log());
+//             Console.Out.WriteLine($"{aggregate}");
+// #endif
             return pts;
         }
 

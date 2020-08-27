@@ -100,7 +100,7 @@ namespace lib_test
 //            var outZones = genWalkBlockByPoly.QSpace.OutZones();
 //            Console.Out.WriteLine("zones!!!:::"+outZones);
 
-            WalkBlock genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 0.5f, 6);
+            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 3f, 6);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
             if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
             else
@@ -124,6 +124,29 @@ namespace lib_test
             var cLine = new TwoDVectorLine(c, d);
             var isGoTrough = cLine.IsGoTrough(bLine);
             Console.Out.WriteLine($"is go tr {isGoTrough}");
+
+            Console.Out.WriteLine("path test~~~~~");
+
+            var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
+
+            var aggregate = allIBlocks.Aggregate("", (s, x) => s + x.Log() + "\n");
+
+            if (allIBlocks != null)
+            {
+                Console.Out.WriteLine($"blocks have {allIBlocks.Count} blocks \n are::{aggregate}");
+
+                var genFromBlocks = PathMap.GenFromBlocks(allIBlocks.ToList());
+
+                var aggregate1 =
+                    genFromBlocks.Aggregate("",
+                        (s, list) => s + "b num:: " + list.Count + "\n" +
+                                     list.Aggregate("", (s2, x) => s2 + x.Log() + "\n") + "\n");
+
+                Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
+            }
+
+
+            return;
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();
