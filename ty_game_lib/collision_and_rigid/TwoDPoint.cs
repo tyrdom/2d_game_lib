@@ -120,6 +120,7 @@ namespace collision_and_rigid
                     {
                         ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBox(this),
                         TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBox(this),
+                        Round round => round.TouchByRightShootPointInAAbbBox(this),
                         _ => throw new ArgumentOutOfRangeException(nameof(shape))
                     };
 

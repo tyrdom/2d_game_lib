@@ -6,13 +6,14 @@ using System.Linq.Expressions;
 
 namespace collision_and_rigid
 {
+    
     public class PathCovPoly
     {
         private List<(int linkId, TwoDVectorLine goThroughLine)> Links;
 
         private int PathId;
 
-
+        
         public PathCovPoly(List<(int, TwoDVectorLine)> links, int pathId)
         {
             Links = links;
@@ -20,16 +21,38 @@ namespace collision_and_rigid
         }
     }
 
-    public class BlockUnit
+
+    public class WalkArea
+    {
+        public WalkArea(List<IBlockShape> area, List<TwoDVectorLine> cuts)
+        {
+            Cuts = cuts;
+            Area = area;
+        }
+
+        private List<IBlockShape> Area { get; }
+
+        private List<TwoDVectorLine> Cuts;
+
+        public override string ToString()
+        {
+            var aggregate = Area.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var aggregate2 = Cuts.Aggregate("", (s, x) => s + x.Log() + "\n");
+
+            return $"Area::\n{aggregate} Cuts::\n{aggregate2}";
+        }
+    }
+
+    public class WalkAreaBlock
     {
         public SimpleBlocks ShellBlocks { get; }
-        public List<IBlockShape> ShellRaw { get; }
+        public List<IBlockShape> ShellRaw { get; set; }
         public readonly List<List<IBlockShape>> ChildrenRaw;
 
         public List<SimpleBlocks> ChildrenBLocks;
 
 
-        public BlockUnit(List<List<IBlockShape>> children, List<IBlockShape> blockShapes)
+        public WalkAreaBlock(List<List<IBlockShape>> children, List<IBlockShape> blockShapes)
         {
             ChildrenRaw = children;
             ShellRaw = blockShapes;
@@ -62,38 +85,101 @@ namespace collision_and_rigid
             return ShellBlocks.GetBlockShapes().ToList();
         }
 
-        public void GenFlushBlocks()
+        public WalkArea GenWalkArea()
         {
             //child逐个合并到shell上
 
-            foreach (var blockShapes in ChildrenRaw)
+            var cuts = new List<TwoDVectorLine>();
+            if (ChildrenRaw.Count == 0)
             {
-                foreach (var blockShape in blockShapes)
-                {
-                    var twoDPoint = blockShape.GetStartPt();
+                return new WalkArea(ShellRaw, cuts);
+            }
 
-                    foreach (var shape in ShellRaw)
+            foreach (var aChildBlockShapes in ChildrenRaw)
+            {
+                (var si, var ci, TwoDVectorLine cut) = (-1, -1, null!);
+                for (var i1 = 0; i1 < aChildBlockShapes.Count; i1++)
+                {
+                    var blockShape = aChildBlockShapes[i1];
+                    var childPoint = blockShape.GetEndPt();
+
+                    for (var i = 0; i < ShellRaw.Count; i++)
                     {
-                        shape.GetStartPt();
+                        var shape = ShellRaw[i];
+                        var shellPt = shape.GetEndPt();
+                        var twoDVectorLine = new TwoDVectorLine(shellPt, childPoint);
+                        foreach (var unused in ChildrenBLocks
+                            .Select(simpleBlocks => simpleBlocks.LineCross(twoDVectorLine))
+                            .Where(lineCross => !lineCross))
+                        {
+                            if (cut == null)
+                            {
+                                cut = twoDVectorLine;
+                                si = i;
+                                ci = i1;
+                            }
+                            else if (twoDVectorLine.GetVector().SqNorm() < cut.GetVector().SqNorm())
+                            {
+                                cut = twoDVectorLine;
+                                si = i;
+                                ci = i1;
+                            }
+                        }
                     }
                 }
+
+                var (sLeft, sRight) = SomeTools.CutList(ShellRaw, si);
+                var (cLeft, cRight) = SomeTools.CutList(aChildBlockShapes, ci);
+                if (cut != null)
+                {
+                    var shapes = new List<IBlockShape>() {cut};
+                    shapes.AddRange(cRight);
+                    shapes.AddRange(cLeft);
+                    shapes.Add(cut.Reverse());
+                    shapes.AddRange(sRight);
+                    shapes.AddRange(sLeft);
+                    cuts.Add(cut);
+
+                    ShellRaw = shapes;
+                    ChildrenBLocks.RemoveAt(0);
+#if DEBUG
+                    Console.Out.WriteLine($"a cut ok {cut.Log()}");
+                    var aggregate = shapes.Aggregate("", (s, x) => s + x.Log() + "\n");
+                    Console.Out.WriteLine($"res side have {shapes.Count} side is \n{aggregate}");
+#endif
+                }
+                else
+                {
+                    throw new Exception($"cant find a cut from {ToString()}");
+                }
             }
+
+            return new WalkArea(ShellRaw, cuts);
         }
     }
 
+    // var (sLeft, sRight) = SomeTools.CutList(ShellRaw, i);
+    // var (cLeft, cRight) = SomeTools.CutList(blockShapes, i1);
+    // shapes.AddRange(sLeft);
+    // shapes.Add(twoDVectorLine);
+    // shapes.AddRange(cRight);
+    // shapes.AddRange(cLeft);
+    // shapes.Add(twoDVectorLine.Reverse());
+    // shapes.AddRange(sRight);
+    // break;
     public class PathMap
     {
         //分割为凸多边形，标记联通关系
 
 
         //合并阻挡 去除环结构
-        public static List<BlockUnit> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
+        public static List<WalkAreaBlock> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
         {
             var firstBlockUnit = isBlockIn
-                ? new BlockUnit(new List<List<IBlockShape>>(), new List<IBlockShape>())
-                : new BlockUnit(new List<List<IBlockShape>>(), bs.First());
+                ? new WalkAreaBlock(new List<List<IBlockShape>>(), new List<IBlockShape>())
+                : new WalkAreaBlock(new List<List<IBlockShape>>(), bs.First());
 
-            var blockUnits = new List<BlockUnit> {firstBlockUnit};
+            var blockUnits = new List<WalkAreaBlock> {firstBlockUnit};
             for (var i = 1; i < bs.Count; i++)
             {
                 var shapes = bs[i];
@@ -111,7 +197,7 @@ namespace collision_and_rigid
 
                 if (beChild) continue;
                 {
-                    var blockUnit = new BlockUnit(new List<List<IBlockShape>>(), shapes);
+                    var blockUnit = new WalkAreaBlock(new List<List<IBlockShape>>(), shapes);
                     blockUnits.Add(blockUnit);
                 }
             }

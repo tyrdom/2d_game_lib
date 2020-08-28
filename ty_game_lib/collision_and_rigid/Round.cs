@@ -22,7 +22,12 @@ namespace collision_and_rigid
 
         public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
         {
-            throw new NotImplementedException();
+            var sqNorm = TwoDVector.TwoDVectorByPt(O, p).SqNorm();
+            if (sqNorm < R * R) return -1;
+
+            {
+                return -2;
+            }
         }
 
         public (float?, float?) GetX(float y)

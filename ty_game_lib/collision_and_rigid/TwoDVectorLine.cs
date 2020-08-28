@@ -27,6 +27,9 @@ namespace collision_and_rigid
             return A.Same(B);
         }
 
+       
+        
+
         public List<AabbBoxShape> GenAabbBoxShape()
         {
             return new List<AabbBoxShape>() {CovToAabbPackBox()};

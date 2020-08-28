@@ -158,9 +158,15 @@ namespace lib_test
 
                 var genBlockUnits = PathMap.GenBlockUnits(genFromBlocks,genWalkBlockByPolys.IsBlockIn);
 
-                var s1 = genBlockUnits.Aggregate("", (s, x) => s + x.ToString());
+                var s1 = genBlockUnits.Aggregate("", (s, x) => s + x);
 
-                Console.Out.WriteLine($"BLockUnits\n{s1}");
+                Console.Out.WriteLine($"WalkAreaBlocks \n{s1}");
+
+                var walkAreas = genBlockUnits.Select(x=>x.GenWalkArea());
+
+                var ss2 = walkAreas.Aggregate("", (s, x) => s + x);
+
+                Console.Out.WriteLine($"WalkAreas \n{ss2}");
             }
 
 

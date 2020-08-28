@@ -55,7 +55,7 @@ namespace collision_and_rigid
                 case TwoDVectorLine twoDVectorLine:
                     return UnionByLine(twoDVectorLine);
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
         }
 

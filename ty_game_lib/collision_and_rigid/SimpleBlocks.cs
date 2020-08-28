@@ -40,5 +40,18 @@ namespace collision_and_rigid
 
             return item1 == -1;
         }
+
+        public bool LineCross(TwoDVectorLine line)
+        {
+            return (from aabbBoxShape in AabbBoxShapes
+                let notCross = line.GenZone().NotCross(aabbBoxShape.Zone)
+                where !notCross
+                select aabbBoxShape.Shape switch
+                {
+                    ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
+                    TwoDVectorLine blockLine => line.IsGoTrough(blockLine),
+                    _ => throw new ArgumentOutOfRangeException()
+                }).FirstOrDefault();
+        }
     }
 }

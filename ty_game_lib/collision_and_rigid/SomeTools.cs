@@ -143,6 +143,14 @@ namespace collision_and_rigid
             return null;
         }
 
+
+        public static (List<T> left, List<T> right ) CutList<T>(List<T> raw, int i)
+        {
+            return (raw.GetRange(0, i +1)
+                , raw.GetRange(i+1, raw.Count - i-1));
+        }
+
+
         public static (HashSet<AabbBoxShape>, HashSet<AabbBoxShape>) MovePtsReturnInAndOut(
             Dictionary<int, ITwoDTwoP> gidToMove,
             IEnumerable<AabbBoxShape> aabbBoxShapes, Zone zone)
