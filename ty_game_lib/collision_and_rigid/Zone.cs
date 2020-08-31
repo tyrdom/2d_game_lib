@@ -61,8 +61,20 @@ namespace collision_and_rigid
 
         public bool NotCross(Zone anotherZone)
         {
-            return Right < anotherZone.Left || anotherZone.Right < Left ||
-                   Up < anotherZone.Down || anotherZone.Up < Down;
+            if (Right <= Left)
+            {
+                return Right < anotherZone.Left || anotherZone.Right < Left ||
+                       Up <= anotherZone.Down || anotherZone.Up <= Down;
+            }
+
+            if (Up <= Down)
+            {
+                return Right <= anotherZone.Left || anotherZone.Right <= Left ||
+                       Up < anotherZone.Down || anotherZone.Up < Down;
+            }
+
+            return Right <= anotherZone.Left || anotherZone.Right <= Left ||
+                   Up <= anotherZone.Down || anotherZone.Up <= Down;
         }
 
         public string LogSide()

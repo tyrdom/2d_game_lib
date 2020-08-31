@@ -110,5 +110,10 @@ namespace game_stuff
             return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
                 CharacterStatus.Weapons);
         }
+
+        public string Log()
+        {
+            return $"Id {GetId()} pos {NowPos}";
+        }
     }
 }

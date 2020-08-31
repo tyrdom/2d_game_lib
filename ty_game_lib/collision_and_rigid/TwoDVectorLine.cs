@@ -27,8 +27,11 @@ namespace collision_and_rigid
             return A.Same(B);
         }
 
-       
-        
+
+        public TwoDVectorLine AsTwoDVectorLine()
+        {
+            return this;
+        }
 
         public List<AabbBoxShape> GenAabbBoxShape()
         {
@@ -221,7 +224,6 @@ namespace collision_and_rigid
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
-
         }
 
         public bool IsSightBlockByWall(IShape another)

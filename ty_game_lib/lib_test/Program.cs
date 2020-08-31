@@ -164,9 +164,16 @@ namespace lib_test
 
                 var walkAreas = genBlockUnits.Select(x=>x.GenWalkArea());
 
-                var ss2 = walkAreas.Aggregate("", (s, x) => s + x);
+                var continuousWalkAreas = walkAreas as ContinuousWalkArea[] ?? walkAreas.ToArray();
+                var ss2 = continuousWalkAreas.Aggregate("", (s, x) => s + x);
 
                 Console.Out.WriteLine($"WalkAreas \n{ss2}");
+                
+                
+                foreach (var continuousWalkArea in continuousWalkAreas)
+                {
+                    continuousWalkArea.ToCovPolygons();
+                }
             }
 
 

@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace collision_and_rigid
 {
-    public class WalkBlock : IShape
+    public class WalkBlock 
     {
 //        private float R;
         public bool IsBlockIn;
@@ -49,5 +49,7 @@ namespace collision_and_rigid
 
             return null;
         }
+
+    
     }
 }

@@ -12,6 +12,11 @@ namespace collision_and_rigid
         public readonly float R;
 
 
+        public TwoDVectorLine AsTwoDVectorLine()
+        {
+            return new TwoDVectorLine(GetStartPt(), GetEndPt());
+        }
+
         public List<AabbBoxShape> GenAabbBoxShape()
         {
             return CovToVertAabbPackBoxes();

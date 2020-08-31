@@ -1,45 +1,181 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace collision_and_rigid
 {
-    
-    public class PathCovPoly
+    public class Link
     {
-        private List<(int linkId, TwoDVectorLine goThroughLine)> Links;
+        public int LinkId;
 
-        private int PathId;
+        public TwoDVectorLine GoThrough;
 
-        
-        public PathCovPoly(List<(int, TwoDVectorLine)> links, int pathId)
+        public Link(int linkId, TwoDVectorLine goThrough)
+        {
+            LinkId = linkId;
+            GoThrough = goThrough;
+        }
+    }
+
+    public class PathNodeCovPoly
+    {
+        public List<Link> Links;
+
+        public int PathNodeId;
+
+        public List<IBlockShape> Edges;
+
+        public PathNodeCovPoly(List<Link> links, int pathNodeId, List<IBlockShape> edges)
         {
             Links = links;
-            PathId = pathId;
+            PathNodeId = pathNodeId;
+            Edges = edges;
         }
     }
 
 
-    public class WalkArea
+    public class ContinuousWalkArea
     {
-        public WalkArea(List<IBlockShape> area, List<TwoDVectorLine> cuts)
+        public ContinuousWalkArea(List<IBlockShape> area, List<Link> links
+        )
         {
-            Cuts = cuts;
+            Links = links;
+
             Area = area;
         }
 
         private List<IBlockShape> Area { get; }
 
-        private List<TwoDVectorLine> Cuts;
+        private List<Link> Links { get; }
 
         public override string ToString()
         {
             var aggregate = Area.Aggregate("", (s, x) => s + x.Log() + "\n");
-            var aggregate2 = Cuts.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var aggregate2 = Links.Aggregate("", (s, x) => s + x.LinkId + "::" + x.GoThrough.Log() + "\n");
 
             return $"Area::\n{aggregate} Cuts::\n{aggregate2}";
+        }
+
+        public void ToCovPolygons()
+
+        {
+            var twoDVectorLines = Area.Select(x => x.AsTwoDVectorLine());
+
+            var simpleBlocks = new SimpleBlocks(twoDVectorLines);
+
+            var blockShape = Area.First();
+            //check right
+            var shape = Area.Last();
+            var b = blockShape.GetStartPt() == shape.GetEndPt();
+            var alink = Links.FirstOrDefault(x => x.GoThrough == blockShape);
+            if (alink != null)
+            {
+                Console.Out.WriteLine
+                    ($"cuts {alink.LinkId} ::{alink.GoThrough.Log()}");
+            }
+
+
+            if (!b)
+            {
+                throw new Exception("no good Continuous Area :: not end to start");
+            }
+#if DEBUG
+
+            Console.Out.WriteLine(" check ok ");
+#endif
+
+            var valueTuples = new List<Link>();
+
+
+            if (alink != null)
+            {
+                valueTuples.Add(alink);
+            }
+
+            TwoDPoint? fEndPt = null;
+            (TwoDVectorLine line1, TwoDVectorLine line2)? valueTuple = null;
+            //向前搜索
+            var covEndAt = -1;
+            for (var i = 0; i < Area.Count; i++)
+            {
+                var blockShape1 = Area[i];
+                var twoDVectorLine = blockShape1.AsTwoDVectorLine();
+
+                var shape1 = Area[(i + 1) % Area.Count];
+                var endPt = shape1.GetEndPt();
+                var asTwoDVectorLine2 = shape1.AsTwoDVectorLine();
+                var pt2LinePos = endPt.GetPosOf(twoDVectorLine);
+
+                if (pt2LinePos != Pt2LinePos.Right) continue;
+#if DEBUG
+                Console.Out.WriteLine("meet no cov edge;");
+#endif
+
+                fEndPt = blockShape1.GetEndPt();
+
+                covEndAt = i;
+
+                valueTuple = (twoDVectorLine, asTwoDVectorLine2);
+
+                break;
+            }
+
+            if (fEndPt == null || valueTuple == null)
+            {
+#if DEBUG
+                Console.Out.WriteLine("just a cov ploy");
+#endif
+                return;
+            }
+#if DEBUG
+            Console.Out.WriteLine("not a cov ploy");
+#endif
+
+            //向后搜索, 分割凹点
+            for (var i = covEndAt + 1; i < Area.Count; i++)
+            {
+                var startPt = Area[i].GetStartPt();
+
+                var endPt = Area[i].GetEndPt();
+
+                var p1 = endPt.GetPosOf(valueTuple.Value.line1);
+                var p2 = endPt.GetPosOf(valueTuple.Value.line2);
+
+
+                if (p1 == Pt2LinePos.Left && p2 == Pt2LinePos.Left)
+                {
+                    var twoDVectorLine = new TwoDVectorLine(fEndPt, endPt);
+                    var lineCross = simpleBlocks.LineCross(twoDVectorLine);
+                    if (!lineCross)
+                    {
+#if DEBUG
+                        Console.Out.WriteLine($"find new cut at {covEndAt} {i} ll {twoDVectorLine.Log()}");
+#endif
+                        break;
+                    }
+
+                    Console.Out.WriteLine(
+                        $"fail to find new cut at {covEndAt} {i} ll {twoDVectorLine.Log()}");
+                }
+
+
+                if (p1 == Pt2LinePos.On)
+                {
+                    var twoDVectorLine = new TwoDVectorLine(fEndPt, endPt);
+                    var lineCross = simpleBlocks.LineCross(twoDVectorLine);
+                    if (!lineCross)
+                    {
+#if DEBUG
+                        Console.Out.WriteLine($"find new cut at {covEndAt} {i} on {twoDVectorLine.Log()}");
+#endif
+                        break;
+                    }
+
+                    Console.Out.WriteLine(
+                        $"fail to find new cut at {covEndAt} {i} ll {twoDVectorLine.Log()}");
+                    
+                }
+            }
         }
     }
 
@@ -49,7 +185,7 @@ namespace collision_and_rigid
         public List<IBlockShape> ShellRaw { get; set; }
         public readonly List<List<IBlockShape>> ChildrenRaw;
 
-        public List<SimpleBlocks> ChildrenBLocks;
+        public readonly List<SimpleBlocks> ChildrenBlocks;
 
 
         public WalkAreaBlock(List<List<IBlockShape>> children, List<IBlockShape> blockShapes)
@@ -57,7 +193,7 @@ namespace collision_and_rigid
             ChildrenRaw = children;
             ShellRaw = blockShapes;
             ShellBlocks = new SimpleBlocks(blockShapes);
-            ChildrenBLocks = children.Select(x => new SimpleBlocks(x)).ToList();
+            ChildrenBlocks = children.Select(x => new SimpleBlocks(x)).ToList();
         }
 
         public override string ToString()
@@ -77,7 +213,7 @@ namespace collision_and_rigid
         public void AddChildren(List<IBlockShape> shapes)
         {
             ChildrenRaw.Add(shapes);
-            ChildrenBLocks.Add(new SimpleBlocks(shapes));
+            ChildrenBlocks.Add(new SimpleBlocks(shapes));
         }
 
         public List<IBlockShape> GetShellBlocks()
@@ -85,14 +221,19 @@ namespace collision_and_rigid
             return ShellBlocks.GetBlockShapes().ToList();
         }
 
-        public WalkArea GenWalkArea()
+        public ContinuousWalkArea GenWalkArea()
         {
             //child逐个合并到shell上
 
-            var cuts = new List<TwoDVectorLine>();
-            if (ChildrenRaw.Count == 0)
+            var links = new List<Link>();
+            if (!ShellRaw.Any())
             {
-                return new WalkArea(ShellRaw, cuts);
+                throw new Exception("must have some shells");
+            }
+
+            if (ChildrenRaw.Count <= 0)
+            {
+                return new ContinuousWalkArea(ShellRaw, links);
             }
 
             foreach (var aChildBlockShapes in ChildrenRaw)
@@ -108,7 +249,7 @@ namespace collision_and_rigid
                         var shape = ShellRaw[i];
                         var shellPt = shape.GetEndPt();
                         var twoDVectorLine = new TwoDVectorLine(shellPt, childPoint);
-                        foreach (var unused in ChildrenBLocks
+                        foreach (var unused in ChildrenBlocks
                             .Select(simpleBlocks => simpleBlocks.LineCross(twoDVectorLine))
                             .Where(lineCross => !lineCross))
                         {
@@ -132,16 +273,18 @@ namespace collision_and_rigid
                 var (cLeft, cRight) = SomeTools.CutList(aChildBlockShapes, ci);
                 if (cut != null)
                 {
-                    var shapes = new List<IBlockShape>() {cut};
+                    var shapes = new List<IBlockShape> {cut};
                     shapes.AddRange(cRight);
                     shapes.AddRange(cLeft);
-                    shapes.Add(cut.Reverse());
+                    var cutMirror = cut.Reverse();
+                    shapes.Add(cutMirror);
                     shapes.AddRange(sRight);
                     shapes.AddRange(sLeft);
-                    cuts.Add(cut);
+                    links.Add(new Link(0, cutMirror));
+                    links.Add(new Link(0, cut));
 
                     ShellRaw = shapes;
-                    ChildrenBLocks.RemoveAt(0);
+                    ChildrenBlocks.RemoveAt(0);
 #if DEBUG
                     Console.Out.WriteLine($"a cut ok {cut.Log()}");
                     var aggregate = shapes.Aggregate("", (s, x) => s + x.Log() + "\n");
@@ -154,7 +297,7 @@ namespace collision_and_rigid
                 }
             }
 
-            return new WalkArea(ShellRaw, cuts);
+            return new ContinuousWalkArea(ShellRaw, links);
         }
     }
 
@@ -187,7 +330,7 @@ namespace collision_and_rigid
                 var beChild = false;
                 foreach (var blockUnit in from blockUnit in blockUnits
                     where blockUnit.ShellBlocks.IsEmpty() || blockUnit.ShellBlocks.PtInShape(twoDPoint)
-                    let all = blockUnit.ChildrenBLocks.All(x => !x.PtInShape(twoDPoint))
+                    let all = blockUnit.ChildrenBlocks.All(x => !x.PtInShape(twoDPoint))
                     where all
                     select blockUnit)
                 {
