@@ -172,7 +172,7 @@ namespace lib_test
                 
                 foreach (var continuousWalkArea in continuousWalkAreas)
                 {
-                    continuousWalkArea.ToCovPolygons();
+                    continuousWalkArea.ToCovPolygons(0);
                 }
             }
 

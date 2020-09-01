@@ -43,20 +43,24 @@ namespace collision_and_rigid
 
         public bool LineCross(TwoDVectorLine line)
         {
-            foreach (var aabbBoxShape in from aabbBoxShape in AabbBoxShapes
-                let notCross = line.GenZone().NotCross(aabbBoxShape.Zone)
-                where !notCross
-                select aabbBoxShape)
+            foreach (var aabbBoxShape in AabbBoxShapes)
             {
-                var b = aabbBoxShape.Shape switch
+                bool notCross = line.GenZone().NotCross(aabbBoxShape.Zone);
+                if (!notCross)
                 {
-                    ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
-                    TwoDVectorLine blockLine => line.IsGoTrough(blockLine),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-                if (b)
-                {
-                    return b;
+#if DEBUG
+                    Console.Out.WriteLine($"line { line.Log()} is cross zone ::{aabbBoxShape.Zone.LogSide()}");
+#endif
+                    var b = aabbBoxShape.Shape switch
+                    {
+                        ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
+                        TwoDVectorLine blockLine => line.IsGoTrough(blockLine),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    if (b)
+                    {
+                        return b;
+                    }
                 }
             }
 
