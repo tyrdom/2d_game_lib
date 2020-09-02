@@ -19,7 +19,7 @@ namespace game_stuff
         {
             var genPosInLocal = objPos.GenPosInLocal(bPos, bAim);
             if (!Zone.IncludePt(genPosInLocal)) return false;
-            var ptInShape = BulletShape.PtInShape(genPosInLocal);
+            var ptInShape = BulletShape.PtRealInShape(genPosInLocal);
             return ptInShape;
 
         }

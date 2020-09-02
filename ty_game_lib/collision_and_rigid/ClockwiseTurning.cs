@@ -201,9 +201,9 @@ namespace collision_and_rigid
             var sqNorm = TwoDVector.TwoDVectorByPt(o, p).SqNorm();
             if (sqNorm < R * R) return -1;
 
-            {
-                return -2;
-            }
+            if (sqNorm > R * R) return 0;
+
+            return -3;
         }
 
         public Round BelongRd()

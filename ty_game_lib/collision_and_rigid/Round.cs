@@ -124,7 +124,7 @@ namespace collision_and_rigid
             return round;
         }
 
-        public bool PtInShape(TwoDPoint point)
+        public bool PtRealInShape(TwoDPoint point)
         {
             return TwoDVector.TwoDVectorByPt(O, point).SqNorm() <= R * R;
         }

@@ -13,12 +13,13 @@
             Height = height;
         }
 
-        Poly CovPoly(){
-            var twoDVectorLine = new TwoDVectorLine(LeftDown,LeftUp);
+        Poly CovPoly()
+        {
+            var twoDVectorLine = new TwoDVectorLine(LeftDown, LeftUp);
             var twoDVector = twoDVectorLine.GetVector().ClockwiseTurn(new TwoDVector(0, 1)).GetUnit().Multi(Height);
             var rd = LeftDown.Move(twoDVector);
             var ru = LeftUp.Move(twoDVector);
-            var twoDPoints = new []{LeftDown,LeftUp,ru,rd};
+            var twoDPoints = new[] {LeftDown, LeftUp, ru, rd};
             var poly = new Poly(twoDPoints);
             return poly;
         }
@@ -31,9 +32,8 @@
 
         public IBulletShape GenBulletShape(float r)
         {
-            var genBlockShapes = CovPoly().GenBlockShapes(r,true);
-            var genBlockAabbBoxShapes = Poly.GenBlockAabbBoxShapes(genBlockShapes);
-            return new SimpleBlocks(genBlockAabbBoxShapes);
+            var genBlockShapes = CovPoly().GenBlockShapes(r, true);
+            return new SimpleBlocks(genBlockShapes);
         }
     }
 }

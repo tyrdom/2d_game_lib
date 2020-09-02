@@ -146,8 +146,8 @@ namespace collision_and_rigid
 
         public static (List<T> left, List<T> right ) CutList<T>(List<T> raw, int i)
         {
-            return (raw.GetRange(0, i +1)
-                , raw.GetRange(i+1, raw.Count - i-1));
+            return (raw.GetRange(0, i + 1)
+                , raw.GetRange(i + 1, raw.Count - i - 1));
         }
 
 
@@ -202,6 +202,25 @@ namespace collision_and_rigid
         {
             var blockShape = list.First();
             return list;
+        }
+
+        public static bool CheckFlush(IEnumerable<IBlockShape> l1)
+        {
+            var blk1F = true;
+            TwoDPoint edPt1 = null!;
+            foreach (var blockShape in l1)
+            {
+                var twoPp = blockShape.GetStartPt();
+
+                var b = edPt1 == null || edPt1 == twoPp;
+                blk1F = blk1F && b;
+
+                var twoDPoint = blockShape.GetEndPt();
+
+                edPt1 = twoDPoint;
+            }
+
+            return blk1F;
         }
 
         private static (List<IBlockShape>, bool) AddTwoBlocks(
@@ -333,11 +352,11 @@ namespace collision_and_rigid
                 dicL1.TryGetValue(i, out var ptsAndCond);
                 ptsAndCond ??= new List<(TwoDPoint, CondAfterCross)>();
                 var startPt = blockShape.GetStartPt();
-                var b1 = block2.CoverPoint(startPt);
+                var b1 = block2.RealCoverPoint(startPt);
 
                 var startCond = b1 ? CondAfterCross.ToIn : CondAfterCross.ToOut;
                 var endPt = blockShape.GetEndPt();
-                var b = block2.CoverPoint(endPt);
+                var b = block2.RealCoverPoint(endPt);
                 var endCond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
 #if DEBUG
                 Console.Out.WriteLine($"{blockShape.Log()}is startPt in {b1} end in {b}");
@@ -356,12 +375,12 @@ namespace collision_and_rigid
                 dicL2.TryGetValue(i, out var ptsAndCond2);
                 ptsAndCond2 ??= new List<(TwoDPoint, CondAfterCross)>();
                 var startPt = blockShape.GetStartPt();
-                var b1 = block1.CoverPoint(startPt);
+                var b1 = block1.RealCoverPoint(startPt);
                 var startCond = b1 ? CondAfterCross.ToIn : CondAfterCross.ToOut;
 
                 var endPt = blockShape.GetEndPt();
 
-                var b = block1.CoverPoint(endPt);
+                var b = block1.RealCoverPoint(endPt);
                 var cond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
 #if DEBUG
                 Console.Out.WriteLine($"stPt {startPt.Log()} is {startCond} edPt {endPt.Log()} is {cond}");

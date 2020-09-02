@@ -43,6 +43,15 @@ namespace collision_and_rigid
             return $"{A.Log()}|{AOut}--{B.Log()}{BOut}";
         }
 
+
+        public TwoDPoint GetMid()
+        {
+            var aX = (A.X + B.X) / 2;
+            var aY = (A.Y + B.Y) / 2;
+            return new TwoDPoint(aX, aY);
+        }
+
+
         public List<(TwoDPoint crossPt, CondAfterCross shape1AfterCond, CondAfterCross shape2AfterCond)>
             CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(IBlockShape blockShape)
         {
@@ -207,19 +216,19 @@ namespace collision_and_rigid
                 return getposOnLine switch
                 {
                     Pt2LinePos.Right => 0,
-                    Pt2LinePos.On => -2,
+                    Pt2LinePos.On => -3,
                     Pt2LinePos.Left => 1,
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
 
-            if (!(twoDVector.Y < 0)) return -2;
+            if (!(twoDVector.Y < 0)) return -3;
             {
                 var getposOnLine = p.GetPosOf(this);
                 return getposOnLine switch
                 {
                     Pt2LinePos.Right => 1,
-                    Pt2LinePos.On => -2,
+                    Pt2LinePos.On => -3,
                     Pt2LinePos.Left => 0,
                     _ => throw new ArgumentOutOfRangeException()
                 };
@@ -774,7 +783,7 @@ namespace collision_and_rigid
             var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, r, twoDVectorLine2, twoDVectorLine1);
             var blockShapes = new List<IBlockShape>
                 {twoDVectorLine1, clockwiseTurning1, twoDVectorLine2, clockwiseTurning2};
-            return new SimpleBlocks(Poly.GenBlockAabbBoxShapes(blockShapes));
+            return new SimpleBlocks(blockShapes);
         }
     }
 }

@@ -56,6 +56,107 @@ namespace collision_and_rigid
             return $"Area::\n{aggregate} Cuts::\n{aggregate2}";
         }
 
+        public void ToCovPolygons3()
+        {
+            //三角分割然后合并
+
+            for (int i = 0; i < Area.Count; i++)
+            {
+            }
+        }
+
+        public void ToCovPolygons2()
+        {
+            //分割记录字典，起点是key 多个分割线按照逆时针排布队列
+
+            var simpleBlocks = new SimpleBlocks(Area);
+            //找凸点，通过切分消除凸点
+            for (var i = 0; i < Area.Count; i++)
+            {
+                var line1 = Area[i].AsTwoDVectorLine();
+                var blockShape = Area[(i + 1) % Area.Count];
+                var twoDPoint = blockShape.GetEndPt();
+                var pt2LinePos = twoDPoint.GetPosOf(line1);
+
+
+                if (pt2LinePos == Pt2LinePos.Right)
+                {
+                    //发现凸点，生成切割线找落在夹脚内最短的线
+                    TwoDVectorLine oCut = null!;
+                    TwoDVectorLine lCut = null!;
+                    TwoDVectorLine rCut = null!;
+                    var oInk = -1f;
+                    var rInk = -1f;
+                    var lInk = -1f;
+
+                    //line1 line2 形成夹脚，只有在夹脚内的切割才不用再分割
+                    var line2 = blockShape.AsTwoDVectorLine();
+                    for (var i1 = i + 2; i1 < Area.Count; i1++)
+                    {
+                        var obp = Area[i1].GetEndPt();
+                        var twoDVectorLine = new TwoDVectorLine(twoDPoint, obp);
+                        var lineCross = simpleBlocks.LineCross(twoDVectorLine); //不穿过
+                        var ptRealInShape = simpleBlocks.PtRealInShape(twoDVectorLine.GetMid()); //在区域里
+                        var realInShape = !lineCross && ptRealInShape;
+                        if (realInShape)
+                        {
+                            var cutToCov = obp.CanCutToCov(line1, line2);
+                            switch (cutToCov)
+                            {
+                                case Pt2LinePos.Right:
+                                    if (rCut == null)
+                                    {
+                                        rCut = twoDVectorLine;
+                                        rInk = twoDVectorLine.GetVector().SqNorm();
+                                    }
+                                    else if (twoDVectorLine.GetVector().SqNorm() < rInk)
+                                    {
+                                        rCut = twoDVectorLine;
+                                    }
+
+                                    break;
+                                case Pt2LinePos.On:
+                                    if (oCut == null)
+                                    {
+                                        oCut = twoDVectorLine;
+                                        oInk = twoDVectorLine.GetVector().SqNorm();
+                                    }
+                                    else if (twoDVectorLine.GetVector().SqNorm() < oInk)
+                                    {
+                                        oCut = twoDVectorLine;
+                                    }
+
+                                    break;
+                                case Pt2LinePos.Left:
+                                    if (lCut == null)
+                                    {
+                                        lCut = twoDVectorLine;
+                                        lInk = twoDVectorLine.GetVector().SqNorm();
+                                    }
+                                    else if (twoDVectorLine.GetVector().SqNorm() < lInk)
+                                    {
+                                        lCut = twoDVectorLine;
+                                    }
+
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        static bool IsCovPt(List<IBlockShape> area, int i)
+        {
+            var blockShape = area[i].AsTwoDVectorLine();
+            var shape = area[i + 1].GetEndPt();
+            return shape.GetPosOf(blockShape) == Pt2LinePos.Left;
+        }
+
+
         public void ToCovPolygons(int nowOnId)
 
         {
@@ -95,217 +196,139 @@ namespace collision_and_rigid
                 }
             }
 
+            GetACov(Area);
 
-            TwoDPoint? fNoCovPt = null;
-
-
-            //向前搜索 第一个凹点
-
-
-            var covForwardCount = 0;
-
-            var inALine = true;
-            for (var i = 0; i < Area.Count; i++)
+            static void GetACov(List<IBlockShape> area)
             {
-                var blockShape1 = Area[i];
-                var line1 = blockShape1.AsTwoDVectorLine();
+                // 在Area中切出一个凸多边形（可能切不出）
+                var areaSimpleBlocks = new SimpleBlocks(area);
 
-                var shape1 = Area[(i + 1) % Area.Count];
-                var endPt = shape1.GetEndPt();
-
-                // 
-                var pt2LinePos = endPt.GetPosOf(line1);
-
-                if (pt2LinePos == Pt2LinePos.Right)
+                static void GetAJumpCovInArea(int lfc, int rfc, List<IBlockShape> area, SimpleBlocks blocks)
                 {
-                    //发现凹点
+                    //先找出一个范围在直线左方，再缩小范围找凸多边形？或者直接找一个三角形/四边形
 
-                    //准备分割消除凹点
-                    var twoDVectorLines = Area.Select(x => x.AsTwoDVectorLine());
-                    var simpleBlocks = new SimpleBlocks(twoDVectorLines);
-                    var covPt = blockShape1.GetEndPt();
-#if DEBUG
-                    Console.Out.WriteLine($"meet no cov edge; point {covPt.Log()}");
-#endif
-                    var line2 = shape1.AsTwoDVectorLine();
-
-                    for (var j = i + 2; j < i + 1 + Area.Count; j++)
+                    var pt = area[rfc - 1].GetEndPt();
+                    var pt2 = area[(area.Count - lfc) % area.Count].GetStartPt();
+                    var twoDVectorLine = new TwoDVectorLine(pt, pt2);
+                    var ints = new List<int>();
+                    for (var i = rfc + 1; i < area.Count - lfc - 1; i++)
                     {
-                        var blockShape2 = Area[j % Area.Count];
-                        var ept = blockShape2.GetEndPt();
-
-                        var ep1 = ept.GetPosOf(line1);
-                        var ep2 = ept.GetPosOf(line2);
-                        //情况1 终点就在夹脚内（包含边缘），可以分割
-                        var eCovLine = new TwoDVectorLine(ept, covPt);
-                        var lineCrossE = simpleBlocks.LineCross(eCovLine);
-                        if (lineCrossE)
+                        //选点
+                        var ptt = area[i].GetEndPt();
+                        var b1 = ptt.GetPosOf(twoDVectorLine) != Pt2LinePos.Left;
+                        var dVectorLine = new TwoDVectorLine(pt, ptt);
+                        var vectorLine = new TwoDVectorLine(ptt, pt2);
+                        var lineCross = blocks.LineCross(dVectorLine);
+                        var cross = blocks.LineCross(vectorLine);
+                        var b2 = b1 && !lineCross && !cross;
+                        if (b2)
                         {
-                            var b1 = ep1 != Pt2LinePos.Right && ep2 != Pt2LinePos.Right;
-                            if (b1)
-                            {
-#if DEBUG
-                                Console.Out.WriteLine(
-                                    $"line cut to 2 part {eCovLine.Log()} on scan {blockShape2.Log()}");
-#endif
-                                break;
-                            }
-
-                            //情况2：起点终点穿过区域，使用三角形分割
-                            var spt = blockShape2.GetStartPt();
-                            var sp1 = spt.GetPosOf(line1);
-                            var sp2 = spt.GetPosOf(line2);
-                            var covSLine = new TwoDVectorLine(covPt, spt);
-                            var lineCrossS = simpleBlocks.LineCross(covSLine);
-
-                            var b21 = sp1 == Pt2LinePos.Right && sp2 == Pt2LinePos.Left && ep1 == Pt2LinePos.Left &&
-                                      ep2 == Pt2LinePos.Right;
-                            if (b21 && lineCrossS)
-                            {
-#if DEBUG
-                                Console.Out.WriteLine("line cut to 3 part with a Triangle");
-#endif
-                                break;
-                            }
+                            ints.Add(i);
                         }
                     }
-
-                    break;
                 }
 
-                if (pt2LinePos == Pt2LinePos.On)
+                static void GetANoJumpCovInArea(ref int lfc, ref int rfc, List<IBlockShape> area,
+                    bool rCanGo,
+                    bool lCanGo,
+                    ref bool inALine,
+                    bool right, SimpleBlocks blocks)
                 {
-                    //共线
-                    continue;
-                }
-
-                if (pt2LinePos != Pt2LinePos.Left) throw new ArgumentOutOfRangeException();
-                //凸点
-                // inALine = false;
-            }
-
-            if (fNoCovPt == null)
-            {
-                //全是凸点，所以是凸多边形
-#if DEBUG
-                Console.Out.WriteLine("just a cov ploy");
-#endif
-                return;
-            }
-
-#if DEBUG
-            Console.Out.WriteLine("not a cov ploy shape");
-#endif
-
-            return;
-            TwoDPoint? bNoCovPt = null;
-            var areaBackwardCovCount = 0;
-            //向后再搜索, 找到可以消除这个凹点的切割方式
-            for (var i = covForwardCount + 1; i < Area.Count; i++)
-            {
-                var blockShape1 = Area[i];
-                var shape1 = Area[(i + 1) % Area.Count];
-
-
-                var endPt = shape1.GetEndPt();
-
-                var p = endPt.GetPosOf(blockShape1.AsTwoDVectorLine());
-
-                if (p == Pt2LinePos.Right)
-                {
-                    // 发现凹点, 并且形成凹型
-                    bNoCovPt = shape1.GetStartPt();
-                    areaBackwardCovCount = i + 1;
-
-
-                    break;
-                }
-
-                if (p == Pt2LinePos.On)
-                {
-                    //共线
-                    continue;
-                }
-
-                if (p != Pt2LinePos.Left) throw new ArgumentOutOfRangeException();
-                //是凸点
-                inALine = false;
-            }
-
-            if (bNoCovPt == null)
-            {
-                throw new Exception("no good cut");
-            }
-
-            if (fNoCovPt == bNoCovPt)
-
-            {
-                //前后点重合，说明只有一个凹点，所以直接切分为两个区域
-#if DEBUG
-                Console.Out.WriteLine($" shape have only 1 no cov pt {fNoCovPt.Log()} , cut to 2 part");
-#endif
-                var (covShape, rest) = CutATriangle(Area, covForwardCount);
-            }
-            else if (inALine)
-            {
-                //图形是一条线，需要再扩充
-#if DEBUG
-
-                Console.Out.WriteLine($"shape is in a line , need bigger area");
-#endif
-                var twoDVectorLines = Area.Select(x => x.AsTwoDVectorLine());
-
-                var simpleBlocks = new SimpleBlocks(twoDVectorLines);
-
-                var sameLine = new TwoDVectorLine(bNoCovPt, fNoCovPt);
-                for (var i = covForwardCount; i < Area.Count; i++)
-                {
-                    var fJumpPt = Area[i].GetEndPt();
-                    //    找一个跳点，在线的左边可以组成凸多边形
-                    var fLink = new TwoDVectorLine(fNoCovPt, fJumpPt);
-                    if (fJumpPt.GetPosOf(sameLine) != Pt2LinePos.Right &&
-                        !simpleBlocks.LineCross(fLink))
+                    if (lfc + rfc >= area.Count)
                     {
 #if DEBUG
-                        Console.Out.WriteLine($"find a jump Pt forward {fJumpPt.Log()}");
+                        Console.Out.WriteLine($"just a cov l{lfc} m r{rfc}");
 #endif
-                        for (var i1 = areaBackwardCovCount - 2; i1 >= i; i1--)
-                        {
-                            if (i1 == i)
-                            {
+                        lfc = -1;
+                        rfc = -1;
+                        return;
+                    }
+
+                    var leftLine = area[(area.Count - lfc) % area.Count].AsTwoDVectorLine();
+                    var rightLine = area[rfc - 1].AsTwoDVectorLine();
+
+                    if (right && rCanGo)
+                    {
+                        var nextR = area[rfc % area.Count];
+                        var canGo = CanGo(leftLine, rightLine, nextR.GetEndPt(), ref inALine, blocks);
+                        if (canGo)
+                            rfc += 1;
+
+                        GetANoJumpCovInArea(ref lfc, ref rfc, area, canGo, lCanGo, ref inALine, !lCanGo, blocks);
+                        return;
+                    }
+
+                    if (lCanGo)
+                    {
+                        var nextL = area[area.Count - lfc - 1 % area.Count];
+
+                        var canGo = CanGo(rightLine, leftLine, nextL.GetStartPt(), ref inALine, blocks);
+
+                        if (canGo)
+                            lfc += 1;
+
+                        GetANoJumpCovInArea(ref lfc, ref rfc, area, rCanGo, canGo, ref inALine, rCanGo, blocks);
+                        return;
+                    }
+
+
 #if DEBUG
-                                Console.Out.WriteLine("get 2 part and a Triangle");
+                    Console.Out.WriteLine($"Cant Go Further at {lfc} and {rfc}");
 #endif
+                    return;
 
+                    static bool CanGo(TwoDVectorLine otherLine, TwoDVectorLine thisLine,
+                        TwoDPoint next, ref bool aLine, SimpleBlocks simpleBlocks)
+                    {
+                        var leftNPos = next.GetPosOf(thisLine);
+                        // Console.Out.WriteLine($"{next.Log()} and {thisLine.Log()} pos is {leftNPos}");
+                        var lCov = leftNPos != Pt2LinePos.Right;
 
-                                break;
-                            }
-
-                            var bJumpPt = Area[i1].GetEndPt();
-                            var bLink = new TwoDVectorLine(bJumpPt, bNoCovPt);
-                            if (bJumpPt.GetPosOf(sameLine) != Pt2LinePos.Right &&
-                                !simpleBlocks.LineCross(bLink))
-                            {
-#if DEBUG
-                                Console.Out.WriteLine("get 2 link cut to 3 part");
-#endif
-
-
-                                break;
-                            }
-                        }
-
-                        break;
+                        aLine = lCov ? leftNPos == Pt2LinePos.On && aLine : aLine;
+                        var notOver = next.GetPosOf(otherLine) != Pt2LinePos.Right;
+                        var twoDVectorLine =
+                            new TwoDVectorLine(otherLine.GetEndPt(), next);
+                        var lineCross = simpleBlocks.LineCross(twoDVectorLine);
+                        var ptInShape = simpleBlocks.PtInShapeIncludeSide(twoDVectorLine.GetMid());
+                        var canGo = lCov && notOver && !lineCross && ptInShape;
+                        return canGo;
                     }
                 }
-            }
 
-            else
-            {
+                var inALine1 = true;
+                var lfc1 = 0;
+                var rfc1 = 1;
+                GetANoJumpCovInArea(ref lfc1, ref rfc1, area, true, true, ref inALine1, false, areaSimpleBlocks);
+
+                if (lfc1 == -1)
+                {
 #if DEBUG
+                    Console.Out.WriteLine("this just a cov shape");
+#endif
+                    return;
+                }
+
+                if (inALine1)
+                {
+#if DEBUG
+                    Console.Out.WriteLine("cov is in a line , need cut to 3 part");
+#endif
+
+                    return;
+                }
+
+                var bCount = area.Count - lfc1;
+                var (covShape, rest, lineCov, _) = CutTo2Part(area, rfc1, bCount);
+
+
+#if DEBUG
+                var aggregate = covShape.Aggregate("", (s, x) => s + x.Log() + "\n");
+
+                var aggregate2 = rest.Aggregate("", (s, x) => s + x.Log() + "\n");
                 Console.Out.WriteLine(
-                    $" shape have more than 1 cov pt link::{fNoCovPt.Log()}=={bNoCovPt.Log()} , cut a cov out and rest");
+                    $"cut to 2 part \n {aggregate}\n and \n{aggregate2} \n with {lineCov.Log()}, and go to find next cov");
 #endif
+                GetACov(rest);
             }
         }
 
@@ -315,24 +338,26 @@ namespace collision_and_rigid
         // {
         // }
 
-        static (List<IBlockShape> covShape, List<IBlockShape> rest) CutATriangle(List<IBlockShape> raw, int fCount)
-        {
-            var bCount = fCount + 2;
-            var blockShapes = raw.GetRange(0, fCount);
-            var shapes = raw.GetRange(bCount, raw.Count - bCount);
-            shapes.AddRange(blockShapes);
-            var rest = raw.GetRange(fCount, 2);
-            return (shapes, rest);
-        }
 
-        static (List<IBlockShape> covShape, List<IBlockShape> rest) SplitTo2Part(List<IBlockShape> raw, int fCount,
-            int bCount)
+        static (List<IBlockShape> covShape, List<IBlockShape> rest, TwoDVectorLine linkLineCov, TwoDVectorLine
+            linkLineRest) CutTo2Part(
+                List<IBlockShape> raw, int fCount,
+                int bCount)
         {
+            var p1 = raw[fCount].GetStartPt();
+            var p2 = raw[bCount].GetStartPt();
+            var covS = new TwoDVectorLine(p1, p2);
+            var restS = covS.Reverse();
+
             var blockShapes = raw.GetRange(0, fCount);
             var shapes = raw.GetRange(bCount, raw.Count - bCount);
             shapes.AddRange(blockShapes);
             var rest = raw.GetRange(fCount, bCount - fCount);
-            return (shapes, rest);
+            var list = new List<IBlockShape>() {covS};
+            list.AddRange(shapes);
+            var blockShapes1 = new List<IBlockShape>() {restS};
+            blockShapes1.AddRange(rest);
+            return (list, blockShapes1, covS, restS);
         }
     }
 
@@ -486,8 +511,8 @@ namespace collision_and_rigid
                 var twoDPoint = shapes.First().GetStartPt();
                 var beChild = false;
                 foreach (var blockUnit in from blockUnit in blockUnits
-                    where blockUnit.ShellBlocks.IsEmpty() || blockUnit.ShellBlocks.PtInShape(twoDPoint)
-                    let all = blockUnit.ChildrenBlocks.All(x => !x.PtInShape(twoDPoint))
+                    where blockUnit.ShellBlocks.IsEmpty() || blockUnit.ShellBlocks.PtRealInShape(twoDPoint)
+                    let all = blockUnit.ChildrenBlocks.All(x => !x.PtRealInShape(twoDPoint))
                     where all
                     select blockUnit)
                 {

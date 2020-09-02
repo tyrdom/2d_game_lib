@@ -16,7 +16,7 @@ namespace collision_and_rigid
             QSpace = qSpace;
         }
 
-        public bool CoverPoint(TwoDPoint p)
+        public bool RealCoverPoint(TwoDPoint p)
         {
             if (QSpace == null) return true;
 
@@ -31,7 +31,7 @@ namespace collision_and_rigid
                 var inBlock = item1 % 2 != 0;
                 return IsBlockIn ? inBlock : !inBlock;
             }
-
+//-1 真包含，在边缘不计，-2 不压线在外面，-3在线上
             return item1 == -1;
         }
 
@@ -44,7 +44,7 @@ namespace collision_and_rigid
             if (safe) return apt;
             if (apt != null)
             {
-                return CoverPoint(apt) ? PushOutToPt(lastP, apt, false) : apt;
+                return RealCoverPoint(apt) ? PushOutToPt(lastP, apt, false) : apt;
             }
 
             return null;

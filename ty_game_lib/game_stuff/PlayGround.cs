@@ -209,7 +209,7 @@ namespace game_stuff
 #endif
                                     if (pushOutToPt == null) return pushOutToPt;
                                     characterBody.HitWall();
-                                    var coverPoint = walkBlock.CoverPoint((TwoDPoint) pushOutToPt);
+                                    var coverPoint = walkBlock.RealCoverPoint((TwoDPoint) pushOutToPt);
                                     if (coverPoint) pushOutToPt = characterBody.LastPos;
 
 

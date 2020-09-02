@@ -18,7 +18,7 @@ namespace collision_and_rigid
 
     public interface IBulletShape
     {
-        public bool PtInShape(TwoDPoint point);
+        public bool PtRealInShape(TwoDPoint point);
     }
 
     public interface ITwoDTwoP

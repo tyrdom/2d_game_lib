@@ -8,14 +8,17 @@ namespace collision_and_rigid
     {
         private List<AabbBoxShape> AabbBoxShapes;
 
-        public SimpleBlocks(List<AabbBoxShape> aabbBoxShapes)
-        {
-            AabbBoxShapes = aabbBoxShapes;
-        }
 
         public SimpleBlocks(IEnumerable<IBlockShape> blockShapes)
         {
-            AabbBoxShapes = blockShapes.SelectMany(x => x.GenAabbBoxShape()).ToList();
+            var enumerable = blockShapes.ToList();
+            var checkFlush = SomeTools.CheckFlush(enumerable);
+            if (!checkFlush)
+            {
+                throw new Exception("not a flush simpleBlocks");
+            }
+
+            AabbBoxShapes = enumerable.SelectMany(x => x.GenAabbBoxShape()).ToList();
         }
 
         public bool IsEmpty()
@@ -30,7 +33,19 @@ namespace collision_and_rigid
             return listToHashSet;
         }
 
-        public bool PtInShape(TwoDPoint point)
+        public bool PtInShapeIncludeSide(TwoDPoint point)
+        {
+            var (item1, _) = point.GenARightShootCrossALotAabbBoxShape(AabbBoxShapes);
+            if (item1 >= 0)
+            {
+                return item1 % 2 != 0;
+            }
+
+            return item1 == -1 || item1 == -3;
+        }
+
+
+        public bool PtRealInShape(TwoDPoint point)
         {
             var (item1, _) = point.GenARightShootCrossALotAabbBoxShape(AabbBoxShapes);
             if (item1 >= 0)
@@ -43,24 +58,23 @@ namespace collision_and_rigid
 
         public bool LineCross(TwoDVectorLine line)
         {
-            foreach (var aabbBoxShape in AabbBoxShapes)
+            foreach (var aabbBoxShape in from aabbBoxShape in AabbBoxShapes
+                let notCross = line.GenZone().NotCross(aabbBoxShape.Zone)
+                where !notCross
+                select aabbBoxShape)
             {
-                bool notCross = line.GenZone().NotCross(aabbBoxShape.Zone);
-                if (!notCross)
-                {
 #if DEBUG
-                    Console.Out.WriteLine($"line { line.Log()} is cross zone ::{aabbBoxShape.Zone.LogSide()}");
+                Console.Out.WriteLine($"line {line.Log()} is cross zone ::{aabbBoxShape.Zone.LogSide()}");
 #endif
-                    var b = aabbBoxShape.Shape switch
-                    {
-                        ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
-                        TwoDVectorLine blockLine => line.IsGoTrough(blockLine),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                    if (b)
-                    {
-                        return b;
-                    }
+                var b = aabbBoxShape.Shape switch
+                {
+                    ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
+                    TwoDVectorLine blockLine => line.IsGoTrough(blockLine),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                if (b)
+                {
+                    return b;
                 }
             }
 

@@ -81,6 +81,22 @@ namespace collision_and_rigid
             return n;
         }
 
+
+        public Pt2LinePos CanCutToCov(TwoDVectorLine line1, TwoDVectorLine line2)
+        {
+            var pos1 = GetPosOf(line1);
+            var pos2 = GetPosOf(line2);
+
+            if (pos1 != Pt2LinePos.Right)
+            {
+                return pos2 != Pt2LinePos.Right ? Pt2LinePos.On : Pt2LinePos.Left;
+            }
+
+            if (pos2 != Pt2LinePos.Right) return Pt2LinePos.Right;
+            throw new Exception("wrong cut pt");
+        }
+
+
         public Zone GetZone()
         {
             return new Zone(Y, Y, X, X);
@@ -103,7 +119,8 @@ namespace collision_and_rigid
 //                Console.Out.WriteLine("XY:::" + X + "  " + Y + "\n zone：：" + SomeTools.ZoneLog(zone));
                 if (zone.Up <= zone.Down && zone.IncludePt(this))
                 {
-                    return (-2, aabbBoxShape);
+                    //-3 为在线上
+                    return (-3, aabbBoxShape);
                 }
 
                 if (!(Y <= zone.Up) || !(Y > zone.Down)) continue;
@@ -163,7 +180,7 @@ namespace collision_and_rigid
 
         public bool IsInBlock(WalkBlock walkBlock)
         {
-            return walkBlock.CoverPoint(this);
+            return walkBlock.RealCoverPoint(this);
         }
 
         public TwoDPoint Move(TwoDVector v)

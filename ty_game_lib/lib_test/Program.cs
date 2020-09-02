@@ -118,7 +118,7 @@ namespace lib_test
             else
                 Console.Out.WriteLine("all block");
 
-            var inBlock2 = genWalkBlockByPolys.CoverPoint(ptt);
+            var inBlock2 = genWalkBlockByPolys.RealCoverPoint(ptt);
 
             var sPt = new TwoDPoint(-0.1f, -1.45f);
             var ePt = new TwoDPoint(0.2f, -1.55f);

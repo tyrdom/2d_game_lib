@@ -78,10 +78,8 @@ namespace collision_and_rigid
         public IBulletShape GenBulletShape(float r)
         {
             var genBlockShapes = GenBlockShapes(r);
-            var genBlockAabbBoxShapes = Poly.GenBlockAabbBoxShapes(genBlockShapes);
 
-
-            var simpleBlocks = new SimpleBlocks(genBlockAabbBoxShapes);
+            var simpleBlocks = new SimpleBlocks(genBlockShapes);
             return simpleBlocks;
         }
     }
