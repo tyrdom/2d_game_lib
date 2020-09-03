@@ -64,7 +64,7 @@ namespace collision_and_rigid
                 select aabbBoxShape)
             {
 #if DEBUG
-                Console.Out.WriteLine($"line {line.Log()} is cross zone ::{aabbBoxShape.Zone.LogSide()}");
+                // Console.Out.WriteLine($"line {line.Log()} is cross zone ::{aabbBoxShape.Zone.LogSide()}");
 #endif
                 var b = aabbBoxShape.Shape switch
                 {

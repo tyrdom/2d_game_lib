@@ -96,8 +96,7 @@ namespace lib_test
 
             var tuples = new List<(Poly, bool)>
             {
-                (poly, false), (poly3, true)
-                , (poly4, true) , (poly5, true)
+                (poly, false), (poly3, true), (poly4, true), (poly5, true)
             };
 
 //            var genBlockShapes = poly1.GenBlockShapes(0.2f, true);
@@ -156,24 +155,24 @@ namespace lib_test
 
                 Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
 
-                var genBlockUnits = PathMap.GenBlockUnits(genFromBlocks,genWalkBlockByPolys.IsBlockIn);
+                var genBlockUnits = PathMap.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn);
 
                 var s1 = genBlockUnits.Aggregate("", (s, x) => s + x);
 
                 Console.Out.WriteLine($"WalkAreaBlocks \n{s1}");
 
-                var walkAreas = genBlockUnits.Select(x=>x.GenWalkArea());
+                var walkAreas = genBlockUnits.Select(x => x.GenWalkArea());
 
                 var continuousWalkAreas = walkAreas as ContinuousWalkArea[] ?? walkAreas.ToArray();
                 var ss2 = continuousWalkAreas.Aggregate("", (s, x) => s + x);
 
                 Console.Out.WriteLine($"WalkAreas \n{ss2}");
-                
-                
-                foreach (var continuousWalkArea in continuousWalkAreas)
-                {
-                    continuousWalkArea.ToCovPolygons(0);
-                }
+
+                int startId = -1;
+                var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref startId));
+
+                var aggregate2 = pathNodeCovPolygons.Aggregate("", (s, x) => s + x + "\n");
+                Console.Out.WriteLine($"finally~~~~~\n{aggregate2}");
             }
 
 
