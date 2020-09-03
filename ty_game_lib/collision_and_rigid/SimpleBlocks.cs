@@ -33,6 +33,14 @@ namespace collision_and_rigid
             return listToHashSet;
         }
 
+        public Zone GenZone()
+        {
+            var enumerable = AabbBoxShapes.Select(x => x.Zone);
+            var zones = enumerable.ToList();
+            var first = zones.First();
+            return zones.Aggregate(first, (current, zone) => current.Join(zone));
+        }
+
         public bool PtInShapeIncludeSide(TwoDPoint point)
         {
             var (item1, _) = point.GenARightShootCrossALotAabbBoxShape(AabbBoxShapes);

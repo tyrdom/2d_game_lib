@@ -500,7 +500,7 @@ namespace collision_and_rigid
         }
 
 
-        public static WalkBlock GenWalkBlockByPolys(List<(Poly, bool)> rawData, float r, int limit)
+        public static WalkBlock GenWalkBlockByPolygons(List<(Poly, bool)> rawData, float r, int limit)
         {
             var (firstPoly, item2) = rawData[0];
 

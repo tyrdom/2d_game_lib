@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
+using cov_path_navi;
 using game_config;
 using game_stuff;
 
@@ -111,7 +112,7 @@ namespace lib_test
 //            var outZones = genWalkBlockByPoly.QSpace.OutZones();
 //            Console.Out.WriteLine("zones!!!:::"+outZones);
 
-            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(tuples, 1f, 6);
+            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 1f, 6);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
             if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
             else
@@ -146,7 +147,7 @@ namespace lib_test
             {
                 Console.Out.WriteLine($"blocks have {allIBlocks.Count} blocks \n are::{aggregate}");
 
-                var genFromBlocks = PathMap.GenFromBlocks(allIBlocks.ToList());
+                var genFromBlocks = PathNodes.GenFromBlocks(allIBlocks.ToList());
 
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
@@ -155,7 +156,7 @@ namespace lib_test
 
                 Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
 
-                var genBlockUnits = PathMap.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn);
+                var genBlockUnits = PathNodes.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn);
 
                 var s1 = genBlockUnits.Aggregate("", (s, x) => s + x);
 

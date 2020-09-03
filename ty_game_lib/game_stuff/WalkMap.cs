@@ -18,7 +18,7 @@ namespace game_stuff
             var walkBlocks = new Dictionary<BodySize, WalkBlock>();
             foreach (var keyValuePair in sizeToR)
             {
-                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolys(lp, keyValuePair.Value, 6);
+                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(lp, keyValuePair.Value, 6);
                 walkBlocks[keyValuePair.Key] = genWalkBlockByPolys;
             }
 

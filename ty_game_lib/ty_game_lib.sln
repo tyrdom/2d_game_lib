@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_test", "lib_test\lib_te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "game_bot", "game_bot\game_bot.csproj", "{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cov_path_navi", "cov_path_navi\cov_path_navi.csproj", "{B4DAA8A9-49DA-4112-A042-BBB3CD306463}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36C40F7F-FF3F-49DF-8B5F-262A94FA9058}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

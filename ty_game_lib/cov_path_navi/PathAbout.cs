@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using collision_and_rigid;
 
-namespace collision_and_rigid
+namespace cov_path_navi
 {
     public class Link
     {
@@ -54,6 +55,14 @@ namespace collision_and_rigid
             Links = links;
             ThisPathNodeId = thisPathNodeId;
             Edges = edges;
+        }
+
+        public AreaBox GenAreaBox()
+        {
+            var twoDVectorLines = Edges.Select(x => x.AsTwoDVectorLine());
+            var simpleBlocks = new SimpleBlocks(twoDVectorLines);
+            var genZone = simpleBlocks.GenZone();
+            return new AreaBox(genZone, simpleBlocks, ThisPathNodeId);
         }
 
         public override string ToString()
@@ -206,32 +215,10 @@ namespace collision_and_rigid
 #endif
 
                     var list = new List<Link>();
-                    foreach (var twoDVectorLine in area.OfType<TwoDVectorLine>())
-                    {
-                        if (incompleteLinks.TryGetValue(twoDVectorLine, out var cut))
-                        {
-                            list.Add(cut.Link);
-
-                            cut.Belong = nowId;
-                            if (cut.IsComplete())
-                            {
-                                incompleteLinks.Remove(twoDVectorLine);
-                            }
-
-                            var mirrorLine = cut.Mirror;
-                            if (incompleteLinks.TryGetValue(mirrorLine, out var mCut))
-                            {
-                                mCut.Link.LinkToPathNodeId = nowId;
-                                if (mCut.IsComplete())
-                                {
-                                    incompleteLinks.Remove(mirrorLine);
-                                }
-                            }
-                        }
-                    }
-
+                    CollectLinks(list, incompleteLinks, nowId, area);
                     var nodeCovPolygon = new PathNodeCovPolygon(list, nowId, area);
                     polygons.Add(nodeCovPolygon);
+
                     return;
                 }
 
@@ -255,10 +242,15 @@ namespace collision_and_rigid
                 var covNewLink = new Link(-1, covS);
 
                 var links = new List<Link> {covNewLink};
-                foreach (var twoDVectorLine in covShape.OfType<TwoDVectorLine>())
+                CollectLinks(links, incompleteLinks, nowId, covShape);
+
+                static void CollectLinks(ICollection<Link> links,
+                    IDictionary<TwoDVectorLine, CutIncompleteLink> incompleteLinks, int nowId,
+                    IEnumerable<IBlockShape> covShape)
                 {
-                    if (incompleteLinks.TryGetValue(twoDVectorLine, out var cut))
+                    foreach (var twoDVectorLine in covShape.OfType<TwoDVectorLine>())
                     {
+                        if (!incompleteLinks.TryGetValue(twoDVectorLine, out var cut)) continue;
                         links.Add(cut.Link);
 
                         cut.Belong = nowId;
@@ -268,16 +260,15 @@ namespace collision_and_rigid
                         }
 
                         var mirrorLine = cut.Mirror;
-                        if (incompleteLinks.TryGetValue(mirrorLine, out var mCut))
+                        if (!incompleteLinks.TryGetValue(mirrorLine, out var mCut)) continue;
+                        mCut.Link.LinkToPathNodeId = nowId;
+                        if (mCut.IsComplete())
                         {
-                            mCut.Link.LinkToPathNodeId = nowId;
-                            if (mCut.IsComplete())
-                            {
-                                incompleteLinks.Remove(mirrorLine);
-                            }
+                            incompleteLinks.Remove(mirrorLine);
                         }
                     }
                 }
+
 
                 var pathNodeCovPolygon = new PathNodeCovPolygon(links, nowId, covShape);
                 polygons.Add(pathNodeCovPolygon);
@@ -464,17 +455,70 @@ namespace collision_and_rigid
         }
     }
 
-    // var (sLeft, sRight) = SomeTools.CutList(ShellRaw, i);
-    // var (cLeft, cRight) = SomeTools.CutList(blockShapes, i1);
-    // shapes.AddRange(sLeft);
-    // shapes.Add(twoDVectorLine);
-    // shapes.AddRange(cRight);
-    // shapes.AddRange(cLeft);
-    // shapes.Add(twoDVectorLine.Reverse());
-    // shapes.AddRange(sRight);
-    // break;
-    public class PathMap
+    public class AreaBox
     {
+        private Zone Zone;
+
+        private SimpleBlocks SimpleBlocks;
+
+        public AreaBox(Zone zone, SimpleBlocks simpleBlocks, int polyId)
+        {
+            Zone = zone;
+            SimpleBlocks = simpleBlocks;
+            PolyId = polyId;
+        }
+
+        private int PolyId { get; }
+
+        public int? InPoly(TwoDPoint pt)
+        {
+            return Zone.IncludePt(pt) && SimpleBlocks.PtInShapeIncludeSide(pt) ? (int?) PolyId : null;
+        }
+    }
+
+    public class PathNodes
+    {
+        private Dictionary<int, PathNodeCovPolygon> PolygonsTop;
+
+        private List<AreaBox> AreaBoxes;
+
+        public PathNodes(WalkBlock walkBlock)
+        {
+            if (walkBlock.QSpace == null)
+            {
+                PolygonsTop = new Dictionary<int, PathNodeCovPolygon>();
+                AreaBoxes = new List<AreaBox>();
+            }
+            else
+            {
+                var blockShapes = walkBlock.QSpace.GetAllIBlocks().ToList();
+                var genFromBlocks = GenFromBlocks(blockShapes);
+                var walkAreaBlocks = GenBlockUnits(genFromBlocks, walkBlock.IsBlockIn);
+                var continuousWalkAreas = walkAreaBlocks.Select(x => x.GenWalkArea());
+                var a = -1;
+                var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref a)).ToList();
+                PolygonsTop = pathNodeCovPolygons.ToDictionary(x => x.ThisPathNodeId, x => x);
+                AreaBoxes = pathNodeCovPolygons.Select(x => x.GenAreaBox()).ToList();
+            }
+        }
+
+        public int? InWhichPoly(TwoDPoint pt)
+        {
+            foreach (var inPoly in AreaBoxes
+                .Select(areaBox => areaBox.InPoly(pt))
+                .Where(inPoly => inPoly != null))
+            {
+                return inPoly;
+            }
+
+            return null;
+        }
+
+        int[] FindAPath(int start, int end)
+        {
+            return new[] {0}; //todo 
+        }
+
         //分割为凸多边形，标记联通关系
 
 
