@@ -147,7 +147,7 @@ namespace lib_test
             {
                 Console.Out.WriteLine($"blocks have {allIBlocks.Count} blocks \n are::{aggregate}");
 
-                var genFromBlocks = PathNodes.GenFromBlocks(allIBlocks.ToList());
+                var genFromBlocks = PathTop.GenFromBlocks(allIBlocks.ToList());
 
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
@@ -156,7 +156,7 @@ namespace lib_test
 
                 Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
 
-                var genBlockUnits = PathNodes.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn);
+                var genBlockUnits = PathTop.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn);
 
                 var s1 = genBlockUnits.Aggregate("", (s, x) => s + x);
 
@@ -176,6 +176,12 @@ namespace lib_test
                 Console.Out.WriteLine($"finally~~~~~\n{aggregate2}");
             }
 
+            var pathTop = new PathTop(genWalkBlockByPolys);
+            Console.Out.WriteLine($"\n\n pathTop is\n{pathTop}");
+            var findAPathById = pathTop.FindAPathById(5, 6);
+
+            var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=" + x);
+            Console.Out.WriteLine($"path::{aggregate3}");
 
             return;
             Console.Out.WriteLine("config test~~~~~");

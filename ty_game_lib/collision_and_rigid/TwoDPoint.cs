@@ -81,6 +81,14 @@ namespace collision_and_rigid
             return n;
         }
 
+        public float GetDistance(TwoDPoint another)
+        {
+            var dX = X - another.X;
+            var dY = Y - another.Y;
+            var x = dX * dX + dY * dY;
+            var sqrt = MathTools.Sqrt(x);
+            return sqrt;
+        }
 
         public Pt2LinePos CanCutToCov(TwoDVectorLine line1, TwoDVectorLine line2)
         {

@@ -1,17 +1,138 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using collision_and_rigid;
 
 namespace cov_path_navi
 {
-    public class PathNodes
+    public interface IPathTree
+    {
+        public int Id { get; }
+    }
+
+    public class PathTreeNode : IPathTree
+    {
+        public PathTreeNode? Father { get; set; }
+        public int Id { get; }
+        public float Cost { get; set; }
+
+
+        public PathTreeNode(int id, float cost)
+        {
+            Id = id;
+            Cost = cost;
+            Father = null;
+        }
+
+        public PathTreeNode(int id, float cost, PathTreeNode? pathTreeNode)
+        {
+            Id = id;
+            Cost = cost;
+            Father = pathTreeNode;
+        }
+
+
+        public void GatherPathIds(List<int> ints)
+        {
+            ints.Add(Id);
+
+            Father?.GatherPathIds(ints);
+        }
+
+        public override string ToString()
+        {
+            var fatherId = Father == null ? "root" : Father.Id.ToString();
+            var id = fatherId + ">" + Id + "<" + Cost;
+            return id;
+        }
+
+        public void Grow(Dictionary<int, PathNodeCovPolygon> polygonsTop, int end, List<PathTreeNode> collector,
+            Dictionary<int, PathTreeNode> haveReached)
+        {
+            if (polygonsTop.TryGetValue(Id, out var nodeCovPolygon))
+            {
+                if (Father == null)
+                {
+                    var treeNodes = nodeCovPolygon.Links.Select(x =>
+                            new PathTreeNode(x.LinkToPathNodeId, 0, this))
+                        .ToList();
+                    var okNodes = treeNodes.Where(x => x.Id == end).ToList();
+#if DEBUG
+                    Console.Out.WriteLine($"root node is {Id}");
+                    var aggregate = treeNodes.Aggregate("", (s, x) => s + x + "\n");
+                    Console.Out.WriteLine($"grow :::\n{aggregate}");
+#endif
+                    if (okNodes.Any())
+                    {
+                        collector.AddRange(okNodes);
+                        return;
+                    }
+
+                    foreach (var pathTreeNode in treeNodes)
+                    {
+                        haveReached[pathTreeNode.Id] = pathTreeNode;
+                        pathTreeNode.Grow(polygonsTop, end, collector, haveReached);
+                    }
+                }
+                else
+                {
+                    if (nodeCovPolygon.LinkAndCost.TryGetValue(Father.Id, out var tuples))
+                    {
+                        var treeNodes = tuples.Select(x =>
+                            new PathTreeNode(x.id, x.cost + Cost, this)).ToList();
+
+                        var okNodes = treeNodes.Where(x => x.Id == end).ToList();
+#if DEBUG
+                        Console.Out.WriteLine($"this node is {Id} form {Father.Id}");
+                        var aggregate = treeNodes.Aggregate("", (s, x) => s + x + "\n");
+                        Console.Out.WriteLine($"grow :::\n{aggregate}");
+#endif
+                        if (okNodes.Any())
+                        {
+                            collector.AddRange(okNodes);
+                            return;
+                        }
+
+
+                        foreach (var pathTreeNode in treeNodes)
+                        {
+                            if (haveReached.TryGetValue(pathTreeNode.Id, out var pathTreeNode2))
+                            {
+                                if (pathTreeNode.Cost < pathTreeNode2.Cost)
+                                {
+                                    pathTreeNode2.Father = pathTreeNode.Father;
+                                    pathTreeNode2.Cost = pathTreeNode.Cost;
+                                }
+
+                                continue;
+                            }
+
+                            haveReached[pathTreeNode.Id] = pathTreeNode;
+                            pathTreeNode.Grow(polygonsTop, end, collector, haveReached);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    public class PathTop
     {
         private Dictionary<int, PathNodeCovPolygon> PolygonsTop;
 
         private readonly List<AreaBox> AreaBoxes;
 
-        public PathNodes(WalkBlock walkBlock)
+        public override string ToString()
+        {
+            var aggregate = PolygonsTop.Aggregate("", (s, x) => s + x.Key + "===" + x.Value + "\n");
+
+            return aggregate;
+        }
+
+        public PathTop(WalkBlock walkBlock)
         {
             if (walkBlock.QSpace == null)
             {
@@ -26,6 +147,11 @@ namespace cov_path_navi
                 var continuousWalkAreas = walkAreaBlocks.Select(x => x.GenWalkArea());
                 var a = -1;
                 var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref a)).ToList();
+                foreach (var pathNodeCovPolygon in pathNodeCovPolygons)
+                {
+                    pathNodeCovPolygon.LoadLinkAndCost();
+                }
+
                 PolygonsTop = pathNodeCovPolygons.ToDictionary(x => x.ThisPathNodeId, x => x);
                 AreaBoxes = pathNodeCovPolygons.Select(x => x.GenAreaBox()).ToList();
             }
@@ -43,10 +169,38 @@ namespace cov_path_navi
             return null;
         }
 
-        int[] FindAPath(int start, int end)
+        public List<int> FindAPathById(int start, int end)
         {
-            return new[] {0}; //todo 
+            var pathTreeNode = new PathTreeNode(start, 0);
+            var pathTreeNodes = new List<PathTreeNode>();
+            var treeNodes = new Dictionary<int, PathTreeNode> {{start, pathTreeNode}};
+            pathTreeNode.Grow(PolygonsTop, end, pathTreeNodes, treeNodes);
+
+            if (!pathTreeNodes.Any())
+            {
+#if DEBUG
+                Console.Out.WriteLine($"no way between {start} and {end}");
+#endif
+
+                return new List<int>();
+            }
+
+            pathTreeNodes.Sort((x, y) =>
+            {
+                var xCost = x.Cost;
+                var yCost = y.Cost;
+                if (xCost > yCost) return 1;
+                if (xCost < yCost) return -1;
+                return 0;
+            });
+
+            var firstOrDefault = pathTreeNodes.FirstOrDefault();
+            var ints = new List<int>();
+            firstOrDefault.GatherPathIds(ints);
+            ints.Reverse();
+            return ints;
         }
+
 
         //分割为凸多边形，标记联通关系
 
