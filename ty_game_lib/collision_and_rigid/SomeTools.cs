@@ -198,12 +198,6 @@ namespace collision_and_rigid
         }
 
 
-        private static List<IBlockShape> ReFlush(List<IBlockShape> list)
-        {
-            var blockShape = list.First();
-            return list;
-        }
-
         public static bool CheckFlush(IEnumerable<IBlockShape> l1)
         {
             var blk1F = true;
@@ -385,7 +379,7 @@ namespace collision_and_rigid
 #if DEBUG
                 Console.Out.WriteLine($"stPt {startPt.Log()} is {startCond} edPt {endPt.Log()} is {cond}");
 #endif
-                var (blockShapes, condAfterCross, item3) =
+                var (blockShapes, _, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond2, temp2, cond);
                 resL2.AddRange(blockShapes);
                 temp2 = item3;
@@ -556,7 +550,6 @@ namespace collision_and_rigid
 
             var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
 
-
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
 #if DEBUG
             Console.Out.WriteLine($"aabb num::{qSpace.AabbPackBoxShapes.Count}");
@@ -574,7 +567,6 @@ namespace collision_and_rigid
 
         public static List<IBlockShape> CheckCloseAndFilter(List<IBlockShape> blockShapes)
         {
-            var res = new List<IBlockShape>();
             var beforeOk = new List<int>();
             var afterOk = new List<int>();
             for (var i = 0; i < blockShapes.Count; i++)

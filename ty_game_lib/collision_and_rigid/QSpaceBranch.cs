@@ -258,7 +258,7 @@ namespace collision_and_rigid
 
         public (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
         {
-            var (i, aabb) = p.GenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
+            var (i, aabb) = p.GenARightShootCrossALotAabbBoxShapeInQSpace(AabbPackBoxShapes);
             var whichQ = p.WhichQ(this);
 //            Console.Out.WriteLine("Q:::" + whichQ);
             switch (whichQ)

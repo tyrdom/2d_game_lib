@@ -178,7 +178,8 @@ namespace lib_test
 
             var pathTop = new PathTop(genWalkBlockByPolys);
             Console.Out.WriteLine($"\n\n pathTop is\n{pathTop}");
-            var findAPathById = pathTop.FindAPathById(5, 6);
+            var twoDPoint = new TwoDPoint(-2.1f,0);
+            var findAPathById = pathTop.FindAPathById(0, 6,twoDPoint);
 
             var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=" + x);
             Console.Out.WriteLine($"path::{aggregate3}");

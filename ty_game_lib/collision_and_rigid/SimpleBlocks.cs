@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace collision_and_rigid
 {
-    public class SimpleBlocks : IBulletShape
+    public class SimpleBlocks : IBulletShape, IShape
     {
         private List<AabbBoxShape> AabbBoxShapes;
 
@@ -43,7 +43,7 @@ namespace collision_and_rigid
 
         public bool PtInShapeIncludeSide(TwoDPoint point)
         {
-            var (item1, _) = point.GenARightShootCrossALotAabbBoxShape(AabbBoxShapes);
+            var (item1, _) = point.GenARightShootCrossALotAabbBoxShapeInQSpace(AabbBoxShapes);
             if (item1 >= 0)
             {
                 return item1 % 2 != 0;
@@ -55,7 +55,7 @@ namespace collision_and_rigid
 
         public bool PtRealInShape(TwoDPoint point)
         {
-            var (item1, _) = point.GenARightShootCrossALotAabbBoxShape(AabbBoxShapes);
+            var (item1, _) = point.GenARightShootCrossALotAabbBoxShapeInQSpace(AabbBoxShapes);
             if (item1 >= 0)
             {
                 return item1 % 2 != 0;
@@ -87,6 +87,21 @@ namespace collision_and_rigid
             }
 
             return false;
+        }
+
+        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
+        {
+            throw new NotImplementedException();
+        }
+
+        public (Zone?, Zone?) CutByH(float h, Zone z)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
+        {
+            throw new NotImplementedException();
         }
     }
 }

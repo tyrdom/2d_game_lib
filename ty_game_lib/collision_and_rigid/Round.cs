@@ -20,17 +20,49 @@ namespace collision_and_rigid
         }
 
 
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
+        {
+            var (down, up) = GetY(v);
+            if (down == null || up == null)
+            {
+                return (null, null);
+            }
+
+            if (v < O.X)
+            {
+                var leftZone = new Zone(up.Value, down.Value, z.Left, v);
+                var rightZone = new Zone(z.Up, z.Down, v, z.Right);
+                return (leftZone, rightZone);
+            }
+
+            if (v > O.X)
+            {
+                var leftZone2 = new Zone(z.Up, z.Down, z.Left, v);
+                var rightZone2 = new Zone(up.Value, down.Value, v, z.Right);
+                return (leftZone2, rightZone2);
+            }
+
+            var leftZone3 = new Zone(z.Up, z.Down, z.Left, v);
+            var rightZone3 = new Zone(z.Up, z.Down, v, z.Right);
+            return (leftZone3, rightZone3);
+        }
+
+        public (Zone?, Zone?) CutByH(float h, Zone z)
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
+        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
         {
             var sqNorm = TwoDVector.TwoDVectorByPt(O, p).SqNorm();
             if (sqNorm < R * R) return -1;
-
             {
-                return -2;
+                return p.X < O.X ? 1 : 0;
             }
         }
 
-        public (float?, float?) GetX(float y)
+        public (float? left, float? right) GetX(float y)
         {
             var oY = y - O.Y;
             var f = R * R - oY * oY;
@@ -44,7 +76,7 @@ namespace collision_and_rigid
             return (O.X - sqrt, O.X + sqrt);
         }
 
-        public (float?, float?) GetY(float x)
+        public (float? down, float? up) GetY(float x)
         {
             var oY = x - O.X;
             var f = R * R - oY * oY;

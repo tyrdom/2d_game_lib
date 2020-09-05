@@ -115,5 +115,20 @@ namespace game_stuff
         {
             return $"Id {GetId()} pos {NowPos}";
         }
+
+        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
+        {
+            return (z, z);
+        }
+
+        public (Zone?, Zone?) CutByH(float h, Zone z)
+        {
+            return (z, z);
+        }
+
+        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
+        {
+            return 0;
+        }
     }
 }

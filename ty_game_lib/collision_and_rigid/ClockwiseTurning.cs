@@ -195,13 +195,13 @@ namespace collision_and_rigid
             return new AabbBoxShape(zone, this);
         }
 
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
         {
             var o = Aob.O;
             var sqNorm = TwoDVector.TwoDVectorByPt(o, p).SqNorm();
             if (sqNorm < R * R) return -1;
 
-            if (sqNorm > R * R) return 0;
+            if (sqNorm > R * R) return p.X < o.X ? 1 : 0;
 
             return -3;
         }
@@ -498,7 +498,7 @@ namespace collision_and_rigid
             }
         }
 
-        public (Zone?, Zone?) CutByV(float v, Zone z)
+        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
         {
             var o = Aob.O;
             var round = new Round(o, R);

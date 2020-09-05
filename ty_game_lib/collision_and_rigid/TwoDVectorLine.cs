@@ -206,7 +206,7 @@ namespace collision_and_rigid
             return new AabbBoxShape(zone, this);
         }
 
-        public int TouchByRightShootPointInAAbbBox(TwoDPoint p)
+        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
         {
             var twoDVector = GetVector();
             // var f = twoDVector.X *twoDVector.Y
@@ -479,7 +479,7 @@ namespace collision_and_rigid
             return (null, null);
         }
 
-        public (Zone?, Zone?) CutByV(float v, Zone z)
+        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
         {
             var y = GetY(v);
             var twoDVector = GetVector();

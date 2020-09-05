@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace collision_and_rigid
 {
+    [Serializable]
     public class TwoDPoint : ITwoDTwoP
     {
         public readonly float X;
@@ -116,7 +117,7 @@ namespace collision_and_rigid
             return TwoDVector.TwoDVectorByPt(zero, this).ClockwiseTurn(xAim).ToPt();
         }
 
-        public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShape(IEnumerable<AabbBoxShape> aabbBoxShapes)
+        public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShapeInQSpace(IEnumerable<AabbBoxShape> aabbBoxShapes)
         {
             var n = 0;
             AabbBoxShape? aShape = null;
@@ -143,9 +144,9 @@ namespace collision_and_rigid
                     var shape = aabbBoxShape.Shape;
                     var touchByRightShootPointInAAbbBox = shape switch
                     {
-                        ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBox(this),
-                        TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBox(this),
-                        Round round => round.TouchByRightShootPointInAAbbBox(this),
+                        ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBoxInQSpace(this),
+                        TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBoxInQSpace(this),
+                        Round round => round.TouchByRightShootPointInAAbbBoxInQSpace(this),
                         _ => throw new ArgumentOutOfRangeException(nameof(shape))
                     };
 
