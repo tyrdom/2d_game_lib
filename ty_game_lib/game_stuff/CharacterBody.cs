@@ -5,7 +5,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : IIdPointShape
+    public class CharacterBody : IIdPointShape,IShape
     {
         public BodySize BodySize { get; }
         public CharacterStatus CharacterStatus { get; }

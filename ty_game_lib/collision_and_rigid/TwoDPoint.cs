@@ -144,9 +144,9 @@ namespace collision_and_rigid
                     var shape = aabbBoxShape.Shape;
                     var touchByRightShootPointInAAbbBox = shape switch
                     {
-                        ClockwiseTurning clockwiseTurning => clockwiseTurning.TouchByRightShootPointInAAbbBoxInQSpace(this),
-                        TwoDVectorLine twoDVectorLine => twoDVectorLine.TouchByRightShootPointInAAbbBoxInQSpace(this),
-                        Round round => round.TouchByRightShootPointInAAbbBoxInQSpace(this),
+                        IBlockShape blockShape => blockShape.TouchByRightShootPointInAAbbBoxInQSpace(
+                            this),
+
                         _ => throw new ArgumentOutOfRangeException(nameof(shape))
                     };
 

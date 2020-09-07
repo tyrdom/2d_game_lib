@@ -5,9 +5,7 @@ namespace collision_and_rigid
 {
     public interface IShape
     {
-        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z);
-        public (Zone?, Zone?) CutByH(float h, Zone z);
-        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p); //TODO simple block use
+        
     }
 
     public interface IRawBulletShape
@@ -28,7 +26,7 @@ namespace collision_and_rigid
         string Log();
     }
 
-    public interface IIdPointShape : IShape
+    public interface IIdPointShape
     {
         int GetId();
         TwoDPoint Move(ITwoDTwoP vector);
@@ -37,6 +35,8 @@ namespace collision_and_rigid
 
     public interface IBlockShape
     {
+        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z);
+        public (Zone?, Zone?) CutByH(float h, Zone z);
         TwoDVectorLine AsTwoDVectorLine();
 
         List<AabbBoxShape> GenAabbBoxShape();

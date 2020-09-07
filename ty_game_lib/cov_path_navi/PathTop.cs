@@ -171,6 +171,15 @@ namespace cov_path_navi
                 {
                     if (haveReached.TryGetValue(pathTreeNode.Id, out var pathTreeNode2))
                     {
+                        if (pathTreeNode.Father == pathTreeNode2.Father)
+                        {
+#if DEBUG
+                            Console.Out.WriteLine(
+                                $"pathNode\n {pathTreeNode.LogPath()}\n is reach\n {pathTreeNode2.LogPath()} \n in same Father {pathTreeNode2.Father?.Id}");
+#endif
+                            continue;
+                        }
+
                         foreach (var aTreeNode in pathTreeNode2.ToList)
                         {
                             if (!polygonsTop.TryGetValue(pathTreeNode.Id, out var polygon) ||
@@ -185,10 +194,23 @@ namespace cov_path_navi
 
                             var b = pathTreeNode.GetTotalCost() + cost <
                                     pathTreeNode2.GetTotalCost() + aTreeNode.Cost;
-                            if (!b) continue;
+                            if (!b)
+                            {
+                                Console.Out.WriteLine
+                                    ($"find a new way but not short than before {pathTreeNode2.LogPath()}");
+                                continue;
+                            }
+
                             pathTreeNode2.Father = pathTreeNode.Father;
                             pathTreeNode2.Cost = pathTreeNode.Cost;
                             aTreeNode.Cost = cost;
+
+#if DEBUG
+                            Console.Out.WriteLine(
+                                $"find a new short cut {pathTreeNode.LogPath()}");
+#endif
+
+                            pathTreeNode.GrowTree(polygonsTop, end, collector, haveReached);
                         }
 
 
@@ -197,6 +219,10 @@ namespace cov_path_navi
 
                     ToList.Add(pathTreeNode);
                     haveReached[pathTreeNode.Id] = pathTreeNode;
+#if DEBUG
+                    Console.Out.WriteLine(
+                        $"new reach area {pathTreeNode.Id}");
+#endif
                     pathTreeNode.GrowTree(polygonsTop, end, collector, haveReached);
                 }
             }
