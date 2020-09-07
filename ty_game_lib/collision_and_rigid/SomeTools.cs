@@ -13,11 +13,11 @@ namespace collision_and_rigid
             var cutTo4 = zone.CutTo4(item1, item2);
 
 
-            IQSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new HashSet<AabbBoxShape>());
-            IQSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new HashSet<AabbBoxShape>());
-            IQSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new HashSet<AabbBoxShape>());
-            IQSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new HashSet<AabbBoxShape>());
-            var qSpaceBranch = new QSpaceBranch(null, null, zone, new HashSet<AabbBoxShape>(
+            IQSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new HashSet<IAaBbBox>());
+            IQSpace qs2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], new HashSet<IAaBbBox>());
+            IQSpace qs3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], new HashSet<IAaBbBox>());
+            IQSpace qs4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], new HashSet<IAaBbBox>());
+            var qSpaceBranch = new QSpaceBranch(null, null, zone, new HashSet<IAaBbBox>(
                 )
                 ,
                 qs1,
@@ -39,7 +39,7 @@ namespace collision_and_rigid
         }
 
 
-        public static Zone JoinAabbZone(AabbBoxShape[] aabbBoxShapes)
+        public static Zone JoinAaBbZone(IAaBbBox[] aabbBoxShapes)
         {
             var foo = aabbBoxShapes[0].Zone;
             foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length - 1)) foo = foo.Join(aabbBoxShapes[i].Zone);
@@ -47,7 +47,7 @@ namespace collision_and_rigid
             return foo;
         }
 
-        public static void LogZones(AabbBoxShape[] aabbBoxShapes)
+        public static void LogZones(BlockBox[] aabbBoxShapes)
         {
             var s = "";
             foreach (var aabbBoxShape in aabbBoxShapes)
@@ -96,7 +96,7 @@ namespace collision_and_rigid
             return dicIntToTu;
         }
 
-        public static TwoDPoint? SlideTwoDPoint(IEnumerable<AabbBoxShape> aabbBoxShapes,
+        public static TwoDPoint? SlideTwoDPoint(IEnumerable<IAaBbBox> aabbBoxShapes,
             TwoDVectorLine moveLine,
             bool safe)
         {
@@ -109,7 +109,7 @@ namespace collision_and_rigid
 // #endif
                 if (notCross) continue;
                 var moveLineB = moveLine.B;
-                switch (aabbBoxShape.Shape)
+                switch (aabbBoxShape.GetShape())
                 {
                     case ClockwiseTurning blockClockwiseTurning:
                         var isCross = blockClockwiseTurning.IsCross(moveLine);
@@ -151,16 +151,16 @@ namespace collision_and_rigid
         }
 
 
-        public static (HashSet<AabbBoxShape>, HashSet<AabbBoxShape>) MovePtsReturnInAndOut(
+        public static (HashSet<IAaBbBox>, HashSet<IdPointBox>) MovePtsReturnInAndOut(
             Dictionary<int, ITwoDTwoP> gidToMove,
-            IEnumerable<AabbBoxShape> aabbBoxShapes, Zone zone)
+            IEnumerable<IdPointBox> aabbBoxShapes, Zone zone)
         {
-            var inZone = new HashSet<AabbBoxShape>();
-            var outZone = new HashSet<AabbBoxShape>();
+            var inZone = new HashSet<IAaBbBox>();
+            var outZone = new HashSet<IdPointBox>();
 
             foreach (var aabbPackBoxShape in aabbBoxShapes)
             {
-                var shape = aabbPackBoxShape.Shape;
+                var shape = aabbPackBoxShape.GetType();
 
                 switch (shape)
                 {
@@ -330,10 +330,10 @@ namespace collision_and_rigid
             var resL1 = new List<IBlockShape>();
             var resL2 = new List<IBlockShape>();
 
-            var l1QSpace = CreateQSpaceByAabbBoxShapes(Poly.GenBlockAabbBoxShapes(l1).ToArray(), 100);
+            var l1QSpace = CreateWalkBlockQSpaceByBlockBoxes(Poly.GenBlockAabbBoxShapes(l1).ToArray(), 100);
 
             var block1 = new WalkBlock(l1IsBlockIn, l1QSpace);
-            var l2QSpace = CreateQSpaceByAabbBoxShapes(Poly.GenBlockAabbBoxShapes(l2).ToArray(), 100);
+            var l2QSpace = CreateWalkBlockQSpaceByBlockBoxes(Poly.GenBlockAabbBoxShapes(l2).ToArray(), 100);
 
             var block2 = new WalkBlock(l2IsBlockIn, l2QSpace);
 
@@ -532,38 +532,47 @@ namespace collision_and_rigid
             return hashSet;
         }
 
-        public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
+        public static IQSpace CreateQSpaceByAabbBoxShapes(IAaBbBox[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
         {
-            var joinAabbZone = JoinAabbZone(aabbBoxShapes);
+            var joinAabbZone = JoinAaBbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
 
             var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
 
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
-            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+            return qSpace.TryCovToLimitBlockQSpace(maxLoadPerQ);
         }
 
-        public static IQSpace CreateQSpaceByAabbBoxShapes(AabbBoxShape[] aabbBoxShapes, int maxLoadPerQ)
+
+        public static IQSpace CreateWalkBlockQSpaceByBlockBoxes(BlockBox[] blockBoxes, int maxLoadPerQ)
         {
-            var joinAabbZone = JoinAabbZone(aabbBoxShapes);
+            var aaBbBoxes = blockBoxes.Cast<IAaBbBox>().ToArray();
+            var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
 
-            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
+            var aaBbPackPackBox = ListToHashSet(aaBbBoxes);
 
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
+            var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG
-            Console.Out.WriteLine($"aabb num::{qSpace.AabbPackBoxShapes.Count}");
+            Console.Out.WriteLine($"AaBbBlocks num::{qSpace.AabbPackBox.Count}");
 #endif
-            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+            return qSpace.TryCovToLimitBlockQSpace(maxLoadPerQ);
         }
 
-        public static void LogPt(TwoDPoint? pt)
+        public static IQSpace CreateAreaQSpaceByAreaBox(AreaBox[] areaBoxes, int limit)
         {
-            if (pt == null)
-                Console.Out.WriteLine("pt:::null");
-            else
-                Console.Out.WriteLine("pt:::" + pt.X + "," + pt.Y);
+            var aaBbBoxes = areaBoxes.Cast<IAaBbBox>().ToArray();
+            var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
+
+            var aaBbPackPackBox = ListToHashSet(aaBbBoxes);
+
+            var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
+#if DEBUG
+            Console.Out.WriteLine($"AaBbArea num::{qSpace.AabbPackBox.Count}");
+#endif
+            return qSpace.TryCovToLimitAreaQSpace(limit);
         }
+
 
         public static List<IBlockShape> CheckCloseAndFilter(List<IBlockShape> blockShapes)
         {

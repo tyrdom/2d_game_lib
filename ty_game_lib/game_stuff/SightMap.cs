@@ -21,7 +21,7 @@ namespace game_stuff
             var dVectorLines = twoDVectorLines as TwoDVectorLine[] ?? twoDVectorLines.ToArray();
             dVectorLines.ToList().AddRange(lines);
             var aabbBoxShapes = dVectorLines.Select(x => x.CovToAabbPackBox());
-            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(aabbBoxShapes.ToArray(), 5);
+            var qSpaceByAabbBoxShapes = SomeTools.CreateWalkBlockQSpaceByBlockBoxes(aabbBoxShapes.ToArray(), 5);
             var sightMap = new SightMap(qSpaceByAabbBoxShapes);
             return sightMap;
         }

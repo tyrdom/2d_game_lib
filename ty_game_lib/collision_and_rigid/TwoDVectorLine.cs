@@ -33,9 +33,9 @@ namespace collision_and_rigid
             return this;
         }
 
-        public List<AabbBoxShape> GenAabbBoxShape()
+        public List<BlockBox> GenAabbBoxShape()
         {
-            return new List<AabbBoxShape>() {CovToAabbPackBox()};
+            return new List<BlockBox>() {CovToAabbPackBox()};
         }
 
         public string Log()
@@ -200,10 +200,10 @@ namespace collision_and_rigid
             return GetStartPt().Same(another.GetEndPt());
         }
 
-        public AabbBoxShape CovToAabbPackBox()
+        public BlockBox CovToAabbPackBox()
         {
             var zone = GenZone();
-            return new AabbBoxShape(zone, this);
+            return new BlockBox(zone, this);
         }
 
         public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)

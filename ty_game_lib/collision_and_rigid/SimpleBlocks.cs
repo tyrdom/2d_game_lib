@@ -6,7 +6,7 @@ namespace collision_and_rigid
 {
     public class SimpleBlocks : IBulletShape, IShape
     {
-        private List<AabbBoxShape> AabbBoxShapes;
+        private List<BlockBox> AabbBoxShapes;
 
 
         public SimpleBlocks(IEnumerable<IBlockShape> blockShapes)
@@ -28,7 +28,7 @@ namespace collision_and_rigid
 
         public HashSet<IBlockShape> GetBlockShapes()
         {
-            var blockShapes = AabbBoxShapes.Select(x => x.Shape).OfType<IBlockShape>().ToList();
+            var blockShapes = AabbBoxShapes.Select(x => x.Shape).ToList();
             var listToHashSet = SomeTools.ListToHashSet(blockShapes);
             return listToHashSet;
         }

@@ -2,7 +2,7 @@ using System;
 
 namespace collision_and_rigid
 {
-    public class Round : IShape, IRawBulletShape, IBulletShape
+    public class Round : IRawBulletShape, IBulletShape
     {
         public TwoDPoint O;
         public float R;
@@ -11,12 +11,6 @@ namespace collision_and_rigid
         {
             O = o;
             R = r;
-        }
-
-        public AabbBoxShape CovToAabbPackBox()
-        {
-            var zone = GetZones();
-            return new AabbBoxShape(zone, this);
         }
 
 

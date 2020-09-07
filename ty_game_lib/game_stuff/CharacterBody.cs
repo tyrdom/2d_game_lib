@@ -5,7 +5,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : IIdPointShape,IShape
+    public class CharacterBody : IIdPointShape, IShape
     {
         public BodySize BodySize { get; }
         public CharacterStatus CharacterStatus { get; }
@@ -34,10 +34,10 @@ namespace game_stuff
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map);
         }
 
-        public AabbBoxShape CovToAabbPackBox()
+        public IdPointBox CovToAabbPackBox()
         {
             var zone = new Zone(0f, 0f, 0f, 0f);
-            return new AabbBoxShape(zone, this);
+            return new IdPointBox(zone, this);
         }
 
 

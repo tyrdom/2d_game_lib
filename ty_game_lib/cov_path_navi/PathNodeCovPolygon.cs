@@ -15,7 +15,7 @@ namespace cov_path_navi
 
         public List<IBlockShape> Edges;
 
-        public ImmutableDictionary<int, List<(int id, float cost)>> LinkAndCost;
+        public ImmutableDictionary<int, List<(int id, float cost)>>? LinkAndCost;
 
         // public WayFlag WayFlag;
         public PathNodeCovPolygon(List<Link> links, int thisPathNodeId, List<IBlockShape> edges)

@@ -29,10 +29,10 @@ namespace lib_test
             var anotherPoint = ad.CrossAnotherPointInLinesIncludeEnds(bc);
             var crossPoint = ab.CrossPointForWholeLine(cd);
             var point = ad.CrossPointForWholeLine(bc);
-            SomeTools.LogPt(crossAnotherPoint);
-            SomeTools.LogPt(anotherPoint);
-            SomeTools.LogPt(crossPoint);
-            SomeTools.LogPt(point);
+            Console.Out.WriteLine(
+                $"ab cross cd{crossAnotherPoint?.Log()}\nad cross bc{anotherPoint?.Log()}\nab cross line cd{crossPoint?.Log()}" +
+                $"\nad cross line bc{point?.Log()}");
+
 
             Console.Out.WriteLine("Block test!!!");
 
@@ -178,8 +178,8 @@ namespace lib_test
 
             var pathTop = new PathTop(genWalkBlockByPolys);
             Console.Out.WriteLine($"\n\n pathTop is\n{pathTop}");
-            var twoDPoint = new TwoDPoint(-2.1f,0);
-            var findAPathById = pathTop.FindAPathById(0, 6,twoDPoint);
+            var twoDPoint = new TwoDPoint(-2.1f, 0);
+            var findAPathById = pathTop.FindAPathById(0, 6, twoDPoint);
 
             var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=" + x);
             Console.Out.WriteLine($"path::{aggregate3}");

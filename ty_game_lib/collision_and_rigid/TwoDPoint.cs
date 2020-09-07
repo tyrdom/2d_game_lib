@@ -68,7 +68,7 @@ namespace collision_and_rigid
             return Y > h ? Quad.One : Quad.Four;
         }
 
-        public int FastGenARightShootCrossALotAabbBoxShape(IEnumerable<AabbBoxShape> aabbBoxShapes)
+        public int FastGenARightShootCrossALotAabbBoxShape(IEnumerable<IAaBbBox> aabbBoxShapes)
         {
             var n = 0;
             foreach (var aabbBoxShape in aabbBoxShapes)
@@ -117,10 +117,11 @@ namespace collision_and_rigid
             return TwoDVector.TwoDVectorByPt(zero, this).ClockwiseTurn(xAim).ToPt();
         }
 
-        public (int, AabbBoxShape?) GenARightShootCrossALotAabbBoxShapeInQSpace(IEnumerable<AabbBoxShape> aabbBoxShapes)
+        public (int, BlockBox?) GenARightShootCrossALotAabbBoxShapeInQSpace(
+            IEnumerable<BlockBox> aabbBoxShapes)
         {
             var n = 0;
-            AabbBoxShape? aShape = null;
+            BlockBox? aShape = null;
 //            Console.Out.WriteLine("Count::" + aabbBoxShapes.Count);
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
@@ -220,6 +221,37 @@ namespace collision_and_rigid
         public string Log()
         {
             return LogPt();
+        }
+
+        public int WhichQ(float horizon, float vertical)
+        {
+            if (X > vertical)
+            {
+                if (Y > horizon)
+                {
+                    return 1;
+                }
+
+                if (Y < horizon)
+                {
+                    return 4;
+                }
+            }
+
+            if (X < vertical)
+            {
+                if (Y > horizon)
+                {
+                    return 2;
+                }
+
+                if (Y < horizon)
+                {
+                    return 3;
+                }
+            }
+
+            return 0;
         }
     }
 }

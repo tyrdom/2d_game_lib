@@ -1,0 +1,98 @@
+using System.Collections.Generic;
+
+namespace collision_and_rigid
+{
+    public class AreaBox : IAaBbBox
+    {
+        private SimpleBlocks SimpleBlocks { get; }
+
+
+        public AreaBox(Zone zone, SimpleBlocks simpleBlocks, int polyId)
+        {
+            Zone = zone;
+            SimpleBlocks = simpleBlocks;
+            PolyId = polyId;
+        }
+
+        public int PolyId { get; }
+
+
+        public IShape GetShape()
+        {
+            return SimpleBlocks;
+        }
+
+        public Zone Zone { get; set; }
+
+        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        {
+            var valueTuples = new List<(int, IAaBbBox)>();
+            if (Zone.Left >= vertical)
+            {
+                if (Zone.Down >= horizon)
+                {
+                    valueTuples.Add((1, this));
+                }
+
+                else if (Zone.Up <= horizon)
+                {
+                    valueTuples.Add((4, this));
+                }
+                else
+                {
+                    var (up, down) = Zone.CutByH(horizon);
+                    valueTuples.Add((1, new AreaBox(up, SimpleBlocks, PolyId)));
+                    valueTuples.Add((4, new AreaBox(down, SimpleBlocks, PolyId)));
+                }
+            }
+
+            if (Zone.Right <= vertical)
+            {
+                if (Zone.Down >= horizon)
+                {
+                    valueTuples.Add((2, this));
+                }
+
+                else if (Zone.Up <= horizon)
+                {
+                    valueTuples.Add((3, this));
+                }
+                else
+                {
+                    var (up, down) = Zone.CutByH(horizon);
+                    valueTuples.Add((2, new AreaBox(up, SimpleBlocks, PolyId)));
+                    valueTuples.Add((3, new AreaBox(down, SimpleBlocks, PolyId)));
+                }
+            }
+            else
+            {
+                if (Zone.Down >= horizon)
+                {
+                    var (left, right) = Zone.CutByV(vertical);
+
+                    valueTuples.Add((2, new AreaBox(left, SimpleBlocks, PolyId)));
+                    valueTuples.Add((1, new AreaBox(right, SimpleBlocks, PolyId)));
+                }
+
+                else if (Zone.Up <= horizon)
+                {
+                    var (left, right) = Zone.CutByV(vertical);
+
+                    valueTuples.Add((3, new AreaBox(left, SimpleBlocks, PolyId)));
+                    valueTuples.Add((4, new AreaBox(right, SimpleBlocks, PolyId)));
+                }
+                else
+                {
+                    valueTuples.Add((0, this));
+                }
+            }
+
+            return valueTuples;
+        }
+
+        public bool IsInArea(TwoDPoint pt)
+        {
+            return Zone.IncludePt(pt) && SimpleBlocks.PtInShapeIncludeSide(pt);
+        }
+    }
+}

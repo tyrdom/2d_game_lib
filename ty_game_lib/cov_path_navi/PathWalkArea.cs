@@ -127,26 +127,8 @@ namespace cov_path_navi
         }
     }
 
-    public class AreaBox
-    {
-        private Zone Zone;
+   
 
-        private SimpleBlocks SimpleBlocks;
-
-        public AreaBox(Zone zone, SimpleBlocks simpleBlocks, int polyId)
-        {
-            Zone = zone;
-            SimpleBlocks = simpleBlocks;
-            PolyId = polyId;
-        }
-
-        private int PolyId { get; }
-
-        public int? InPoly(TwoDPoint pt)
-        {
-            return Zone.IncludePt(pt) && SimpleBlocks.PtInShapeIncludeSide(pt) ? (int?) PolyId : null;
-        }
-    }
     public class ContinuousWalkArea
     {
         public ContinuousWalkArea(List<IBlockShape> area, List<(Link link, TwoDVectorLine mirror)> linksAndMirrorLine

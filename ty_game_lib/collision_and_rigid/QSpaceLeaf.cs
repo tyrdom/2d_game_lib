@@ -6,17 +6,17 @@ namespace collision_and_rigid
 {
     public class QSpaceLeaf : IQSpace
     {
-        public QSpaceLeaf(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<AabbBoxShape> aabbPackPackBoxShapes)
+        public QSpaceLeaf(Quad? quad, QSpaceBranch? father, Zone zone, HashSet<IAaBbBox> aabbPackPackBox)
         {
             Father = father;
             TheQuad = quad;
             Zone = zone;
-            AabbPackBoxShapes = aabbPackPackBoxShapes;
+            AabbPackBox = aabbPackPackBox;
         }
 
         public int Count()
         {
-            var count = AabbPackBoxShapes.Count;
+            var count = AabbPackBox.Count;
             return count;
         }
 
@@ -24,31 +24,31 @@ namespace collision_and_rigid
         public QSpaceBranch? Father { get; set; }
         public Zone Zone { get; set; }
 
-        public HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public HashSet<IAaBbBox> AabbPackBox { get; set; }
 
-        public void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit)
+        public void AddIdPoint(HashSet<IdPointBox> idPointShapes, int limit)
         {
-            var rawCount = AabbPackBoxShapes.Count;
+            var rawCount = AabbPackBox.Count;
             if (rawCount + idPointShapes.Count <= limit)
             {
-                AabbPackBoxShapes.UnionWith(idPointShapes);
+                AabbPackBox.UnionWith(idPointShapes);
             }
             else
             {
-                var q1 = new HashSet<AabbBoxShape>();
-                var q2 = new HashSet<AabbBoxShape>();
-                var q3 = new HashSet<AabbBoxShape>();
-                var q4 = new HashSet<AabbBoxShape>();
+                var q1 = new HashSet<IAaBbBox>();
+                var q2 = new HashSet<IAaBbBox>();
+                var q3 = new HashSet<IAaBbBox>();
+                var q4 = new HashSet<IAaBbBox>();
                 foreach (var aabbBoxShape in idPointShapes)
                 {
-                    var shape = aabbBoxShape.Shape;
+                    var shape = aabbBoxShape.GetShape();
                     switch (shape)
                     {
                         case IIdPointShape idPointShape:
                             var twoDPoint = idPointShape.GetAnchor();
-                            if (AabbPackBoxShapes.Count <= limit)
+                            if (AabbPackBox.Count <= limit)
                             {
-                                AabbPackBoxShapes.Add(aabbBoxShape);
+                                AabbPackBox.Add(aabbBoxShape);
                             }
                             else
                             {
@@ -84,7 +84,7 @@ namespace collision_and_rigid
                 IQSpace qsl2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], q2);
                 IQSpace qsl3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], q3);
                 IQSpace qsl4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], q4);
-                var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBoxShapes, qsl1, qsl2,
+                var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AabbPackBox, qsl1, qsl2,
                     qsl3, qsl4);
 
                 if (Father != null)
@@ -114,16 +114,17 @@ namespace collision_and_rigid
 
         public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
-            var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBoxShapes, Zone);
+            var (inZone, outZone) =
+                SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBox.OfType<IdPointBox>(), Zone);
 
-            AabbPackBoxShapes = inZone;
+            AabbPackBox = inZone;
             if (Father != null)
             {
                 Father.AddIdPoint(outZone, limit);
             }
             else
             {
-                AabbPackBoxShapes.UnionWith(outZone);
+                AabbPackBox.UnionWith(outZone);
             }
         }
 
@@ -143,19 +144,19 @@ namespace collision_and_rigid
             }
             else
 
-                slideTwoDPoint = SomeTools.SlideTwoDPoint(AabbPackBoxShapes, line, safe);
+                slideTwoDPoint = SomeTools.SlideTwoDPoint(AabbPackBox, line, safe);
 
             return slideTwoDPoint;
         }
 
-        public void Remove(AabbBoxShape boxShape)
+        public void Remove(BlockBox box)
         {
-            AabbPackBoxShapes.Remove(boxShape);
+            AabbPackBox.Remove(box);
         }
 
-        public IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape)
+        public IEnumerable<BlockBox> TouchBy(BlockBox box)
         {
-            return boxShape.TryTouch(AabbPackBoxShapes);
+            return box.TryTouch(AabbPackBox.OfType<BlockBox>());
         }
 
         public bool LineIsBlockSight(TwoDVectorLine line)
@@ -163,55 +164,50 @@ namespace collision_and_rigid
             var notCross = line.GenZone().NotCross(Zone);
             if (notCross) return false;
 
-            return (from aabbPackBoxShape in AabbPackBoxShapes
+            return (from aabbPackBoxShape in AabbPackBox
                 let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
-                select line.IsSightBlockByWall(aabbPackBoxShape.Shape)).Any(isTouchAnother => isTouchAnother);
+                select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
         }
 
-        public void InsertBox(AabbBoxShape boxShape)
+        public void InsertBlockBox(BlockBox box)
         {
-            AabbPackBoxShapes.Add(boxShape);
+            AabbPackBox.Add(box);
         }
 
-        public IQSpace TryCovToLimitQSpace(int limit)
+        public IQSpace TryCovToLimitBlockQSpace(int limit)
         {
-            if (AabbPackBoxShapes.Count <= limit)
+            if (AabbPackBox.Count <= limit)
             {
                 return this;
             }
 
-            var tryCovToBranch = TryCovToBranch();
-            return tryCovToBranch switch
-            {
-                QSpaceBranch qSpaceBranch => qSpaceBranch.TryCovToLimitQSpace(limit),
-                QSpaceLeaf _ => this,
-                _ => throw new ArgumentOutOfRangeException(nameof(tryCovToBranch))
-            };
+            var tryCovToBranch = TryCovToBranch(limit);
+            return tryCovToBranch;
         }
 
-        public (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p)
+        public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p)
         {
-            return p.GenARightShootCrossALotAabbBoxShapeInQSpace(AabbPackBoxShapes);
+            return p.GenARightShootCrossALotAabbBoxShapeInQSpace(AabbPackBox.OfType<BlockBox>());
         }
 
         public string OutZones()
         {
-            var s = "Leaf:::" + AabbPackBoxShapes.Count + "\n";
+            var s = "Leaf:::" + AabbPackBox.Count + "\n";
 
-            return AabbPackBoxShapes.Select(aabbBoxShape => aabbBoxShape.Zone)
+            return AabbPackBox.Select(aabbBoxShape => aabbBoxShape.Zone)
                 .Aggregate(s, (current, zone) => current + (SomeTools.ZoneLog(zone) + "\n"));
         }
 
         public int FastTouchWithARightShootPoint(TwoDPoint p)
         {
-            var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBoxShapes);
+            var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBox);
             return i;
         }
 
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
-            foreach (var shape in AabbPackBoxShapes.Select(aabbPackBoxShape => aabbPackBoxShape.Shape))
+            foreach (var shape in AabbPackBox.Select(aabbPackBoxShape => aabbPackBoxShape.GetShape()))
             {
                 switch (shape)
                 {
@@ -225,17 +221,17 @@ namespace collision_and_rigid
         }
 
 
-        public IQSpace TryCovToBranch()
+        public QSpaceBranch TryCovToBranch(int limit)
         {
-            var one = new HashSet<AabbBoxShape>();
-            var two = new HashSet<AabbBoxShape>();
-            var three = new HashSet<AabbBoxShape>();
-            var four = new HashSet<AabbBoxShape>();
-            var zone = new HashSet<AabbBoxShape>();
+            var one = new HashSet<IAaBbBox>();
+            var two = new HashSet<IAaBbBox>();
+            var three = new HashSet<IAaBbBox>();
+            var four = new HashSet<IAaBbBox>();
+            var zone = new HashSet<IAaBbBox>();
             var (item1, item2) = Zone.GetMid();
 
 
-            foreach (var intTBoxShapes in AabbPackBoxShapes.SelectMany(aabbBoxShape =>
+            foreach (var intTBoxShapes in AabbPackBox.SelectMany(aabbBoxShape =>
                 aabbBoxShape.SplitByQuads(item1, item2)))
             {
                 var (i, aabbBoxShape1) = intTBoxShapes;
@@ -261,20 +257,18 @@ namespace collision_and_rigid
                 }
             }
 
-            if (zone.Count == AabbPackBoxShapes.Count) return this;
-
 
             var zones = Zone.CutTo4(item1, item2);
 
-            IQSpace qs1 = new QSpaceLeaf(Quad.One, null, zones[0], one);
-            IQSpace qs2 = new QSpaceLeaf(Quad.Two, null, zones[1], two);
-            IQSpace qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
-            IQSpace qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
+            var qs1 = new QSpaceLeaf(Quad.One, null, zones[0], one);
+            var qs2 = new QSpaceLeaf(Quad.Two, null, zones[1], two);
+            var qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
+            var qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
             var tryCovToBranch = new QSpaceBranch(TheQuad, Father, Zone, zone,
-                qs1,
-                qs2,
-                qs3,
-                qs4);
+                qs1.TryCovToLimitBlockQSpace(limit),
+                qs2.TryCovToLimitBlockQSpace(limit),
+                qs3.TryCovToLimitBlockQSpace(limit),
+                qs4.TryCovToLimitBlockQSpace(limit));
             tryCovToBranch.QuadOne.Father = tryCovToBranch;
             tryCovToBranch.QuadTwo.Father = tryCovToBranch;
             tryCovToBranch.QuadThree.Father = tryCovToBranch;
@@ -300,8 +294,13 @@ namespace collision_and_rigid
         public HashSet<IBlockShape> GetAllIBlocks()
         {
             var blockShapes =
-                AabbPackBoxShapes.Select(x => x.Shape).OfType<IBlockShape>().ToList();
+                AabbPackBox.OfType<BlockBox>().Select(x => x.Shape).ToList();
             return SomeTools.ListToHashSet(blockShapes);
+        }
+
+        public AreaBox? PointInWhichArea(TwoDPoint pt)
+        {
+            return AabbPackBox.OfType<AreaBox>().FirstOrDefault(x => x.IsInArea(pt));
         }
 
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
@@ -314,6 +313,17 @@ namespace collision_and_rigid
             T t)
         {
             return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t);
+        }
+
+        public IQSpace TryCovToLimitAreaQSpace(int limit)
+        {
+            if (AabbPackBox.Count <= limit)
+            {
+                return this;
+            }
+
+            var tryCovToBranch = TryCovToBranch(limit);
+            return tryCovToBranch;
         }
     }
 }

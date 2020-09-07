@@ -11,22 +11,22 @@ namespace collision_and_rigid
         public QSpaceBranch? Father { get; set; }
         public Zone Zone { get; set; }
 
-        public HashSet<AabbBoxShape> AabbPackBoxShapes { get; set; }
+        public HashSet<IAaBbBox> AabbPackBox { get; set; }
 
-        public void AddIdPoint(HashSet<AabbBoxShape> idPointShapes, int limit);
+        public void AddIdPoint(HashSet<IdPointBox> idPointShapes, int limit);
 
         public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true);
 
-        public void InsertBox(AabbBoxShape boxShape);
-        public void Remove(AabbBoxShape boxShape);
-        public IEnumerable<AabbBoxShape> TouchBy(AabbBoxShape boxShape);
+        public void InsertBlockBox(BlockBox box);
+        public void Remove(BlockBox box);
+        public IEnumerable<BlockBox> TouchBy(BlockBox box);
         public bool LineIsBlockSight(TwoDVectorLine line);
-        
-        public IQSpace TryCovToLimitQSpace(int limit);
-        public (int, AabbBoxShape?) TouchWithARightShootPoint(TwoDPoint p);
+
+       
+        public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();
         public int FastTouchWithARightShootPoint(TwoDPoint p);
 
@@ -42,6 +42,9 @@ namespace collision_and_rigid
         );
 
         public HashSet<IBlockShape> GetAllIBlocks();
+
+
+        public AreaBox? PointInWhichArea(TwoDPoint pt);
     }
 
 

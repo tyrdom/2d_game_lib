@@ -17,7 +17,7 @@ namespace collision_and_rigid
             return new TwoDVectorLine(GetStartPt(), GetEndPt());
         }
 
-        public List<AabbBoxShape> GenAabbBoxShape()
+        public List<BlockBox> GenAabbBoxShape()
         {
             return CovToVertAabbPackBoxes();
         }
@@ -189,10 +189,10 @@ namespace collision_and_rigid
         }
 
 
-        public AabbBoxShape CovToAabbPackBox()
+        public BlockBox CovToAabbPackBox()
         {
             var zone = Aob.GetZone(R);
-            return new AabbBoxShape(zone, this);
+            return new BlockBox(zone, this);
         }
 
         public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
@@ -552,7 +552,7 @@ namespace collision_and_rigid
             return (null, null);
         }
 
-        public List<AabbBoxShape> CovToVertAabbPackBoxes()
+        public List<BlockBox> CovToVertAabbPackBoxes()
         {
             var zones = new List<Zone>();
             var a = Aob.A;
@@ -684,7 +684,7 @@ namespace collision_and_rigid
 //            {
 //                zones.Add(CovToAabbPackBox().Zone);
 //            }
-            return zones.Select(zone => new AabbBoxShape(zone, this)).ToList();
+            return zones.Select(zone => new BlockBox(zone, this)).ToList();
         }
 
 

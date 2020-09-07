@@ -53,6 +53,20 @@ namespace collision_and_rigid
             return new Zone[4] {z1, z2, z3, z4};
         }
 
+        public (Zone up, Zone down) CutByH(float horizon)
+        {
+            var z2 = new Zone(Up, horizon, Left, Right);
+            var z3 = new Zone(horizon, Down, Left, Right);
+            return (z2, z3);
+        }
+
+        public (Zone left, Zone right) CutByV(float vertical)
+        {
+            var z3 = new Zone(Up, Down, Left, vertical);
+            var z4 = new Zone(Up, Down, vertical, Right);
+            return (z3, z4);
+        }
+
         public bool IsIn(Zone anotherZone)
         {
             return anotherZone.Left <= Left && anotherZone.Right >= Right && anotherZone.Up >= Up &&
@@ -96,8 +110,6 @@ namespace collision_and_rigid
             return new Zone(0f, 0f, 0f, 0f);
         }
 
-       
-        
 
         public Zone Join(Zone another)
         {

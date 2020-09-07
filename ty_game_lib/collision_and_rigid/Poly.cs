@@ -272,9 +272,9 @@ namespace collision_and_rigid
             return checkCloseAndFilter;
         }
 
-        public static List<AabbBoxShape> GenBlockAabbBoxShapes(List<IBlockShape> resShapes)
+        public static List<BlockBox> GenBlockAabbBoxShapes(List<IBlockShape> resShapes)
         {
-            var aabbBoxShapes = new List<AabbBoxShape>();
+            var aabbBoxShapes = new List<BlockBox>();
             foreach (var shape in resShapes)
                 switch (shape)
                 {
@@ -298,7 +298,7 @@ namespace collision_and_rigid
 
             var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(genBlockAabbBoxShapes.ToArray(), limit);
+            var qSpaceByAabbBoxShapes = SomeTools.CreateWalkBlockQSpaceByBlockBoxes(genBlockAabbBoxShapes.ToArray(), limit);
 
             var block = new WalkBlock(isBlockIn, qSpaceByAabbBoxShapes);
             return block;
@@ -311,7 +311,7 @@ namespace collision_and_rigid
 #endif
             var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateQSpaceByAabbBoxShapes(genBlockAabbBoxShapes.ToArray(), limit);
+            var qSpaceByAabbBoxShapes = SomeTools.CreateWalkBlockQSpaceByBlockBoxes(genBlockAabbBoxShapes.ToArray(), limit);
 
             var block = new WalkBlock(isBlockIn, qSpaceByAabbBoxShapes);
             return block;

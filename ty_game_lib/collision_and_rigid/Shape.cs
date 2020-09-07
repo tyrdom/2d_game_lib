@@ -5,7 +5,6 @@ namespace collision_and_rigid
 {
     public interface IShape
     {
-        
     }
 
     public interface IRawBulletShape
@@ -26,20 +25,20 @@ namespace collision_and_rigid
         string Log();
     }
 
-    public interface IIdPointShape
+    public interface IIdPointShape : IShape
     {
         int GetId();
         TwoDPoint Move(ITwoDTwoP vector);
         TwoDPoint GetAnchor();
     }
 
-    public interface IBlockShape
+    public interface IBlockShape : IShape
     {
         public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z);
         public (Zone?, Zone?) CutByH(float h, Zone z);
         TwoDVectorLine AsTwoDVectorLine();
 
-        List<AabbBoxShape> GenAabbBoxShape();
+        List<BlockBox> GenAabbBoxShape();
         string Log();
         int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p);
         bool IsEmpty();
