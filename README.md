@@ -37,3 +37,15 @@ IBulletShape和IRawBulletShape
     
 ## game_stuff
 简介：动作游戏玩法抽象运行逻辑，目的为多端运行
+## cov_path_navi
+简介：2d凸多边形寻路模块，精度一般，不一定是最短的路径，但是比方格的节点少，效率能高一些
+从一个WalkBlock阻挡地图对象生成一个PathTop对象
+通过PathTop，设置起点，终点，即可生成一条行走目标点路径
+
+    var pathTop = new pathTop(walblock)
+    var path = pathTop.FindAPathByPoint( startPt, endPt)
+    //如果维护好当前和目标所在多边形节点，则可以补充参数以免寻找所在的多边形
+    var fasterPath = pathTop.FindAPathByPoint(startPt, endPt, startPolyId, endPolyId)
+    //只传入起点终点多边形Id也可以找到路径,精度进一步下降
+    var PathById = pathTop.FindAPathById( startPolyId, endPolyId)
+    
