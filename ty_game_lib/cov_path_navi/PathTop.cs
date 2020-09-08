@@ -68,7 +68,7 @@ namespace cov_path_navi
         }
 
 
-        public static List<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end, List<TwoDVectorLine> twoDVectorLines)
+        public static List<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end, List<TwoDVectorLine?> twoDVectorLines)
         {
             var twoDPoints = new List<TwoDPoint>();
             if (!twoDVectorLines.Any())
@@ -77,58 +77,87 @@ namespace cov_path_navi
             }
 
             var nowPt = start;
-            TwoDVectorLine? leftLine = null;
+            var leftLines = new List<TwoDVectorLine>();
 
-            TwoDVectorLine? rightLine = null;
+            var rightLines = new List<TwoDVectorLine>();
+
 
             for (var i = 1; i < twoDVectorLines.Count; i++)
             {
                 var twoDVectorLine = twoDVectorLines[i];
+                if (twoDVectorLine == null)
+                {
+                    continue;
+                }
+
                 var rightPt = twoDVectorLine.GetStartPt();
                 var leftPt = twoDVectorLine.GetEndPt();
 
                 //getNextPt;
 
-                if (leftLine != null && rightLine != null)
+                if (i > 1)
                 {
-                    if (rightPt.GetPosOf(leftLine) == Pt2LinePos.Left)
+                    var cutLl = 0;
+                    for (var i1 = leftLines.Count - 1; i1 >= 0; i1--)
                     {
-                        var twoDPoint = leftLine.GetEndPt()
-                            .Move(TwoDVector.TwoDVectorByPt(leftLine.GetEndPt(), rightLine.GetEndPt()).Multi(0.01f));
-                        twoDPoints.Add(twoDPoint);
-                        nowPt = twoDPoint;
-                        rightLine = new TwoDVectorLine(nowPt, rightPt);
-                        leftLine = new TwoDVectorLine(nowPt, leftPt);
+                        var nowLeftLine = leftLines[i1];
+                        if (rightPt.GetPosOf(nowLeftLine) != Pt2LinePos.Left) continue;
+#if DEBUG
+                        Console.Out.WriteLine("right pt is over left");
+#endif
+                        cutLl = i1 + 1;
+                        // var before = leftLines.GetRange(0, i1 + 1);
+                        // var after = leftLines.GetRange(i1 + 1, leftLines.Count - i1 - 1);
+                        break;
+                    }
+
+                    if (cutLl > 0)
+                    {
+                        var before = leftLines.GetRange(0, cutLl);
+                        var after = leftLines.GetRange(cutLl, leftLines.Count - cutLl);
+                        var dPoints = before.Select(x => x.GetEndPt());
+                        leftLines = after;
+
+                        twoDPoints.AddRange(dPoints);
+                        var twoDPoint = twoDPoints.Last();
+                        rightLines = new List<TwoDVectorLine> {new TwoDVectorLine(twoDPoint, rightPt)};
                         continue;
                     }
 
-                    if (leftPt.GetPosOf(rightLine) == Pt2LinePos.Right)
+                    if (rightPt == rightLines.Last().GetEndPt())
                     {
-                        var twoDPoint = rightLine.GetEndPt()
-                            .Move(TwoDVector.TwoDVectorByPt(rightLine.GetEndPt(), leftLine.GetEndPt()).Multi(0.01f));
-                        twoDPoints.Add(twoDPoint);
-                        nowPt = twoDPoint;
-                        rightLine = new TwoDVectorLine(nowPt, rightPt);
-                        leftLine = new TwoDVectorLine(nowPt, leftPt);
-                        continue;
-                    }
+                        var cutRr = -1;
+                        for (var i1 = rightLines.Count - 1; i1 >= 0; i1--)
+                        {
+                            var rightLine = rightLines[i1];
+                            if (rightPt.GetPosOf(rightLine) != Pt2LinePos.Right)
+                            {
+                                cutRr = i1;
+                            }
+                        }
 
-                    if (leftPt.GetPosOf(leftLine) == Pt2LinePos.Right)
-                    {
-                        leftLine = new TwoDVectorLine(nowPt, leftPt);
-                    }
+                        if (cutRr >= 0)
+                        {
+                            var rest = rightLines.GetRange(0, cutRr);
 
-                    if (rightPt.GetPosOf(rightLine) == Pt2LinePos.Left)
-                    {
-                        rightLine = new TwoDVectorLine(nowPt, leftPt);
+                            var dVectorLine = rightLines[cutRr];
+                            var vectorLine = new TwoDVectorLine(dVectorLine.GetStartPt(), rightPt);
+                            rest.Add(vectorLine);
+                            rightLines = rest;
+                        }
+                        else
+                        {
+                            var twoDPoint = rightLines.Last().GetEndPt();
+                            rightLines.Add(new TwoDVectorLine(twoDPoint, rightPt));
+                        }
                     }
-
-                    continue;
+                    //TODO LeftSide
+                    
                 }
 
-                leftLine = new TwoDVectorLine(nowPt, twoDVectorLine.GetEndPt());
+                leftLines.Add(new TwoDVectorLine(start, twoDVectorLine.GetEndPt()));
 
-                rightLine = new TwoDVectorLine(nowPt, twoDVectorLine.GetStartPt());
+                rightLines.Add(new TwoDVectorLine(start, twoDVectorLine.GetStartPt()));
             }
 
             twoDPoints.Add(end);

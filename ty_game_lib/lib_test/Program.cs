@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using collision_and_rigid;
 using cov_path_navi;
 using game_config;
@@ -178,12 +179,17 @@ namespace lib_test
 
             var pathTop = new PathTop(genWalkBlockByPolys);
             Console.Out.WriteLine($"\n\n pathTop is\n{pathTop}");
-            var twoDPoint = new TwoDPoint(-2.1f, 0);
-            var findAPathById = pathTop.FindAPathById(0, 6, twoDPoint);
+            var startPt = new TwoDPoint(-2.1f, 0);
+            var findAPathById = pathTop.FindAPathById(0, 6, startPt);
 
             var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.Log() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate3}");
+            var endPt = new TwoDPoint(0, 8);
 
+            var twoDVectorLines = findAPathById.Select(x => x.Item2);
+            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
+            var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.Log());
+            Console.Out.WriteLine($"way Points are {s3}");
             return;
             Console.Out.WriteLine("config test~~~~~");
 
