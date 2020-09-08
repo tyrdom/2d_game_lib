@@ -181,7 +181,7 @@ namespace lib_test
             var twoDPoint = new TwoDPoint(-2.1f, 0);
             var findAPathById = pathTop.FindAPathById(0, 6, twoDPoint);
 
-            var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=" + x);
+            var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.Log() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate3}");
 
             return;

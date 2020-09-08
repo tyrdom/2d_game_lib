@@ -65,27 +65,28 @@ namespace collision_and_rigid
                 else if (z.Right <= vertical)
                     z1234.Add((2, this));
                 else
-
+                {
 //
 #if DEBUG
                     Console.Out.WriteLine($"{z.LogSide()}");
-                Console.Out.WriteLine($"{Shape.Log()}:::{vertical}");
+                    Console.Out.WriteLine($"{Shape.Log()}:::{vertical}");
 #endif
 
-                var (lZones, rZones) = Shape.CutByV(vertical, z);
+                    var (lZones, rZones) = Shape.CutByV(vertical, z);
 
 //                            Console.Out.WriteLine("L:::" + lZones.Count);
 //                            lZones.ForEach(zzz => { Console.Out.WriteLine(SomeTools.ZoneLog(zzz)); });
 //
 //                            rZones.ForEach(zzz => { Console.Out.WriteLine(SomeTools.ZoneLog(zzz)); });
-                if (lZones != null)
-                {
-                    z1234.Add((2, new BlockBox(lZones.Value, Shape)));
-                    z1234.Add((1, new BlockBox(rZones!.Value, Shape)));
-                }
-                else
-                {
-                    throw new Exception("lz no good zone");
+                    if (lZones != null)
+                    {
+                        z1234.Add((2, new BlockBox(lZones.Value, Shape)));
+                        z1234.Add((1, new BlockBox(rZones!.Value, Shape)));
+                    }
+                    else
+                    {
+                        throw new Exception($"lz no good zone{z.LogSide()} v {vertical} {z.Right <= vertical}");
+                    }
                 }
             }
             else if (z.Up <= horizon)

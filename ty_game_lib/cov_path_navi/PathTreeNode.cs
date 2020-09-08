@@ -8,26 +8,28 @@ namespace cov_path_navi
     public class PathTreeNode
     {
         private PathTreeNode? Father { get; set; }
-        public int Id { get; }
-        public float Cost { get; private set; }
+        private int Id { get; }
+        private float Cost { get; set; }
+        private TwoDVectorLine? GoThrough;
 
         private List<PathTreeNode> ToList;
 
-        
 
         public PathTreeNode(int id, float cost)
         {
             Id = id;
             Cost = cost;
+            GoThrough = null;
             Father = null;
             ToList = new List<PathTreeNode>();
         }
 
-        private PathTreeNode(int id, float cost, PathTreeNode? pathTreeNode)
+        private PathTreeNode(int id, float cost, PathTreeNode? pathTreeNode, TwoDVectorLine goThrough)
         {
             Id = id;
             Cost = cost;
             Father = pathTreeNode;
+            GoThrough = goThrough;
             ToList = new List<PathTreeNode>();
         }
 
@@ -43,7 +45,7 @@ namespace cov_path_navi
         {
             var path = GetPath2();
 
-            return path.Aggregate("", (x, s) => $"{x}=>{s.Item1}[Cost::{s.Item2}]");
+            return path.Aggregate("", (x, s) => $"{x}=>{s.Item1}[Cost::{s.Item2}][line::{s.Item3?.Log()}]");
         }
 
         public void GrowFromRoot
@@ -60,7 +62,7 @@ namespace cov_path_navi
                 {
                     var distance = startPt == null ? 0 : x.GoThrough.GetMid().GetDistance(startPt);
 
-                    var pathTreeNode = new PathTreeNode(x.LinkToPathNodeId, distance, this);
+                    var pathTreeNode = new PathTreeNode(x.LinkToPathNodeId, distance, this, x.GoThrough);
                     return pathTreeNode;
                 })
                 .ToList();
@@ -94,37 +96,37 @@ namespace cov_path_navi
             return Father?.GatherCost(nowCost + Cost) ?? nowCost;
         }
 
-        public List<(int, float)> GetPath2()
+        public List<(int, float, TwoDVectorLine?)> GetPath2()
         {
-            var ints = new List<(int, float)>();
+            var ints = new List<(int, float, TwoDVectorLine?)>();
             GatherPathIdsAndCost(ints);
             ints.Reverse();
             return ints;
         }
 
-        private void GatherPathIdsAndCost(List<(int, float)> ints)
+        private void GatherPathIdsAndCost(List<(int Id, float Cost, TwoDVectorLine? GoThrough)> ints)
         {
-            ints.Add((Id, Cost));
+            ints.Add((Id, Cost, GoThrough));
             Father?.GatherPathIdsAndCost(ints);
         }
 
-        public List<int> GetPath()
+        public List<(int, TwoDVectorLine?)> GetPath()
         {
-            var ints = new List<int>();
+            var ints = new List<(int, TwoDVectorLine?)>();
             GatherPathIds(ints);
             ints.Reverse();
             return ints;
         }
 
-        private void GatherPathIds(List<int> ints)
+        private void GatherPathIds(ICollection<(int, TwoDVectorLine?)> ints)
         {
-            ints.Add(Id);
+            ints.Add((Id, GoThrough));
 
             Father?.GatherPathIds(ints);
         }
 
-        public void GrowTree(Dictionary<int, PathNodeCovPolygon> polygonsTop, int end, List<PathTreeNode> collector,
-            Dictionary<int, PathTreeNode> haveReached, TwoDPoint? endPt = null)
+        private void GrowTree(IReadOnlyDictionary<int, PathNodeCovPolygon> polygonsTop, int end, List<PathTreeNode> collector,
+            IDictionary<int, PathTreeNode> haveReached, TwoDPoint? endPt = null)
         {
             if (!polygonsTop.TryGetValue(Id, out var nodeCovPolygon)) throw new Exception($"not such polygon id{Id}");
             if (Father == null) throw new Exception($"this a root Node:: {Id}");
@@ -135,7 +137,7 @@ namespace cov_path_navi
                     throw new Exception($"not such link:{Father.Id} in poly:{Id} ");
 
                 var treeNodes = tuples.Select(x =>
-                    new PathTreeNode(x.id, x.cost, this)).ToList();
+                    new PathTreeNode(x.id, x.cost, this, x.GoTrough)).ToList();
 
                 var okNodes = treeNodes.Where(x => x.Id == end).ToList();
 #if DEBUG
@@ -199,8 +201,8 @@ namespace cov_path_navi
 
                             pathTreeNode2.Father = pathTreeNode.Father;
                             pathTreeNode2.Cost = pathTreeNode.Cost;
+                            pathTreeNode2.GoThrough = pathTreeNode.GoThrough;
                             aTreeNode.Cost = cost;
-
 #if DEBUG
                             Console.Out.WriteLine(
                                 $"find a new short cut {pathTreeNode.LogPath()}");

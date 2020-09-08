@@ -13,7 +13,7 @@ namespace cov_path_navi
         private Dictionary<int, PathNodeCovPolygon> PolygonsTop { get; }
 
 
-        public IQSpace AreaQSpace;
+        private IQSpace AreaQSpace { get; }
 
         public override string ToString()
         {
@@ -29,37 +29,36 @@ namespace cov_path_navi
             {
                 throw new Exception("cant create PathTop");
             }
-            else
-            {
-                var blockShapes = walkBlock.QSpace.GetAllIBlocks().ToList();
-                var genFromBlocks = GenFromBlocks(blockShapes);
-                var walkAreaBlocks = GenBlockUnits(genFromBlocks, walkBlock.IsBlockIn);
-                var continuousWalkAreas = walkAreaBlocks.Select(x => x.GenWalkArea());
-                var a = -1;
-                var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref a)).ToList();
-                foreach (var pathNodeCovPolygon in pathNodeCovPolygons)
-                {
-                    pathNodeCovPolygon.LoadLinkAndCost();
-                }
 
-                PolygonsTop = pathNodeCovPolygons.ToDictionary(x => x.ThisPathNodeId, x => x);
-                var areaBoxes = pathNodeCovPolygons.Select(x => x.GenAreaBox()).ToArray();
-                var areaQSpaceByAreaBox = SomeTools.CreateAreaQSpaceByAreaBox(areaBoxes, 6);
-                AreaQSpace = areaQSpaceByAreaBox;
+            var blockShapes = walkBlock.QSpace.GetAllIBlocks().ToList();
+            var genFromBlocks = GenFromBlocks(blockShapes);
+            var walkAreaBlocks = GenBlockUnits(genFromBlocks, walkBlock.IsBlockIn);
+            var continuousWalkAreas = walkAreaBlocks.Select(x => x.GenWalkArea());
+            var a = -1;
+            var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref a)).ToList();
+            foreach (var pathNodeCovPolygon in pathNodeCovPolygons)
+            {
+                pathNodeCovPolygon.LoadLinkAndCost();
             }
+
+            PolygonsTop = pathNodeCovPolygons.ToDictionary(x => x.ThisPathNodeId, x => x);
+            var areaBoxes = pathNodeCovPolygons.Select(x => x.GenAreaBox()).ToArray();
+            var areaQSpaceByAreaBox = SomeTools.CreateAreaQSpaceByAreaBox(areaBoxes, 6);
+            AreaQSpace = areaQSpaceByAreaBox;
         }
 
-        public int? InWhichPoly(TwoDPoint pt)
+        private int? InWhichPoly(TwoDPoint pt)
         {
             var pointInWhichArea = AreaQSpace.PointInWhichArea(pt);
 
             return pointInWhichArea?.PolyId;
         }
 
-        public List<int> FindAPathById(TwoDPoint startPt, TwoDPoint endPt)
+        public List<(int, TwoDVectorLine?)> FindAPathByPoint(TwoDPoint startPt, TwoDPoint endPt, int? startPoly,
+            int? endPoly)
         {
-            var start = InWhichPoly(startPt);
-            var end = InWhichPoly(endPt);
+            var start = startPoly ?? InWhichPoly(startPt);
+            var end = endPoly ?? InWhichPoly(endPt);
             if (start != null && end != null)
             {
                 return FindAPathById(start.Value, end.Value, startPt, endPt);
@@ -69,11 +68,90 @@ namespace cov_path_navi
         }
 
 
-        public List<int> FindAPathById(int start, int end, TwoDPoint? startPt = null, TwoDPoint? endPt = null)
+        public static List<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end, List<TwoDVectorLine> twoDVectorLines)
         {
+            var twoDPoints = new List<TwoDPoint>();
+            if (!twoDVectorLines.Any())
+            {
+                return twoDPoints;
+            }
+
+            var nowPt = start;
+            TwoDVectorLine? leftLine = null;
+
+            TwoDVectorLine? rightLine = null;
+
+            for (var i = 1; i < twoDVectorLines.Count; i++)
+            {
+                var twoDVectorLine = twoDVectorLines[i];
+                var rightPt = twoDVectorLine.GetStartPt();
+                var leftPt = twoDVectorLine.GetEndPt();
+
+                //getNextPt;
+
+                if (leftLine != null && rightLine != null)
+                {
+                    if (rightPt.GetPosOf(leftLine) == Pt2LinePos.Left)
+                    {
+                        var twoDPoint = leftLine.GetEndPt()
+                            .Move(TwoDVector.TwoDVectorByPt(leftLine.GetEndPt(), rightLine.GetEndPt()).Multi(0.01f));
+                        twoDPoints.Add(twoDPoint);
+                        nowPt = twoDPoint;
+                        rightLine = new TwoDVectorLine(nowPt, rightPt);
+                        leftLine = new TwoDVectorLine(nowPt, leftPt);
+                        continue;
+                    }
+
+                    if (leftPt.GetPosOf(rightLine) == Pt2LinePos.Right)
+                    {
+                        var twoDPoint = rightLine.GetEndPt()
+                            .Move(TwoDVector.TwoDVectorByPt(rightLine.GetEndPt(), leftLine.GetEndPt()).Multi(0.01f));
+                        twoDPoints.Add(twoDPoint);
+                        nowPt = twoDPoint;
+                        rightLine = new TwoDVectorLine(nowPt, rightPt);
+                        leftLine = new TwoDVectorLine(nowPt, leftPt);
+                        continue;
+                    }
+
+                    if (leftPt.GetPosOf(leftLine) == Pt2LinePos.Right)
+                    {
+                        leftLine = new TwoDVectorLine(nowPt, leftPt);
+                    }
+
+                    if (rightPt.GetPosOf(rightLine) == Pt2LinePos.Left)
+                    {
+                        rightLine = new TwoDVectorLine(nowPt, leftPt);
+                    }
+
+                    continue;
+                }
+
+                leftLine = new TwoDVectorLine(nowPt, twoDVectorLine.GetEndPt());
+
+                rightLine = new TwoDVectorLine(nowPt, twoDVectorLine.GetStartPt());
+            }
+
+            twoDPoints.Add(end);
+            return twoDPoints;
+        }
+
+        public List<(int, TwoDVectorLine?)> FindAPathById(int start, int end, TwoDPoint? startPt = null,
+            TwoDPoint? endPt = null)
+        {
+            if (start == end)
+            {
+#if DEBUG
+                Console.Out.WriteLine("in same poly just go");
+#endif
+                return new List<(int, TwoDVectorLine?)> {(start, null)};
+            }
+
             var pathTreeNode = new PathTreeNode(start, 0);
             var pathTreeNodes = new List<PathTreeNode>();
+
             var treeNodes = new Dictionary<int, PathTreeNode> {{start, pathTreeNode}};
+
+
             pathTreeNode.GrowFromRoot(PolygonsTop, end, pathTreeNodes, treeNodes, startPt, endPt);
 
             if (!pathTreeNodes.Any())
@@ -82,8 +160,10 @@ namespace cov_path_navi
                 Console.Out.WriteLine($"no way between {start} and {end}");
 #endif
 
-                return new List<int>();
+                return new List<(int, TwoDVectorLine?)>();
             }
+
+
 #if DEBUG
             var aggregate = pathTreeNodes.Aggregate("", (s, x) =>
             {
@@ -110,8 +190,6 @@ namespace cov_path_navi
 
 
         //分割为凸多边形，标记联通关系
-
-
         //合并阻挡 去除环结构
         public static List<WalkAreaBlock> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
         {
