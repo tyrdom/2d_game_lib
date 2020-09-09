@@ -10,7 +10,6 @@ namespace game_bot
 
         public BotRadio()
         {
-            
         }
 
         public void OnEnemyEvent(CharTickMsg charTickMsg)

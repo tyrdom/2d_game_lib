@@ -21,6 +21,8 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
 
+        public Zone RdZone { get; }
+
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
         public readonly Dictionary<BodySize, IAntiActBuffConfig> SuccessAntiActBuffConfigToOpponent;
@@ -105,7 +107,6 @@ namespace game_stuff
                 return actBuffConfigs;
             }
 
-
             var objType = bullet.TargetType switch
             {
                 target_type.other_team => ObjType.OtherTeam,
@@ -139,6 +140,7 @@ namespace game_stuff
             Tough = tough;
             RestTick = restTick;
             ResId = resId;
+            RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
         public bool CanGoNextTick()
@@ -320,6 +322,7 @@ namespace game_stuff
                             default:
                                 throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
                         }
+
                         var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
                             targetCharacterStatus.GetAim(),
                             null,
@@ -349,7 +352,7 @@ namespace game_stuff
         public HashSet<int> HitTeam(IQSpace qSpace)
         {
             var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.IsHitBody(body),
-                this);
+                this, RdZone);
             return SomeTools.ListToHashSet(mapToGidList.Select(x => x.GetId()));
         }
 

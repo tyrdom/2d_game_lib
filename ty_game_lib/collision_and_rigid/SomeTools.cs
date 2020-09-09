@@ -9,8 +9,7 @@ namespace collision_and_rigid
     {
         public static IQSpace CreateEmptyRootBranch(Zone zone)
         {
-            var (item1, item2) = zone.GetMid();
-            var cutTo4 = zone.CutTo4(item1, item2);
+            var cutTo4 = zone.CutTo4();
 
 
             IQSpace qs1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], new HashSet<IAaBbBox>());
@@ -42,9 +41,9 @@ namespace collision_and_rigid
         public static Zone JoinAaBbZone(IAaBbBox[] aabbBoxShapes)
         {
             var foo = aabbBoxShapes[0].Zone;
-            foreach (var i in Enumerable.Range(1, aabbBoxShapes.Length - 1)) foo = foo.Join(aabbBoxShapes[i].Zone);
 
-            return foo;
+            return Enumerable.Range(1, aabbBoxShapes.Length - 1)
+                .Aggregate(foo, (current, i) => current.Join(aabbBoxShapes[i].Zone));
         }
 
         public static void LogZones(BlockBox[] aabbBoxShapes)
@@ -62,6 +61,22 @@ namespace collision_and_rigid
 
         public static IEnumerable<IIdPointShape> FilterToGIdPsList<T>(IQSpace qSpace,
             Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+            T t, Zone zone)
+        {
+            var dicIntToTu = new HashSet<IIdPointShape>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+                if (withIIdPtsShape) dicIntToTu.Add(id);
+            }
+
+            qSpace.ForeachDoWithOutMove(Act, t, zone);
+            return dicIntToTu;
+        }
+
+        public static IEnumerable<IIdPointShape> FilterToGIdPsList<T>(IQSpace qSpace,
+            Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t)
         {
             var dicIntToTu = new HashSet<IIdPointShape>();
@@ -69,7 +84,6 @@ namespace collision_and_rigid
             void Act(IIdPointShape id, T tt)
             {
                 var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-
                 if (withIIdPtsShape) dicIntToTu.Add(id);
             }
 
@@ -554,7 +568,7 @@ namespace collision_and_rigid
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG
-            Console.Out.WriteLine($"AaBbBlocks num::{qSpace.AabbPackBox.Count}");
+            Console.Out.WriteLine($"AaBbBlocks num::{qSpace.AaBbPackBox.Count}");
 #endif
             return qSpace.TryCovToLimitBlockQSpace(maxLoadPerQ);
         }
@@ -568,7 +582,7 @@ namespace collision_and_rigid
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG
-            Console.Out.WriteLine($"AaBbArea num::{qSpace.AabbPackBox.Count}");
+            Console.Out.WriteLine($"AaBbArea num::{qSpace.AaBbPackBox.Count}");
 #endif
             return qSpace.TryCovToLimitAreaQSpace(limit);
         }

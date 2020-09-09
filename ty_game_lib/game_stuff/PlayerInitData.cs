@@ -6,6 +6,18 @@ using game_config;
 
 namespace game_stuff
 {
+    public class CreepInitData
+    {
+        public int Gid;
+        public int TeamId;
+        private Dictionary<int, Weapon> Weapons;
+        private BodySize BodySize;
+        private float MaxSpeed;
+        private float MinSpeed;
+        private float AddSpeed;
+        public TwoDPoint SpawnPos;
+    }
+
     public class PlayerInitData
     {
         public int Gid;

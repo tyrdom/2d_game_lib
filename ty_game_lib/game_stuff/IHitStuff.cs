@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public interface IHitStuff
     {
-        
+        public Zone RdZone { get; }
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }

@@ -8,19 +8,20 @@ namespace game_stuff
     //在技能开始时，如果技能有锁定区域，那么可以获得到一个锁定
     public class LockArea : IHitStuff
     {
-        
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
 
+        public Zone RdZone { get; }
+
         public LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
         {
-            
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
             SizeToBulletCollision = sizeToBulletCollision;
             Caster = null;
+            RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
         public static LockArea GenByConfig(game_config.lock_area lockArea)
@@ -61,17 +62,18 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
         }
+
         public LockArea ActiveArea(TwoDPoint casterPos, TwoDVector casterAim)
         {
-          
             Pos = casterPos;
             Aim = casterAim;
             return this;
         }
+
         public HashSet<int> HitTeam(IQSpace qSpace)
         {
             var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.HitBody(body),
-                this);
+                this, RdZone);
             return SomeTools.ListToHashSet(mapToGidList.Select(x => x.GetId()));
         }
     }

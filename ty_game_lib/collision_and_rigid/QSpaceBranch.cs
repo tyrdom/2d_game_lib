@@ -15,7 +15,7 @@ namespace collision_and_rigid
             Father = father;
             TheQuad = quad;
             Zone = zone;
-            AabbPackBox = aabbPackBoxes;
+            AaBbPackBox = aabbPackBoxes;
             QuadTwo = quadTwo;
             QuadOne = quadOne;
             QuadFour = quadFour;
@@ -30,7 +30,7 @@ namespace collision_and_rigid
 
         public int Count()
         {
-            return AabbPackBox.Count + QuadOne.Count() + QuadFour.Count() + QuadThree.Count() + QuadTwo.Count();
+            return AaBbPackBox.Count + QuadOne.Count() + QuadFour.Count() + QuadThree.Count() + QuadTwo.Count();
         }
 
         public Quad? TheQuad { get; set; }
@@ -38,7 +38,7 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
-        public HashSet<IAaBbBox> AabbPackBox { get; set; }
+        public HashSet<IAaBbBox> AaBbPackBox { get; set; }
         public IQSpace QuadTwo { get; set; }
         public IQSpace QuadOne { get; set; }
         public IQSpace QuadFour { get; set; }
@@ -61,9 +61,9 @@ namespace collision_and_rigid
 
                         if (Zone.IncludePt(twoDPoint))
                         {
-                            if (AabbPackBox.Count <= limit)
+                            if (AaBbPackBox.Count <= limit)
                             {
-                                AabbPackBox.Add(aabbBoxShape);
+                                AaBbPackBox.Add(aabbBoxShape);
                             }
                             else
                             {
@@ -113,8 +113,8 @@ namespace collision_and_rigid
 
         public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
-            var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AabbPackBox.OfType<IdPointBox>(), Zone);
-            AabbPackBox = inZone;
+            var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
+            AaBbPackBox = inZone;
 
             if (Father != null)
             {
@@ -122,13 +122,23 @@ namespace collision_and_rigid
             }
             else
             {
-                AabbPackBox.UnionWith(outZone);
+                AaBbPackBox.UnionWith(outZone);
             }
 
             QuadOne.MoveIdPoint(gidToMove, limit);
             QuadTwo.MoveIdPoint(gidToMove, limit);
             QuadThree.MoveIdPoint(gidToMove, limit);
             QuadFour.MoveIdPoint(gidToMove, limit);
+        }
+
+        public void RemoveIdPoint(IdPointBox idPointBox)
+        {
+            var remove = AaBbPackBox.Remove(idPointBox);
+            if (remove) return;
+            QuadOne.RemoveIdPoint(idPointBox);
+            QuadTwo.RemoveIdPoint(idPointBox);
+            QuadThree.RemoveIdPoint(idPointBox);
+            QuadFour.RemoveIdPoint(idPointBox);
         }
 
 
@@ -138,7 +148,7 @@ namespace collision_and_rigid
 
             if (notCross) return null;
 
-            var a = SomeTools.SlideTwoDPoint(AabbPackBox, line, safe);
+            var a = SomeTools.SlideTwoDPoint(AaBbPackBox, line, safe);
             if (a != null) return a;
 // #if DEBUG
 //
@@ -150,19 +160,19 @@ namespace collision_and_rigid
         }
 
 
-        public void Remove(BlockBox box)
+        public void RemoveBlockBox(BlockBox box)
         {
-            if (AabbPackBox.Remove(box)) return;
+            if (AaBbPackBox.Remove(box)) return;
 
-            QuadTwo.Remove(box);
-            QuadThree.Remove(box);
-            QuadFour.Remove(box);
-            QuadOne.Remove(box);
+            QuadTwo.RemoveBlockBox(box);
+            QuadThree.RemoveBlockBox(box);
+            QuadFour.RemoveBlockBox(box);
+            QuadOne.RemoveBlockBox(box);
         }
 
         public IEnumerable<BlockBox> TouchBy(BlockBox box)
         {
-            var aabbBoxes = box.TryTouch(AabbPackBox.OfType<BlockBox>());
+            var aabbBoxes = box.TryTouch(AaBbPackBox.OfType<BlockBox>());
             var (item1, item2) = Zone.GetMid();
             var cutTo4 = box.CutTo4(item1, item2);
             foreach (var keyValuePair in cutTo4)
@@ -196,7 +206,7 @@ namespace collision_and_rigid
             var notCross = line.GenZone().NotCross(Zone);
             if (notCross) return false;
 
-            var lineIsBlockSight = (from aabbPackBoxShape in AabbPackBox
+            var lineIsBlockSight = (from aabbPackBoxShape in AaBbPackBox
                 let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
                 where !notCross2
                 select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
@@ -208,11 +218,10 @@ namespace collision_and_rigid
             return lineIsBlockSight || isBlockSight;
         }
 
-    
 
         public int FastTouchWithARightShootPoint(TwoDPoint p)
         {
-            var i = p.FastGenARightShootCrossALotAabbBoxShape(AabbPackBox);
+            var i = p.FastGenARightShootCrossALotAabbBoxShape(AaBbPackBox);
 
             var qSpaces = new[] {QuadOne, QuadTwo};
             var dqSpace = new[] {QuadThree, QuadFour};
@@ -228,16 +237,10 @@ namespace collision_and_rigid
 
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
-            foreach (var shape in AabbPackBox.Select(aabbPackBoxShape => aabbPackBoxShape.GetShape()))
+            foreach (var shape in AaBbPackBox.OfType<IdPointBox>()
+                .Select(boxShape => boxShape.IdPointShape))
             {
-                switch (shape)
-                {
-                    case IIdPointShape idPointShape:
-                        doWithIIdPointShape(idPointShape, t);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(shape));
-                }
+                doWithIIdPointShape(shape, t);
             }
 
             QuadOne.ForeachDoWithOutMove(doWithIIdPointShape, t);
@@ -246,10 +249,43 @@ namespace collision_and_rigid
             QuadFour.ForeachDoWithOutMove(doWithIIdPointShape, t);
         }
 
+        public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t, Zone zone)
+        {
+            var idPointShapes = AaBbPackBox.OfType<IdPointBox>().Select(x => x.IdPointShape)
+                .Where(x => Zone.IncludePt(x.GetAnchor()));
+            foreach (var idPointShape in idPointShapes)
+            {
+                doWithIIdPointShape(idPointShape, t);
+            }
+
+            var valueTuples = Zone.SplitZones(zone);
+            foreach (var (quad, zone1) in valueTuples)
+            {
+                switch (quad)
+                {
+                    case Quad.One:
+                        QuadOne.ForeachDoWithOutMove(doWithIIdPointShape, t, zone1);
+                        break;
+                    case Quad.Two:
+                        QuadTwo.ForeachDoWithOutMove(doWithIIdPointShape, t, zone1);
+                        break;
+                    case Quad.Three:
+                        QuadThree.ForeachDoWithOutMove(doWithIIdPointShape, t, zone1);
+                        break;
+                    case Quad.Four:
+                        QuadFour.ForeachDoWithOutMove(doWithIIdPointShape, t, zone1);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            
+        }
+
 
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p)
         {
-            var (i, aabb) = p.GenARightShootCrossALotAabbBoxShapeInQSpace(AabbPackBox.OfType<BlockBox>());
+            var (i, aabb) = p.GenARightShootCrossALotAabbBoxShapeInQSpace(AaBbPackBox.OfType<BlockBox>());
             var whichQ = p.WhichQ(this);
 //            Console.Out.WriteLine("Q:::" + whichQ);
             switch (whichQ)
@@ -325,7 +361,7 @@ namespace collision_and_rigid
 
         public string OutZones()
         {
-            var s = AabbPackBox.Select(aabbBoxShape => aabbBoxShape.Zone).Aggregate("Branch:::\n",
+            var s = AaBbPackBox.Select(aabbBoxShape => aabbBoxShape.Zone).Aggregate("Branch:::\n",
                 (current, zone) => current + (SomeTools.ZoneLog(zone) + "\n"));
 
             var qSpaces = new[] {QuadOne, QuadTwo, QuadThree, QuadFour};
@@ -353,7 +389,7 @@ namespace collision_and_rigid
                     QuadThree.InsertBlockBox(box);
                     break;
                 case null:
-                    AabbPackBox.Add(box);
+                    AaBbPackBox.Add(box);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -363,8 +399,8 @@ namespace collision_and_rigid
         public QSpaceLeaf CovToLeaf()
         {
             var qSpaces = new[] {QuadTwo, QuadOne, QuadFour, QuadThree};
-            var a = AabbPackBox;
-            foreach (var qSpace in qSpaces) a.UnionWith(qSpace.AabbPackBox);
+            var a = AaBbPackBox;
+            foreach (var qSpace in qSpaces) a.UnionWith(qSpace.AaBbPackBox);
 
             return new QSpaceLeaf(TheQuad, Father, Zone, a);
         }
@@ -375,6 +411,12 @@ namespace collision_and_rigid
             QuadTwo.Father = this;
             QuadThree.Father = this;
             QuadFour.Father = this;
+        }
+
+        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+            T t, Zone zone)
+        {
+            return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t, zone);
         }
 
         public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
@@ -395,7 +437,7 @@ namespace collision_and_rigid
         public HashSet<IBlockShape> GetAllIBlocks()
         {
             var blockShapes =
-                AabbPackBox.OfType<BlockBox>().Select(x => x.Shape).ToList();
+                AaBbPackBox.OfType<BlockBox>().Select(x => x.Shape).ToList();
             var allIBlocks = QuadOne.GetAllIBlocks();
             var iBlocks = QuadTwo.GetAllIBlocks();
             var hashSet = QuadThree.GetAllIBlocks();
@@ -406,7 +448,7 @@ namespace collision_and_rigid
 
         public AreaBox? PointInWhichArea(TwoDPoint pt)
         {
-            var firstOrDefault = AabbPackBox.OfType<AreaBox>().FirstOrDefault(box => box.IsInArea(pt));
+            var firstOrDefault = AaBbPackBox.OfType<AreaBox>().FirstOrDefault(box => box.IsInArea(pt));
             if (firstOrDefault != null)
             {
                 return firstOrDefault;

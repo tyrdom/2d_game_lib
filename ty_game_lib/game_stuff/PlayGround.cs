@@ -36,21 +36,19 @@ namespace game_stuff
             foreach (var initData in playerInitData)
             {
                 var initDataTeamId = initData.TeamId;
-                if (mapInitData.TeamToStartPt.TryGetValue(initDataTeamId, out var startPts))
+                if (!mapInitData.TeamToStartPt.TryGetValue(initDataTeamId, out var startPts)) continue;
+                var twoDPoint = startPts.GenPt();
+                var genCharacterBody = initData.GenCharacterBody(twoDPoint);
+                if (bodies.TryGetValue(initDataTeamId, out var qSpace))
                 {
-                    var twoDPoint = startPts.GenPt();
-                    var genCharacterBody = initData.GenCharacterBody(twoDPoint);
-                    if (bodies.TryGetValue(initDataTeamId, out var qSpace))
-                    {
-                        qSpace.Add(genCharacterBody);
-                    }
-                    else
-                    {
-                        bodies[initDataTeamId] = new HashSet<CharacterBody> {genCharacterBody};
-                    }
-
-                    characterBodies[initData.Gid] = genCharacterBody;
+                    qSpace.Add(genCharacterBody);
                 }
+                else
+                {
+                    bodies[initDataTeamId] = new HashSet<CharacterBody> {genCharacterBody};
+                }
+
+                characterBodies[initData.Gid] = genCharacterBody;
             }
 
             var spaces = bodies.ToDictionary(p => p.Key,
@@ -60,7 +58,7 @@ namespace game_stuff
                     var zone = mapInitData.GetZone();
                     var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
                     var aabbBoxShapes =
-                        SomeTools.ListToHashSet(hashSet.Select(x => x.CovToAabbPackBox()));
+                        SomeTools.ListToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
                     emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return emptyRootBranch;
                 });
@@ -321,7 +319,8 @@ namespace game_stuff
                     if (twoDTwoP != null)
                     {
 #if DEBUG
-                        Console.Out.WriteLine($" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.Log()}");
+                        Console.Out.WriteLine(
+                            $" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.Log()}");
 #endif
                         twoDTwoPs[gid] = twoDTwoP;
                     }

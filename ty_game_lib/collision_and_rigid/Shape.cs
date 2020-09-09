@@ -27,7 +27,7 @@ namespace collision_and_rigid
 
     public interface IIdPointShape : IShape
     {
-        int GetId();
+       public int GetId();
         TwoDPoint Move(ITwoDTwoP vector);
         TwoDPoint GetAnchor();
     }

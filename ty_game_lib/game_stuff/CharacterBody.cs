@@ -5,7 +5,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : IIdPointShape, IShape
+    public class CharacterBody : IIdPointShape
     {
         public BodySize BodySize { get; }
         public CharacterStatus CharacterStatus { get; }
@@ -15,6 +15,7 @@ namespace game_stuff
         public AngleSight Sight { get; }
         public int Team { get; }
 
+        private IdPointBox? IdPointBox;
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
@@ -34,10 +35,13 @@ namespace game_stuff
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map);
         }
 
-        public IdPointBox CovToAabbPackBox()
+        public IdPointBox CovToAaBbPackBox()
         {
+            if (IdPointBox != null) return IdPointBox;
             var zone = new Zone(0f, 0f, 0f, 0f);
-            return new IdPointBox(zone, this);
+            var covToAaBbPackBox = new IdPointBox(zone, this);
+            IdPointBox = covToAaBbPackBox;
+            return covToAaBbPackBox;
         }
 
 

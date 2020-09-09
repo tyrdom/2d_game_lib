@@ -58,6 +58,14 @@ namespace game_stuff
             return MathTools.Sqrt(f);
         }
 
+        public static Zone GenRdBox(Dictionary<BodySize, BulletBox> bulletBoxes)
+        {
+            var enumerable = bulletBoxes.Select(x => x.Value.Zone);
+            var aggregate = enumerable.Aggregate(new Zone(0, 0, 0, 0), (s, x) => s.Join(x));
+            var bulletRdBox = aggregate.GetBulletRdBox();
+            return bulletRdBox;
+        }
+
         private static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
         {
             return
