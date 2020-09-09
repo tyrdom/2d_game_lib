@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using System.Xml.Schema;
 using collision_and_rigid;
 
 namespace cov_path_navi
@@ -14,7 +12,7 @@ namespace cov_path_navi
 
         public int ThisPathNodeId;
 
-        public List<IBlockShape> Edges;
+        private List<IBlockShape> Edges;
 
         public ImmutableDictionary<int, List<(int id, float cost, TwoDVectorLine GoTrough)>>? LinkAndCost;
 
@@ -32,8 +30,8 @@ namespace cov_path_navi
         }
 
 
-        public static ImmutableDictionary<int, List<(int id, float cost, TwoDVectorLine GoTrough)>>? GenCost(
-            List<Link> list)
+        private static ImmutableDictionary<int, List<(int id, float cost, TwoDVectorLine GoTrough)>>? GenCost(
+            IReadOnlyCollection<Link> list)
         {
             var res = new Dictionary<int, Dictionary<int, (float cost, TwoDVectorLine goThrough)>>();
             foreach (var link in list)
@@ -42,7 +40,7 @@ namespace cov_path_navi
                 var pt1 = link.GoThrough.GetMid();
                 var enumerable = list.Where(x => x.LinkToPathNodeId != thisId).ToList();
 #if DEBUG
-                var aggregate = enumerable.Aggregate("", (s, x) => s + "_" + x.LinkToPathNodeId);
+                var aggregate = enumerable.Aggregate("", (s, x) => s + x.LinkToPathNodeId + "_");
                 Console.Out.WriteLine($"{thisId}=>>{aggregate}");
 #endif
                 foreach (var anotherLink in enumerable)
@@ -54,7 +52,7 @@ namespace cov_path_navi
                     AddADistance(anotherLinkId, thisId, distance, link.GoThrough, res);
 
                     static void AddADistance(int thisId, int anotherId, float distance, TwoDVectorLine go,
-                        Dictionary<int, Dictionary<int, (float cost, TwoDVectorLine goThrough)>> res)
+                        IDictionary<int, Dictionary<int, (float cost, TwoDVectorLine goThrough)>> res)
                     {
                         if (res.TryGetValue(thisId, out var aDictionary))
                         {

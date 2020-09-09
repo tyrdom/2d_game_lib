@@ -86,7 +86,7 @@ namespace lib_test
             var poly1 = TestStuff.TestPoly2();
             var poly2 = TestStuff.TestPoly3();
             var poly3 = new Poly(new[]
-                {new TwoDPoint(2, 10), new TwoDPoint(4, 10), new TwoDPoint(4, -10), new TwoDPoint(2, -10),});
+                {new TwoDPoint(2, 1), new TwoDPoint(4, 1), new TwoDPoint(4, -1), new TwoDPoint(2, -1),});
 
             var poly4 = new Poly(new[]
                 {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
@@ -115,9 +115,9 @@ namespace lib_test
 
             var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 1f, 6);
             Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
-            if (genWalkBlockByPolys.QSpace != null) Console.Out.WriteLine(genWalkBlockByPolys.QSpace.OutZones());
-            else
-                Console.Out.WriteLine("all block");
+            Console.Out.WriteLine(genWalkBlockByPolys.QSpace != null
+                ? genWalkBlockByPolys.QSpace.OutZones()
+                : "all block");
 
             var inBlock2 = genWalkBlockByPolys.RealCoverPoint(ptt);
 
@@ -179,14 +179,18 @@ namespace lib_test
 
             var pathTop = new PathTop(genWalkBlockByPolys);
             Console.Out.WriteLine($"\n\n pathTop is\n{pathTop}");
-            var startPt = new TwoDPoint(-2.1f, 0);
-            var findAPathById = pathTop.FindAPathById(0, 6, startPt);
+            var startPt = new TwoDPoint(-7f, -5f);
+            var endPt = new TwoDPoint(6, 0f);
+
+            var findAPathById = pathTop.FindAPathById(0, 6, startPt, endPt);
 
             var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.Log() + "||" + x.Item1);
-            Console.Out.WriteLine($"path::{aggregate3}");
-            var endPt = new TwoDPoint(0, 8);
 
-            var twoDVectorLines = findAPathById.Select(x => x.Item2);
+
+            var findAPathByPoint = pathTop.FindAPathByPoint(startPt, endPt);
+            var aggregate4 = findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.Log() + "||" + x.Item1);
+            Console.Out.WriteLine($"path::{aggregate4}");
+            var twoDVectorLines = findAPathByPoint.Select(x => x.Item2);
             var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.Log());
             Console.Out.WriteLine($"way Points are {s3}");
