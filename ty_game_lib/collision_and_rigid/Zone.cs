@@ -159,6 +159,12 @@ namespace collision_and_rigid
                    anotherZone.Down <= Down;
         }
 
+        public bool RealNotCross(Zone anotherZone)
+        {
+            return Right < anotherZone.Left || anotherZone.Right < Left ||
+                   Up < anotherZone.Down || anotherZone.Up < Down;
+        }
+
         public bool NotCross(Zone anotherZone)
         {
             if (Right <= Left)
@@ -166,7 +172,7 @@ namespace collision_and_rigid
                 return Right < anotherZone.Left || anotherZone.Right < Left ||
                        Up <= anotherZone.Down || anotherZone.Up <= Down;
             }
-
+            
             if (Up <= Down)
             {
                 return Right <= anotherZone.Left || anotherZone.Right <= Left ||

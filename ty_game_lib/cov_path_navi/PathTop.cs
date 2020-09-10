@@ -72,7 +72,8 @@ namespace cov_path_navi
         }
 
 
-        public static List<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end, List<TwoDVectorLine?> twoDVectorLines)
+        public static IEnumerable<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end,
+            List<TwoDVectorLine?> twoDVectorLines)
         {
             var twoDPoints = new List<TwoDPoint>();
             if (!twoDVectorLines.Any())
@@ -107,10 +108,11 @@ namespace cov_path_navi
                 var opLines = rawOpLines.GetRange(cutCount, rawOpLines.Count - cutCount);
                 var addPoints = before.Select(x => x.GetEndPt());
 
-                var twoDPoint = addPoints.Last();
+                var twoDPoints = addPoints.ToList();
+                var twoDPoint = twoDPoints.Last();
 
                 var thisLines = new List<TwoDVectorLine> {new TwoDVectorLine(twoDPoint, point)};
-                return (opLines, thisLines, addPoints);
+                return (opLines, thisLines, twoDPoints);
             }
 
             static void CheckSameSide(TwoDPoint point, List<TwoDVectorLine> thisLinesCollector,

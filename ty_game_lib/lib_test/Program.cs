@@ -126,7 +126,7 @@ namespace lib_test
 
             var pushOutToPt = genWalkBlockByPolys.PushOutToPt(sPt, ePt);
 
-            Console.Out.WriteLine($"push out pt {pushOutToPt?.ToString()}");
+            Console.Out.WriteLine($"push out pt {pushOutToPt.pt}");
             Console.Out.WriteLine("!!2!!" + inBlock2);
 
             TwoDPoint a = new TwoDPoint(0f, 0f);
@@ -142,7 +142,7 @@ namespace lib_test
 
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
 
-            var aggregate = allIBlocks.Aggregate("", (s, x) => s + x.ToString() + "\n");
+            var aggregate = allIBlocks!.Aggregate("", (s, x) => s + x.ToString() + "\n");
 
             if (allIBlocks != null)
             {
@@ -194,7 +194,7 @@ namespace lib_test
             var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.ToString());
             Console.Out.WriteLine($"way Points are {s3}");
-            return;
+         
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();
@@ -211,11 +211,10 @@ namespace lib_test
 
             Console.Out.WriteLine("game test~~~~~");
 
-            var testPlayGround = TestStuff.TestPlayGround();
-            foreach (var keyValuePair in testPlayGround.Item2)
+            var (playGround, item2) = TestStuff.TestPlayGround();
+            foreach (var (key, charInitMsgs) in item2)
             {
-                Console.Out.WriteLine($"{keyValuePair.Key}");
-                var charInitMsgs = keyValuePair.Value;
+                Console.Out.WriteLine($"{key}");
                 foreach (var charInitMsg in charInitMsgs)
                 {
                     var gId = charInitMsg.GId;
@@ -247,7 +246,6 @@ namespace lib_test
             var dictionary2 = new Dictionary<int, Operate> {{1, skill2}};
             var enumerable = operates1.Select(x => new Dictionary<int, Operate> {{1, x}}).ToArray();
 
-            var playGround = testPlayGround.Item1;
             // var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
             //
             // LogCPos(playGroundGoATick.Item2);
@@ -290,7 +288,7 @@ namespace lib_test
                     var skillLaunch = charTickMsg.SkillLaunch == null ? "null" : charTickMsg.SkillLaunch.ToString();
                     Console.Out.WriteLine(
                         $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid} , pos {logPt}, aim {log}, " +
-                        $"speed :{charTickMsg.Speed}, is on hit::{isOnHit?.ToString()} , is stun :: {isStun},skill launch {skillLaunch}");
+                        $"speed :{charTickMsg.Speed}, is on hit::{isOnHit} , is stun :: {isStun},skill launch {skillLaunch}");
                 }
             }
         }

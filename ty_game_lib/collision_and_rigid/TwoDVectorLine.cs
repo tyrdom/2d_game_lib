@@ -40,7 +40,7 @@ namespace collision_and_rigid
 
         public override string ToString()
         {
-            return $"{A.ToString()}|{AOut}--{B.ToString()}{BOut}";
+            return $"{A}|{AOut}--{B}{BOut}";
         }
 
 
@@ -546,8 +546,7 @@ namespace collision_and_rigid
             if (!(rdR > 0)) return (null, twoDPoint);
 
             var sqrt = MathTools.Sqrt(rdR);
-
-
+            
             var twoDVector = GetVector().GetUnit();
             var v1 = twoDVector.Multi(sqrt);
             var v2 = twoDVector.Multi(-sqrt);
@@ -574,9 +573,9 @@ namespace collision_and_rigid
 // #if DEBUG
 //             Console.Out.WriteLine($"ffffffffffffff::::{f}");
 // #endif
-            if (f <= 0f) return AOut ? A.Move(dVector.Multi(f)) : A.Move(gap);
+            if (f <= 0f) return AOut ? A.Move(dVector.Multi(f)) : A.Move(dVector.Multi(0.01f)).Move(gap);
 
-            if (f >= 1f) return BOut ? A.Move(dVector.Multi(f)) : B.Move(gap);
+            if (f >= 1f) return BOut ? A.Move(dVector.Multi(f)) : A.Move(dVector.Multi(0.99f)).Move(gap);
 
             var twoDPoint = A.Move(dVector.Multi(f)).Move(gap);
 // #if DEBUG
@@ -659,7 +658,7 @@ namespace collision_and_rigid
             var f11 = MathTools.Min(f1, f2);
             var f22 = MathTools.Max(f1, f2);
 #if DEBUG
-            Console.Out.WriteLine($"{ToString()}maybe have cross pt {p1.ToString()}  " + f11 + $"== {p2.ToString()}  " + f22);
+            Console.Out.WriteLine($"{ToString()}maybe have cross pt {p1}  " + f11 + $"== {p2}  " + f22);
 
 #endif
             var op1 = new TwoDVectorLine(o, p1);

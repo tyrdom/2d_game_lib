@@ -6,19 +6,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CreepInitData
-    {
-        public int Gid;
-        public int TeamId;
-        private Dictionary<int, Weapon> Weapons;
-        private BodySize BodySize;
-        private float MaxSpeed;
-        private float MinSpeed;
-        private float AddSpeed;
-        public TwoDPoint SpawnPos;
-    }
-
-    public class PlayerInitData
+    public class CharacterInitData
     {
         public int Gid;
         public int TeamId;
@@ -28,7 +16,7 @@ namespace game_stuff
         private float MinSpeed;
         private float AddSpeed;
 
-        public static PlayerInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, float maxSpeed,
+        public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, float maxSpeed,
             float minSpeed, float addSpeed)
         {
             var dictionary = new Dictionary<int, Weapon>();
@@ -47,10 +35,10 @@ namespace game_stuff
             };
 
 
-            return new PlayerInitData(gid, teamId, dictionary, bz, maxSpeed, minSpeed, addSpeed);
+            return new CharacterInitData(gid, teamId, dictionary, bz, maxSpeed, minSpeed, addSpeed);
         }
 
-        public PlayerInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize,
+        private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize,
             float maxSpeed, float minSpeed, float addSpeed)
         {
             Gid = gid;
@@ -64,8 +52,8 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
-            var characterStatus = new CharacterStatus(MaxSpeed, Gid, 0, new Dictionary<int, Weapon>(),
-                DamageHealStatus.StartDamageHealAbout(), 0, AddSpeed, MinSpeed);
+            var characterStatus = new CharacterStatus(MaxSpeed, Gid,
+                DamageHealStatus.StartDamageHealAbout(), AddSpeed, MinSpeed);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {
@@ -82,6 +70,22 @@ namespace game_stuff
                 AngleSight.StandardAngleSight(),
                 TeamId);
             return characterBody;
+        }
+
+        public void ReloadCharacterBody(CharacterBody characterBody)
+        {
+            characterBody.CharacterStatus.ReloadInitData(DamageHealStatus.StartDamageHealAbout(), MaxSpeed, AddSpeed,
+                MinSpeed);
+            foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
+            {
+#if DEBUG
+                Console.Out.WriteLine($"{weapon.LogUserString()}");
+#endif
+                weapon.PickedBySomebody(characterBody.CharacterStatus);
+#if DEBUG
+                Console.Out.WriteLine($"{weapon.LogUserString()}");
+#endif
+            }
         }
     }
 }

@@ -89,19 +89,9 @@ namespace collision_and_rigid
             return false;
         }
 
-        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
+        public override string ToString()
         {
-            throw new NotImplementedException();
-        }
-
-        public (Zone?, Zone?) CutByH(float h, Zone z)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
-        {
-            throw new NotImplementedException();
+            return GetBlockShapes().Aggregate("", (s, x) => s + x);
         }
     }
 }

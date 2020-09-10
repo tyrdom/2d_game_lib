@@ -143,13 +143,8 @@ namespace collision_and_rigid
                 {
                     aShape = aabbBoxShape;
                     var shape = aabbBoxShape.Shape;
-                    var touchByRightShootPointInAAbbBox = shape switch
-                    {
-                        IBlockShape blockShape => blockShape.TouchByRightShootPointInAAbbBoxInQSpace(
-                            this),
-
-                        _ => throw new ArgumentOutOfRangeException(nameof(shape))
-                    };
+                    var touchByRightShootPointInAAbbBox = shape.TouchByRightShootPointInAAbbBoxInQSpace(
+                        this);
 
 //                        Console.Out.WriteLine("a num:" + touchByRightShootPointInAAbbBox + "zone: " +
 //                                              SomeTools.ZoneLog(aabbBoxShape.Zone));

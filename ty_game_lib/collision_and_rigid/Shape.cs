@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 
@@ -6,6 +7,7 @@ namespace collision_and_rigid
     public interface IShape
     {
         string ToString();
+        
     }
 
     public interface IRawBulletShape
@@ -28,10 +30,15 @@ namespace collision_and_rigid
 
     public interface IIdPointShape : IShape
     {
-       public int GetId();
+        public int GetId();
         TwoDPoint Move(ITwoDTwoP vector);
         TwoDPoint GetAnchor();
+
+        TwoDVectorLine GetMoveVectorLine();
+
+        ITwoDTwoP RelocateWithBlock(WalkBlock walkBlock);
     }
+
 
     public interface IBlockShape : IShape
     {
@@ -40,7 +47,6 @@ namespace collision_and_rigid
         TwoDVectorLine AsTwoDVectorLine();
 
         List<BlockBox> GenAabbBoxShape();
-        string ToString();
         int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p);
         bool IsEmpty();
 

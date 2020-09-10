@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace collision_and_rigid
 {
-    public class WalkBlock 
+    public class WalkBlock
     {
 //        private float R;
         public bool IsBlockIn;
@@ -24,32 +24,35 @@ namespace collision_and_rigid
 #if DEBUG
             Console.Out.WriteLine("num::" + item1);
             var logSide = aabbBoxShape == null ? "" : aabbBoxShape.Zone.LogSide();
-            Console.Out.WriteLine($"{p.ToString()}  box::{logSide}");
+            Console.Out.WriteLine($"{p}  box::{logSide}");
 #endif
             if (item1 >= 0)
             {
                 var inBlock = item1 % 2 != 0;
+                
                 return IsBlockIn ? inBlock : !inBlock;
             }
+
 //-1 真包含，在边缘不计，-2 不压线在外面，-3在线上
             return item1 == -1;
         }
 
-        public TwoDPoint? PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true) //null表示不需要被动移动
+        public (bool isHitWall, TwoDPoint pt)
+            PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true) //null表示不需要被动移动
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
-            if (QSpace == null) return null;
+            if (QSpace == null) return (false, nowP);
             var apt = QSpace.GetSlidePoint(inLine, safe);
 
-            if (safe) return apt;
+            if (safe) return (apt != null, apt ?? nowP);
+
+
             if (apt != null)
             {
-                return RealCoverPoint(apt) ? PushOutToPt(lastP, apt, false) : apt;
+                return RealCoverPoint(apt) ? PushOutToPt(lastP, apt, false) : (true, apt);
             }
 
-            return null;
+            return (false, nowP);
         }
-
-    
     }
 }

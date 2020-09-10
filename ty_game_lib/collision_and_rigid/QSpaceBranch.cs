@@ -144,7 +144,7 @@ namespace collision_and_rigid
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)
         {
-            var notCross = Zone.NotCross(line.GenZone());
+            var notCross = Zone.RealNotCross(line.GenZone());
 
             if (notCross) return null;
 
@@ -203,11 +203,11 @@ namespace collision_and_rigid
 
         public bool LineIsBlockSight(TwoDVectorLine line)
         {
-            var notCross = line.GenZone().NotCross(Zone);
+            var notCross = line.GenZone().RealNotCross(Zone);
             if (notCross) return false;
 
             var lineIsBlockSight = (from aabbPackBoxShape in AaBbPackBox
-                let notCross2 = line.GenZone().NotCross(aabbPackBoxShape.Zone)
+                let notCross2 = line.GenZone().RealNotCross(aabbPackBoxShape.Zone)
                 where !notCross2
                 select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
 

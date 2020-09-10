@@ -15,18 +15,18 @@ namespace game_stuff
             return initPlayGround;
         }
 
-        private static PlayerInitData TestPlayer1()
+        private static CharacterInitData TestPlayer1()
         {
             var keyValuePair = TempConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
-            return PlayerInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+            return CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
         }
 
-        private static PlayerInitData TestPlayer2()
+        private static CharacterInitData TestPlayer2()
         {
             var keyValuePair = TempConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
-            return PlayerInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+            return CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
         }
 
         private static MapInitData TestInitData()

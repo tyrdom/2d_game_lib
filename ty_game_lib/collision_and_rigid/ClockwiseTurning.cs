@@ -691,9 +691,15 @@ namespace collision_and_rigid
         public bool IsCross(TwoDVectorLine twoDVectorLine)
         {
             var round = new Round(Aob.O, R);
-            var (item1, item2) = twoDVectorLine.CrossPtWithRound(round);
             var inRound = twoDVectorLine.B.InRound(round);
-            if (item1 == null || item2 == null || !inRound)
+            if (!inRound)
+            {
+                return false;
+            }
+
+            var (item1, item2) = twoDVectorLine.CrossPtWithRound(round);
+
+            if (item1 == null || item2 == null)
             {
                 return false;
             }

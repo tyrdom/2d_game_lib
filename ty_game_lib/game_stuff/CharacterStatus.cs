@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Linq;
+using System.Security.Principal;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -10,11 +11,11 @@ namespace game_stuff
     {
         public CharacterBody CharacterBody;
 
-        private readonly float _maxMoveSpeed;
+        private float MaxMoveSpeed { get; set; }
 
-        private readonly float _minMoveSpeed;
+        private float MinMoveSpeed { get; set; }
 
-        private readonly float _addMoveSpeed;
+        private float AddMoveSpeed { get; set; }
 
         public float NowMoveSpeed;
 
@@ -28,7 +29,7 @@ namespace game_stuff
 
         public int NowWeapon;
 
-        public Dictionary<int, Weapon> Weapons { get; }
+        public Dictionary<int, Weapon> Weapons { get; private set; }
 
         //
 
@@ -57,25 +58,25 @@ namespace game_stuff
 
         public bool IsHitSome { get; set; }
 
-        public CharacterStatus(float maxMoveSpeed, int gId, int pauseTick, Dictionary<int, Weapon> weapons,
-            DamageHealStatus damageHealStatus, int protectTick, float addMoveSpeed, float minMoveSpeed)
+        public CharacterStatus(float maxMoveSpeed, int gId,
+            DamageHealStatus damageHealStatus, float addMoveSpeed, float minMoveSpeed)
         {
             CharacterBody = null!;
-            _maxMoveSpeed = maxMoveSpeed;
+            MaxMoveSpeed = maxMoveSpeed;
             GId = gId;
-            PauseTick = pauseTick;
+            PauseTick = 0;
             LockingWho = null;
             CatchingWho = null;
             NowWeapon = 0;
-            Weapons = weapons;
+            Weapons = new Dictionary<int, Weapon>();
             NowCastSkill = null;
             NextSkill = null;
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
             DamageHealStatus = damageHealStatus;
-            ProtectTick = protectTick;
-            _addMoveSpeed = addMoveSpeed;
-            _minMoveSpeed = minMoveSpeed;
+            ProtectTick = 0;
+            AddMoveSpeed = addMoveSpeed;
+            MinMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
@@ -83,6 +84,31 @@ namespace game_stuff
             IsHitSome = false;
         }
 
+        public void ReloadInitData(DamageHealStatus damageHealStatus, float maxMoveSpeed,
+            float addMoveSpeed, float minMoveSpeed)
+        {
+            CharacterBody = null!;
+            MaxMoveSpeed = maxMoveSpeed;
+
+            PauseTick = 0;
+            LockingWho = null;
+            CatchingWho = null;
+            NowWeapon = 0;
+            
+            NowCastSkill = null;
+            NextSkill = null;
+            AntiActBuff = null;
+            DamageBuffs = new List<DamageBuff>();
+            DamageHealStatus = damageHealStatus;
+            ProtectTick = 0;
+            AddMoveSpeed = addMoveSpeed;
+            MinMoveSpeed = minMoveSpeed;
+            NowMoveSpeed = 0f;
+            SkillLaunch = null;
+            IsPause = false;
+            IsBeHitBySomeOne = null;
+            IsHitSome = false;
+        }
 
         public void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
         {
@@ -101,7 +127,7 @@ namespace game_stuff
 
         public void ResetSpeed()
         {
-            NowMoveSpeed = _minMoveSpeed;
+            NowMoveSpeed = MinMoveSpeed;
         }
 
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()
@@ -313,8 +339,8 @@ namespace game_stuff
             ));
             var moveDecreaseMinMulti = TempConfig.MoveDecreaseMinMulti +
                                        (1f - TempConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
-            var maxMoveSpeed = _maxMoveSpeed * moveDecreaseMinMulti;
-            NowMoveSpeed = MathTools.Max(_minMoveSpeed, MathTools.Min(maxMoveSpeed, NowMoveSpeed + _addMoveSpeed));
+            var maxMoveSpeed = MaxMoveSpeed * moveDecreaseMinMulti;
+            NowMoveSpeed = MathTools.Max(MinMoveSpeed, MathTools.Min(maxMoveSpeed, NowMoveSpeed + AddMoveSpeed));
             var dVector = twoDVector.Multi(NowMoveSpeed);
 
             return (dVector, null);

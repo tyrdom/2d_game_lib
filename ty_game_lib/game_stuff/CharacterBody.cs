@@ -14,8 +14,7 @@ namespace game_stuff
         public TwoDPoint NowPos { get; private set; }
         public AngleSight Sight { get; }
         public int Team { get; }
-
-        private IdPointBox? IdPointBox;
+        private IdPointBox? IdPointBox { get; set; }
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
@@ -57,7 +56,7 @@ namespace game_stuff
 
         public TwoDPoint Move(ITwoDTwoP vector)
         {
-            LastPos = NowPos;
+            // LastPos = NowPos;
             var twoDPoint = vector switch
             {
                 TwoDPoint twoDPoint1 => twoDPoint1,
@@ -74,8 +73,34 @@ namespace game_stuff
             return NowPos;
         }
 
+        public TwoDVectorLine GetMoveVectorLine()
+        {
+            return new TwoDVectorLine(LastPos, NowPos);
+        }
+
+        public ITwoDTwoP RelocateWithBlock(WalkBlock walkBlock)
+        {
+            var (isHitWall, pt) =
+                walkBlock.PushOutToPt(LastPos, NowPos);
+
+#if DEBUG
+            // if (walkBlock.QSpace != null)
+            //     Console.Out.WriteLine(
+            //         $" check:: {qSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
+            // Console.Out.WriteLine(
+            //     $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
+#endif
+            if (isHitWall) HitWall();
+            // var coverPoint = walkBlock.RealCoverPoint(pt);
+            // if (coverPoint) pt = LastPos;
+
+            return pt;
+        }
+
+
         public (ITwoDTwoP?, IHitStuff?) BodyGoATick(Dictionary<int, Operate> gidToOp)
         {
+            LastPos = NowPos;
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
@@ -117,13 +142,12 @@ namespace game_stuff
 
         public override string ToString()
         {
-       
             return $"Id {GetId()} pos {NowPos}";
         }
 
-        public void Renew()
+        public void Renew(CharacterInitData characterInitData)
         {
-            
+            characterInitData.ReloadCharacterBody(this);
         }
     }
 }

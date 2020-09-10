@@ -116,7 +116,7 @@ namespace collision_and_rigid
         {
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
-                var notCross = moveLine.GenZone().NotCross(aabbBoxShape.Zone);
+                var notCross = moveLine.GenZone().RealNotCross(aabbBoxShape.Zone);
 // #if DEBUG
 //
 //                 Console.Out.WriteLine($"{moveLine.Log()} not cross sssssssssssssss shape {notCross}");
@@ -147,7 +147,6 @@ namespace collision_and_rigid
                             var twoDPoint = blockLine.Slide(moveLineB);
                             return twoDPoint;
                         }
-
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -174,33 +173,26 @@ namespace collision_and_rigid
 
             foreach (var aabbPackBoxShape in aabbBoxShapes)
             {
-                var shape = aabbPackBoxShape.GetType();
-
-                switch (shape)
+                var idPointShape = aabbPackBoxShape.IdPointShape;
+                var id = idPointShape.GetId();
+                if (gidToMove.TryGetValue(id, out var vector))
                 {
-                    case IIdPointShape idPointShape:
-                        var id = idPointShape.GetId();
-                        if (gidToMove.TryGetValue(id, out var vector))
-                        {
-                            var twoDPoint = idPointShape.Move(vector);
-                            if (zone.IncludePt(twoDPoint))
-                            {
-                                inZone.Add(aabbPackBoxShape);
-                            }
-                            else
-                            {
-                                outZone.Add(aabbPackBoxShape);
-                            }
-                        }
-                        else
-                        {
-                            inZone.Add(aabbPackBoxShape);
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(shape));
+                    var twoDPoint = idPointShape.Move(vector);
+                    if (zone.IncludePt(twoDPoint))
+                    {
+                        inZone.Add(aabbPackBoxShape);
+                    }
+                    else
+                    {
+                        outZone.Add(aabbPackBoxShape);
+                    }
                 }
+                else
+                {
+                    inZone.Add(aabbPackBoxShape);
+                }
+
+                break;
             }
 
             return (inZone, outZone);

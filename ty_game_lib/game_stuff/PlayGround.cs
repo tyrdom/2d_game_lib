@@ -29,7 +29,7 @@ namespace game_stuff
 
         //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) InitPlayGround(
-            IEnumerable<PlayerInitData> playerInitData, MapInitData mapInitData)
+            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
             var characterBodies = new Dictionary<int, CharacterBody>();
@@ -122,12 +122,21 @@ namespace game_stuff
         {
             var everyBodyGoATick = EveryBodyGoATick(gidToOperates);
             var gidToWhichBulletHit = BulletsDo();
-            foreach (var qSpace in TeamToBodies.Select(kk => kk.Value))
+
+            foreach (var twoDTwoP in everyBodyGoATick)
             {
-                qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
+                if (GidToBody.TryGetValue(twoDTwoP.Key, out var characterBody))
+                {
+                    characterBody.Move(twoDTwoP.Value);
+                }
             }
 
-            BodiesRePlace();
+            // foreach (var qSpace in TeamToBodies.Select(kk => kk.Value))
+            // {
+            //     qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
+            // }
+
+            BodiesQSpacePlace();
             var playerSee = GetPlayerSee();
             var gidToBulletsMsg = gidToWhichBulletHit.ToDictionary(pair => pair.Key, pair => pair.Value.OfType<Bullet>()
                 .Select(x => x.GenMsg()));
@@ -183,7 +192,7 @@ namespace game_stuff
             return gidToCharacterBodies;
         }
 
-        public void BodiesRePlace()
+        public void BodiesQSpacePlace()
         {
             foreach (var qSpace in TeamToBodies.Select(kv => kv.Value))
             {
@@ -196,23 +205,7 @@ namespace game_stuff
                                 var characterBodyBodySize = characterBody.BodySize;
                                 if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
-                                    ITwoDTwoP? pushOutToPt =
-                                        walkBlock.PushOutToPt(characterBody.LastPos, characterBody.NowPos);
-
-#if DEBUG
-                                    // if (walkBlock.QSpace != null)
-                                    //     Console.Out.WriteLine(
-                                    //         $" check:: {qSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
-                                    // Console.Out.WriteLine(
-                                    //     $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
-#endif
-                                    if (pushOutToPt == null) return pushOutToPt;
-                                    characterBody.HitWall();
-                                    var coverPoint = walkBlock.RealCoverPoint((TwoDPoint) pushOutToPt);
-                                    if (coverPoint) pushOutToPt = characterBody.LastPos;
-
-
-                                    return pushOutToPt;
+                                    return characterBody.RelocateWithBlock(walkBlock);
                                 }
 
                                 break;
@@ -220,11 +213,11 @@ namespace game_stuff
                                 throw new ArgumentOutOfRangeException(nameof(idPts));
                         }
 
-                        return null;
+                        throw new Exception("not good idPts");
                     }, _walkMap);
 
 
-                qSpace.MoveIdPoint(mapToDicGidToSth!, TempConfig.QSpaceBodyMaxPerLevel);
+                qSpace.MoveIdPoint(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
             }
         }
 
@@ -378,13 +371,17 @@ namespace game_stuff
                 }
             }
         }
+
+        public void ReFactBodies(HashSet<CharacterInitData> characterInitDataS)
+        {
+        }
     }
 
 
     public class StartPts
     {
-        private int Now;
-        private List<TwoDPoint> Pts;
+        private int Now { get; set; }
+        private List<TwoDPoint> Pts { get; }
 
         public StartPts(List<TwoDPoint> pts)
         {
