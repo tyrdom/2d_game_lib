@@ -45,7 +45,7 @@ namespace cov_path_navi
         {
             var path = GetPath2();
 
-            return path.Aggregate("", (x, s) => $"{x}=>{s.Item1}[Cost::{s.Item2}][line::{s.Item3?.Log()}]");
+            return path.Aggregate("", (x, s) => $"{x}=>{s.Item1}[Cost::{s.Item2}][line::{s.Item3?.ToString()}]");
         }
 
         public void GrowFromRoot

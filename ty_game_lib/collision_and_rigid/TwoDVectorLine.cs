@@ -38,9 +38,9 @@ namespace collision_and_rigid
             return new List<BlockBox>() {CovToAabbPackBox()};
         }
 
-        public string Log()
+        public override string ToString()
         {
-            return $"{A.Log()}|{AOut}--{B.Log()}{BOut}";
+            return $"{A.ToString()}|{AOut}--{B.ToString()}{BOut}";
         }
 
 
@@ -106,8 +106,8 @@ namespace collision_and_rigid
                             var selectMany = ptsAndCond.Aggregate("cutPt::",
                                 (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
 
-                            Console.Out.WriteLine($" Cond InTIn~~~{Log()}  {selectMany} :::{i}");
-                            throw new Exception($" Cond InTIn~~~{Log()}  {selectMany} :::{i}");
+                            Console.Out.WriteLine($" Cond InTIn~~~{ToString()}  {selectMany} :::{i}");
+                            throw new Exception($" Cond InTIn~~~{ToString()}  {selectMany} :::{i}");
                         }
 #endif
                         var twoDVectorLine = new TwoDVectorLine(nPt, pt, AOut && i == 0);
@@ -124,8 +124,8 @@ namespace collision_and_rigid
                             var selectMany = ptsAndCond.Aggregate("cutPt::",
                                 (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
 
-                            Console.Out.WriteLine($" Cond OutTOut~~~{Log()}  {selectMany} :::{i}");
-                            throw new Exception($" Cond OutTOut~~~{Log()}  {selectMany} :::{i}");
+                            Console.Out.WriteLine($" Cond OutTOut~~~{ToString()}  {selectMany} :::{i}");
+                            throw new Exception($" Cond OutTOut~~~{ToString()}  {selectMany} :::{i}");
                         }
 #endif
                         temp.Clear();
@@ -163,8 +163,8 @@ namespace collision_and_rigid
                         var selectMany = ptsAndCond.Aggregate("cutPt::",
                             (s, x) => s + $"==pt::{x.Item1.LogPt()} c:{x.Item2}==");
 
-                        Console.Out.WriteLine($" Cond end InTOut~~~{Log()}  {selectMany} :::");
-                        throw new Exception($" Cond end IntTOut~~~{Log()}  {selectMany} :::");
+                        Console.Out.WriteLine($" Cond end InTOut~~~{ToString()}  {selectMany} :::");
+                        throw new Exception($" Cond end IntTOut~~~{ToString()}  {selectMany} :::");
                     }
 
                     break;
@@ -659,7 +659,7 @@ namespace collision_and_rigid
             var f11 = MathTools.Min(f1, f2);
             var f22 = MathTools.Max(f1, f2);
 #if DEBUG
-            Console.Out.WriteLine($"{Log()}maybe have cross pt {p1.Log()}  " + f11 + $"== {p2.Log()}  " + f22);
+            Console.Out.WriteLine($"{ToString()}maybe have cross pt {p1.ToString()}  " + f11 + $"== {p2.ToString()}  " + f22);
 
 #endif
             var op1 = new TwoDVectorLine(o, p1);

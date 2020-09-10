@@ -68,7 +68,7 @@ namespace cov_path_navi
                 return FindAPathById(start.Value, end.Value, startPt, endPt);
             }
 
-            throw new Exception($"Pt{startPt.Log()} or {endPt.Log()} not in any area  ");
+            throw new Exception($"Pt{startPt.ToString()} or {endPt.ToString()} not in any area  ");
         }
 
 
@@ -132,7 +132,7 @@ namespace cov_path_navi
                     thisLinesCollector.RemoveRange(cutRr, thisLinesCollector.Count - cutRr);
                     thisLinesCollector.Add(new TwoDVectorLine(startPt, point));
 #if DEBUG
-                    var aggregate = thisLinesCollector.Aggregate("", (s, x) => s + x.Log() + "\n");
+                    var aggregate = thisLinesCollector.Aggregate("", (s, x) => s + x.ToString() + "\n");
                     Console.Out.WriteLine($"get direct link at {pos} :: \n{aggregate}");
 #endif
                     return;
@@ -159,12 +159,12 @@ namespace cov_path_navi
                 if (i > 1)
                 {
 #if DEBUG
-                    var aggregate = rightLines.Aggregate("", (s, x) => s + x.Log() + "\n");
-                    var aggregate2 = leftLines.Aggregate("", (s, x) => s + x.Log() + "\n");
+                    var aggregate = rightLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
+                    var aggregate2 = leftLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
                     Console.Out.WriteLine($"now left:{leftLines.Count}:\n{aggregate2}::");
                     Console.Out.WriteLine($"now right:{rightLines.Count}:\n{aggregate}::");
                     Console.Out.WriteLine(
-                        $"now to cross:{twoDVectorLine.Log()} left:{leftPt.Log()} right:{rightPt.Log()}");
+                        $"now to cross:{twoDVectorLine.ToString()} left:{leftPt.ToString()} right:{rightPt.ToString()}");
 #endif
                     if (rightPt != rightLines.Last().GetEndPt())
                     {
@@ -190,7 +190,7 @@ namespace cov_path_navi
                     else
                     {
 #if DEBUG
-                        Console.Out.WriteLine($"not new Pt at right{rightPt.Log()}");
+                        Console.Out.WriteLine($"not new Pt at right{rightPt.ToString()}");
 #endif
                     }
 
@@ -211,7 +211,7 @@ namespace cov_path_navi
                     else
                     {
 #if DEBUG
-                        Console.Out.WriteLine($"not new Pt at left{leftPt.Log()}");
+                        Console.Out.WriteLine($"not new Pt at left{leftPt.ToString()}");
 #endif
                     }
                 }
@@ -222,11 +222,11 @@ namespace cov_path_navi
                 }
             }
 #if DEBUG
-            var aggregate11 = rightLines.Aggregate("", (s, x) => s + x.Log() + "\n");
-            var aggregate22 = leftLines.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var aggregate11 = rightLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
+            var aggregate22 = leftLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
             Console.Out.WriteLine($"end left:{leftLines.Count}:\n{aggregate22}::");
             Console.Out.WriteLine($"end right:{rightLines.Count}:\n{aggregate11}::");
-            Console.Out.WriteLine($"now to end:{end.Log()}");
+            Console.Out.WriteLine($"now to end:{end.ToString()}");
 #endif
             var opSide = CheckOpSide(end, leftLines, Pt2LinePos.Left);
 
@@ -356,7 +356,7 @@ namespace cov_path_navi
                     return GenLinkLists(res, nrList);
                 }
 
-                var aggregate = rList.Aggregate("", (s, x) => s + x.Log());
+                var aggregate = rList.Aggregate("", (s, x) => s + x.ToString());
                 throw new Exception($"cant find a block list but there is rest block {aggregate}");
             }
 
@@ -377,7 +377,7 @@ namespace cov_path_navi
                 SepRawList(TwoDPoint lstPt, TwoDPoint ledPt, List<IBlockShape> tList, List<IBlockShape> rawList)
             {
                 var beforeCount = tList.Count;
-                var s1 = tList.Aggregate("", (s, x) => s + x.Log());
+                var s1 = tList.Aggregate("", (s, x) => s + x.ToString());
                 var (stPt, edPt, lList, rList) = SepARawList(lstPt, ledPt, tList, rawList);
                 if (stPt == null || edPt == null)
                 {
@@ -386,10 +386,10 @@ namespace cov_path_navi
 
                 if (lList.Count > beforeCount) return SepRawList(stPt, edPt, lList, rList);
 
-                var aggregate = lList.Aggregate("l::", (s, x) => s + x.Log());
-                var aggregate1 = rList.Aggregate("r::", (s, x) => s + x.Log());
+                var aggregate = lList.Aggregate("l::", (s, x) => s + x.ToString());
+                var aggregate1 = rList.Aggregate("r::", (s, x) => s + x.ToString());
                 throw new Exception(
-                    $"can not finish a block list::num {beforeCount} vs {lList.Count} from {rList.Count} ::\n::{edPt.Log()}::\n {s1} vs {aggregate} \n from ::\n{aggregate1}");
+                    $"can not finish a block list::num {beforeCount} vs {lList.Count} from {rList.Count} ::\n::{edPt.ToString()}::\n {s1} vs {aggregate} \n from ::\n{aggregate1}");
             }
 
 
@@ -415,7 +415,7 @@ namespace cov_path_navi
 
 
 #if DEBUG
-                    Console.Out.WriteLine($" finding new ed  {edPt.Log()} vs {startPt.Log()}");
+                    Console.Out.WriteLine($" finding new ed  {edPt.ToString()} vs {startPt.ToString()}");
 #endif
                     if (startPt == edPt
                     )
@@ -425,7 +425,7 @@ namespace cov_path_navi
                         )
                         {
 #if DEBUG
-                            Console.Out.WriteLine($" found finish {endPt.Log()} vs {lstPt.Log()}");
+                            Console.Out.WriteLine($" found finish {endPt.ToString()} vs {lstPt.ToString()}");
 #endif
 
                             isEnd = true;
@@ -434,7 +434,7 @@ namespace cov_path_navi
 
 #if DEBUG
                         find = true;
-                        Console.Out.WriteLine($" found new ed  {edPt.Log()} vs {startPt.Log()}");
+                        Console.Out.WriteLine($" found new ed  {edPt.ToString()} vs {startPt.ToString()}");
 #endif
 
                         edPt = blockShape.GetEndPt();
@@ -446,8 +446,8 @@ namespace cov_path_navi
                 }
 #if DEBUG
                 if (find) return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
-                var aggregate = rawList.Aggregate("", (s, x) => s + x.Log());
-                Console.Out.WriteLine($" not found {edPt.Log()} in {aggregate}");
+                var aggregate = rawList.Aggregate("", (s, x) => s + x.ToString());
+                Console.Out.WriteLine($" not found {edPt.ToString()} in {aggregate}");
 #endif
                 return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
             }

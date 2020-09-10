@@ -73,8 +73,8 @@ namespace game_stuff
         public HashSet<int> HitTeam(IQSpace qSpace)
         {
             var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.HitBody(body),
-                this, RdZone);
-            return SomeTools.ListToHashSet(mapToGidList.Select(x => x.GetId()));
+                this, RdZone.MoveToAnchor(Pos));
+            return SomeTools.EnumerableToHashSet(mapToGidList.Select(x => x.GetId()));
         }
     }
 }

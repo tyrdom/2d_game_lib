@@ -69,7 +69,7 @@ namespace collision_and_rigid
 //
 #if DEBUG
                     Console.Out.WriteLine($"{z.LogSide()}");
-                    Console.Out.WriteLine($"{Shape.Log()}:::{vertical}");
+                    Console.Out.WriteLine($"{Shape.ToString()}:::{vertical}");
 #endif
 
                     var (lZones, rZones) = Shape.CutByV(vertical, z);
@@ -105,7 +105,7 @@ namespace collision_and_rigid
                     }
                     else
                     {
-                        throw new Exception($"lz2 no good zone {Shape.Log()} cut by v {vertical} ");
+                        throw new Exception($"lz2 no good zone {Shape.ToString()} cut by v {vertical} ");
                     }
                 }
             }

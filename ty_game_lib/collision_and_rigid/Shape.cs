@@ -5,6 +5,7 @@ namespace collision_and_rigid
 {
     public interface IShape
     {
+        string ToString();
     }
 
     public interface IRawBulletShape
@@ -22,7 +23,7 @@ namespace collision_and_rigid
 
     public interface ITwoDTwoP
     {
-        string Log();
+        string ToString();
     }
 
     public interface IIdPointShape : IShape
@@ -39,7 +40,7 @@ namespace collision_and_rigid
         TwoDVectorLine AsTwoDVectorLine();
 
         List<BlockBox> GenAabbBoxShape();
-        string Log();
+        string ToString();
         int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p);
         bool IsEmpty();
 

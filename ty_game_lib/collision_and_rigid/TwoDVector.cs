@@ -153,7 +153,7 @@ namespace collision_and_rigid
             return twoDPoint;
         }
 
-        public string Log()
+        public override string ToString()
         {
             return LogVector();
         }

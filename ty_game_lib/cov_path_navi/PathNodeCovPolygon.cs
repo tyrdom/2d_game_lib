@@ -93,7 +93,7 @@ namespace cov_path_navi
         public override string ToString()
         {
             var s1 = $"Id::{ThisPathNodeId}\n";
-            var aggregate = Edges.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var aggregate = Edges.Aggregate("", (s, x) => s + x.ToString() + "\n");
             var aggregate1 = Links.Aggregate("", (s, x) => s + x + "\n");
             if (LinkAndCost == null) return $"{s1} edges::\n{aggregate} links::\n{aggregate1}";
             {

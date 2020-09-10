@@ -22,7 +22,7 @@ namespace collision_and_rigid
             return CovToVertAabbPackBoxes();
         }
 
-        public string Log()
+        public override string ToString()
         {
             return $"{Aob.A.LogPt()}v{Aob.O.LogPt()}v{Aob.B.LogPt()}";
         }
@@ -152,7 +152,7 @@ namespace collision_and_rigid
 
 
                         throw new Exception(
-                            $" Cond Error {Log()} with {selectMany}" + startCond + " and " + endCond);
+                            $" Cond Error {ToString()} with {selectMany}" + startCond + " and " + endCond);
                     }
 
                     break;
@@ -362,8 +362,8 @@ namespace collision_and_rigid
             var p1InAngel = Aob.BlockUseCover(p1);
             var p2InAngel = Aob.BlockUseCover(p2);
 #if DEBUG
-            Console.Out.WriteLine($"{Log()} CT maybe have cross line{line.Log()} pt {p1.Log()}  " + f1 +
-                                  $" == {p2.Log()}  " + f2);
+            Console.Out.WriteLine($"{ToString()} CT maybe have cross line{line.ToString()} pt {p1.ToString()}  " + f1 +
+                                  $" == {p2.ToString()}  " + f2);
 
 #endif
             if (f1 < f2)

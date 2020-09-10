@@ -185,7 +185,7 @@ namespace collision_and_rigid
             Console.Out.WriteLine("poly ::~~~");
             foreach (var twoDPoint in startWithACovNotFlush.Pts)
             {
-                Console.Out.WriteLine($"poly pt::{twoDPoint.Log()}");
+                Console.Out.WriteLine($"poly pt::{twoDPoint.ToString()}");
             }
 #endif
             var pPts = isBlockIn ? startWithACovNotFlush.Pts : startWithACovNotFlush.Pts.Reverse().ToArray();

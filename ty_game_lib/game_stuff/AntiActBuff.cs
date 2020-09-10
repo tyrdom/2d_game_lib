@@ -43,12 +43,12 @@ namespace game_stuff
 
             var push = PushVector;
 #if DEBUG
-            Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector.Log()}");
+            Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector.ToString()}");
 #endif
 
             var twoDVector = push.Minus(DecreasePerTick);
 #if DEBUG
-            Console.Out.WriteLine($" {GetType()} Decrease~~{DecreasePerTick.Log()}  PV  mid::{twoDVector.Log()}");
+            Console.Out.WriteLine($" {GetType()} Decrease~~{DecreasePerTick.ToString()}  PV  mid::{twoDVector.ToString()}");
 #endif
             var dot = push.Dot(twoDVector);
             if (dot <= 0)
@@ -58,7 +58,7 @@ namespace game_stuff
 
             PushVector = twoDVector;
 #if DEBUG
-            Console.Out.WriteLine($"PV after::{PushVector.Log()}");
+            Console.Out.WriteLine($"PV after::{PushVector.ToString()}");
 #endif
             return (push, this);
         }
@@ -107,7 +107,7 @@ namespace game_stuff
             {
                 var decreasePerTick = PushVector.GetUnit().Multi(TempConfig.Friction);
 #if DEBUG
-                Console.Out.WriteLine($"{PushVector.Log()}~~~~~air gen_earth buff~~~~~~{decreasePerTick.Log()}");
+                Console.Out.WriteLine($"{PushVector.ToString()}~~~~~air gen_earth buff~~~~~~{decreasePerTick.ToString()}");
 
 #endif
                 var pushOnEarth =
@@ -163,7 +163,7 @@ namespace game_stuff
                 return (pt, this);
             }
 #if DEBUG
-            Console.Out.WriteLine($"~~~~~caught gen_earth buff~~~~~~{pt.Log()}");
+            Console.Out.WriteLine($"~~~~~caught gen_earth buff~~~~~~{pt.ToString()}");
 #endif
             if (RestTick > 0)
             {

@@ -24,7 +24,7 @@ namespace collision_and_rigid
 #if DEBUG
             Console.Out.WriteLine("num::" + item1);
             var logSide = aabbBoxShape == null ? "" : aabbBoxShape.Zone.LogSide();
-            Console.Out.WriteLine($"{p.Log()}  box::{logSide}");
+            Console.Out.WriteLine($"{p.ToString()}  box::{logSide}");
 #endif
             if (item1 >= 0)
             {

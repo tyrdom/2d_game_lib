@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using collision_and_rigid;
@@ -8,7 +9,7 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private readonly Dictionary<int, IQSpace> TeamToBodies; //角色放置到四叉树中
+        private readonly Dictionary<int, IQSpace> TeamToBodies; //角色放置到四叉树中，方便子弹碰撞逻辑
         private readonly SightMap _sightMap; //视野地图
         private readonly WalkMap _walkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody; //gid到玩家地图实体对应
@@ -58,7 +59,7 @@ namespace game_stuff
                     var zone = mapInitData.GetZone();
                     var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
                     var aabbBoxShapes =
-                        SomeTools.ListToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
+                        SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
                     emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return emptyRootBranch;
                 });
@@ -228,7 +229,7 @@ namespace game_stuff
         }
 
 
-        public Dictionary<int, HashSet<IHitStuff>> BulletsDo()
+        private Dictionary<int, HashSet<IHitStuff>> BulletsDo()
         {
             var whoHitGid = new Dictionary<int, HashSet<IHitStuff>>();
             foreach (var ii in TeamToBullet)
@@ -320,7 +321,7 @@ namespace game_stuff
                     {
 #if DEBUG
                         Console.Out.WriteLine(
-                            $" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.Log()}");
+                            $" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.ToString()}");
 #endif
                         twoDTwoPs[gid] = twoDTwoP;
                     }
@@ -338,6 +339,44 @@ namespace game_stuff
             }
 
             return twoDTwoPs;
+        }
+
+        public void InsertBodies(HashSet<CharacterBody> characterBodies)
+        {
+            var noGoodBodies = new HashSet<CharacterBody>();
+            foreach (var characterBody in characterBodies)
+            {
+                var gid = characterBody.GetId();
+                if (!GidToBody.TryGetValue(gid, out _))
+                {
+                    GidToBody[gid] = characterBody;
+                }
+                else
+                {
+#if DEBUG
+                    Console.Out.WriteLine($"Gid have been used {gid}");
+#endif
+                    noGoodBodies.Add(characterBody);
+                }
+            }
+
+            characterBodies.ExceptWith(noGoodBodies);
+            foreach (var grouping in characterBodies.GroupBy(x => x.Team))
+            {
+                var teamId = grouping.Key;
+                var listToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.CovToAaBbPackBox()));
+                if (TeamToBodies.TryGetValue(teamId, out var qSpace))
+                {
+                    qSpace.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
+                }
+                else
+                {
+                    var valueZone = TeamToBodies.First().Value.Zone;
+                    var newQs = SomeTools.CreateEmptyRootBranch(valueZone);
+                    newQs.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
+                    TeamToBodies[teamId] = newQs;
+                }
+            }
         }
     }
 

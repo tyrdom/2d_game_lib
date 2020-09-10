@@ -255,7 +255,7 @@ namespace collision_and_rigid
                 var twoDPoint = blockShape.GetEndPt();
 
                 edPt1 = twoDPoint;
-                Console.Out.WriteLine($"a blk start {twoPp.Log()} end {twoDPoint.Log()} now flush is {b}");
+                Console.Out.WriteLine($"a blk start {twoPp.ToString()} end {twoDPoint.ToString()} now flush is {b}");
             }
 
             Console.Out.WriteLine($"blk 1~~~~ is flush {blk1F}");
@@ -270,7 +270,7 @@ namespace collision_and_rigid
                 blk2F = blk2F && b;
                 var twoDPoint = blockShape.GetEndPt();
                 edPt2 = twoDPoint;
-                Console.Out.WriteLine($"a blk start {twoPp.Log()} end {twoDPoint.Log()} now flush is {b}");
+                Console.Out.WriteLine($"a blk start {twoPp.ToString()} end {twoDPoint.ToString()} now flush is {b}");
             }
 
             Console.Out.WriteLine($"blk 2~~~~ is flush {blk2F}");
@@ -330,14 +330,14 @@ namespace collision_and_rigid
             Console.Out.WriteLine("In dic1::\n" + dicL1.Count);
             foreach (var keyValuePair in dicL1)
             {
-                Console.Out.WriteLine("key::" + keyValuePair.Key + $" {l1[keyValuePair.Key].Log()}  Count::" +
+                Console.Out.WriteLine("key::" + keyValuePair.Key + $" {l1[keyValuePair.Key].ToString()}  Count::" +
                                       (keyValuePair.Value?.Count ?? 0));
             }
 
             Console.Out.WriteLine("In dic2::\n" + dicL2.Count);
             foreach (var keyValuePair in dicL2)
             {
-                Console.Out.WriteLine("key::" + keyValuePair.Key + $" {l2[keyValuePair.Key].Log()}  Count::" +
+                Console.Out.WriteLine("key::" + keyValuePair.Key + $" {l2[keyValuePair.Key].ToString()}  Count::" +
                                       (keyValuePair.Value?.Count ?? 0));
             }
 #endif
@@ -367,7 +367,7 @@ namespace collision_and_rigid
                 var b = block2.RealCoverPoint(endPt);
                 var endCond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
 #if DEBUG
-                Console.Out.WriteLine($"{blockShape.Log()}is startPt in {b1} end in {b}");
+                Console.Out.WriteLine($"{blockShape.ToString()}is startPt in {b1} end in {b}");
 #endif
                 var (blockShapes, _, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond, temp1, endCond);
@@ -391,7 +391,7 @@ namespace collision_and_rigid
                 var b = block1.RealCoverPoint(endPt);
                 var cond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
 #if DEBUG
-                Console.Out.WriteLine($"stPt {startPt.Log()} is {startCond} edPt {endPt.Log()} is {cond}");
+                Console.Out.WriteLine($"stPt {startPt.ToString()} is {startCond} edPt {endPt.ToString()} is {cond}");
 #endif
                 var (blockShapes, _, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond2, temp2, cond);
@@ -532,7 +532,7 @@ namespace collision_and_rigid
             return genWalkBlockByBlockShapes;
         }
 
-        public static HashSet<TX> ListToHashSet<TX>(IEnumerable<TX> aList)
+        public static HashSet<TX> EnumerableToHashSet<TX>(IEnumerable<TX> aList)
         {
 #if NETCOREAPP3
             var  hashSet = aList.ToHashSet();
@@ -551,7 +551,7 @@ namespace collision_and_rigid
             var joinAabbZone = JoinAaBbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
 
-            var aabbPackPackBoxShapes = ListToHashSet(aabbBoxShapes);
+            var aabbPackPackBoxShapes = EnumerableToHashSet(aabbBoxShapes);
 
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
@@ -564,7 +564,7 @@ namespace collision_and_rigid
             var aaBbBoxes = blockBoxes.Cast<IAaBbBox>().ToArray();
             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
 
-            var aaBbPackPackBox = ListToHashSet(aaBbBoxes);
+            var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG
@@ -578,7 +578,7 @@ namespace collision_and_rigid
             var aaBbBoxes = areaBoxes.Cast<IAaBbBox>().ToArray();
             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
 
-            var aaBbPackPackBox = ListToHashSet(aaBbBoxes);
+            var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG

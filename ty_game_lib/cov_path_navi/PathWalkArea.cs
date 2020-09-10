@@ -24,11 +24,11 @@ namespace cov_path_navi
 
         public override string ToString()
         {
-            var shellString = ShellRaw.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var shellString = ShellRaw.Aggregate("", (s, x) => s + x.ToString() + "\n");
             var cStr = "";
             for (var i = 0; i < ChildrenRaw.Count; i++)
             {
-                var child = ChildrenRaw[i].Aggregate("", (s, x) => s + x.Log() + "\n");
+                var child = ChildrenRaw[i].Aggregate("", (s, x) => s + x.ToString() + "\n");
 
                 cStr += $"child{i} : \n" + child;
             }
@@ -112,8 +112,8 @@ namespace cov_path_navi
                     ShellRaw = shapes;
                     ChildrenBlocks.RemoveAt(0);
 #if DEBUG
-                    Console.Out.WriteLine($"a cut ok {cut.Log()}");
-                    var aggregate = shapes.Aggregate("", (s, x) => s + x.Log() + "\n");
+                    Console.Out.WriteLine($"a cut ok {cut.ToString()}");
+                    var aggregate = shapes.Aggregate("", (s, x) => s + x.ToString() + "\n");
                     Console.Out.WriteLine($"res side have {shapes.Count} side is \n{aggregate}");
 #endif
                 }
@@ -145,10 +145,10 @@ namespace cov_path_navi
 
         public override string ToString()
         {
-            var aggregate = Area.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var aggregate = Area.Aggregate("", (s, x) => s + x.ToString() + "\n");
             var aggregate2 =
                 LinksAndMirrorLine.Aggregate("",
-                    (s, x) => s + x.link.LinkToPathNodeId + "::" + x.link.GoThrough.Log() + "\n");
+                    (s, x) => s + x.link.LinkToPathNodeId + "::" + x.link.GoThrough.ToString() + "\n");
 
             return $"Area::\n{aggregate} Cuts::\n{aggregate2}";
         }
@@ -263,7 +263,7 @@ namespace cov_path_navi
                 if (lfc1 == -1)
                 {
 #if DEBUG
-                    var aggregate3 = area.Aggregate("", (s, x) => s + x.Log() + "\n");
+                    var aggregate3 = area.Aggregate("", (s, x) => s + x.ToString() + "\n");
                     Console.Out.WriteLine($"this just a cov shape \n{aggregate3}");
 #endif
 
@@ -330,9 +330,9 @@ namespace cov_path_navi
                 incompleteLinks[restS] = restIncomplete;
                 incompleteLinks[covS] = covSIncomplete;
 #if DEBUG
-                var aggregate = covShape.Aggregate("", (s, x) => s + x.Log() + "\n");
+                var aggregate = covShape.Aggregate("", (s, x) => s + x.ToString() + "\n");
 
-                var aggregate2 = rest.Aggregate("", (s, x) => s + x.Log() + "\n");
+                var aggregate2 = rest.Aggregate("", (s, x) => s + x.ToString() + "\n");
                 Console.Out.WriteLine(
                     $"cut to 2 part \n {aggregate}\n and \n{aggregate2} \n with , and go to find next cov");
 #endif

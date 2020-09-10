@@ -115,7 +115,7 @@ namespace collision_and_rigid
 
         public string Log()
         {
-            return $"O:: {O.Log()} R::{R}";
+            return $"O:: {O.ToString()} R::{R}";
         }
     }
 }

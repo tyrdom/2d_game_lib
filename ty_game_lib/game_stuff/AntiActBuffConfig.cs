@@ -36,7 +36,7 @@ namespace game_stuff
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
 
 #if DEBUG
-            Console.Out.WriteLine($" vector1~~~~ {vector1.Log()}");
+            Console.Out.WriteLine($" vector1~~~~ {vector1.ToString()}");
 #endif
             if (height == null)
             {
@@ -169,15 +169,15 @@ namespace game_stuff
                 .Select(anchor.Move)
                 .ToList();
 #if DEBUG
-            Console.Out.WriteLine($"pos {anchor.Log()} aim {aim.Log()}");
+            Console.Out.WriteLine($"pos {anchor.ToString()} aim {aim.ToString()}");
             foreach (var twoDVector in TwoDVectors)
             {
-                Console.Out.WriteLine($"{twoDVector.Log()}");
+                Console.Out.WriteLine($"{twoDVector.ToString()}");
             }
 
             foreach (var twoDPoint in twoDPoints)
             {
-                Console.Out.WriteLine($"{twoDPoint.Log()}");
+                Console.Out.WriteLine($"{twoDPoint.ToString()}");
             }
 #endif
             var caught = new Caught(twoDPoints, LastTick, whoDid);

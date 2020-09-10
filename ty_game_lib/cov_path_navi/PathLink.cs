@@ -16,7 +16,7 @@ namespace cov_path_navi
 
         public override string ToString()
         {
-            return $"link to ::{LinkToPathNodeId} go through" + GoThrough.Log();
+            return $"link to ::{LinkToPathNodeId} go through" + GoThrough.ToString();
         }
     }
 

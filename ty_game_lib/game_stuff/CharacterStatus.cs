@@ -120,7 +120,7 @@ namespace game_stuff
                         .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr());
 #if DEBUG
             var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GId.ToString();
-            Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV?.Log()}");
+            Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV?.ToString()}");
 #endif
             if (limitV != null)
             {
@@ -177,13 +177,13 @@ namespace game_stuff
             {
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{GId}  {AntiActBuff.GetType()} ::antiv::{AntiActBuff.GetItp().Log()}::anti buff :: {AntiActBuff.RestTick}");
+                    $"{GId}  {AntiActBuff.GetType()} ::antiv::{AntiActBuff.GetItp().ToString()}::anti buff :: {AntiActBuff.RestTick}");
 #endif
                 var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(dPoint);
                 AntiActBuff = antiActBuff;
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.Log()} ::anti buff :: {AntiActBuff?.RestTick}");
+                    $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {AntiActBuff?.RestTick}");
 #endif
                 return (twoDPoint, null);
             }
@@ -200,10 +200,10 @@ namespace game_stuff
                 var (move, launchBullet) = ActNowSkillATick();
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastSkill._nowOnTick}");
-                Console.Out.WriteLine($"skill move {move?.Log()}");
+                Console.Out.WriteLine($"skill move {move?.ToString()}");
                 if (launchBullet != null)
                     Console.Out.WriteLine(
-                        $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.Log()}||{launchBullet.Pos.Log()}");
+                        $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.ToString()}||{launchBullet.Pos.ToString()}");
 #endif
 
                 var skillAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null

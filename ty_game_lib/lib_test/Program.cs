@@ -31,8 +31,8 @@ namespace lib_test
             var crossPoint = ab.CrossPointForWholeLine(cd);
             var point = ad.CrossPointForWholeLine(bc);
             Console.Out.WriteLine(
-                $"ab cross cd{crossAnotherPoint?.Log()}\nad cross bc{anotherPoint?.Log()}\nab cross line cd{crossPoint?.Log()}" +
-                $"\nad cross line bc{point?.Log()}");
+                $"ab cross cd{crossAnotherPoint?.ToString()}\nad cross bc{anotherPoint?.ToString()}\nab cross line cd{crossPoint?.ToString()}" +
+                $"\nad cross line bc{point?.ToString()}");
 
 
             Console.Out.WriteLine("Block test!!!");
@@ -126,7 +126,7 @@ namespace lib_test
 
             var pushOutToPt = genWalkBlockByPolys.PushOutToPt(sPt, ePt);
 
-            Console.Out.WriteLine($"push out pt {pushOutToPt?.Log()}");
+            Console.Out.WriteLine($"push out pt {pushOutToPt?.ToString()}");
             Console.Out.WriteLine("!!2!!" + inBlock2);
 
             TwoDPoint a = new TwoDPoint(0f, 0f);
@@ -142,7 +142,7 @@ namespace lib_test
 
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
 
-            var aggregate = allIBlocks.Aggregate("", (s, x) => s + x.Log() + "\n");
+            var aggregate = allIBlocks.Aggregate("", (s, x) => s + x.ToString() + "\n");
 
             if (allIBlocks != null)
             {
@@ -153,7 +153,7 @@ namespace lib_test
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
                         (s, list) => s + "b num:: " + list.Count + "\n" +
-                                     list.Aggregate("", (s2, x) => s2 + x.Log() + "\n") + "\n");
+                                     list.Aggregate("", (s2, x) => s2 + x.ToString() + "\n") + "\n");
 
                 Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
 
@@ -184,15 +184,15 @@ namespace lib_test
 
             var findAPathById = pathTop.FindAPathById(0, 6, startPt, endPt);
 
-            var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.Log() + "||" + x.Item1);
+            var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
 
 
             var findAPathByPoint = pathTop.FindAPathByPoint(startPt, endPt);
-            var aggregate4 = findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.Log() + "||" + x.Item1);
+            var aggregate4 = findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
             var twoDVectorLines = findAPathByPoint.Select(x => x.Item2);
             var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
-            var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.Log());
+            var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.ToString());
             Console.Out.WriteLine($"way Points are {s3}");
             return;
             Console.Out.WriteLine("config test~~~~~");
@@ -284,13 +284,13 @@ namespace lib_test
                 {
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();
-                    var log = charTickMsg.Aim.Log();
+                    var log = charTickMsg.Aim.ToString();
                     var isOnHit = charTickMsg.IsBeHit;
                     var isStun = charTickMsg.IsStun;
                     var skillLaunch = charTickMsg.SkillLaunch == null ? "null" : charTickMsg.SkillLaunch.ToString();
                     Console.Out.WriteLine(
                         $"{keyValuePair.Key}go a tick  get: Player {charTickMsg.Gid} , pos {logPt}, aim {log}, " +
-                        $"speed :{charTickMsg.Speed}, is on hit::{isOnHit?.Log()} , is stun :: {isStun},skill launch {skillLaunch}");
+                        $"speed :{charTickMsg.Speed}, is on hit::{isOnHit?.ToString()} , is stun :: {isStun},skill launch {skillLaunch}");
                 }
             }
         }

@@ -443,7 +443,7 @@ namespace collision_and_rigid
             var hashSet = QuadThree.GetAllIBlocks();
             var blocks = QuadFour.GetAllIBlocks();
             var enumerable = blockShapes.Union(allIBlocks).Union(iBlocks).Union(hashSet).Union(blocks).ToList();
-            return SomeTools.ListToHashSet(enumerable);
+            return SomeTools.EnumerableToHashSet(enumerable);
         }
 
         public AreaBox? PointInWhichArea(TwoDPoint pt)

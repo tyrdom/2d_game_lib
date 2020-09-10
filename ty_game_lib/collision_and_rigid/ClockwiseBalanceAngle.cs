@@ -18,7 +18,7 @@ namespace collision_and_rigid
 
         public string Log()
         {
-            return $"{A.Log()}\\{O.Log()}/{B.Log()}";
+            return $"{A.ToString()}\\{O.ToString()}/{B.ToString()}";
         }
 
         public bool CheckTuring()

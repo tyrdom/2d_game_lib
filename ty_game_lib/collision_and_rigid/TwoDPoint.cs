@@ -218,7 +218,7 @@ namespace collision_and_rigid
             return new TwoDPoint(0f, 0f);
         }
 
-        public string Log()
+        public override string ToString()
         {
             return LogPt();
         }

@@ -80,7 +80,7 @@ namespace game_stuff
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
 #if DEBUG
-            Console.Out.WriteLine($"bgt::{charGoTick.Item1?.Log()}");
+            Console.Out.WriteLine($"bgt::{charGoTick.Item1?.ToString()}");
 #endif
             return charGoTick;
         }
@@ -115,24 +115,15 @@ namespace game_stuff
                 CharacterStatus.Weapons);
         }
 
-        public string Log()
+        public override string ToString()
         {
+       
             return $"Id {GetId()} pos {NowPos}";
         }
 
-        public (Zone? leftZone, Zone? rightZone) CutByV(float v, Zone z)
+        public void Renew()
         {
-            return (z, z);
-        }
-
-        public (Zone?, Zone?) CutByH(float h, Zone z)
-        {
-            return (z, z);
-        }
-
-        public int TouchByRightShootPointInAAbbBoxInQSpace(TwoDPoint p)
-        {
-            return 0;
+            
         }
     }
 }
