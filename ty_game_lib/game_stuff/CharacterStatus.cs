@@ -94,7 +94,7 @@ namespace game_stuff
             LockingWho = null;
             CatchingWho = null;
             NowWeapon = 0;
-            
+
             NowCastSkill = null;
             NextSkill = null;
             AntiActBuff = null;
@@ -203,7 +203,7 @@ namespace game_stuff
             {
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{GId}  {AntiActBuff.GetType()} ::antiv::{AntiActBuff.GetItp().ToString()}::anti buff :: {AntiActBuff.RestTick}");
+                    $"{GId}  {AntiActBuff.GetType()} ::anti v::{AntiActBuff.GetItp().ToString()}::anti buff :: {AntiActBuff.RestTick}");
 #endif
                 var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(dPoint);
                 AntiActBuff = antiActBuff;
@@ -226,10 +226,10 @@ namespace game_stuff
                 var (move, launchBullet) = ActNowSkillATick();
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastSkill._nowOnTick}");
-                Console.Out.WriteLine($"skill move {move?.ToString()}");
+                Console.Out.WriteLine($"skill move {move}");
                 if (launchBullet != null)
                     Console.Out.WriteLine(
-                        $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim.ToString()}||{launchBullet.Pos.ToString()}");
+                        $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim}||{launchBullet.Pos}");
 #endif
 
                 var skillAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null

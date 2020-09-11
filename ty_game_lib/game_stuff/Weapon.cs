@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -8,18 +9,22 @@ namespace game_stuff
 {
     public class Weapon
     {
-        public readonly ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> SkillGroups;
+        public ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> SkillGroups { get; }
 
-        public Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups)
+        public ImmutableArray<(float, SkillAction)> Ranges { get; }
+
+        public Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups,
+            ImmutableArray<(float, SkillAction)> ranges)
         {
             SkillGroups = skillGroups;
+            Ranges = ranges;
         }
 
         public string LogUserString()
         {
             return (from variable in SkillGroups
-                from keyValuePair in variable.Value
-                select keyValuePair.Value.LogUser())
+                    from keyValuePair in variable.Value
+                    select keyValuePair.Value.LogUser())
                 .Aggregate("", (current, logUser) => current + logUser);
         }
 
@@ -65,7 +70,36 @@ namespace game_stuff
                     {SkillAction.Switch, dictionary4}
                 }.ToImmutableDictionary();
 
-            var weapon1 = new Weapon(immutableDictionary);
+
+            static SkillAction GetByInt(int i)
+            {
+                if (i == 0)
+                {
+                    return SkillAction.Op1;
+                }
+
+                if (i == 1)
+                {
+                    return SkillAction.Op2;
+                }
+
+                if (i == 2)
+                {
+                    return SkillAction.Op3;
+                }
+
+                throw new Exception($"not good Act config {i}");
+            }
+
+            var valueTuples = new List<(float, SkillAction)>();
+            foreach (var keyValuePair in weapon.BotRange)
+            {
+                valueTuples.Add((keyValuePair.Value, GetByInt(keyValuePair.Key)));
+            }
+
+            valueTuples.Sort((x, y) => -x.Item1.CompareTo(x.Item1));
+            var immutableList = valueTuples.ToImmutableArray();
+            var weapon1 = new Weapon(immutableDictionary, immutableList);
             return weapon1;
         }
     }

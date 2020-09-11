@@ -5,13 +5,13 @@ namespace game_stuff
 {
     public class CharInitMsg
     {
-       public int GId;
-       public TwoDPoint Pos;
-       public TwoDVector Aim;
+        public int GId;
+        public TwoDPoint Pos;
+        public TwoDVector Aim;
 
         private DamageHealStatus _damageHealStatus;
-        private Dictionary<int, Weapon> WeaponConfigs;
-
+        public Dictionary<int, Weapon> WeaponConfigs;
+        
         public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus,
             Dictionary<int, Weapon> weaponConfigs)
         {

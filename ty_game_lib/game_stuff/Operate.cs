@@ -4,7 +4,6 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    [Serializable]
     public class Operate
     {
         // public OpAction? Action;
@@ -41,7 +40,7 @@ namespace game_stuff
         Op2,
         Op3,
         Switch,
-        CatchTrick,
+        CatchTrick, //CantOperateInput
         Pick //  far away TODO
     }
 }
