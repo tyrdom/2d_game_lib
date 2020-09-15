@@ -36,7 +36,7 @@ IBulletShape和IRawBulletShape
 可以在unity中使用字符串字典来装载配置，比如有对应命名的json文件中的content中有对应配置,查看unity_sample中的脚本范例，需要用.net standard 2.0的库来使用
     
 ## game_stuff
-简介：动作游戏玩法抽象运行逻辑，目的为多端运行
+简介：动作游戏玩法抽象运行逻辑，目的为多端运行,具体了解参看战斗系统介绍.pptx
 ## cov_path_navi
 简介：2d凸多边形寻路模块，精度一般，不一定是最短的路径，但是比方格的节点少，效率能高一些
 从一个WalkBlock阻挡地图对象生成一个PathTop对象
