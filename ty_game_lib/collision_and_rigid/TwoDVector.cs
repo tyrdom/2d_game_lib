@@ -21,6 +21,12 @@ namespace collision_and_rigid
             Y = b;
         }
 
+        public TwoDVector(TwoDPoint a, TwoDPoint b)
+        {
+            X = b.X - a.X;
+            Y = b.Y - a.Y;
+        }
+
         public string LogVector()
         {
             return $"[{X}||{Y}]";

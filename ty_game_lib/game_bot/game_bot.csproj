@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\cov_path_navi\cov_path_navi.csproj" />
       <ProjectReference Include="..\game_stuff\game_stuff.csproj" />
     </ItemGroup>
 

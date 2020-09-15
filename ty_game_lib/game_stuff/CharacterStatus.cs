@@ -304,7 +304,11 @@ namespace game_stuff
 #endif
 
                 // 非连击状态瞬间切换
-                if (opAction == SkillAction.Switch) NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                if (opAction == SkillAction.Switch)
+                {
+                    NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                    SkillLaunch = SkillAction.Switch;
+                }
                 // 发动当前武器技能组的起始技能0
                 else
                 {

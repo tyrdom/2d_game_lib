@@ -51,7 +51,7 @@ namespace cov_path_navi
 #endif
         }
 
-        private int? InWhichPoly(TwoDPoint pt)
+        public int? InWhichPoly(TwoDPoint pt)
         {
             var pointInWhichArea = AreaQSpace.PointInWhichArea(pt);
 
