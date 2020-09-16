@@ -9,10 +9,10 @@ namespace game_bot
 
     public class EnemyFound : IEnemyMsg
     {
-        private TwoDPoint Pos;
-        private int NowPolyId;
+        public TwoDPoint Pos;
+        public int? NowPolyId { get; }
 
-        public EnemyFound(int nowPolyId, TwoDPoint pos)
+        public EnemyFound(int? nowPolyId, TwoDPoint pos)
         {
             NowPolyId = nowPolyId;
             Pos = pos;
@@ -27,7 +27,6 @@ namespace game_bot
 
         public BotRadio()
         {
-            
         }
 
         public void OnEnemyEvent(IEnemyMsg charTickMsg)

@@ -17,12 +17,14 @@ namespace game_bot
         public int[] MyTeamGid { get; }
         public int[] OtherTeamGid { get; }
         public List<(float, int)> RangeToWeapon;
-        public BotRadio BotRadio;
+        public BotRadio BotRadio { get; }
         public PathTop NaviMap { get; }
-        private int? MyPoly;
-        public int NowWeapon;
-        private Queue<TwoDPoint> _pathPoints;
-        private Random _random;
+        private int? MyPoly { get; set; }
+        public int NowWeapon { get; set; }
+        private List<TwoDPoint> PathPoints { get; }
+        private Random Random { get; }
+
+        private IEnemyMsg? EnemySavedMsg { get; set; }
 
         public Bot(Dictionary<int, ImmutableArray<(float, SkillAction)>> skillToTrickRange, BotRadio botRadio,
             List<(float, int)> rangeToWeapon, PathTop naviMap, int[] myTeamGid, int[] otherTeamGid, int myGid,
@@ -35,10 +37,11 @@ namespace game_bot
             MyTeamGid = myTeamGid;
             OtherTeamGid = otherTeamGid;
             MyGid = myGid;
-            _random = random;
+            Random = random;
             NowWeapon = 0;
-            _pathPoints = new Queue<TwoDPoint>();
+            PathPoints = new List<TwoDPoint>();
             MyPoly = null;
+            EnemySavedMsg = null;
         }
 
         public Bot(CharInitMsg charInitMsg, BotRadio teamRadio, PathTop naviMap, int[] myTeamGid,
@@ -60,17 +63,31 @@ namespace game_bot
             MyTeamGid = myTeamGid;
             OtherTeamGid = otherTeamGid;
             MyGid = myGid;
-            _random = random;
-            _pathPoints = new Queue<TwoDPoint>();
+            Random = random;
+            PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
             NowWeapon = 0;
             MyPoly = null;
+            EnemySavedMsg = null;
+            BotRadio.EnemyEvent += msg => ListenRadio();
         }
 
-        Operate? BotSimpleAct(IEnumerable<CharTickMsg> charTickMsgs)
+        private void SaveEMsg(CharTickMsg charTickMsg)
+        {
+            var twoDPoint = charTickMsg.Pos;
+            var inWhichPoly = NaviMap.InWhichPoly(twoDPoint);
+            if (inWhichPoly == null)
+            {
+                return;
+            }
+
+            var enemyFound = new EnemyFound(inWhichPoly, twoDPoint);
+            EnemySavedMsg = enemyFound;
+        }
+
+        private Operate? BotSimpleAct(IEnumerable<CharTickMsg> charTickMsgs)
         {
             //
-
             var tickMsgs = charTickMsgs as CharTickMsg[] ?? charTickMsgs.ToArray();
             var enemy = tickMsgs.FirstOrDefault(x => OtherTeamGid.Contains(x.Gid));
             var myMsg = tickMsgs.FirstOrDefault(x => x.Gid == MyGid);
@@ -88,31 +105,31 @@ namespace game_bot
                 return null;
             }
 
-            {
-                var distance = enemy.Pos.GetDistance(myMsg.Pos);
-                var inRangeAct = InRangeAct(distance);
+            var distance = enemy.Pos.GetDistance(myMsg.Pos);
+            var inRangeAct = InRangeAct(distance);
 
-                if (inRangeAct != null)
-                {
-                    var twoDVector = new TwoDVector(myMsg.Pos, enemy.Pos);
-                    var dVector = twoDVector.GetUnit2();
-                    var operate = new Operate(dVector, inRangeAct, null);
-                    return operate;
-                }
+            if (inRangeAct != null)
+            {
+                var twoDVector = new TwoDVector(myMsg.Pos, enemy.Pos);
+                var dVector = twoDVector.GetUnit2();
+                var operate = new Operate(dVector, inRangeAct, null);
+                return operate;
             }
-            //
-            return null;
+
+            var findAMoveDir = FindAMoveDir(myMsg.Pos, enemy.Pos, MyPoly, MyPoly);
+            var operate2 = new Operate(null, null, findAMoveDir);
+            return operate2;
         }
 
-        TwoDVector? FindAMoveDir(TwoDPoint myPos, TwoDPoint objPos, int? thisPoly, int? objPoly)
+        private TwoDVector? FindAMoveDir(TwoDPoint myPos, TwoDPoint objPos, int? thisPoly, int? objPoly)
         {
-            var firstOrDefault = _pathPoints.FirstOrDefault();
+            var firstOrDefault = PathPoints.FirstOrDefault();
             if (firstOrDefault != null)
             {
                 if (myPos.GetDistance(firstOrDefault) < 0.5f)
                 {
-                    _pathPoints.Dequeue();
-                    var twoDPoint = _pathPoints.FirstOrDefault();
+                    PathPoints.RemoveAt(0);
+                    var twoDPoint = PathPoints.FirstOrDefault();
                     if (twoDPoint != null)
                     {
                         return new TwoDVector(myPos, twoDPoint).GetUnit2();
@@ -122,7 +139,7 @@ namespace game_bot
 
             var findAPathByPoint = NaviMap.FindAPathByPoint(myPos, objPos, thisPoly, objPoly);
             var twoDPoints = PathTop.GetGoPts(myPos, objPos, findAPathByPoint.Select(x => x.Item2).ToList());
-            var pathPoints  = _pathPoints.Concat(twoDPoints);
+            PathPoints.AddRange(twoDPoints);
             return null;
         }
 
@@ -144,18 +161,22 @@ namespace game_bot
             if (!SkillToTrickRange.TryGetValue(useWeapon, out var tuples)) return null;
             var valueTuples = tuples.Where(x => x.Item1 >= distance).Select(x => x.Item2).ToList();
             if (valueTuples.Count <= 0) return null;
-            var next = _random.Next(valueTuples.Count);
+            var next = Random.Next(valueTuples.Count);
             var skillAction = valueTuples[next];
             return skillAction;
         }
 
         void ListenRadio()
         {
+            if (PathPoints.Any())
+            {
+                return;
+            }
         }
 
-        void BroadcastRadio(IEnemyMsg enemyMsg)
+        void BroadcastRadio()
         {
-            BotRadio.OnEnemyEvent(enemyMsg);
+            if (EnemySavedMsg != null) BotRadio.OnEnemyEvent(EnemySavedMsg);
         }
     }
 }
