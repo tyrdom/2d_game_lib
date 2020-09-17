@@ -117,8 +117,9 @@ namespace game_stuff
             return dictionary;
         }
 
-        public (Dictionary<int, IEnumerable<BulletMsg>>, Dictionary<int, IEnumerable<CharTickMsg>>) PlayGroundGoATick(
-            Dictionary<int, Operate> gidToOperates)
+        public (Dictionary<int, IEnumerable<BulletMsg>>, Dictionary<int, IEnumerable<CharTickMsg>> gidToCharTickMsg)
+            PlayGroundGoATick(
+                Dictionary<int, Operate> gidToOperates)
         {
             var everyBodyGoATick = EveryBodyGoATick(gidToOperates);
             var gidToWhichBulletHit = BulletsDo();

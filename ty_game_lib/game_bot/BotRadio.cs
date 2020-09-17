@@ -5,11 +5,13 @@ namespace game_bot
 {
     public interface IEnemyMsg
     {
+        public TwoDPoint Pos { get; }
+        public int? NowPolyId { get; }
     }
 
     public class EnemyFound : IEnemyMsg
     {
-        public TwoDPoint Pos;
+        public TwoDPoint Pos { get; }
         public int? NowPolyId { get; }
 
         public EnemyFound(int? nowPolyId, TwoDPoint pos)
