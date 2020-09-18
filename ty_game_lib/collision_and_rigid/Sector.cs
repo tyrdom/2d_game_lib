@@ -18,7 +18,6 @@ namespace collision_and_rigid
         public Sector(float x, float y, TwoDVector move, TwoDVector rotate)
         {
             var o = TwoDPoint.Zero().Move(move);
-
             var a = new TwoDPoint(x, y).ClockTurnAboutZero(rotate).Move(move);
             var b = new TwoDPoint(x, -y).ClockTurnAboutZero(rotate).Move(move);
             var clockwiseBalanceAngle = new ClockwiseBalanceAngle(a, o, b);

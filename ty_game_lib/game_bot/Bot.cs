@@ -28,24 +28,24 @@ namespace game_bot
 
         private bool RadioListenOn { get; set; }
 
-        private Bot(Dictionary<int, ImmutableArray<(float, SkillAction)>> skillToTrickRange, BotRadio botRadio,
-            List<(float, int)> rangeToWeapon, PathTop naviMap, int[] myTeamGid, int[] otherTeamGid, int myGid,
-            Random random)
-        {
-            SkillToTrickRange = skillToTrickRange;
-            BotRadio = botRadio;
-            RangeToWeapon = rangeToWeapon;
-            NaviMap = naviMap;
-            MyTeamGid = myTeamGid;
-            OtherTeamGid = otherTeamGid;
-            MyGid = myGid;
-            Random = random;
-            NowWeapon = 0;
-            PathPoints = new List<TwoDPoint>();
-            MyPoly = null;
-            EnemySavedMsg = null;
-            RadioListenOn = true;
-        }
+        // private Bot(Dictionary<int, ImmutableArray<(float, SkillAction)>> skillToTrickRange, BotRadio botRadio,
+        //     List<(float, int)> rangeToWeapon, PathTop naviMap, int[] myTeamGid, int[] otherTeamGid, int myGid,
+        //     Random random)
+        // {
+        //     SkillToTrickRange = skillToTrickRange;
+        //     BotRadio = botRadio;
+        //     RangeToWeapon = rangeToWeapon;
+        //     NaviMap = naviMap;
+        //     MyTeamGid = myTeamGid;
+        //     OtherTeamGid = otherTeamGid;
+        //     MyGid = myGid;
+        //     Random = random;
+        //     NowWeapon = 0;
+        //     PathPoints = new List<TwoDPoint>();
+        //     MyPoly = null;
+        //     EnemySavedMsg = null;
+        //     RadioListenOn = true;
+        // }
 
         public Bot(CharInitMsg charInitMsg, BotRadio teamRadio, PathTop naviMap, int[] myTeamGid,
             int[] otherTeamGid, int myGid, Random random)

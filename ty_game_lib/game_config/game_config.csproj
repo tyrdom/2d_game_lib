@@ -42,6 +42,8 @@
       <EmbeddedResource Include="Resources\bad_words_s.json" />
       <None Remove="Resource\fish_s.json" />
       <EmbeddedResource Include="Resources\fish_s.json" />
+      <None Remove="Resources\snipe_s.json" />
+      <EmbeddedResource Include="Resources\snipe_s.json" />
     </ItemGroup>
 
 </Project>

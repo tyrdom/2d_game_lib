@@ -11,7 +11,7 @@ namespace game_stuff
     {
         private LockArea? _lockArea;
         public uint _nowOnTick;
-        
+
         public int NowTough;
 
         // public bool IsHit;
@@ -25,7 +25,9 @@ namespace game_stuff
         private readonly uint _comboInputStartTick; //可接受输入操作帧
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
         private readonly int _nextCombo;
-        
+
+        private bool CanKeepSnipe { get; }
+
         public string LogUser()
         {
             return _launchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
@@ -37,7 +39,7 @@ namespace game_stuff
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea)
+            LockArea? lockArea, bool canKeepSnipe)
         {
             var b = 0 < comboInputStartTick &&
                     skillMustTick < skillMaxTick &&
@@ -58,6 +60,7 @@ namespace game_stuff
             _comboInputStartTick = comboInputStartTick;
             _nextCombo = nextCombo;
             _lockArea = lockArea;
+            CanKeepSnipe = canKeepSnipe;
         }
 
 
@@ -89,15 +92,17 @@ namespace game_stuff
                 var pairValue = pair.Value;
                 var immutableDictionary = TempConfig.Configs.bullets;
                 var bullet = immutableDictionary[pairValue];
-                var genByConfig = Bullet.GenByConfig(bullet,pair.Key);
+                var genByConfig = Bullet.GenByConfig(bullet, pair.Key);
                 return genByConfig;
             });
             var configsLockAreas = TempConfig.Configs.lock_areas;
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;
+            
+            
             return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
-                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig);
+                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig,skill.CanKeepSnipe);
         }
 
         public enum SkillPeriod
