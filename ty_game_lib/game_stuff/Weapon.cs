@@ -91,7 +91,9 @@ namespace game_stuff
 
             static Snipe? GetSnipeById(int id)
             {
-                return TempConfig.Configs.snipes.TryGetValue(id, out var snipe) ? new Snipe(snipe) : null;
+                return TempConfig.Configs.snipes.TryGetValue(id, out var snipe)
+                    ? new Snipe(snipe, new Scope(TempConfig.StandardSightVector))
+                    : null;
             }
 
             var snipeById1 = GetSnipeById(weapon.Snipe1);
@@ -112,7 +114,8 @@ namespace game_stuff
                 snipes[SnipeAction.SnipeOn3] = snipeById3;
             }
 
-            var valueTuples = weapon.BotRange.Select(keyValuePair => (keyValuePair.Value, GetSkillActionByInt(keyValuePair.Key)))
+            var valueTuples = weapon.BotRange
+                .Select(keyValuePair => (keyValuePair.Value, GetSkillActionByInt(keyValuePair.Key)))
                 .ToList();
 
             valueTuples.Sort((x, y) => -x.Item1.CompareTo(x.Item1));

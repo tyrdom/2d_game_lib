@@ -129,7 +129,7 @@ namespace game_stuff
             var skillAct = CharacterStatus.NowCastSkill != null;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
-                CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight._nowR,
+                CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome);
         }

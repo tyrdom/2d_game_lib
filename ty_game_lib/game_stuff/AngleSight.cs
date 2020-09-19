@@ -3,14 +3,53 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
+    public class Scope
+    {
+        public Scope(TwoDVector faceRightLeftPt, TwoDVector faceRightRightPt, float maxR, float theta)
+        {
+            FaceRightLeftPt = faceRightLeftPt;
+            FaceRightRightPt = faceRightRightPt;
+            MaxR = maxR;
+            Theta = theta;
+        }
+
+        public TwoDVector FaceRightLeftPt { get; }
+        public TwoDVector FaceRightRightPt { get; }
+        public float MaxR { get; }
+        public float Theta { get; }
+
+        public Scope(TwoDVector upLeft)
+        {
+            var maxR = upLeft.Norm();
+
+            var vector = upLeft.GetUnit();
+            var cosA = vector.X;
+            var cos2A = 2 * cosA * cosA - 1;
+            FaceRightLeftPt = vector;
+            FaceRightRightPt = new TwoDVector(vector.X, -vector.Y);
+            Theta = MathTools.Acos(cos2A);
+            MaxR = maxR;
+        }
+
+        public Scope GenNewScope(float multi)
+        {
+            var theta = Theta / multi;
+            var maxR = MaxR * multi;
+            var f = theta / 2;
+            var cos = MathTools.Cos(f);
+            var sin = MathTools.Sin(f);
+            var twoDVector = new TwoDVector(cos, sin);
+            var twoDVector2 = new TwoDVector(cos, -sin);
+            return new Scope(twoDVector, twoDVector2, maxR, theta);
+        }
+    }
+
     public class AngleSight
     {
-        private readonly TwoDVector _upLeft;
-        private readonly TwoDVector _upRight;
-        public TwoDVector Aim;
-        private readonly float _maxR;
-        public float _nowR;
-        private readonly float _theta;
+        private Scope StandardScope { get; }
+
+        public float NowR { get; private set; }
+        public TwoDVector Aim { get; private set; }
 
         public static AngleSight StandardAngleSight()
         {
@@ -19,24 +58,30 @@ namespace game_stuff
 
         public AngleSight(TwoDVector upLeft)
         {
-            Aim = new TwoDVector(1f, 0f);
             var nowR = upLeft.Norm();
-            _nowR = nowR;
+
             var vector = upLeft.GetUnit();
-            _upLeft = vector;
-            _upRight = new TwoDVector(vector.X, -vector.Y);
-            _maxR = nowR;
             var cosA = vector.X;
             var cos2A = 2 * cosA * cosA - 1;
-            _theta = MathTools.Acos(cos2A);
+
+            var faceRightRightPt = new TwoDVector(vector.X, -vector.Y);
+            var theta = MathTools.Acos(cos2A);
+            StandardScope = new Scope(vector, faceRightRightPt, nowR, theta);
+
+            Aim = new TwoDVector(1f, 0f);
+
+            NowR = nowR;
         }
+
+        //todo UseNotDefaultScope
+
 
         public bool InSight(TwoDVectorLine sLine, SightMap map)
         {
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
-            var c1 = twoDVector.Cross(_upLeft);
-            var c2 = twoDVector.Cross(_upRight);
-            var b = twoDVector.SqNorm() <= _nowR * _nowR;
+            var c1 = twoDVector.Cross(StandardScope.FaceRightLeftPt);
+            var c2 = twoDVector.Cross(StandardScope.FaceRightRightPt);
+            var b = twoDVector.SqNorm() <= NowR * NowR;
 
             var isBlockSightLine = map.IsBlockSightLine(sLine);
 
@@ -44,10 +89,15 @@ namespace game_stuff
             var blockSightLine = c1 >= 0 && c2 <= 0 && b && !isBlockSightLine;
 
 #if DEBUG
-            Console.Out.WriteLine($" _nowR ::: {_nowR}");
+            Console.Out.WriteLine($" _nowR ::: {NowR}");
 
 #endif
             return blockSightLine;
+        }
+
+
+        public void OpChangeAim(TwoDVector? newAim, Scope scope)
+        {
         }
 
         public void OpChangeAim(TwoDVector? newAim)
@@ -57,23 +107,23 @@ namespace game_stuff
             if (newAim != null) Aim = newAim.GetUnit();
 
             var cosT = Aim.GetUnit().Dot(oldAim) / oldAim.Norm();
-            var cosA = _upLeft.X;
+            var cosA = StandardScope.FaceRightLeftPt.X;
             var cos2A = 2 * cosA * cosA - 1;
-            var t = cosT > cos2A ? MathTools.Acos(cosT) : _theta;
+            var t = cosT > cos2A ? MathTools.Acos(cosT) : StandardScope.Theta;
 
-            var nowRSquare = _nowR * _nowR;
+            var nowRSquare = NowR * NowR;
             var snowR = nowRSquare * t;
             var twoSr = TempConfig.TwoSToSeePerTick - snowR;
             if (twoSr <= 0)
             {
                 var sqrt = MathTools.Sqrt(TempConfig.TwoSToSeePerTick / t);
-                _nowR = MathTools.Min(_maxR, sqrt);
+                NowR = MathTools.Min(StandardScope.MaxR, sqrt);
             }
             else
             {
-                var rSquare = twoSr / _theta + nowRSquare;
+                var rSquare = twoSr / StandardScope.Theta + nowRSquare;
                 var sqrt = MathTools.Sqrt(rSquare);
-                _nowR = MathTools.Min(_maxR, sqrt);
+                NowR = MathTools.Min(StandardScope.MaxR, sqrt);
             }
         }
     }

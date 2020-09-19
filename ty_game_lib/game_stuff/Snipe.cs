@@ -8,30 +8,34 @@ namespace game_stuff
     {
         public float MoveSpeedMulti { get; }
 
-        public float[] OnZoomMultiList { get; }
-        public float[] OffZoomMultiList { get; }
+        public float[] OnZoomStepList { get; }
+        public int OnPerTick { get; }
+        public int OffPerTick { get; }
+        public Scope[] ZoomStepScopes { get; set; }
 
         public int TrickTick { get; }
 
-        public Snipe(float moveSpeedMulti, float[] onZoomMulti, float[] offZoomMultiList, int trickTick)
+        public Snipe(float moveSpeedMulti, float[] onZoomMulti, int trickTick)
         {
             MoveSpeedMulti = moveSpeedMulti;
-            OnZoomMultiList = onZoomMulti;
-            OffZoomMultiList = offZoomMultiList;
+            OnZoomStepList = onZoomMulti;
+
             TrickTick = trickTick;
         }
 
-        public Snipe(snipe snipe)
+        public Snipe(snipe snipe, Scope defaultScope)
         {
             TrickTick = snipe.TrickTick;
             var snipeZoomMultiAdd = snipe.ZoomMulti - 1;
-            OnZoomMultiList = Enumerable.Range(1, snipe.OnTick)
-                .Select(x => 1 + x * snipeZoomMultiAdd / snipe.OnTick)
+            OnZoomStepList = Enumerable.Range(1, snipe.TotalStep)
+                .Select(x => 1 + x * snipeZoomMultiAdd / snipe.TotalStep)
                 .ToArray();
-            OffZoomMultiList = Enumerable.Range(1, snipe.OffTick - 1)
-                .Select(x => snipe.ZoomMulti - x * snipeZoomMultiAdd / snipe.OffTick)
-                .ToArray();
+
             MoveSpeedMulti = snipe.MoveMulti;
+            OnPerTick = snipe.OnTickSpeed;
+            OffPerTick = snipe.OffTickSpeed;
+            var scopes = OnZoomStepList.Select(defaultScope.GenNewScope).ToArray();
+            ZoomStepScopes = scopes;
         }
     }
 }

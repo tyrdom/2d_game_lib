@@ -17,11 +17,24 @@ namespace game_stuff
 
         private float AddMoveSpeed { get; set; }
 
+        //move status
         public float NowMoveSpeed;
 
         public readonly int GId;
 
+        //Snipe Status
+
+        public SnipeAction? SnipeOnCallAct { get; set; }
+
+        public int SnipeCallStack { get; set; }
+
+        public SnipeAction? NowInSnipe { get; set; }
+
+        public int? SnipeStage { get; set; }
+
+        //Skill Status
         public int PauseTick;
+
 
         public CharacterStatus? LockingWho;
 
@@ -31,12 +44,12 @@ namespace game_stuff
 
         public Dictionary<int, Weapon> Weapons { get; private set; }
 
-        //
 
         public Skill? NowCastSkill { get; set; }
 
         public (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
+        //be hit status
 
         public IAntiActBuff? AntiActBuff;
 
@@ -82,6 +95,14 @@ namespace game_stuff
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
+
+            SnipeOnCallAct = null;
+
+            SnipeCallStack = 0;
+
+            NowInSnipe = null;
+
+            SnipeStage = null;
         }
 
         public void ReloadInitData(DamageHealStatus damageHealStatus, float maxMoveSpeed,
@@ -146,15 +167,16 @@ namespace game_stuff
                         .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr());
 #if DEBUG
             var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GId.ToString();
-            Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV?.ToString()}");
+            Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV}");
 #endif
             if (limitV != null)
             {
                 limitV.X = MathTools.Max(0, limitV.X);
             }
 
-            return NowCastSkill
+            var actNowSkillATick = NowCastSkill
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);
+            return (actNowSkillATick.move, actNowSkillATick.bullet);
         }
 
         private void ComboByNext(TwoDVector? operateAim)

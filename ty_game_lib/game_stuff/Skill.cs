@@ -26,7 +26,7 @@ namespace game_stuff
         private readonly uint _skillMaxTick; // 至多帧，在播放帧
         private readonly int _nextCombo;
 
-        private bool CanKeepSnipe { get; }
+        private int SnipeBreakTick { get; }
 
         public string LogUser()
         {
@@ -39,7 +39,7 @@ namespace game_stuff
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea, bool canKeepSnipe)
+            LockArea? lockArea, int snipeBreakTick)
         {
             var b = 0 < comboInputStartTick &&
                     skillMustTick < skillMaxTick &&
@@ -60,7 +60,7 @@ namespace game_stuff
             _comboInputStartTick = comboInputStartTick;
             _nextCombo = nextCombo;
             _lockArea = lockArea;
-            CanKeepSnipe = canKeepSnipe;
+            SnipeBreakTick = snipeBreakTick;
         }
 
 
@@ -99,10 +99,10 @@ namespace game_stuff
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;
-            
-            
+
+
             return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
-                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig,skill.CanKeepSnipe);
+                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick);
         }
 
         public enum SkillPeriod
@@ -131,27 +131,27 @@ namespace game_stuff
                 : (int?) null;
         }
 
-        public (TwoDVector? move, IHitStuff? launchBullet) GoATick(
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(
             TwoDPoint casterPos, TwoDVector casterAim, TwoDVector? approachingVector)
         {
             // 生成攻击运动
-            TwoDVector? twoDVector = null;
+            TwoDVector? move = null;
 
             if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
             {
                 var moveOnTick = _nowOnTick - _moveStartTick;
 
-                twoDVector = _moves[moveOnTick];
+                move = _moves[moveOnTick];
                 if (approachingVector != null)
                 {
                     var movesLengthRest = (float) _moves.Length - moveOnTick;
-                    var min = MathTools.Min(approachingVector.X, twoDVector.X);
-                    var max = MathTools.Max(approachingVector.Y, twoDVector.Y) / movesLengthRest;
+                    var min = MathTools.Min(approachingVector.X, move.X);
+                    var max = MathTools.Max(approachingVector.Y, move.Y) / movesLengthRest;
 
-                    twoDVector = new TwoDVector(min, max);
+                    move = new TwoDVector(min, max);
                 }
 
-                twoDVector = twoDVector.AntiClockwiseTurn(casterAim);
+                move = move.AntiClockwiseTurn(casterAim);
             }
 
             // GenBullet 生成子弹
@@ -161,11 +161,15 @@ namespace game_stuff
                 bullet = _lockArea.ActiveArea(casterPos, casterAim);
             }
 
-
             else if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
             {
                 bullet = nowBullet.ActiveBullet(casterPos, casterAim);
             }
+
+            // 是否退出Snipe状态
+
+            var snipeOff = _nowOnTick > 0 && _nowOnTick == SnipeBreakTick;
+
 
             //GONext
 
@@ -173,7 +177,7 @@ namespace game_stuff
             _nowOnTick += 1;
 
 
-            return (twoDVector, bullet);
+            return (move, bullet, snipeOff);
         }
 
         public void LaunchSkill()
