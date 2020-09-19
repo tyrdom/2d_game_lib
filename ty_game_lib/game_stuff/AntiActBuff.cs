@@ -16,7 +16,7 @@ namespace game_stuff
 
     class PushOnEarth : IAntiActBuff
     {
-        private TwoDVector PushVector;
+        private TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
 
         public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, int restTick)
@@ -48,7 +48,8 @@ namespace game_stuff
 
             var twoDVector = push.Minus(DecreasePerTick);
 #if DEBUG
-            Console.Out.WriteLine($" {GetType()} Decrease~~{DecreasePerTick.ToString()}  PV  mid::{twoDVector.ToString()}");
+            Console.Out.WriteLine(
+                $" {GetType()} Decrease~~{DecreasePerTick.ToString()}  PV  mid::{twoDVector.ToString()}");
 #endif
             var dot = push.Dot(twoDVector);
             if (dot <= 0)
@@ -74,7 +75,7 @@ namespace game_stuff
 
     public class PushOnAir : IAntiActBuff
     {
-        public TwoDVector PushVector;
+        public TwoDVector PushVector { get; set; }
         public float Height;
         public float UpSpeed;
 
@@ -107,7 +108,8 @@ namespace game_stuff
             {
                 var decreasePerTick = PushVector.GetUnit().Multi(TempConfig.Friction);
 #if DEBUG
-                Console.Out.WriteLine($"{PushVector.ToString()}~~~~~air gen_earth buff~~~~~~{decreasePerTick.ToString()}");
+                Console.Out.WriteLine(
+                    $"{PushVector.ToString()}~~~~~air gen_earth buff~~~~~~{decreasePerTick.ToString()}");
 
 #endif
                 var pushOnEarth =
@@ -132,8 +134,8 @@ namespace game_stuff
 
     class Caught : IAntiActBuff
     {
-        public List<TwoDPoint> MovesOnPoints;
-        public CharacterStatus WhoCatchMe;
+        public List<TwoDPoint> MovesOnPoints { get; }
+        public CharacterStatus WhoCatchMe { get; }
 
         public Caught(List<TwoDPoint> movesOnPoints, int restTick, CharacterStatus whoCatchMe)
         {
