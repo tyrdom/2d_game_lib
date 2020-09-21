@@ -16,13 +16,19 @@ namespace game_stuff
 
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
 
+        public float[] ZoomStepMulti { get; }
+        public Scope[] ZoomStepScopes { get; set; }
+
         private Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups,
-            ImmutableArray<(float, SkillAction)> ranges, ImmutableDictionary<SnipeAction, Snipe> snipes, int wId)
+            ImmutableArray<(float, SkillAction)> ranges, ImmutableDictionary<SnipeAction, Snipe> snipes, int wId,
+            float[] zoomStepMulti, Scope[] zoomStepScopes)
         {
             SkillGroups = skillGroups;
             Ranges = ranges;
             Snipes = snipes;
             WId = wId;
+            ZoomStepScopes = zoomStepScopes;
+            ZoomStepMulti = zoomStepMulti;
         }
 
         public string LogUserString()
@@ -92,7 +98,7 @@ namespace game_stuff
             static Snipe? GetSnipeById(int id)
             {
                 return TempConfig.Configs.snipes.TryGetValue(id, out var snipe)
-                    ? new Snipe(snipe, new Scope(TempConfig.StandardSightVector))
+                    ? new Snipe(snipe)
                     : null;
             }
 
@@ -120,7 +126,15 @@ namespace game_stuff
 
             valueTuples.Sort((x, y) => -x.Item1.CompareTo(x.Item1));
             var immutableList = valueTuples.ToImmutableArray();
-            var weapon1 = new Weapon(immutableDictionary, immutableList, snipes.ToImmutableDictionary(), weapon.id);
+
+            var weaponMaxRangeMultiAdd = weapon.MaxRangeMulti - 1;
+            var enumerable = Enumerable.Range(1, weapon.ChangeRangeStep)
+                .Select(x => 1 + x * weaponMaxRangeMultiAdd / weapon.ChangeRangeStep).ToArray();
+
+            var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
+
+            var weapon1 = new Weapon(immutableDictionary, immutableList, snipes.ToImmutableDictionary(), weapon.id,
+                enumerable, scopes);
             return weapon1;
         }
     }

@@ -28,19 +28,19 @@ namespace game_stuff
 
         public int SnipeCallStack { get; set; }
 
-        public SnipeAction? NowInSnipe { get; set; }
+        public SnipeAction? NowInSnipeAct { get; set; }
 
-        public int? SnipeStage { get; set; }
+        public int? NowSnipeStep { get; set; }
 
         //Skill Status
-        public int PauseTick;
+        public int PauseTick { get; set; }
 
 
-        public CharacterStatus? LockingWho;
+        public CharacterStatus? LockingWho { get; set; }
 
-        public CharacterStatus? CatchingWho;
+        public CharacterStatus? CatchingWho { get; set; }
 
-        public int NowWeapon;
+        public int NowWeapon { get; set; }
 
         public Dictionary<int, Weapon> Weapons { get; private set; }
 
@@ -100,9 +100,9 @@ namespace game_stuff
 
             SnipeCallStack = 0;
 
-            NowInSnipe = null;
+            NowInSnipeAct = null;
 
-            SnipeStage = null;
+            NowSnipeStep = null;
         }
 
         public void ReloadInitData(DamageHealStatus damageHealStatus, float maxMoveSpeed,
@@ -129,6 +129,7 @@ namespace game_stuff
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
+            ResetSnipe();
         }
 
         public void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
@@ -149,6 +150,44 @@ namespace game_stuff
         public void ResetSpeed()
         {
             NowMoveSpeed = MinMoveSpeed;
+        }
+
+
+        public void CallSnipe(SnipeAction snipeAction)
+        {
+            if (SnipeOnCallAct == snipeAction)
+            {
+                SnipeCallStack += 1;
+            }
+            else
+            {
+                SnipeOnCallAct = snipeAction;
+                SnipeCallStack = 1;
+            }
+
+            if (Weapons.TryGetValue(NowWeapon, out var weapon)&& weapon.Snipes.TryGetValue(snipeAction,out var snipe))
+            {
+               
+            }
+        }
+
+        public void OnSnipe()
+        {
+        }
+
+        public void OffSnipe()
+        {
+        }
+
+        private void ResetSnipe()
+        {
+            SnipeOnCallAct = null;
+
+            SnipeCallStack = 0;
+
+            NowInSnipeAct = null;
+
+            NowSnipeStep = null;
         }
 
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()

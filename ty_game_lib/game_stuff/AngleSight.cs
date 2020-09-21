@@ -5,6 +5,12 @@ namespace game_stuff
 {
     public class Scope
     {
+        public static Scope StandardScope()
+        {
+            return new Scope(TempConfig.StandardSightVector);
+        }
+
+
         public Scope(TwoDVector faceRightLeftPt, TwoDVector faceRightRightPt, float maxR, float theta)
         {
             FaceRightLeftPt = faceRightLeftPt;
@@ -18,7 +24,7 @@ namespace game_stuff
         public float MaxR { get; }
         public float Theta { get; }
 
-        public Scope(TwoDVector upLeft)
+        private Scope(TwoDVector upLeft)
         {
             var maxR = upLeft.Norm();
 

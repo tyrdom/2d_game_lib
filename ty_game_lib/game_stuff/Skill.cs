@@ -14,7 +14,7 @@ namespace game_stuff
 
         public int NowTough;
 
-        // public bool IsHit;
+        public int SnipeStepNeed;
         private readonly int _baseTough;
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
@@ -39,7 +39,7 @@ namespace game_stuff
         public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea, int snipeBreakTick)
+            LockArea? lockArea, int snipeBreakTick, int snipeStepNeed)
         {
             var b = 0 < comboInputStartTick &&
                     skillMustTick < skillMaxTick &&
@@ -61,6 +61,7 @@ namespace game_stuff
             _nextCombo = nextCombo;
             _lockArea = lockArea;
             SnipeBreakTick = snipeBreakTick;
+            SnipeStepNeed = snipeStepNeed;
         }
 
 
@@ -102,7 +103,7 @@ namespace game_stuff
 
 
             return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
-                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick);
+                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick,skill.SnipeStepNeed);
         }
 
         public enum SkillPeriod
