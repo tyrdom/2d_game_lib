@@ -15,7 +15,7 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
-        public LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
+        private LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();

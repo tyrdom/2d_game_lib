@@ -57,6 +57,9 @@ namespace game_stuff
                 characterStatus.Weapons[characterStatusNowWeapon] = this;
                 characterStatus.NowWeapon = characterStatusNowWeapon;
             }
+
+            ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.CharacterBody.Sight.StandardScope.GenNewScope(x))
+                .ToArray();
         }
 
         public static Weapon GenByConfig(weapon weapon)

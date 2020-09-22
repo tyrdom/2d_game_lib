@@ -9,9 +9,8 @@ namespace game_stuff
 {
     public class Skill
     {
-        private LockArea? _lockArea;
-        public uint _nowOnTick;
-
+        private readonly LockArea? _lockArea;
+        public uint NowOnTick;
         public int NowTough;
 
         public int SnipeStepNeed;
@@ -19,6 +18,8 @@ namespace game_stuff
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
         private readonly TwoDVector[] _moves;
+
+
         private readonly uint _moveStartTick;
 
         private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
@@ -36,7 +37,7 @@ namespace game_stuff
                 .Aggregate("", (current, @null) => current + @null);
         }
 
-        public Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
+        private Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint skillMaxTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
             LockArea? lockArea, int snipeBreakTick, int snipeStepNeed)
@@ -49,7 +50,7 @@ namespace game_stuff
                 Console.Out.WriteLine("some skill config is error~~~~~~~");
             }
 
-            _nowOnTick = 0;
+            NowOnTick = 0;
             NowTough = baseTough;
             _launchTickToBullet = launchTickToBullet;
             _moves = moves;
@@ -103,7 +104,8 @@ namespace game_stuff
 
 
             return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
-                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick,skill.SnipeStepNeed);
+                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick,
+                skill.SnipeStepNeed);
         }
 
         public enum SkillPeriod
@@ -115,19 +117,19 @@ namespace game_stuff
 
         public SkillPeriod InWhichPeriod()
         {
-            if (_nowOnTick < _skillMustTick)
+            if (NowOnTick < _skillMustTick)
             {
                 return SkillPeriod.Casting;
             }
 
-            return _nowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
+            return NowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
         }
 
         public int? ComboInputRes() //可以连击，返回 下一个动作
         {
             // 如果命中返回命中连击状态id，如果不是返回miss连击id，大部分是一样的
             var weaponSkillStatus = _nextCombo;
-            return _nowOnTick >= _comboInputStartTick && _nowOnTick < _skillMaxTick
+            return NowOnTick >= _comboInputStartTick && NowOnTick < _skillMaxTick
                 ? weaponSkillStatus
                 : (int?) null;
         }
@@ -138,9 +140,9 @@ namespace game_stuff
             // 生成攻击运动
             TwoDVector? move = null;
 
-            if (_nowOnTick >= _moveStartTick && _nowOnTick < _moveStartTick + _moves.Length)
+            if (NowOnTick >= _moveStartTick && NowOnTick < _moveStartTick + _moves.Length)
             {
-                var moveOnTick = _nowOnTick - _moveStartTick;
+                var moveOnTick = NowOnTick - _moveStartTick;
 
                 move = _moves[moveOnTick];
                 if (approachingVector != null)
@@ -157,35 +159,36 @@ namespace game_stuff
 
             // GenBullet 生成子弹
             IHitStuff? bullet = null;
-            if (_nowOnTick == 0 && _lockArea != null)
+            if (NowOnTick == 0 && _lockArea != null)
             {
                 bullet = _lockArea.ActiveArea(casterPos, casterAim);
             }
 
-            else if (_launchTickToBullet.TryGetValue(_nowOnTick, out var nowBullet))
+            else if (_launchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {
                 bullet = nowBullet.ActiveBullet(casterPos, casterAim);
             }
 
             // 是否退出Snipe状态
 
-            var snipeOff = _nowOnTick > 0 && _nowOnTick == SnipeBreakTick;
+            var snipeOff = NowOnTick > 0 && NowOnTick == SnipeBreakTick;
 
 
             //GONext
 
             NowTough += TempConfig.ToughGrowPerTick;
-            _nowOnTick += 1;
+            NowOnTick += 1;
 
 
             return (move, bullet, snipeOff);
         }
 
-        public void LaunchSkill()
+        public bool LaunchSkill(int nowSnipeStep)
         {
-            // IsHit = false;
+            if (nowSnipeStep < SnipeStepNeed) return false;
             NowTough = _baseTough;
-            _nowOnTick = 0;
+            NowOnTick = 0;
+            return true;
         }
 
         // public static Skill InitFormConfig(game_config.Skill skillConfig)

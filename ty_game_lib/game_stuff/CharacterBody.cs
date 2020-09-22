@@ -31,7 +31,7 @@ namespace game_stuff
 
         public bool InSight(IIdPointShape another, SightMap map)
         {
-            return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map);
+            return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map, CharacterStatus.GetNowScope());
         }
 
         public IdPointBox CovToAaBbPackBox()

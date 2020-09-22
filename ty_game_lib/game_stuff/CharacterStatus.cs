@@ -30,7 +30,7 @@ namespace game_stuff
 
         public SnipeAction? NowInSnipeAct { get; set; }
 
-        public int? NowSnipeStep { get; set; }
+        public int NowSnipeStep { get; set; }
 
         //Skill Status
         public int PauseTick { get; set; }
@@ -63,12 +63,8 @@ namespace game_stuff
 
         // for_tick_msg
         public SkillAction? SkillLaunch { get; private set; }
-
         public bool IsPause { get; private set; }
-
         public TwoDVector? IsBeHitBySomeOne { get; set; }
-
-
         public bool IsHitSome { get; set; }
 
         public CharacterStatus(float maxMoveSpeed, int gId,
@@ -102,7 +98,12 @@ namespace game_stuff
 
             NowInSnipeAct = null;
 
-            NowSnipeStep = null;
+            NowSnipeStep = 0;
+        }
+
+        private void OpChangeAim(TwoDVector? aim)
+        {
+            CharacterBody.Sight.OpChangeAim(aim, GetNowScope());
         }
 
         public void ReloadInitData(DamageHealStatus damageHealStatus, float maxMoveSpeed,
@@ -132,6 +133,14 @@ namespace game_stuff
             ResetSnipe();
         }
 
+        public Scope? GetNowScope()
+        {
+            if (NowInSnipeAct == null || NowSnipeStep <= 0 || !Weapons.TryGetValue(NowWeapon, out var weapon))
+                return null;
+            var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep - 1];
+            return weaponZoomStepScope;
+        }
+
         public void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
         {
             //装载技能时，重置速度和锁定角色
@@ -139,10 +148,10 @@ namespace game_stuff
             LockingWho = null;
             if (aim != null)
             {
-                CharacterBody.Sight.OpChangeAim(aim);
+                OpChangeAim(aim);
             }
 
-            skill.LaunchSkill();
+            if (!skill.LaunchSkill(NowSnipeStep)) return;
             SkillLaunch = skillAction;
             NowCastSkill = skill;
         }
@@ -152,34 +161,74 @@ namespace game_stuff
             NowMoveSpeed = MinMoveSpeed;
         }
 
-
-        public void CallSnipe(SnipeAction snipeAction)
+        public void ResetSkill()
         {
-            if (SnipeOnCallAct == snipeAction)
+            NowCastSkill = null;
+            NextSkill = null;
+            LockingWho = null;
+        }
+
+        private Snipe? GetNowSnipe()
+        {
+            return NowInSnipeAct != null && Weapons.TryGetValue(NowWeapon, out var weapon) &&
+                   weapon.Snipes.TryGetValue(NowInSnipeAct.Value, out var snipe)
+                ? snipe
+                : null;
+        }
+
+        private void CallSnipe(SnipeAction snipeAction)
+        {
+            if (snipeAction != SnipeAction.SnipeOff)
             {
-                SnipeCallStack += 1;
+                if (SnipeOnCallAct == snipeAction)
+                {
+                    SnipeCallStack += 1;
+                }
+                else
+                {
+                    SnipeOnCallAct = snipeAction;
+                    SnipeCallStack = 1;
+                }
+
+                if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
+                    !weapon.Snipes.TryGetValue(snipeAction, out var snipe) || snipe.TrickTick >= SnipeCallStack) return;
+                NowInSnipeAct = snipeAction;
+                OnSnipe(snipe);
             }
             else
             {
-                SnipeOnCallAct = snipeAction;
-                SnipeCallStack = 1;
+                OffSnipe();
             }
+        }
 
-            if (Weapons.TryGetValue(NowWeapon, out var weapon)&& weapon.Snipes.TryGetValue(snipeAction,out var snipe))
+        //开镜
+        private void OnSnipe(Snipe snipe)
+        {
+            NowSnipeStep = NowSnipeStep < snipe.MaxStep
+                ? Math.Min(NowSnipeStep + snipe.AddStepPerTick, snipe.MaxStep)
+                : Math.Max(NowSnipeStep - snipe.OffStepPerTick, snipe.MaxStep);
+        }
+
+        //关镜
+        private void OffSnipe()
+        {
+            if (NowInSnipeAct != null && Weapons.TryGetValue(NowWeapon, out var weapon) &&
+                weapon.Snipes.TryGetValue(NowInSnipeAct.Value, out var snipe))
             {
-               
+                NowSnipeStep = Math.Max(0, NowSnipeStep - snipe.OffStepPerTick);
+                if (NowSnipeStep == 0)
+                {
+                    NowInSnipeAct = null;
+                }
+            }
+            else
+            {
+                NowSnipeStep = 0;
             }
         }
 
-        public void OnSnipe()
-        {
-        }
-
-        public void OffSnipe()
-        {
-        }
-
-        private void ResetSnipe()
+        //重置
+        public void ResetSnipe()
         {
             SnipeOnCallAct = null;
 
@@ -187,7 +236,7 @@ namespace game_stuff
 
             NowInSnipeAct = null;
 
-            NowSnipeStep = null;
+            NowSnipeStep = 0;
         }
 
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick()
@@ -213,9 +262,14 @@ namespace game_stuff
                 limitV.X = MathTools.Max(0, limitV.X);
             }
 
-            var actNowSkillATick = NowCastSkill
+            var (move, bullet, snipeOff) = NowCastSkill
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);
-            return (actNowSkillATick.move, actNowSkillATick.bullet);
+            if (snipeOff)
+            {
+                OffSnipe();
+            }
+
+            return (move, bullet);
         }
 
         private void ComboByNext(TwoDVector? operateAim)
@@ -223,11 +277,11 @@ namespace game_stuff
             if (NextSkill == null || NowCastSkill == null ||
                 NowCastSkill.InWhichPeriod() != Skill.SkillPeriod.CanCombo)
             {
-                CharacterBody.Sight.OpChangeAim(null);
+                OpChangeAim(null);
                 return;
             }
 #if DEBUG
-            Console.Out.WriteLine($"{GId} ::skill next start {NextSkill.Value.skill._nowOnTick}");
+            Console.Out.WriteLine($"{GId} ::skill next start {NextSkill.Value.skill.NowOnTick}");
 #endif
             if (NextSkill.Value.opAction == SkillAction.Switch)
             {
@@ -286,7 +340,7 @@ namespace game_stuff
 
                 var (move, launchBullet) = ActNowSkillATick();
 #if DEBUG
-                Console.Out.WriteLine($"{GId} skill on {NowCastSkill._nowOnTick}");
+                Console.Out.WriteLine($"{GId} skill on {NowCastSkill.NowOnTick}");
                 Console.Out.WriteLine($"skill move {move}");
                 if (launchBullet != null)
                     Console.Out.WriteLine(
@@ -347,15 +401,23 @@ namespace game_stuff
             if (operate == null)
             {
                 ResetSpeed();
-                CharacterBody.Sight.OpChangeAim(null);
+                OpChangeAim(null);
                 return (null, null);
             }
 
             // 有操作
+
+            // 有瞄准请求
+            var snipeAction = operate.GetSnipe();
+            if (snipeAction != null)
+            {
+                CallSnipe(snipeAction.Value);
+            }
+
             // 转换视野方向
             if (operate.Aim != null)
             {
-                CharacterBody.Sight.OpChangeAim(operate.Aim);
+                OpChangeAim(operate.Aim);
             }
 
             if (opAction != null)
@@ -394,7 +456,7 @@ namespace game_stuff
             // 加速跑步运动，有上限
             if (operate.Aim == null)
             {
-                CharacterBody.Sight.OpChangeAim(twoDVector);
+                OpChangeAim(twoDVector);
             }
 
 
@@ -406,7 +468,9 @@ namespace game_stuff
                                        (1f - TempConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
             var maxMoveSpeed = MaxMoveSpeed * moveDecreaseMinMulti;
             NowMoveSpeed = MathTools.Max(MinMoveSpeed, MathTools.Min(maxMoveSpeed, NowMoveSpeed + AddMoveSpeed));
-            var dVector = twoDVector.Multi(NowMoveSpeed);
+            var nowSnipe = GetNowSnipe();
+            var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti ?? NowMoveSpeed;
+            var dVector = twoDVector.Multi(multiSpeed);
 
             return (dVector, null);
         }

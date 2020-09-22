@@ -52,7 +52,7 @@ namespace game_stuff
 
     public class AngleSight
     {
-        private Scope StandardScope { get; }
+        public Scope StandardScope { get; }
 
         public float NowR { get; private set; }
         public TwoDVector Aim { get; private set; }
@@ -79,14 +79,14 @@ namespace game_stuff
             NowR = nowR;
         }
 
-        //todo UseNotDefaultScope
 
-
-        public bool InSight(TwoDVectorLine sLine, SightMap map)
+        public bool InSight(TwoDVectorLine sLine, SightMap map, Scope? scope)
         {
+            var useScope = scope ?? StandardScope;
+            
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
-            var c1 = twoDVector.Cross(StandardScope.FaceRightLeftPt);
-            var c2 = twoDVector.Cross(StandardScope.FaceRightRightPt);
+            var c1 = twoDVector.Cross(useScope.FaceRightLeftPt);
+            var c2 = twoDVector.Cross(useScope.FaceRightRightPt);
             var b = twoDVector.SqNorm() <= NowR * NowR;
 
             var isBlockSightLine = map.IsBlockSightLine(sLine);
@@ -102,20 +102,18 @@ namespace game_stuff
         }
 
 
-        public void OpChangeAim(TwoDVector? newAim, Scope scope)
+        public void OpChangeAim(TwoDVector? newAim, Scope? scope)
         {
-        }
+            var useScope = scope ?? StandardScope;
 
-        public void OpChangeAim(TwoDVector? newAim)
-        {
             var oldAim = Aim;
 
             if (newAim != null) Aim = newAim.GetUnit();
 
             var cosT = Aim.GetUnit().Dot(oldAim) / oldAim.Norm();
-            var cosA = StandardScope.FaceRightLeftPt.X;
+            var cosA = useScope.FaceRightLeftPt.X;
             var cos2A = 2 * cosA * cosA - 1;
-            var t = cosT > cos2A ? MathTools.Acos(cosT) : StandardScope.Theta;
+            var t = cosT > cos2A ? MathTools.Acos(cosT) : useScope.Theta;
 
             var nowRSquare = NowR * NowR;
             var snowR = nowRSquare * t;
@@ -123,14 +121,42 @@ namespace game_stuff
             if (twoSr <= 0)
             {
                 var sqrt = MathTools.Sqrt(TempConfig.TwoSToSeePerTick / t);
-                NowR = MathTools.Min(StandardScope.MaxR, sqrt);
+                NowR = MathTools.Min(useScope.MaxR, sqrt);
             }
             else
             {
-                var rSquare = twoSr / StandardScope.Theta + nowRSquare;
+                var rSquare = twoSr / useScope.Theta + nowRSquare;
                 var sqrt = MathTools.Sqrt(rSquare);
-                NowR = MathTools.Min(StandardScope.MaxR, sqrt);
+                NowR = MathTools.Min(useScope.MaxR, sqrt);
             }
+        }
+
+        public void OpChangeAim(TwoDVector? newAim)
+        {
+            OpChangeAim(newAim, StandardScope);
+            // var oldAim = Aim;
+            //
+            // if (newAim != null) Aim = newAim.GetUnit();
+            //
+            // var cosT = Aim.GetUnit().Dot(oldAim) / oldAim.Norm();
+            // var cosA = StandardScope.FaceRightLeftPt.X;
+            // var cos2A = 2 * cosA * cosA - 1;
+            // var t = cosT > cos2A ? MathTools.Acos(cosT) : StandardScope.Theta;
+            //
+            // var nowRSquare = NowR * NowR;
+            // var snowR = nowRSquare * t;
+            // var twoSr = TempConfig.TwoSToSeePerTick - snowR;
+            // if (twoSr <= 0)
+            // {
+            //     var sqrt = MathTools.Sqrt(TempConfig.TwoSToSeePerTick / t);
+            //     NowR = MathTools.Min(StandardScope.MaxR, sqrt);
+            // }
+            // else
+            // {
+            //     var rSquare = twoSr / StandardScope.Theta + nowRSquare;
+            //     var sqrt = MathTools.Sqrt(rSquare);
+            //     NowR = MathTools.Min(StandardScope.MaxR, sqrt);
+            // }
         }
     }
 }

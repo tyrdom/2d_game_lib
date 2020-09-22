@@ -69,7 +69,7 @@ namespace game_stuff
 
             var antiActBuffConfigs = GAntiActBuffConfigs(bulletFailActBuffConfigToSelf);
 
-            static IAntiActBuffConfig GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent) =>
+            static IAntiActBuffConfig GenBuffByC(buff_type? buffConfigToOpponentType, string? configToOpponent) =>
                 buffConfigToOpponentType switch
                 {
                     buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.Configs.push_buffs[configToOpponent]),
@@ -90,16 +90,16 @@ namespace game_stuff
                             case BodySize.Small:
                                 var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                                     x.size == size.small || x.size == size.@default);
-                                return GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
+                                return GenBuffByC(firstOrDefault?.buff_type, firstOrDefault?.buff_id);
 
                             case BodySize.Medium:
                                 var firstOrDefault2 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                                     x.size == size.medium || x.size == size.@default);
-                                return GenBuffByC(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
+                                return GenBuffByC(firstOrDefault2?.buff_type, firstOrDefault2?.buff_id);
                             case BodySize.Big:
                                 var firstOrDefault3 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                                     x.size == size.big || x.size == size.@default);
-                                return GenBuffByC(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
+                                return GenBuffByC(firstOrDefault3?.buff_type, firstOrDefault3?.buff_id);
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
@@ -177,6 +177,11 @@ namespace game_stuff
 
         public void HitOne(CharacterStatus targetCharacterStatus)
         {
+            if (Caster == null)
+            {
+                throw new Exception("there is a no Caster Bullet");
+            }
+
             var protecting = targetCharacterStatus.ProtectTick > 0;
             var nowCastSkill = targetCharacterStatus.NowCastSkill;
             var objTough = nowCastSkill?.NowTough;
@@ -200,10 +205,12 @@ namespace game_stuff
             //AttackOk 攻击成功
             if (opponentIsStun || b2 || b3 || b4)
             {
-                // 目标速度重置
+                // 目标速度瞄准重置
                 targetCharacterStatus.ResetSpeed();
+                targetCharacterStatus.ResetSnipe();
+                targetCharacterStatus.ResetSkill();
                 // 我方按配置添加攻击停帧
-                Caster!.PauseTick = PauseToCaster;
+                Caster.PauseTick = PauseToCaster;
 
                 //如果没有锁定目标，则锁定当前命中的目标
                 Caster.LockingWho ??= targetCharacterStatus;
@@ -296,39 +303,36 @@ namespace game_stuff
             {
                 //AttackFail 需要分两种情况 
                 //清除技能数据
-                Caster!.NowCastSkill = null;
-                Caster.NextSkill = null;
-                Caster.LockingWho = null;
+                Caster.ResetSnipe();
+                Caster.ResetSkill();
                 //生成击中受击消息数据缓存
                 Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(Caster.GetPos(), targetCharacterStatus.GetPos());
                 targetCharacterStatus.IsHitSome = true;
 
                 if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
                 {
-                    if (FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff))
+                    if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff)) return;
+                    var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
+
+                    //如果为抓取技能，会马上装载抓取buff附带的触发技能
+                    switch (failAntiBuff)
                     {
-                        var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
+                        case CatchAntiActBuffConfig catchAntiActBuffConfig:
+                            targetCharacterStatus.CatchingWho = Caster;
 
-                        //如果为抓取技能，会马上装载抓取buff附带的触发技能
-                        switch (failAntiBuff)
-                        {
-                            case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                                targetCharacterStatus.CatchingWho = Caster;
-
-                                targetCharacterStatus.LoadSkill(aim, catchAntiActBuffConfig.TrickSkill,
-                                    SkillAction.CatchTrick);
-                                targetCharacterStatus.NextSkill = null;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
-                        }
-
-                        var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
-                            targetCharacterStatus.GetAim(),
-                            null,
-                            0, Caster.CharacterBody.BodySize, targetCharacterStatus);
-                        Caster.AntiActBuff = antiActBuff;
+                            targetCharacterStatus.LoadSkill(aim, catchAntiActBuffConfig.TrickSkill,
+                                SkillAction.CatchTrick);
+                            targetCharacterStatus.NextSkill = null;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
                     }
+
+                    var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
+                        targetCharacterStatus.GetAim(),
+                        null,
+                        0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                    Caster.AntiActBuff = antiActBuff;
 
                     // var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
                     //     targetCharacterStatus.GetAim(),
