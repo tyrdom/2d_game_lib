@@ -45,7 +45,7 @@ namespace game_stuff
 
         public static float TwoSToSeePerTick { get; private set; } = 20f;
 
-        public static PushOnAir OutCaught { get;  } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
+        public static PushOnAir OutCaught { get; } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
 
         public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
 
@@ -65,8 +65,8 @@ namespace game_stuff
         public static int StartHp { get; private set; } = 1000;
         private static int TestAtk { get; set; } = 10;
 
-        private static int TrickProtect { get; set; } = 100;
-        private static int ProtectTick { get; set; } = 10;
+        public static int TrickProtect { get; private set; } = 100;
+        public static int ProtectTick { get; set; } = 10;
 
 
         public static float MoveDecreaseMinMulti { get; set; } = 0.4f;
@@ -74,6 +74,7 @@ namespace game_stuff
         public static float NormalSpeedMinCos { get; set; } = 0.7f;
 
         public static float DecreaseMinCos { get; set; } = -0.3f;
+
 
         private static void ReLoadP(ConfigDictionaries configs)
         {

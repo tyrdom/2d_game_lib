@@ -18,7 +18,8 @@ namespace game_stuff
         public TwoDVector? IsBeHit;
         public bool IsHitSome;
 
-        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus, SkillAction? skillLaunch,
+        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus,
+            SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, TwoDVector? isBeHit, bool isHitSome)
         {
             Gid = gid;

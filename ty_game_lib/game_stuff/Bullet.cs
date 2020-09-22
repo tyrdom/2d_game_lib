@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
 using collision_and_rigid;
 using game_config;
 
@@ -30,13 +27,14 @@ namespace game_stuff
 
         public readonly int PauseToCaster;
         public readonly int PauseToOpponent;
-        public Damage Damage;
+        public float DamageMulti;
         public int Tough;
         public ObjType TargetType { get; }
 
         public int RestTick;
         public int ResId;
 
+        public int ProtectValueAdd;
 
         public static Bullet GenByBulletId(string id)
         {
@@ -48,7 +46,7 @@ namespace game_stuff
             throw new ArgumentOutOfRangeException();
         }
 
-        public void PickBySomeOne(CharacterStatus characterStatus)
+        public void PickedBySomeOne(CharacterStatus characterStatus)
         {
             Caster = characterStatus;
         }
@@ -72,7 +70,7 @@ namespace game_stuff
             static IAntiActBuffConfig GenBuffByC(buff_type? buffConfigToOpponentType, string? configToOpponent) =>
                 buffConfigToOpponentType switch
                 {
-                    buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.Configs.push_buffs[configToOpponent]),
+                    buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.Configs.push_buffs![configToOpponent]),
                     buff_type.caught_buff => GameTools.GenBuffByConfig(
                         TempConfig.Configs.caught_buffs![configToOpponent]),
                     _ => throw new ArgumentOutOfRangeException()
@@ -122,7 +120,7 @@ namespace game_stuff
                 bullet.PauseToOpponent, objType, tough, 1, 1);
         }
 
-        public Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
+        private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             Dictionary<BodySize, IAntiActBuffConfig> successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int restTick, int resId)
@@ -135,7 +133,7 @@ namespace game_stuff
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
             PauseToCaster = pauseToCaster;
             PauseToOpponent = pauseToOpponent;
-            Damage = new Damage(0);
+
             TargetType = targetType;
             Tough = tough;
             RestTick = restTick;
@@ -182,7 +180,7 @@ namespace game_stuff
                 throw new Exception("there is a no Caster Bullet");
             }
 
-            var protecting = targetCharacterStatus.ProtectTick > 0;
+            var protecting = targetCharacterStatus.NowProtectTick > 0;
             var nowCastSkill = targetCharacterStatus.NowCastSkill;
             var objTough = nowCastSkill?.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
@@ -229,7 +227,8 @@ namespace game_stuff
                 }
 
                 //对手承受伤害
-                targetCharacterStatus.DamageHealStatus.TakeDamage(Damage);
+                targetCharacterStatus.AddProtect(ProtectValueAdd);
+                targetCharacterStatus.DamageHealStatus.TakeDamage(Caster.GenDamage(DamageMulti));
 
 
                 var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
@@ -254,8 +253,6 @@ namespace game_stuff
                         case CatchAntiActBuffConfig catchAntiActBuffConfig:
                             Caster.LoadSkill(null, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick);
                             Caster.NextSkill = null;
-                            break;
-                        default:
                             break;
                     }
                 }

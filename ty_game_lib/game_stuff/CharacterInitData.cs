@@ -53,7 +53,7 @@ namespace game_stuff
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
             var characterStatus = new CharacterStatus(MaxSpeed, Gid,
-                DamageHealStatus.StartDamageHealAbout(), AddSpeed, MinSpeed);
+                DamageHealStatus.StartDamageHealAbout(), AddSpeed, MinSpeed,TempConfig.TrickProtect);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

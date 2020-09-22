@@ -17,7 +17,7 @@ namespace game_stuff
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
 
         public float[] ZoomStepMulti { get; }
-        public Scope[] ZoomStepScopes { get; set; }
+        public Scope[] ZoomStepScopes { get; private set; }
 
         private Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups,
             ImmutableArray<(float, SkillAction)> ranges, ImmutableDictionary<SnipeAction, Snipe> snipes, int wId,

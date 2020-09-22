@@ -71,7 +71,7 @@ namespace game_stuff
             if (_lockArea != null) _lockArea.Caster = characterStatus;
             foreach (var bullet in _launchTickToBullet.Select(keyValuePair => keyValuePair.Value))
             {
-                bullet.Caster = characterStatus;
+                bullet.PickedBySomeOne(characterStatus);
             }
         }
 
@@ -164,7 +164,7 @@ namespace game_stuff
                 bullet = _lockArea.ActiveArea(casterPos, casterAim);
             }
 
-            else if (_launchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
+            if (_launchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {
                 bullet = nowBullet.ActiveBullet(casterPos, casterAim);
             }

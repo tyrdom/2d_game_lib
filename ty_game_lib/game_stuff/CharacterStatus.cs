@@ -18,19 +18,19 @@ namespace game_stuff
         private float AddMoveSpeed { get; set; }
 
         //move status
-        public float NowMoveSpeed;
+        public float NowMoveSpeed { get; private set; }
 
-        public readonly int GId;
+        public int GId { get; }
 
         //Snipe Status
 
-        public SnipeAction? SnipeOnCallAct { get; set; }
+        private SnipeAction? SnipeOnCallAct { get; set; }
 
-        public int SnipeCallStack { get; set; }
+        private int SnipeCallStack { get; set; }
 
-        public SnipeAction? NowInSnipeAct { get; set; }
+        private SnipeAction? NowInSnipeAct { get; set; }
 
-        public int NowSnipeStep { get; set; }
+        private int NowSnipeStep { get; set; }
 
         //Skill Status
         public int PauseTick { get; set; }
@@ -51,14 +51,17 @@ namespace game_stuff
 
         //be hit status
 
-        public IAntiActBuff? AntiActBuff;
+        public IAntiActBuff? AntiActBuff { get; set; }
 
+        public int NowProtectValue { get; set; }
+
+        public int MaxProtectValue { get; set; }
 
         public List<DamageBuff> DamageBuffs;
 
         public DamageHealStatus DamageHealStatus;
 
-        public int ProtectTick;
+        public int NowProtectTick { get; set; }
 
 
         // for_tick_msg
@@ -68,7 +71,7 @@ namespace game_stuff
         public bool IsHitSome { get; set; }
 
         public CharacterStatus(float maxMoveSpeed, int gId,
-            DamageHealStatus damageHealStatus, float addMoveSpeed, float minMoveSpeed)
+            DamageHealStatus damageHealStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue)
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
@@ -83,21 +86,18 @@ namespace game_stuff
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
             DamageHealStatus = damageHealStatus;
-            ProtectTick = 0;
+            NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
             MinMoveSpeed = minMoveSpeed;
+            MaxProtectValue = maxProtectValue;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
-
             SnipeOnCallAct = null;
-
             SnipeCallStack = 0;
-
             NowInSnipeAct = null;
-
             NowSnipeStep = 0;
         }
 
@@ -122,7 +122,7 @@ namespace game_stuff
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
             DamageHealStatus = damageHealStatus;
-            ProtectTick = 0;
+            NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
             MinMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
@@ -312,6 +312,13 @@ namespace game_stuff
                 return (null, null);
             }
 
+            //  检查保护 进入保护
+            if (NowProtectValue > MaxProtectValue)
+            {
+                NowProtectTick = TempConfig.ProtectTick;
+                NowProtectValue = 0;
+            }
+
             //  被硬直状态 输入无效
             var dPoint = GetPos();
             if (AntiActBuff != null)
@@ -327,6 +334,12 @@ namespace game_stuff
                     $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {AntiActBuff?.RestTick}");
 #endif
                 return (twoDPoint, null);
+            }
+
+            //
+            if (NowProtectTick > 0)
+            {
+                NowProtectTick -= 1;
             }
 
             // 当前技能结束检查
@@ -483,6 +496,16 @@ namespace game_stuff
         public TwoDVector GetAim()
         {
             return CharacterBody.Sight.Aim;
+        }
+
+        public Damage GenDamage(float damageMulti)
+        {
+            return new Damage(0);
+        }
+
+        public void AddProtect(int protectValueAdd)
+        {
+            NowProtectValue += protectValueAdd;
         }
     }
 
