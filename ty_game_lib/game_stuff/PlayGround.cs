@@ -9,21 +9,23 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private readonly Dictionary<int, IQSpace> TeamToBodies; //角色放置到四叉树中，方便子弹碰撞逻辑
+        private Dictionary<int, IQSpace> TeamToBodies { get; } //角色放置到四叉树中，方便子弹碰撞逻辑
         private readonly SightMap _sightMap; //视野地图
         private readonly WalkMap _walkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody; //gid到玩家地图实体对应
         private Dictionary<int, List<IHitStuff>> TeamToBullet;
 
+        public IQSpace CagesCanPick;
         // private TempConfig TempConfig { get; }
 
         public PlayGround(Dictionary<int, IQSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
-            Dictionary<int, CharacterBody> gidToBody)
+            Dictionary<int, CharacterBody> gidToBody, IQSpace cagesCanPick)
         {
             TeamToBodies = teamToBodies;
             _sightMap = sightMap;
             _walkMap = walkMap;
             GidToBody = gidToBody;
+            CagesCanPick = cagesCanPick;
             TeamToBullet = new Dictionary<int, List<IHitStuff>>();
         }
 
@@ -52,12 +54,12 @@ namespace game_stuff
                 characterBodies[initData.Gid] = genCharacterBody;
             }
 
+            var zone = mapInitData.GetZone();
+            var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
             var spaces = bodies.ToDictionary(p => p.Key,
                 p =>
                 {
                     var hashSet = p.Value;
-                    var zone = mapInitData.GetZone();
-                    var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
                     var aabbBoxShapes =
                         SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
                     emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
@@ -69,7 +71,9 @@ namespace game_stuff
                 Console.Out.WriteLine($"init:{qSpace.Key} team : {qSpace.Value.Count()} body");
             }
 #endif
-            var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies);
+
+            var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
+                emptyRootBranch);
             return (playGround, playGround.GenInitMsg());
         }
 

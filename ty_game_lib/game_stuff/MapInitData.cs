@@ -9,7 +9,8 @@ namespace game_stuff
         public SightMap SightMap;
         public WalkMap WalkMap;
         public Dictionary<int, StartPts> TeamToStartPt;
-
+       
+        
         
         public Zone GetZone()
         {

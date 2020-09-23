@@ -98,6 +98,8 @@ namespace game_config
         public target_type TargetType { get; set; }
 
         public int Tough { get; set; }
+        public int ProtectValue { get; set; }
+        public float DamageMulti { get; set; }
     }
 
     [Serializable]
@@ -197,6 +199,7 @@ namespace game_config
     public class weapon : IGameConfig
     {
         public int id { get; set; }
+        public SimpleObj6[] BodySizeUseAndSpeed { get; set; }
         public Dictionary<int, string> Op1 { get; set; }
         public Dictionary<int, string> Op2 { get; set; }
         public Dictionary<int, string> Op3 { get; set; }
@@ -223,17 +226,17 @@ namespace game_config
     [Serializable]
     public enum size
     {
-        @big,
         @medium,
         @small,
+        @big,
         @default
     }
 
     [Serializable]
     public enum raw_shape
     {
-        @rectangle,
-        @sector
+        @sector,
+        @rectangle
     }
 
     [Serializable]
@@ -440,5 +443,14 @@ namespace game_config
     {
         public int width { get; set; }
         public int height { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj6 : IGameConfig
+    {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public size body { get; set; }
+
+        public float speed_fix { get; set; }
     }
 }

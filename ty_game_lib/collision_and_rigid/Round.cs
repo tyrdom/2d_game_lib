@@ -2,7 +2,7 @@ using System;
 
 namespace collision_and_rigid
 {
-    public class Round : IRawBulletShape, IBulletShape
+    public class Round : IRawBulletShape, IBulletShape,IShape
     {
         public TwoDPoint O;
         public float R;

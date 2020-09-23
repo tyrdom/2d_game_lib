@@ -45,30 +45,32 @@ namespace game_stuff
         public Dictionary<int, Weapon> Weapons { get; private set; }
 
 
-        public Skill? NowCastSkill { get; set; }
+        public Skill? NowCastSkill { get; private set; }
 
         public (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
+        //Prop
+        private Prop? Prop { get; set; }
+
+        private int PropStack { get; set; }
+
+        public Vehicle? NowVehicle { get; private set; }
+
         //be hit status
-
         public IAntiActBuff? AntiActBuff { get; set; }
-
         public int NowProtectValue { get; set; }
-
         public int MaxProtectValue { get; set; }
-
-        public List<DamageBuff> DamageBuffs;
+        public List<DamageBuff> DamageBuffs { get; set; }
 
         public DamageHealStatus DamageHealStatus;
-
-        public int NowProtectTick { get; set; }
-
+        public int NowProtectTick { get; private set; }
 
         // for_tick_msg
         public SkillAction? SkillLaunch { get; private set; }
         public bool IsPause { get; private set; }
         public TwoDVector? IsBeHitBySomeOne { get; set; }
         public bool IsHitSome { get; set; }
+
 
         public CharacterStatus(float maxMoveSpeed, int gId,
             DamageHealStatus damageHealStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue)
@@ -99,6 +101,9 @@ namespace game_stuff
             SnipeCallStack = 0;
             NowInSnipeAct = null;
             NowSnipeStep = 0;
+            Prop = null;
+            PropStack = 0;
+            NowVehicle = null;
         }
 
         private void OpChangeAim(TwoDVector? aim)
@@ -131,6 +136,8 @@ namespace game_stuff
             IsBeHitBySomeOne = null;
             IsHitSome = false;
             ResetSnipe();
+            Prop = null;
+            PropStack = 0;
         }
 
         public Scope? GetNowScope()

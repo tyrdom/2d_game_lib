@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using collision_and_rigid;
 using game_config;
 
@@ -7,7 +8,17 @@ namespace game_stuff
 {
     public class CharacterBody : IIdPointShape
     {
-        public BodySize BodySize { get; }
+        public BodySize BodySize
+        {
+            get => CharacterStatus.NowVehicle?.VehicleSize ?? BodySize;
+            private set
+            {
+                if (!Enum.IsDefined(typeof(BodySize), value))
+                    throw new InvalidEnumArgumentException(nameof(value), (int) value, typeof(BodySize));
+                BodySize = value;
+            }
+        }
+
         public CharacterStatus CharacterStatus { get; }
         public TwoDPoint LastPos { get; private set; }
 
@@ -15,6 +26,7 @@ namespace game_stuff
         public AngleSight Sight { get; }
         public int Team { get; }
         private IdPointBox? IdPointBox { get; set; }
+
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
@@ -27,6 +39,7 @@ namespace game_stuff
             LastPos = lastPos;
             Sight = sight;
             Team = team;
+            
         }
 
         public bool InSight(IIdPointShape another, SightMap map)

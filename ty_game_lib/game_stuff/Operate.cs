@@ -50,9 +50,14 @@ namespace game_stuff
         Op3,
         Switch,
         CatchTrick, //CantOperateInput
+        
+        
+        UseProp,
+        RecycleCall,
+        PickOrInVehicle,
 
-        //Other
-        Pick //  far away TODO
+        //  TODO
+        OutVehicle
     }
 
     public enum SnipeAction

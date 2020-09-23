@@ -12,6 +12,7 @@ namespace game_stuff
         public int WId { get; }
         public ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> SkillGroups { get; }
 
+        public ImmutableDictionary<BodySize, float> BodyCanUseToSpeedMulti { get; }
         public ImmutableArray<(float, SkillAction)> Ranges { get; }
 
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
@@ -21,13 +22,14 @@ namespace game_stuff
 
         private Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups,
             ImmutableArray<(float, SkillAction)> ranges, ImmutableDictionary<SnipeAction, Snipe> snipes, int wId,
-            float[] zoomStepMulti, Scope[] zoomStepScopes)
+            float[] zoomStepMulti, Scope[] zoomStepScopes, ImmutableDictionary<BodySize, float> bodyCanUseToSpeedMulti)
         {
             SkillGroups = skillGroups;
             Ranges = ranges;
             Snipes = snipes;
             WId = wId;
             ZoomStepScopes = zoomStepScopes;
+            BodyCanUseToSpeedMulti = bodyCanUseToSpeedMulti;
             ZoomStepMulti = zoomStepMulti;
         }
 
@@ -37,6 +39,12 @@ namespace game_stuff
                     from keyValuePair in variable.Value
                     select keyValuePair.Value.LogUser())
                 .Aggregate("", (current, logUser) => current + logUser);
+        }
+
+
+        public bool CanBePickUp(BodySize bodySize)
+        {
+            return BodyCanUseToSpeedMulti.TryGetValue(bodySize, out _);
         }
 
         public void PickedBySomebody(CharacterStatus characterStatus)
@@ -123,6 +131,21 @@ namespace game_stuff
                 snipes[SnipeAction.SnipeOn3] = snipeById3;
             }
 
+
+            var floats = weapon.BodySizeUseAndSpeed.ToDictionary(x =>
+                {
+                    return x.body switch
+                    {
+                        size.medium => BodySize.Medium,
+                        size.small => BodySize.Small,
+                        size.big => BodySize.Big,
+                        size.@default => BodySize.Small,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                },
+                x => x.speed_fix
+            ).ToImmutableDictionary() ?? throw new Exception($"weapon can not be picked by any one {weapon.id}");
+
             var valueTuples = weapon.BotRange
                 .Select(keyValuePair => (keyValuePair.Value, GetSkillActionByInt(keyValuePair.Key)))
                 .ToList();
@@ -137,7 +160,7 @@ namespace game_stuff
             var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
 
             var weapon1 = new Weapon(immutableDictionary, immutableList, snipes.ToImmutableDictionary(), weapon.id,
-                enumerable, scopes);
+                enumerable, scopes, floats);
             return weapon1;
         }
     }

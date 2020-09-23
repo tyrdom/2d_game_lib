@@ -73,6 +73,72 @@ namespace collision_and_rigid
             return new Zone[4] {z1, z2, z3, z4};
         }
 
+        public List<(int, Zone)> SplitByQuads(float horizon, float vertical)
+        {
+            var valueTuples = new List<(int, Zone)>();
+            if (Left >= vertical)
+            {
+                if (Down >= horizon)
+                {
+                    valueTuples.Add((1, this));
+                }
+
+                else if (Up <= horizon)
+                {
+                    valueTuples.Add((4, this));
+                }
+                else
+                {
+                    var (up, down) = CutByH(horizon);
+                    valueTuples.Add((1, up));
+                    valueTuples.Add((4, down));
+                }
+            }
+
+            if (Right <= vertical)
+            {
+                if (Down >= horizon)
+                {
+                    valueTuples.Add((2, this));
+                }
+
+                else if (Up <= horizon)
+                {
+                    valueTuples.Add((3, this));
+                }
+                else
+                {
+                    var (up, down) = CutByH(horizon);
+                    valueTuples.Add((2, up));
+                    valueTuples.Add((3, down));
+                }
+            }
+            else
+            {
+                if (Down >= horizon)
+                {
+                    var (left, right) = CutByV(vertical);
+
+                    valueTuples.Add((2, left));
+                    valueTuples.Add((1, right));
+                }
+
+                else if (Up <= horizon)
+                {
+                    var (left, right) = CutByV(vertical);
+
+                    valueTuples.Add((3, left));
+                    valueTuples.Add((4, right));
+                }
+                else
+                {
+                    valueTuples.Add((0, this));
+                }
+            }
+
+            return valueTuples;
+        }
+
         public List<(Quad quad, Zone zone)> SplitZones(Zone zone)
         {
             var list = new List<(Quad quad, Zone zone)>();
@@ -172,7 +238,7 @@ namespace collision_and_rigid
                 return Right < anotherZone.Left || anotherZone.Right < Left ||
                        Up <= anotherZone.Down || anotherZone.Up <= Down;
             }
-            
+
             if (Up <= Down)
             {
                 return Right <= anotherZone.Left || anotherZone.Right <= Left ||

@@ -6,7 +6,7 @@ namespace cov_path_navi
     {
         public int LinkToPathNodeId;
 
-        public TwoDVectorLine GoThrough;
+        public TwoDVectorLine GoThrough { get; }
 
         public Link(int linkToPathNodeId, TwoDVectorLine goThrough)
         {
