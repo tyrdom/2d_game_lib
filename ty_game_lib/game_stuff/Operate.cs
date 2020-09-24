@@ -17,14 +17,36 @@ namespace game_stuff
 
         public SnipeAction? SnipeAction { get; }
 
-        public Operate(TwoDVector? aim, SkillAction? action, TwoDVector? move, SnipeAction? snipeAction = null)
+        public MapInteractive? MapInteractive { get; }
+
+        public SpecialAction? SpecialAction { get; }
+
+        public Operate(TwoDVector? aim, SkillAction? action, TwoDVector? move, SpecialAction? specialAction = null,
+            MapInteractive? mapInteractive = null,
+            SnipeAction? snipeAction = null)
         {
             Aim = aim;
             Action = action;
             Move = move;
+            SpecialAction = specialAction;
+            MapInteractive = mapInteractive;
             SnipeAction = snipeAction;
         }
 
+        public SpecialAction? GetSpecialAction()
+        {
+            return SpecialAction;
+        }
+
+        public MapInteractive? GetMapInteractive()
+        {
+            if (Action == null && SnipeAction == null)
+            {
+                return MapInteractive;
+            }
+
+            return null;
+        }
 
         public SkillAction? GetAction()
         {
@@ -49,15 +71,21 @@ namespace game_stuff
         Op2,
         Op3,
         Switch,
-        CatchTrick, //CantOperateInput
-        
-        
-        UseProp,
-        RecycleCall,
-        PickOrInVehicle,
+        CatchTrick //CantOperateInput
+    }
 
-        //  TODO
+    public enum SpecialAction
+    {
+        UseProp,
         OutVehicle
+    }
+
+
+    public enum MapInteractive
+    {
+        RecycleCall,
+        Pick,
+        InVehicle
     }
 
     public enum SnipeAction

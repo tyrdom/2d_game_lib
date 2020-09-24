@@ -20,6 +20,9 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
+        public int AmmoAddWhenSuccess { get; }
+
+
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
         public readonly Dictionary<BodySize, IAntiActBuffConfig> SuccessAntiActBuffConfigToOpponent;
@@ -117,13 +120,13 @@ namespace game_stuff
             }
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
-                bullet.PauseToOpponent, objType, tough, 1, 1);
+                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti);
         }
 
         private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             Dictionary<BodySize, IAntiActBuffConfig> successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            ObjType targetType, int tough, int restTick, int resId)
+            ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -136,8 +139,10 @@ namespace game_stuff
 
             TargetType = targetType;
             Tough = tough;
-            RestTick = restTick;
-            ResId = resId;
+            RestTick = 1;
+            ResId = 1;
+            AmmoAddWhenSuccess = ammoAddWhenSuccess;
+            DamageMulti = damageMulti;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
@@ -152,7 +157,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public bool IsHitBody(IIdPointShape targetBody)
+        private bool IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -173,7 +178,7 @@ namespace game_stuff
             }
         }
 
-        public void HitOne(CharacterStatus targetCharacterStatus)
+        private void HitOne(CharacterStatus targetCharacterStatus)
         {
             if (Caster == null)
             {
@@ -185,7 +190,7 @@ namespace game_stuff
             var objTough = nowCastSkill?.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
             var opponentIsStun = opponentCharacterStatusAntiActBuff != null;
-            var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == Skill.SkillPeriod.Casting;
+            var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
@@ -206,10 +211,10 @@ namespace game_stuff
                 // 目标速度瞄准重置
                 targetCharacterStatus.ResetSpeed();
                 targetCharacterStatus.ResetSnipe();
-                targetCharacterStatus.ResetSkill();
-                // 我方按配置添加攻击停帧
+                targetCharacterStatus.ResetSkillAct();
+                // 我方按配置添加攻击停帧,攻击产生效果
                 Caster.PauseTick = PauseToCaster;
-
+                Caster.AddAmmo(AmmoAddWhenSuccess);
                 //如果没有锁定目标，则锁定当前命中的目标
                 Caster.LockingWho ??= targetCharacterStatus;
                 //生成击中受击消息数据缓存
@@ -301,7 +306,7 @@ namespace game_stuff
                 //AttackFail 需要分两种情况 
                 //清除技能数据
                 Caster.ResetSnipe();
-                Caster.ResetSkill();
+                Caster.ResetSkillAct();
                 //生成击中受击消息数据缓存
                 Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(Caster.GetPos(), targetCharacterStatus.GetPos());
                 targetCharacterStatus.IsHitSome = true;
@@ -372,11 +377,11 @@ namespace game_stuff
 
     public class Damage
     {
-        public int DamageValue;
+        public int StandardDamageValue;
 
-        public Damage(int damageValue)
+        public Damage(int standardDamageValue)
         {
-            DamageValue = damageValue;
+            StandardDamageValue = standardDamageValue;
         }
     }
 }

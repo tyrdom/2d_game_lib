@@ -2,8 +2,8 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface ICageCanBePickUp
+    public interface IMapInteractive
     {
-        Round PickRound { get; }
+        Round CanInterActiveRound { get; }
     }
 }

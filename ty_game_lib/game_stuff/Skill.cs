@@ -7,13 +7,22 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Skill
+    public enum SkillPeriod
+    {
+        Casting,
+        CanCombo,
+        End
+    }
+
+    public class Skill : ICharAct
     {
         private readonly LockArea? _lockArea;
-        public uint NowOnTick;
-        public int NowTough;
+        public uint NowOnTick { get; set; }
+        public int NowTough { get; set; }
 
-        public int SnipeStepNeed;
+        private int SnipeStepNeed { get; }
+        private int AmmoCost { get; }
+
         private readonly int _baseTough;
 
         private readonly Dictionary<uint, Bullet> _launchTickToBullet;
@@ -24,7 +33,10 @@ namespace game_stuff
 
         private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
         private readonly uint _comboInputStartTick; //可接受输入操作帧
-        private readonly uint _skillMaxTick; // 至多帧，在播放帧
+
+        public uint TotalTick { get; }
+        // 至多帧，在播放帧
+
         private readonly int _nextCombo;
 
         private int SnipeBreakTick { get; }
@@ -38,13 +50,13 @@ namespace game_stuff
         }
 
         private Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
-            uint moveStartTick, uint skillMustTick, uint skillMaxTick,
+            uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea, int snipeBreakTick, int snipeStepNeed)
+            LockArea? lockArea, int snipeBreakTick, int snipeStepNeed, int ammoCost)
         {
             var b = 0 < comboInputStartTick &&
-                    skillMustTick < skillMaxTick &&
-                    moveStartTick + moves.Length < skillMaxTick;
+                    skillMustTick < totalTick &&
+                    moveStartTick + moves.Length < totalTick;
             if (!b)
             {
                 Console.Out.WriteLine("some skill config is error~~~~~~~");
@@ -56,13 +68,14 @@ namespace game_stuff
             _moves = moves;
             _moveStartTick = moveStartTick;
             _skillMustTick = skillMustTick;
-            _skillMaxTick = skillMaxTick;
+            TotalTick = totalTick;
             _baseTough = baseTough;
             _comboInputStartTick = comboInputStartTick;
             _nextCombo = nextCombo;
             _lockArea = lockArea;
             SnipeBreakTick = snipeBreakTick;
             SnipeStepNeed = snipeStepNeed;
+            AmmoCost = ammoCost;
         }
 
 
@@ -85,7 +98,7 @@ namespace game_stuff
             throw new InvalidDataException($"not such skill id{id}");
         }
 
-        public static Skill GenSkillByConfig(skill skill)
+        private static Skill GenSkillByConfig(skill skill)
         {
             var twoDVectors = skill.Moves.Select(GameTools.GenVectorByConfig).ToArray();
 
@@ -97,49 +110,42 @@ namespace game_stuff
                 var genByConfig = Bullet.GenByConfig(bullet, pair.Key);
                 return genByConfig;
             });
+
             var configsLockAreas = TempConfig.Configs.lock_areas;
+
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;
-
-
             return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
                 skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick,
-                skill.SnipeStepNeed);
+                skill.SnipeStepNeed, skill.AmmoCost);
         }
 
-        public enum SkillPeriod
-        {
-            Casting,
-            CanCombo,
-            End
-        }
 
-        public SkillPeriod InWhichPeriod()
+        public SkillPeriod? InWhichPeriod()
         {
             if (NowOnTick < _skillMustTick)
             {
                 return SkillPeriod.Casting;
             }
 
-            return NowOnTick < _skillMaxTick ? SkillPeriod.CanCombo : SkillPeriod.End;
+            return NowOnTick < TotalTick ? SkillPeriod.CanCombo : SkillPeriod.End;
         }
 
         public int? ComboInputRes() //可以连击，返回 下一个动作
         {
             // 如果命中返回命中连击状态id，如果不是返回miss连击id，大部分是一样的
             var weaponSkillStatus = _nextCombo;
-            return NowOnTick >= _comboInputStartTick && NowOnTick < _skillMaxTick
+            return NowOnTick >= _comboInputStartTick && NowOnTick < TotalTick
                 ? weaponSkillStatus
                 : (int?) null;
         }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(
-            TwoDPoint casterPos, TwoDVector casterAim, TwoDVector? approachingVector)
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
+            TwoDVector? approachingVector)
         {
             // 生成攻击运动
             TwoDVector? move = null;
-
             if (NowOnTick >= _moveStartTick && NowOnTick < _moveStartTick + _moves.Length)
             {
                 var moveOnTick = NowOnTick - _moveStartTick;
@@ -170,22 +176,17 @@ namespace game_stuff
             }
 
             // 是否退出Snipe状态
-
             var snipeOff = NowOnTick > 0 && NowOnTick == SnipeBreakTick;
 
-
             //GONext
-
             NowTough += TempConfig.ToughGrowPerTick;
             NowOnTick += 1;
-
-
             return (move, bullet, snipeOff);
         }
 
-        public bool LaunchSkill(int nowSnipeStep)
+        public bool LaunchSkill(int nowSnipeStep, int nowAmmo)
         {
-            if (nowSnipeStep < SnipeStepNeed) return false;
+            if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost) return false;
             NowTough = _baseTough;
             NowOnTick = 0;
             return true;

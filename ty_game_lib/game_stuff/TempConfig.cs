@@ -66,7 +66,7 @@ namespace game_stuff
         private static int TestAtk { get; set; } = 10;
 
         public static int TrickProtect { get; private set; } = 100;
-        public static int ProtectTick { get; set; } = 10;
+        public static int ProtectTick { get; private set; } = 10;
 
 
         public static float MoveDecreaseMinMulti { get; set; } = 0.4f;
@@ -75,7 +75,8 @@ namespace game_stuff
 
         public static float DecreaseMinCos { get; set; } = -0.3f;
 
-
+        public static int StandardMaxAmmo { get; set; } = 100;
+        public static int StandardMaxStack { get; set; } = 100;
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
@@ -109,6 +110,8 @@ namespace game_stuff
 
             TrickProtect = 100;
             ProtectTick = 10;
+            StandardMaxAmmo = 100;
+            StandardMaxStack = 100;
         }
 #if NETCOREAPP
         public static void LoadConfig()
