@@ -285,6 +285,9 @@ namespace game_stuff
                             }
 
                             break;
+                        case ObjType.OnlyMyself:
+                            throw new Exception("this bullet is no need to hit any one");
+                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }

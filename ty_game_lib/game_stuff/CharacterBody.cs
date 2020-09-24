@@ -139,7 +139,7 @@ namespace game_stuff
         public CharTickMsg GenTickMsg()
         {
             var isStun = CharacterStatus.AntiActBuff != null;
-            var skillAct = CharacterStatus.NowCastSkill != null;
+            var skillAct = CharacterStatus.NowCastAct != null;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,

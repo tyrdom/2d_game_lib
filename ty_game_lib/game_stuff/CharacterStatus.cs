@@ -52,7 +52,7 @@ namespace game_stuff
         }
 
 
-        public ICharAct? NowCastSkill { get; private set; }
+        public ICharAct? NowCastAct { get; private set; }
 
         public (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
@@ -91,7 +91,7 @@ namespace game_stuff
             CatchingWho = null;
             NowWeapon = 0;
             Weapons = new Dictionary<int, Weapon>();
-            NowCastSkill = null;
+            NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
@@ -133,7 +133,7 @@ namespace game_stuff
             CatchingWho = null;
             NowWeapon = 0;
 
-            NowCastSkill = null;
+            NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
             DamageBuffs = new List<DamageBuff>();
@@ -175,7 +175,7 @@ namespace game_stuff
 
             if (!skill.LaunchSkill(NowSnipeStep, NowAmmo)) return;
             SkillLaunch = skillAction;
-            NowCastSkill = skill;
+            NowCastAct = skill;
         }
 
         public void ResetSpeed()
@@ -185,7 +185,7 @@ namespace game_stuff
 
         public void ResetSkillAct()
         {
-            NowCastSkill = null;
+            NowCastAct = null;
             NextSkill = null;
             LockingWho = null;
         }
@@ -263,24 +263,37 @@ namespace game_stuff
 
         private (TwoDVector? move, IHitStuff? launchBullet) ActNowActATick(TwoDVector? moveOp)
         {
-            return NowCastSkill switch
+            return NowCastAct switch
             {
                 null => (null, null),
-                Prop prop => (null, null),
-                Skill skill => ActNowSkillATick(skill),
-                _ => throw new ArgumentOutOfRangeException(nameof(NowCastSkill))
+                Prop prop => GoNowActATick(prop, moveOp),
+                Skill skill => GoNowActATick(skill, moveOp),
+                _ => throw new ArgumentOutOfRangeException(nameof(NowCastAct))
             };
         }
 
-        private (TwoDVector? move, IHitStuff? launchBullet) ActNowSkillATick(Skill skill)
+
+        public void HitBySelfBullet(Bullet bullet)
         {
-            //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
-            var limitV
-                = LockingWho == null
+            //todo
+        }
+
+        private (TwoDVector? move, IHitStuff? launchBullet) GoNowActATick(ICharAct skill, TwoDVector? moveOp)
+        {
+            var limitV = skill switch
+            {
+                InterActiveAct _ => null,
+                Prop _ => moveOp?.Multi(GetStandardSpeed(moveOp)),
+                Skill _ => LockingWho == null
                     ? null
                     : TwoDVector.TwoDVectorByPt(GetPos(), LockingWho.GetPos())
                         .ClockwiseTurn(CharacterBody.Sight.Aim)
-                        .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr());
+                        .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr()),
+                _ => throw new ArgumentOutOfRangeException(nameof(skill))
+            };
+
+            //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
+
 #if DEBUG
             var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GId.ToString();
             Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV}");
@@ -303,8 +316,8 @@ namespace game_stuff
 
         private void ComboByNext(TwoDVector? operateAim)
         {
-            if (NextSkill == null || NowCastSkill == null ||
-                NowCastSkill.InWhichPeriod() != SkillPeriod.CanCombo)
+            if (NextSkill == null || NowCastAct == null ||
+                NowCastAct.InWhichPeriod() != SkillPeriod.CanCombo)
             {
                 OpChangeAim(null);
                 return;
@@ -374,18 +387,18 @@ namespace game_stuff
 
 
             // 当前技能结束检查
-            if (NowCastSkill?.InWhichPeriod() == SkillPeriod.End) NowCastSkill = null;
+            if (NowCastAct?.InWhichPeriod() == SkillPeriod.End) NowCastAct = null;
 
 
             // 当前技能的释放时候
             var opAction = operate?.GetAction();
-            if (NowCastSkill != null)
+            if (NowCastAct != null)
             {
                 // 技能进行一个tick
 
                 var (move, launchBullet) = ActNowActATick(operate?.Move);
 #if DEBUG
-                Console.Out.WriteLine($"{GId} skill on {NowCastSkill.NowOnTick}");
+                Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
                 Console.Out.WriteLine($"skill move {move}");
                 if (launchBullet != null)
                     Console.Out.WriteLine(
@@ -400,7 +413,7 @@ namespace game_stuff
 
                 //有Act操作，则检测出下一个状态id
 
-                var weaponSkillStatus = NowCastSkill.ComboInputRes();
+                var weaponSkillStatus = NowCastAct.ComboInputRes();
 
                 // 状态可用，则执行连技操作
                 if (weaponSkillStatus == null) return (move, launchBullet);
@@ -420,12 +433,10 @@ namespace game_stuff
                 if (!nowWeapon.SkillGroups.TryGetValue(opAction.Value, out var skills) ||
                     !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
 
-                switch (NowCastSkill.InWhichPeriod())
+                switch (NowCastAct.InWhichPeriod())
                 {
                     case SkillPeriod.Casting:
-
                         NextSkill ??= (skillAim, skill, opAction.Value);
-
                         break;
                     case SkillPeriod.CanCombo:
                         LoadSkill(skillAim, skill, opAction.Value);
@@ -550,108 +561,6 @@ namespace game_stuff
         {
             if (NowVehicle == null)
             {
-            }
-        }
-    }
-
-    public class DamageHealStatus
-    {
-        private int MaxHp { get; }
-        private int NowHp { get; set; }
-
-        private int NowArmor { get; set; }
-        private int MaxArmor { get; }
-
-        private int ArmorStrength { get; }
-        private int NowShield { get; set; }
-        private int MaxShield { get; }
-
-        private int NowDelayTick { get; set; }
-
-        private int ShieldDelayTick { get; }
-
-        private int ShieldRecover { get; }
-
-
-        private DamageHealStatus(int maxHp, int nowHp, int nowArmor, int maxArmor, int nowShield, int maxShield,
-            int shieldDelayTick, int armorStrength, int shieldRecover)
-        {
-            MaxHp = maxHp;
-            NowHp = nowHp;
-            NowArmor = nowArmor;
-            MaxArmor = maxArmor;
-            NowShield = nowShield;
-            MaxShield = maxShield;
-            ShieldDelayTick = shieldDelayTick;
-            ArmorStrength = armorStrength;
-            ShieldRecover = shieldRecover;
-        }
-
-        public static DamageHealStatus StartDamageHealAbout()
-        {
-            return new DamageHealStatus(TempConfig.StartHp, TempConfig.StartHp, 0, 0, 0, 0, 5, 1, 0);
-        }
-
-        public void TakeDamage(Damage damage)
-        {
-            var rest = damage.StandardDamageValue;
-
-            NowDelayTick = ShieldDelayTick;
-
-            var nowShield = NowShield - rest;
-
-            if (nowShield >= 0)
-            {
-                NowShield = nowShield;
-                return;
-            }
-
-            NowShield = 0;
-            rest = -nowShield;
-
-            var nowArmor = NowArmor - rest + ArmorStrength;
-
-
-            if (nowArmor >= 0)
-            {
-                NowArmor = nowArmor;
-                return;
-            }
-
-            {
-                NowArmor = 0;
-                rest = -nowArmor;
-            }
-
-            NowHp -= rest;
-        }
-
-        public void GetHeal(int heal)
-        {
-            NowHp = Math.Min(NowHp + heal, MaxHp);
-        }
-
-        public void FixArmor(int fix)
-        {
-            NowArmor = Math.Min(NowArmor + fix, MaxArmor);
-        }
-
-        public void ChargeShield(int charge)
-        {
-            NowShield = Math.Min(NowShield + charge, MaxShield);
-        }
-
-
-        public void GoATick()
-        {
-            if (NowDelayTick == 0)
-            {
-                NowShield = Math.Min(NowShield + ShieldRecover, MaxShield);
-            }
-
-            else if (NowDelayTick > 0)
-            {
-                NowDelayTick--;
             }
         }
     }

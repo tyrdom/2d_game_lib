@@ -4,25 +4,29 @@ namespace game_stuff
 {
     public class InterActiveAct : ICharAct
     {
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(TwoDPoint getPos, TwoDVector sightAim,
-            TwoDVector? limitV)
+        public InterActiveAct(uint totalTick)
         {
-            throw new System.NotImplementedException();
+            TotalTick = totalTick;
+        }
+
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(TwoDPoint getPos, TwoDVector sightAim,
+            TwoDVector? RawMoveVector)
+        {
+            return (null, null, false);
         }
 
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }
-
         public uint TotalTick { get; }
 
-        public SkillPeriod? InWhichPeriod()
+        public SkillPeriod InWhichPeriod()
         {
-            throw new System.NotImplementedException();
+            return NowOnTick < TotalTick ? SkillPeriod.Casting : SkillPeriod.End;
         }
 
         public int? ComboInputRes()
         {
-            throw new System.NotImplementedException();
+            return null;
         }
     }
 }

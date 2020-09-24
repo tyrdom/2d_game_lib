@@ -8,6 +8,7 @@ namespace game_stuff
 {
     public enum ObjType
     {
+        OnlyMyself,
         OtherTeam,
         SameTeam,
         AllTeam
@@ -186,7 +187,7 @@ namespace game_stuff
             }
 
             var protecting = targetCharacterStatus.NowProtectTick > 0;
-            var nowCastSkill = targetCharacterStatus.NowCastSkill;
+            var nowCastSkill = targetCharacterStatus.NowCastAct;
             var objTough = nowCastSkill?.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
             var opponentIsStun = opponentCharacterStatusAntiActBuff != null;

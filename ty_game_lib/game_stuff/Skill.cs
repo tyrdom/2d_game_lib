@@ -122,7 +122,7 @@ namespace game_stuff
         }
 
 
-        public SkillPeriod? InWhichPeriod()
+        public SkillPeriod InWhichPeriod()
         {
             if (NowOnTick < _skillMustTick)
             {
@@ -142,7 +142,7 @@ namespace game_stuff
         }
 
         public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
-            TwoDVector? approachingVector)
+            TwoDVector? RawMoveVector)
         {
             // 生成攻击运动
             TwoDVector? move = null;
@@ -151,11 +151,11 @@ namespace game_stuff
                 var moveOnTick = NowOnTick - _moveStartTick;
 
                 move = _moves[moveOnTick];
-                if (approachingVector != null)
+                if (RawMoveVector != null)
                 {
                     var movesLengthRest = (float) _moves.Length - moveOnTick;
-                    var min = MathTools.Min(approachingVector.X, move.X);
-                    var max = MathTools.Max(approachingVector.Y, move.Y) / movesLengthRest;
+                    var min = MathTools.Min(RawMoveVector.X, move.X);
+                    var max = MathTools.Max(RawMoveVector.Y, move.Y) / movesLengthRest;
 
                     move = new TwoDVector(min, max);
                 }
