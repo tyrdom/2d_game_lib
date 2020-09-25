@@ -10,23 +10,6 @@ namespace game_stuff
 {
     //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
 
-    public class CharGoTickMsg
-    {
-        public CharGoTickMsg(ITwoDTwoP? move, IHitStuff? launchBullet, IMapInteractive? dropThing = null,
-            IMapInteractive? getThing = null)
-        {
-            Move = move;
-            LaunchBullet = launchBullet;
-            DropThing = dropThing;
-            GetThing = getThing;
-        }
-
-        public ITwoDTwoP? Move { get; }
-        public IHitStuff? LaunchBullet { get; }
-        public IMapInteractive? DropThing { get; }
-        public IMapInteractive? GetThing { get; }
-    }
-
     public class CharacterStatus
     {
         public CharacterBody CharacterBody;

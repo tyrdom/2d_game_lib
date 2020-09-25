@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using collision_and_rigid;
 
@@ -287,7 +285,6 @@ namespace game_stuff
                             break;
                         case ObjType.OnlyMyself:
                             throw new Exception("this bullet is no need to hit any one");
-                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -329,18 +326,29 @@ namespace game_stuff
                     }
 
                     var mapInteractive = aCharGoTickMsg.DropThing;
-                    if (mapInteractive!=null)
+                    if (mapInteractive != null)
                     {
                         //todo add to map
                     }
 
                     var interactive = aCharGoTickMsg.GetThing;
 
-                    if (interactive!=null)
+                    if (interactive != null)
                     {
                         //todo remove in map
                     }
 
+                    var whoPickCageCall = aCharGoTickMsg.WhoPickCageCall;
+                    if (whoPickCageCall != null)
+                    {
+                        //todo link pick cage
+                    }
+
+                    var whoRecycleCageCall = aCharGoTickMsg.WhoRecycleCageCall;
+                    if (whoRecycleCageCall != null)
+                    {
+                        //todo link to recycle cage
+                    }
 
                     var bullet = aCharGoTickMsg.LaunchBullet;
                     if (bullet == null) continue;
