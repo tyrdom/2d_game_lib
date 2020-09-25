@@ -39,7 +39,6 @@ namespace game_stuff
             LastPos = lastPos;
             Sight = sight;
             Team = team;
-            
         }
 
         public bool InSight(IIdPointShape another, SightMap map)
@@ -111,14 +110,14 @@ namespace game_stuff
         }
 
 
-        public (ITwoDTwoP?, IHitStuff?) BodyGoATick(Dictionary<int, Operate> gidToOp)
+        public CharGoTickMsg BodyGoATick(Dictionary<int, Operate> gidToOp)
         {
             LastPos = NowPos;
             var id = GetId();
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
 #if DEBUG
-            Console.Out.WriteLine($"bgt::{charGoTick.Item1?.ToString()}");
+            Console.Out.WriteLine($"bgt::{charGoTick.Move?.ToString()}");
 #endif
             return charGoTick;
         }

@@ -147,6 +147,7 @@ namespace collision_and_rigid
                             var twoDPoint = blockLine.Slide(moveLineB);
                             return twoDPoint;
                         }
+
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -547,7 +548,7 @@ namespace collision_and_rigid
 
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
-            return qSpace.TryCovToLimitBlockQSpace(maxLoadPerQ);
+            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
 
@@ -562,7 +563,7 @@ namespace collision_and_rigid
 #if DEBUG
             Console.Out.WriteLine($"AaBbBlocks num::{qSpace.AaBbPackBox.Count}");
 #endif
-            return qSpace.TryCovToLimitBlockQSpace(maxLoadPerQ);
+            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
         }
 
         public static IQSpace CreateAreaQSpaceByAreaBox(AreaBox[] areaBoxes, int limit)
@@ -576,7 +577,7 @@ namespace collision_and_rigid
 #if DEBUG
             Console.Out.WriteLine($"AaBbArea num::{qSpace.AaBbPackBox.Count}");
 #endif
-            return qSpace.TryCovToLimitAreaQSpace(limit);
+            return qSpace.TryCovToLimitQSpace(limit);
         }
 
 
@@ -600,11 +601,9 @@ namespace collision_and_rigid
                         beforeOk.Add(j);
                     }
 
-                    if (checkBefore)
-                    {
-                        beforeOk.Add(i);
-                        afterOk.Add(j);
-                    }
+                    if (!checkBefore) continue;
+                    beforeOk.Add(i);
+                    afterOk.Add(j);
                 }
             }
 

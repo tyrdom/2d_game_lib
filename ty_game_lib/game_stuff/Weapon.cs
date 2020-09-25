@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon
+    public class Weapon : ICanPutInCage
     {
         public int WId { get; }
         public ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> SkillGroups { get; }

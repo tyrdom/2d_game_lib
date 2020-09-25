@@ -317,8 +317,8 @@ namespace game_stuff
                 {
                     // (gid, (twoDTwoP, bullet))
                     var gid = gtb.Key;
-                    var twoDTwoP = gtb.Value.Item1;
-                    var bullet = gtb.Value.Item2;
+                    var aCharGoTickMsg = gtb.Value;
+                    var twoDTwoP = aCharGoTickMsg.Move;
                     if (twoDTwoP != null)
                     {
 #if DEBUG
@@ -328,6 +328,21 @@ namespace game_stuff
                         twoDTwoPs[gid] = twoDTwoP;
                     }
 
+                    var mapInteractive = aCharGoTickMsg.DropThing;
+                    if (mapInteractive!=null)
+                    {
+                        //todo add to map
+                    }
+
+                    var interactive = aCharGoTickMsg.GetThing;
+
+                    if (interactive!=null)
+                    {
+                        //todo remove in map
+                    }
+
+
+                    var bullet = aCharGoTickMsg.LaunchBullet;
                     if (bullet == null) continue;
                     if (TeamToBullet.TryGetValue(team, out var b))
                     {

@@ -27,7 +27,9 @@ namespace collision_and_rigid
         public IEnumerable<BlockBox> TouchBy(BlockBox box);
         public bool LineIsBlockSight(TwoDVectorLine line);
 
+        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit);
 
+        public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();
         public int FastTouchWithARightShootPoint(TwoDPoint p);

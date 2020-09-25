@@ -8,6 +8,25 @@ using game_config;
 
 namespace game_stuff
 {
+    //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
+
+    public class CharGoTickMsg
+    {
+        public CharGoTickMsg(ITwoDTwoP? move, IHitStuff? launchBullet, IMapInteractive? dropThing = null,
+            IMapInteractive? getThing = null)
+        {
+            Move = move;
+            LaunchBullet = launchBullet;
+            DropThing = dropThing;
+            GetThing = getThing;
+        }
+
+        public ITwoDTwoP? Move { get; }
+        public IHitStuff? LaunchBullet { get; }
+        public IMapInteractive? DropThing { get; }
+        public IMapInteractive? GetThing { get; }
+    }
+
     public class CharacterStatus
     {
         public CharacterBody CharacterBody;
@@ -151,10 +170,6 @@ namespace game_stuff
             NowPropStack = 0;
         }
 
-        public void LoadMapInteractiveAct(ICharAct aICharAct)
-        {
-        }
-
         public Scope? GetNowScope()
         {
             if (NowInSnipeAct == null || NowSnipeStep <= 0 || !Weapons.TryGetValue(NowWeapon, out var weapon))
@@ -173,7 +188,7 @@ namespace game_stuff
                 OpChangeAim(aim);
             }
 
-            if (!skill.LaunchSkill(NowSnipeStep, NowAmmo)) return;
+            if (!skill.Launch(NowSnipeStep, NowAmmo)) return;
             SkillLaunch = skillAction;
             NowCastAct = skill;
         }
@@ -261,11 +276,12 @@ namespace game_stuff
             NowSnipeStep = 0;
         }
 
-        private (TwoDVector? move, IHitStuff? launchBullet) ActNowActATick(TwoDVector? moveOp)
+        private CharGoTickMsg ActNowActATick(
+            TwoDVector? moveOp)
         {
             return NowCastAct switch
             {
-                null => (null, null),
+                null => new CharGoTickMsg(null, null, null, null),
                 Prop prop => GoNowActATick(prop, moveOp),
                 Skill skill => GoNowActATick(skill, moveOp),
                 _ => throw new ArgumentOutOfRangeException(nameof(NowCastAct))
@@ -278,11 +294,12 @@ namespace game_stuff
             //todo
         }
 
-        private (TwoDVector? move, IHitStuff? launchBullet) GoNowActATick(ICharAct skill, TwoDVector? moveOp)
+        private CharGoTickMsg GoNowActATick(ICharAct skill,
+            TwoDVector? moveOp)
         {
             var limitV = skill switch
             {
-                InterActiveAct _ => null,
+                CageActiveAct _ => null,
                 Prop _ => moveOp?.Multi(GetStandardSpeed(moveOp)),
                 Skill _ => LockingWho == null
                     ? null
@@ -303,7 +320,7 @@ namespace game_stuff
                 limitV.X = MathTools.Max(0, limitV.X);
             }
 
-            var (move, bullet, snipeOff) = skill
+            var (move, bullet, snipeOff, inCage) = skill
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);
 
             if (snipeOff)
@@ -311,7 +328,23 @@ namespace game_stuff
                 OffSnipe();
             }
 
-            return (move, bullet);
+            if (inCage != null)
+            {
+                switch (inCage)
+                {
+                    case Prop prop:
+
+                        break;
+                    case Vehicle vehicle:
+                        break;
+                    case Weapon weapon:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(inCage));
+                }
+            }
+
+            return new CharGoTickMsg(move, bullet, null, null);
         }
 
         private void ComboByNext(TwoDVector? operateAim)
@@ -337,7 +370,8 @@ namespace game_stuff
             NextSkill = null;
         }
 
-        public (ITwoDTwoP?, IHitStuff?) CharGoTick(Operate? operate) //角色一个tick行为
+        public CharGoTickMsg
+            CharGoTick(Operate? operate) //角色一个tick行为
         {
             //清理消息缓存
             if (SkillLaunch != null) SkillLaunch = null;
@@ -351,7 +385,7 @@ namespace game_stuff
             {
                 PauseTick -= 1;
 
-                return (null, null);
+                return new CharGoTickMsg(null, null, null, null);
             }
 
             //  检查保护 进入保护
@@ -376,7 +410,7 @@ namespace game_stuff
                 Console.Out.WriteLine(
                     $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {AntiActBuff?.RestTick}");
 #endif
-                return (twoDPoint, null);
+                return new CharGoTickMsg(twoDPoint, null, null, null);
             }
 
             //
@@ -396,10 +430,12 @@ namespace game_stuff
             {
                 // 技能进行一个tick
 
-                var (move, launchBullet) = ActNowActATick(operate?.Move);
+                var actNowActATick = ActNowActATick(operate?.Move);
+
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
-                Console.Out.WriteLine($"skill move {move}");
+                Console.Out.WriteLine($"skill move {actNowActATick.Move}");
+                var launchBullet = actNowActATick.LaunchBullet;
                 if (launchBullet != null)
                     Console.Out.WriteLine(
                         $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim}||{launchBullet.Pos}");
@@ -409,14 +445,15 @@ namespace game_stuff
                 ComboByNext(skillAim);
 
                 //没有更多Act操作，则返回
-                if (opAction == null) return (move, launchBullet);
+                if (opAction == null) return actNowActATick;
 
                 //有Act操作，则检测出下一个状态id
 
                 var weaponSkillStatus = NowCastAct.ComboInputRes();
 
+
+                if (weaponSkillStatus == null) return actNowActATick;
                 // 状态可用，则执行连技操作
-                if (weaponSkillStatus == null) return (move, launchBullet);
                 var status = weaponSkillStatus.Value;
                 var b = opAction == SkillAction.Switch;
                 var toUse = NowWeapon;
@@ -431,7 +468,7 @@ namespace game_stuff
                     : Weapons.First().Value;
 
                 if (!nowWeapon.SkillGroups.TryGetValue(opAction.Value, out var skills) ||
-                    !skills.TryGetValue(status, out var skill)) return (move, launchBullet);
+                    !skills.TryGetValue(status, out var skill)) return actNowActATick;
 
                 switch (NowCastAct.InWhichPeriod())
                 {
@@ -449,7 +486,7 @@ namespace game_stuff
                         throw new ArgumentOutOfRangeException();
                 }
 
-                return (move, launchBullet);
+                return actNowActATick;
             }
 
             // 没有技能在释放
@@ -458,7 +495,7 @@ namespace game_stuff
             {
                 ResetSpeed();
                 OpChangeAim(null);
-                return (null, null);
+                return new CharGoTickMsg(null, null, null, null);
             }
 
             // 有操作
@@ -476,13 +513,14 @@ namespace game_stuff
                 OpChangeAim(operate.Aim);
             }
 
+
             if (opAction != null)
             {
 #if DEBUG
                 Console.Out.WriteLine($"skill start {opAction.ToString()}");
 #endif
 
-                // 非连击状态瞬间切换
+                // 非连击状态切换武器
                 if (opAction == SkillAction.Switch)
                 {
                     NowWeapon = (NowWeapon + 1) % Weapons.Count;
@@ -493,10 +531,35 @@ namespace game_stuff
                 {
                     if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
                         !weapon.SkillGroups.TryGetValue(opAction.Value, out var value) ||
-                        !value.TryGetValue(0, out var skill)) return (null, null);
+                        !value.TryGetValue(0, out var skill)) return new CharGoTickMsg(null, null, null, null);
                     LoadSkill(null, skill, opAction.Value);
                     var actNowSkillATick = ActNowActATick(operate.Move);
                     return actNowSkillATick;
+                }
+            }
+
+
+            var specialAction = operate.GetSpecialAction();
+            if (specialAction != null)
+            {
+                switch (specialAction)
+                {
+                    case SpecialAction.UseProp:
+                        if (Prop == null) return new CharGoTickMsg(null, null, null, null);
+                        if (Prop.Launch(NowPropStack))
+                        {
+                            NowPropStack -= Prop.StackCost;
+                        }
+
+                        break;
+                    case SpecialAction.OutVehicle:
+                        if (NowVehicle == null) return new CharGoTickMsg(null, null, null, null);
+                    {
+                    }
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 
@@ -506,7 +569,7 @@ namespace game_stuff
             if (twoDVector == null)
             {
                 ResetSpeed();
-                return (null, null);
+                return new CharGoTickMsg(null, null, null, null);
             }
 
             // 加速跑步运动，有上限
@@ -520,7 +583,7 @@ namespace game_stuff
             var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
-            return (dVector, null);
+            return new CharGoTickMsg(dVector, null, null, null);
         }
 
 
@@ -547,7 +610,7 @@ namespace game_stuff
             return CharacterBody.Sight.Aim;
         }
 
-        public Damage GenDamage(float damageMulti)
+        public static Damage GenDamage(float damageMulti)
         {
             return new Damage(0);
         }
@@ -557,14 +620,18 @@ namespace game_stuff
             NowProtectValue += protectValueAdd;
         }
 
-        public void AddAmmo(int ammoAddWhenSuccess)
+        public void AddAmmo(int ammoAdd)
         {
             if (NowVehicle == null)
             {
+                NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
+            }
+            else
+            {
+                NowVehicle.AddAmmo(ammoAdd);
             }
         }
     }
-
 
     public class DamageBuff
     {

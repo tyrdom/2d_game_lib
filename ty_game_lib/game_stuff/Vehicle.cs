@@ -1,12 +1,14 @@
+using System;
 using System.Collections.Generic;
 
 namespace game_stuff
 {
-    public class Vehicle
+    public class Vehicle : ICanPutInCage
     {
         public Vehicle(BodySize vehicleSize, float vehicleMaxMoveSpeed, float vehicleMinMoveSpeed,
             float vehicleAddMoveSpeed, Scope vehicleScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
-            DamageHealStatus damageHealStatus, int destroyTick, int weaponSlot, int getInTick, int nowAmmo, int maxAmmo)
+            DamageHealStatus damageHealStatus, int destroyTick, int weaponSlot, int getInTick, int nowAmmo, int maxAmmo,
+            Skill outAct)
         {
             VehicleSize = vehicleSize;
             VehicleMaxMoveSpeed = vehicleMaxMoveSpeed;
@@ -21,6 +23,7 @@ namespace game_stuff
             GetInTick = getInTick;
             NowAmmo = nowAmmo;
             MaxAmmo = maxAmmo;
+            OutAct = outAct;
             WhoDrive = null;
         }
 
@@ -39,8 +42,17 @@ namespace game_stuff
         private int DestroyTick { get; }
 
         private Bullet DestroyBullet { get; }
-        public DamageHealStatus DamageHealStatus { get; }
+        private DamageHealStatus DamageHealStatus { get; }
 
-        public int GetInTick { get; }
+        public Skill OutAct { get; }
+        private int GetInTick { get; }
+
+        public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
+
+        public void BePickCage()
+        {
+            WhoDrive = null;
+            //todo
+        }
     }
 }

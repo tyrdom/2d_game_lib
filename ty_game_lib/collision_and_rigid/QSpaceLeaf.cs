@@ -175,21 +175,28 @@ namespace collision_and_rigid
                 select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
         }
 
+        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
+        {
+            if (AaBbPackBox.Count < limit)
+            {
+                AaBbPackBox.Add(aaBbBox);
+                return;
+            }
+
+            var tryCovToBranch = TryCovToBranch(limit);
+            tryCovToBranch.AddSingleAaBbBox(aaBbBox, limit);
+        }
+
+        public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)
+        {
+            return AaBbPackBox.Remove(aaBbBox);
+        }
+
         public void InsertBlockBox(BlockBox box)
         {
             AaBbPackBox.Add(box);
         }
 
-        public IQSpace TryCovToLimitBlockQSpace(int limit)
-        {
-            if (AaBbPackBox.Count <= limit)
-            {
-                return this;
-            }
-
-            var tryCovToBranch = TryCovToBranch(limit);
-            return tryCovToBranch;
-        }
 
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p)
         {
@@ -275,10 +282,10 @@ namespace collision_and_rigid
             var qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
             var qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
             var tryCovToBranch = new QSpaceBranch(TheQuad, Father, Zone, zone,
-                qs1.TryCovToLimitBlockQSpace(limit),
-                qs2.TryCovToLimitBlockQSpace(limit),
-                qs3.TryCovToLimitBlockQSpace(limit),
-                qs4.TryCovToLimitBlockQSpace(limit));
+                qs1.TryCovToLimitQSpace(limit),
+                qs2.TryCovToLimitQSpace(limit),
+                qs3.TryCovToLimitQSpace(limit),
+                qs4.TryCovToLimitQSpace(limit));
             tryCovToBranch.QuadOne.Father = tryCovToBranch;
             tryCovToBranch.QuadTwo.Father = tryCovToBranch;
             tryCovToBranch.QuadThree.Father = tryCovToBranch;
@@ -331,7 +338,7 @@ namespace collision_and_rigid
             return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t);
         }
 
-        public IQSpace TryCovToLimitAreaQSpace(int limit)
+        public IQSpace TryCovToLimitQSpace(int limit)
         {
             if (AaBbPackBox.Count <= limit)
             {

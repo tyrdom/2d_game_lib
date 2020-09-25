@@ -1,33 +1,33 @@
-using System;
 using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ICanPutInCage
+    public class CageActiveAct : ICharAct
     {
-        public int StackCost;
-
-        public uint TotalTick { get; }
-
-        public float MoveMulti { get; }
-
-
-        public Bullet PropBullet { get; }
+        public CageActiveAct(int nowTough, uint totalTick, ICanPutInCage inCage, PickCage inWhichCage)
+        {
+            NowTough = nowTough;
+            TotalTick = totalTick;
+            InCage = inCage;
+            InWhichCage = inWhichCage;
+            NowOnTick = 0;
+        }
 
         public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? inCage) GoATick(TwoDPoint getPos,
             TwoDVector sightAim,
             TwoDVector? rawMoveVector)
         {
             var b = NowOnTick == 0;
-
-            var bullet = NowOnTick == (TotalTick - 1) ? PropBullet : null;
-            var twoDVector = rawMoveVector?.Multi(MoveMulti);
-            NowOnTick += 1;
-            return (twoDVector, bullet, b, null);
+            var inCage = NowOnTick == TotalTick - 1 ? this.InCage : null;
+            return (null, null, b, inCage);
         }
 
+        public PickCage InWhichCage { get; }
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }
+        public uint TotalTick { get; }
+
+        public ICanPutInCage InCage { get; }
 
         public SkillPeriod InWhichPeriod()
         {
@@ -37,13 +37,6 @@ namespace game_stuff
         public int? ComboInputRes()
         {
             return null;
-        }
-
-        public bool Launch(int nowStack)
-        {
-            if (nowStack < StackCost) return false;
-            NowOnTick = 0;
-            return true;
         }
     }
 }

@@ -141,8 +141,9 @@ namespace game_stuff
                 : (int?) null;
         }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(TwoDPoint casterPos, TwoDVector casterAim,
-            TwoDVector? RawMoveVector)
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? inCage) GoATick(TwoDPoint casterPos,
+            TwoDVector casterAim,
+            TwoDVector? rawMoveVector)
         {
             // 生成攻击运动
             TwoDVector? move = null;
@@ -151,11 +152,11 @@ namespace game_stuff
                 var moveOnTick = NowOnTick - _moveStartTick;
 
                 move = _moves[moveOnTick];
-                if (RawMoveVector != null)
+                if (rawMoveVector != null)
                 {
                     var movesLengthRest = (float) _moves.Length - moveOnTick;
-                    var min = MathTools.Min(RawMoveVector.X, move.X);
-                    var max = MathTools.Max(RawMoveVector.Y, move.Y) / movesLengthRest;
+                    var min = MathTools.Min(rawMoveVector.X, move.X);
+                    var max = MathTools.Max(rawMoveVector.Y, move.Y) / movesLengthRest;
 
                     move = new TwoDVector(min, max);
                 }
@@ -181,10 +182,10 @@ namespace game_stuff
             //GONext
             NowTough += TempConfig.ToughGrowPerTick;
             NowOnTick += 1;
-            return (move, bullet, snipeOff);
+            return (move, bullet, snipeOff, null);
         }
 
-        public bool LaunchSkill(int nowSnipeStep, int nowAmmo)
+        public bool Launch(int nowSnipeStep, int nowAmmo)
         {
             if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost) return false;
             NowTough = _baseTough;

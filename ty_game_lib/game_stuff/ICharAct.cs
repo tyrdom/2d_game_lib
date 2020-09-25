@@ -4,8 +4,9 @@ namespace game_stuff
 {
     public interface ICharAct
     {
-        (TwoDVector? move, IHitStuff? bullet, bool snipeOff) GoATick(TwoDPoint getPos, TwoDVector sightAim,
-            TwoDVector? RawMoveVector);
+        (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? inCage) GoATick(TwoDPoint getPos,
+            TwoDVector sightAim,
+            TwoDVector? rawMoveVector);
 
 
         int NowTough { get; set; }
@@ -13,5 +14,7 @@ namespace game_stuff
         uint TotalTick { get; }
         SkillPeriod InWhichPeriod();
         int? ComboInputRes();
+        
+        
     }
 }

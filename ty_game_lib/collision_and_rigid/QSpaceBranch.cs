@@ -218,6 +218,49 @@ namespace collision_and_rigid
             return lineIsBlockSight || isBlockSight;
         }
 
+        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
+        {
+            if (AaBbPackBox.Count < limit)
+            {
+                AaBbPackBox.Add(aaBbBox);
+                return;
+            }
+
+            var (horizon, vertical) = Zone.GetMid();
+            var splitByQuads = aaBbBox.SplitByQuads(horizon, vertical);
+            foreach (var splitByQuad in splitByQuads)
+            {
+                var (item1, item2) = splitByQuad;
+                switch (item1)
+                {
+                    case 0:
+                        AaBbPackBox.Add(aaBbBox);
+                        break;
+                    case 1:
+                        QuadOne.AddSingleAaBbBox(item2, limit);
+                        break;
+                    case 2:
+                        QuadTwo.AddSingleAaBbBox(item2, limit);
+                        break;
+                    case 3:
+                        QuadThree.AddSingleAaBbBox(item2, limit);
+                        break;
+                    case 4:
+                        QuadFour.AddSingleAaBbBox(item2, limit);
+                        break;
+                }
+            }
+        }
+
+        public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)
+        {
+            if (AaBbPackBox.Remove(aaBbBox)) return true;
+            return QuadOne.RemoveSingleAaBbBox(aaBbBox) ||
+                   QuadTwo.RemoveSingleAaBbBox(aaBbBox) ||
+                   QuadThree.RemoveSingleAaBbBox(aaBbBox) ||
+                   QuadFour.RemoveSingleAaBbBox(aaBbBox);
+        }
+
 
         public int FastTouchWithARightShootPoint(TwoDPoint p)
         {
@@ -279,7 +322,6 @@ namespace collision_and_rigid
                         throw new ArgumentOutOfRangeException();
                 }
             }
-            
         }
 
 

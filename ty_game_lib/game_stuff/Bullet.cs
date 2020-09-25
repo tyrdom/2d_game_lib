@@ -234,7 +234,7 @@ namespace game_stuff
 
                 //对手承受伤害
                 targetCharacterStatus.AddProtect(ProtectValueAdd);
-                targetCharacterStatus.DamageHealStatus.TakeDamage(Caster.GenDamage(DamageMulti));
+                targetCharacterStatus.DamageHealStatus.TakeDamage(CharacterStatus.GenDamage(DamageMulti));
 
 
                 var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
