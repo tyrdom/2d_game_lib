@@ -4,9 +4,9 @@ namespace game_stuff
 {
     public interface ICharAct
     {
-        (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? inCage) GoATick(TwoDPoint getPos,
+        (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage) GoATick(TwoDPoint getPos,
             TwoDVector sightAim,
-            TwoDVector? rawMoveVector);
+            TwoDVector? rawMoveVector, TwoDVector? limitV);
 
 
         int NowTough { get; set; }

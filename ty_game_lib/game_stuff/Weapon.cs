@@ -10,9 +10,11 @@ namespace game_stuff
     public class Weapon : ICanPutInCage
     {
         public int WId { get; }
-        public ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> SkillGroups { get; }
 
-        public ImmutableDictionary<BodySize, float> BodyCanUseToSpeedMulti { get; }
+        public ImmutableDictionary<BodySize, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
+            SkillGroups { get; }
+
+
         public ImmutableArray<(float, SkillAction)> Ranges { get; }
 
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
@@ -20,37 +22,42 @@ namespace game_stuff
         public float[] ZoomStepMulti { get; }
         public Scope[] ZoomStepScopes { get; private set; }
 
-        private Weapon(ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> skillGroups,
+        private Weapon(
+            ImmutableDictionary<BodySize, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
+                skillGroups,
             ImmutableArray<(float, SkillAction)> ranges, ImmutableDictionary<SnipeAction, Snipe> snipes, int wId,
-            float[] zoomStepMulti, Scope[] zoomStepScopes, ImmutableDictionary<BodySize, float> bodyCanUseToSpeedMulti)
+            float[] zoomStepMulti, Scope[] zoomStepScopes)
         {
             SkillGroups = skillGroups;
             Ranges = ranges;
             Snipes = snipes;
             WId = wId;
             ZoomStepScopes = zoomStepScopes;
-            BodyCanUseToSpeedMulti = bodyCanUseToSpeedMulti;
             ZoomStepMulti = zoomStepMulti;
+            InWhichMapInteractive = null;
         }
 
         public string LogUserString()
         {
             return (from variable in SkillGroups
                     from keyValuePair in variable.Value
-                    select keyValuePair.Value.LogUser())
+                    from valuePair in keyValuePair.Value
+                    select valuePair.Value.LogUser())
                 .Aggregate("", (current, logUser) => current + logUser);
         }
 
 
         public bool CanBePickUp(BodySize bodySize)
         {
-            return BodyCanUseToSpeedMulti.TryGetValue(bodySize, out _);
+            return SkillGroups.TryGetValue(bodySize, out _);
         }
 
         public void PickedBySomebody(CharacterStatus characterStatus)
         {
-            foreach (var skill in SkillGroups.Select(keyValuePair => keyValuePair.Value)
-                .SelectMany(immutableDictionary => immutableDictionary.Select(valuePair => valuePair.Value)))
+            foreach (var skill in
+                SkillGroups.SelectMany(keyValuePair => keyValuePair.Value)
+                    .SelectMany(x => x.Value)
+                    .Select(immutableDictionary => immutableDictionary.Value))
             {
                 skill.PickedBySomeOne(characterStatus);
             }
@@ -70,18 +77,19 @@ namespace game_stuff
                 .ToArray();
         }
 
-        public static Weapon GenByConfig(weapon weapon)
+        private static ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> GenASkillGroup(
+            skill_group skillGroup)
         {
-            var dictionary = weapon.Op1.ToDictionary(pair => pair.Key,
+            var dictionary = skillGroup.Op1.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
-            var dictionary2 = weapon.Op2.ToDictionary(pair => pair.Key,
+            var dictionary2 = skillGroup.Op2.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
-            var dictionary3 = weapon.Op3.ToDictionary(pair => pair.Key,
+            var dictionary3 = skillGroup.Op3.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
-            var dictionary4 = weapon.Switch.ToDictionary(pair => pair.Key,
+            var dictionary4 = skillGroup.Switch.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 .ToImmutableDictionary();
 
@@ -91,6 +99,35 @@ namespace game_stuff
                     {SkillAction.Op1, dictionary}, {SkillAction.Op2, dictionary2}, {SkillAction.Op3, dictionary3},
                     {SkillAction.Switch, dictionary4}
                 }.ToImmutableDictionary();
+            return immutableDictionary;
+        }
+
+
+        private static BodySize GetSize(size body)
+        {
+            return body switch
+            {
+                size.medium => BodySize.Medium,
+                size.small => BodySize.Small,
+                size.big => BodySize.Big,
+                size.@default => BodySize.Small,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        public static Weapon GenByConfig(weapon weapon)
+        {
+            var immutableDictionary = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => GetSize(x.body),
+                x =>
+                {
+                    var argSkillGroup = x.skill_group;
+                    if (TempConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
+                    {
+                        return GenASkillGroup(skillGroup);
+                    }
+
+                    throw new Exception($"not such a group name::{skillGroup} ");
+                }).ToImmutableDictionary();
 
 
             static SkillAction GetSkillActionByInt(int i)
@@ -106,45 +143,34 @@ namespace game_stuff
 
             var snipes = new Dictionary<SnipeAction, Snipe>();
 
-            static Snipe? GetSnipeById(int id)
+            static Snipe? GetSnipeById(int id, ImmutableDictionary<BodySize, float> ff)
             {
                 return TempConfig.Configs.snipes.TryGetValue(id, out var snipe)
-                    ? new Snipe(snipe)
+                    ? new Snipe(snipe, ff)
                     : null;
             }
 
-            var snipeById1 = GetSnipeById(weapon.Snipe1);
+            var floats = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => GetSize(x.body),
+                x => x.snipe_speed_fix
+            ).ToImmutableDictionary() ?? throw new Exception($"weapon can not be picked by any one {weapon.id}");
+            var snipeById1 = GetSnipeById(weapon.Snipe1, floats);
             if (snipeById1 != null)
             {
                 snipes[SnipeAction.SnipeOn1] = snipeById1;
             }
 
-            var snipeById2 = GetSnipeById(weapon.Snipe2);
+            var snipeById2 = GetSnipeById(weapon.Snipe2, floats);
             if (snipeById2 != null)
             {
                 snipes[SnipeAction.SnipeOn2] = snipeById2;
             }
 
-            var snipeById3 = GetSnipeById(weapon.Snipe3);
+            var snipeById3 = GetSnipeById(weapon.Snipe3, floats);
             if (snipeById3 != null)
             {
                 snipes[SnipeAction.SnipeOn3] = snipeById3;
             }
 
-
-            var floats = weapon.BodySizeUseAndSpeed.ToDictionary(x =>
-                {
-                    return x.body switch
-                    {
-                        size.medium => BodySize.Medium,
-                        size.small => BodySize.Small,
-                        size.big => BodySize.Big,
-                        size.@default => BodySize.Small,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                },
-                x => x.speed_fix
-            ).ToImmutableDictionary() ?? throw new Exception($"weapon can not be picked by any one {weapon.id}");
 
             var valueTuples = weapon.BotRange
                 .Select(keyValuePair => (keyValuePair.Value, GetSkillActionByInt(keyValuePair.Key)))
@@ -160,8 +186,10 @@ namespace game_stuff
             var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
 
             var weapon1 = new Weapon(immutableDictionary, immutableList, snipes.ToImmutableDictionary(), weapon.id,
-                enumerable, scopes, floats);
+                enumerable, scopes);
             return weapon1;
         }
+
+        public IMapInteractable? InWhichMapInteractive { get; set; }
     }
 }

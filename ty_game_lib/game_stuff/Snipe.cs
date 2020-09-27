@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Cryptography;
 using game_config;
@@ -6,14 +8,14 @@ namespace game_stuff
 {
     public class Snipe
     {
-        public float MoveSpeedMulti { get; }
+        public ImmutableDictionary<BodySize, float> MoveSpeedMulti { get; }
 
         public int MaxStep { get; }
         public int AddStepPerTick { get; }
         public int OffStepPerTick { get; }
         public int TrickTick { get; }
 
-        public Snipe(float moveSpeedMulti, float[] onZoomMulti, int trickTick)
+        public Snipe(ImmutableDictionary<BodySize, float> moveSpeedMulti, float[] onZoomMulti, int trickTick)
         {
             MoveSpeedMulti = moveSpeedMulti;
 
@@ -21,11 +23,12 @@ namespace game_stuff
             TrickTick = trickTick;
         }
 
-        public Snipe(snipe snipe)
+        public Snipe(snipe snipe, ImmutableDictionary<BodySize, float> snipeMulti)
         {
             TrickTick = snipe.TrickTick;
             MaxStep = snipe.TotalStep;
-            MoveSpeedMulti = snipe.MoveMulti;
+            MoveSpeedMulti = snipeMulti.ToDictionary(pair => pair.Key, pair => pair.Value * snipe.MoveMulti)
+                .ToImmutableDictionary();
             AddStepPerTick = snipe.OnTickSpeed;
             OffStepPerTick = snipe.OffTickSpeed;
         }

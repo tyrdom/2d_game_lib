@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Microsoft.Win32.SafeHandles;
@@ -162,6 +164,11 @@ namespace collision_and_rigid
         public override string ToString()
         {
             return LogVector();
+        }
+
+        public IEnumerable<TwoDVector> GenLinearListToAnother(TwoDVector v1, int k1)
+        {
+            return Enumerable.Range(1, k1).Select(x => v1.Multi((float) x / k1));
         }
     }
 

@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public class Prop : ICharAct, ICanPutInCage
     {
-        public int StackCost;
+        public int StackCost { get; }
 
         public uint TotalTick { get; }
 
@@ -14,9 +14,9 @@ namespace game_stuff
 
         public Bullet PropBullet { get; }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? inCage) GoATick(TwoDPoint getPos,
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage) GoATick(TwoDPoint getPos,
             TwoDVector sightAim,
-            TwoDVector? rawMoveVector)
+            TwoDVector? rawMoveVector, TwoDVector? limitV = null)
         {
             var b = NowOnTick == 0;
 
@@ -45,5 +45,7 @@ namespace game_stuff
             NowOnTick = 0;
             return true;
         }
+
+        public IMapInteractable? InWhichMapInteractive { get; set; }
     }
 }

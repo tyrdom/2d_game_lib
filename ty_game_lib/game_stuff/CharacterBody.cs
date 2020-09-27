@@ -110,7 +110,7 @@ namespace game_stuff
         }
 
 
-        public CharGoTickMsg BodyGoATick(Dictionary<int, Operate> gidToOp)
+        public CharGoTickResult BodyGoATick(Dictionary<int, Operate> gidToOp)
         {
             LastPos = NowPos;
             var id = GetId();

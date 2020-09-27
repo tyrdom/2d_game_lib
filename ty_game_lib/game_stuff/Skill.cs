@@ -23,27 +23,28 @@ namespace game_stuff
         private int SnipeStepNeed { get; }
         private int AmmoCost { get; }
 
-        private readonly int _baseTough;
+        private int BaseTough { get; }
 
-        private readonly Dictionary<uint, Bullet> _launchTickToBullet;
-        private readonly TwoDVector[] _moves;
+        public bool CanInputMove { get; }
+        private Dictionary<uint, Bullet> LaunchTickToBullet { get; }
+        private TwoDVector[] Moves { get; }
 
 
-        private readonly uint _moveStartTick;
+        private uint MoveStartTick { get; }
 
-        private readonly uint _skillMustTick; //必须播放帧，播放完才能进行下一个技能
-        private readonly uint _comboInputStartTick; //可接受输入操作帧
+        private uint SkillMustTick { get; } //必须播放帧，播放完才能进行下一个技能
+        private uint ComboInputStartTick { get; } //可接受输入操作帧
 
         public uint TotalTick { get; }
         // 至多帧，在播放帧
 
-        private readonly int _nextCombo;
+        private int NextCombo { get; }
 
-        private int SnipeBreakTick { get; }
+        private uint SnipeBreakTick { get; }
 
         public string LogUser()
         {
-            return _launchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
+            return LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
                 .Select(characterStatus =>
                     characterStatus?.GId.ToString() == null ? "!null!" : characterStatus.GId.ToString())
                 .Aggregate("", (current, @null) => current + @null);
@@ -52,7 +53,7 @@ namespace game_stuff
         private Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea, int snipeBreakTick, int snipeStepNeed, int ammoCost)
+            LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, bool canInputMove)
         {
             var b = 0 < comboInputStartTick &&
                     skillMustTick < totalTick &&
@@ -64,25 +65,26 @@ namespace game_stuff
 
             NowOnTick = 0;
             NowTough = baseTough;
-            _launchTickToBullet = launchTickToBullet;
-            _moves = moves;
-            _moveStartTick = moveStartTick;
-            _skillMustTick = skillMustTick;
+            LaunchTickToBullet = launchTickToBullet;
+            Moves = moves;
+            MoveStartTick = moveStartTick;
+            SkillMustTick = skillMustTick;
             TotalTick = totalTick;
-            _baseTough = baseTough;
-            _comboInputStartTick = comboInputStartTick;
-            _nextCombo = nextCombo;
+            BaseTough = baseTough;
+            ComboInputStartTick = comboInputStartTick;
+            NextCombo = nextCombo;
             _lockArea = lockArea;
             SnipeBreakTick = snipeBreakTick;
             SnipeStepNeed = snipeStepNeed;
             AmmoCost = ammoCost;
+            CanInputMove = canInputMove;
         }
 
 
         public void PickedBySomeOne(CharacterStatus characterStatus)
         {
             if (_lockArea != null) _lockArea.Caster = characterStatus;
-            foreach (var bullet in _launchTickToBullet.Select(keyValuePair => keyValuePair.Value))
+            foreach (var bullet in LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value))
             {
                 bullet.PickedBySomeOne(characterStatus);
             }
@@ -102,29 +104,32 @@ namespace game_stuff
         {
             var twoDVectors = skill.Moves.Select(GameTools.GenVectorByConfig).ToArray();
 
-            var dictionary = skill.LaunchTickToBullet.ToDictionary(pair => pair.Key, pair =>
-            {
-                var pairValue = pair.Value;
-                var immutableDictionary = TempConfig.Configs.bullets;
-                var bullet = immutableDictionary[pairValue];
-                var genByConfig = Bullet.GenByConfig(bullet, pair.Key);
-                return genByConfig;
-            });
+            var dictionary = skill.LaunchTimeToBullet.ToDictionary(pair => TempConfig.GetTickByTime(pair.Key),
+                pair =>
+                {
+                    var pairValue = pair.Value;
+                    var immutableDictionary = TempConfig.Configs.bullets;
+                    var bullet = immutableDictionary[pairValue];
+                    var genByConfig = Bullet.GenByConfig(bullet, TempConfig.GetTickByTime(pair.Key));
+                    return genByConfig;
+                });
 
             var configsLockAreas = TempConfig.Configs.lock_areas;
 
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;
-            return new Skill(dictionary, twoDVectors, skill.MoveStartTick, skill.SkillMustTick, skill.SkillMaxTick,
-                skill.BaseTough, skill.ComboInputStartTick, skill.NextCombo, byConfig, skill.BreakSnipeTick,
-                skill.SnipeStepNeed, skill.AmmoCost);
+            return new Skill(dictionary, twoDVectors, TempConfig.GetTickByTime(skill.MoveStartTime),
+                TempConfig.GetTickByTime(skill.SkillMustTime), TempConfig.GetTickByTime(skill.SkillMaxTime),
+                skill.BaseTough, TempConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
+                TempConfig.GetTickByTime(skill.BreakSnipeTime),
+                skill.SnipeStepNeed, skill.AmmoCost, skill.CanInputMove);
         }
 
 
         public SkillPeriod InWhichPeriod()
         {
-            if (NowOnTick < _skillMustTick)
+            if (NowOnTick < SkillMustTick)
             {
                 return SkillPeriod.Casting;
             }
@@ -135,33 +140,41 @@ namespace game_stuff
         public int? ComboInputRes() //可以连击，返回 下一个动作
         {
             // 如果命中返回命中连击状态id，如果不是返回miss连击id，大部分是一样的
-            var weaponSkillStatus = _nextCombo;
-            return NowOnTick >= _comboInputStartTick && NowOnTick < TotalTick
+            var weaponSkillStatus = NextCombo;
+            return NowOnTick >= ComboInputStartTick && NowOnTick < TotalTick
                 ? weaponSkillStatus
                 : (int?) null;
         }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? inCage) GoATick(TwoDPoint casterPos,
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage) GoATick(
+            TwoDPoint casterPos,
             TwoDVector casterAim,
-            TwoDVector? rawMoveVector)
+            TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
             // 生成攻击运动
             TwoDVector? move = null;
-            if (NowOnTick >= _moveStartTick && NowOnTick < _moveStartTick + _moves.Length)
+            if (NowOnTick >= MoveStartTick)
             {
-                var moveOnTick = NowOnTick - _moveStartTick;
-
-                move = _moves[moveOnTick];
-                if (rawMoveVector != null)
+                if (CanInputMove)
                 {
-                    var movesLengthRest = (float) _moves.Length - moveOnTick;
-                    var min = MathTools.Min(rawMoveVector.X, move.X);
-                    var max = MathTools.Max(rawMoveVector.Y, move.Y) / movesLengthRest;
-
-                    move = new TwoDVector(min, max);
+                    move = rawMoveVector;
                 }
+                else if (NowOnTick < MoveStartTick + Moves.Length)
+                {
+                    var moveOnTick = NowOnTick - MoveStartTick;
 
-                move = move.AntiClockwiseTurn(casterAim);
+                    move = Moves[moveOnTick];
+                    if (limitV != null)
+                    {
+                        var movesLengthRest = (float) Moves.Length - moveOnTick;
+                        var min = MathTools.Min(limitV.X, move.X);
+                        var max = MathTools.Max(limitV.Y, move.Y) / movesLengthRest;
+
+                        move = new TwoDVector(min, max);
+                    }
+
+                    move = move.AntiClockwiseTurn(casterAim);
+                }
             }
 
             // GenBullet 生成子弹
@@ -171,7 +184,7 @@ namespace game_stuff
                 bullet = _lockArea.ActiveArea(casterPos, casterAim);
             }
 
-            if (_launchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
+            if (LaunchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {
                 bullet = nowBullet.ActiveBullet(casterPos, casterAim);
             }
@@ -188,14 +201,9 @@ namespace game_stuff
         public bool Launch(int nowSnipeStep, int nowAmmo)
         {
             if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost) return false;
-            NowTough = _baseTough;
+            NowTough = BaseTough;
             NowOnTick = 0;
             return true;
         }
-
-        // public static Skill InitFormConfig(game_config.Skill skillConfig)
-        // {
-        //     
-        // }
     }
 }

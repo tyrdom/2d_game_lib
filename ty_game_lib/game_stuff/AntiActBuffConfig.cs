@@ -6,6 +6,8 @@ namespace game_stuff
 {
     public interface IAntiActBuffConfig
     {
+        public uint TickLast { get; }
+
         public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize, CharacterStatus whoDid);
 
@@ -18,15 +20,15 @@ namespace game_stuff
         private float PushForce; //推力
         private PushType PushType; //方向或者中心
         private TwoDVector? PushFixVector; //修正向量，中心push为中心点，方向为方向修正
-        private int TickLast;
+        public uint TickLast { get; }
 
         public PushEarthAntiActBuffConfig(float pushForce, PushType pushType, TwoDVector? pushFixVector,
-            int tickLast)
+            uint lastTick)
         {
             PushForce = pushForce;
             PushType = pushType;
             PushFixVector = pushFixVector;
-            TickLast = tickLast;
+            TickLast = lastTick;
         }
 
         private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction)
@@ -88,10 +90,10 @@ namespace game_stuff
         private float UpForce;
 
         private TwoDVector? PushFixVector;
-        private int TickLast;
+        public uint TickLast { get; }
 
         public PushAirAntiActBuffConfig(float pushForce, PushType pushType, float upForce,
-            TwoDVector? pushFixVector, int tickLast)
+            TwoDVector? pushFixVector, uint tickLast)
         {
             PushForce = pushForce;
             PushType = pushType;
@@ -150,16 +152,16 @@ namespace game_stuff
 
     public class CatchAntiActBuffConfig : IAntiActBuffConfig
     {
-        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, int lastTick, Skill trickSkill
+        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, uint tickLast, Skill trickSkill
         )
         {
             TwoDVectors = twoDVectors;
-            LastTick = lastTick;
+            TickLast = tickLast;
             TrickSkill = trickSkill;
         }
 
         private TwoDVector[] TwoDVectors { get; }
-        private int LastTick { get; }
+        public uint TickLast { get; }
         public Skill TrickSkill { get; }
 
 
@@ -180,7 +182,7 @@ namespace game_stuff
                 Console.Out.WriteLine($"{twoDPoint.ToString()}");
             }
 #endif
-            var caught = new Caught(twoDPoints, LastTick, whoDid);
+            var caught = new Caught(twoDPoints, TickLast, whoDid);
             return caught;
         }
 

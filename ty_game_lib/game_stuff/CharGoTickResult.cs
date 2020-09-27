@@ -2,10 +2,10 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class CharGoTickMsg
+    public class CharGoTickResult
     {
-        public CharGoTickMsg(ITwoDTwoP? move, IHitStuff? launchBullet, IMapInteractive? dropThing = null,
-            IMapInteractive? getThing = null, CharacterBody? whoPickCageCall = null,
+        public CharGoTickResult(ITwoDTwoP? move, IHitStuff? launchBullet, IMapInteractable? dropThing = null,
+            IMapInteractable? getThing = null, CharacterBody? whoPickCageCall = null,
             CharacterBody? whoRecycleCageCall = null)
         {
             Move = move;
@@ -18,8 +18,8 @@ namespace game_stuff
 
         public ITwoDTwoP? Move { get; }
         public IHitStuff? LaunchBullet { get; }
-        public IMapInteractive? DropThing { get; }
-        public IMapInteractive? GetThing { get; }
+        public IMapInteractable? DropThing { get; }
+        public IMapInteractable? GetThing { get; }
         public CharacterBody? WhoPickCageCall { get; }
         public CharacterBody? WhoRecycleCageCall { get; }
     }

@@ -44,6 +44,10 @@
       <EmbeddedResource Include="Resources\fish_s.json" />
       <None Remove="Resources\snipe_s.json" />
       <EmbeddedResource Include="Resources\snipe_s.json" />
+      <None Remove="Resources\skill_group_s.json" />
+      <EmbeddedResource Include="Resources\skill_group_s.json" />
+      <None Remove="Resources\interaction_s.json" />
+      <EmbeddedResource Include="Resources\interaction_s.json" />
     </ItemGroup>
 
 </Project>

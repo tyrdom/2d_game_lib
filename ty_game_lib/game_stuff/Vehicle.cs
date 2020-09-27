@@ -7,7 +7,8 @@ namespace game_stuff
     {
         public Vehicle(BodySize vehicleSize, float vehicleMaxMoveSpeed, float vehicleMinMoveSpeed,
             float vehicleAddMoveSpeed, Scope vehicleScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
-            DamageHealStatus damageHealStatus, int destroyTick, int weaponSlot, int getInTick, int nowAmmo, int maxAmmo,
+            DamageHealStatus damageHealStatus, int destroyTick, int weaponCarryMax, int getInTick, int nowAmmo,
+            int maxAmmo,
             Skill outAct)
         {
             VehicleSize = vehicleSize;
@@ -19,7 +20,7 @@ namespace game_stuff
             DestroyBullet = destroyBullet;
             DamageHealStatus = damageHealStatus;
             DestroyTick = destroyTick;
-            WeaponSlot = weaponSlot;
+            WeaponCarryMax = weaponCarryMax;
             GetInTick = getInTick;
             NowAmmo = nowAmmo;
             MaxAmmo = maxAmmo;
@@ -38,7 +39,7 @@ namespace game_stuff
         private int NowAmmo { get; set; }
 
         private int MaxAmmo { get; }
-        private int WeaponSlot { get; }
+        private int WeaponCarryMax { get; }
         private int DestroyTick { get; }
 
         private Bullet DestroyBullet { get; }
@@ -48,11 +49,8 @@ namespace game_stuff
         private int GetInTick { get; }
 
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
+        
 
-        public void BePickCage()
-        {
-            WhoDrive = null;
-            //todo
-        }
+        public IMapInteractable? InWhichMapInteractive { get; set; }
     }
 }

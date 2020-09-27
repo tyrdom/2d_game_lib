@@ -8,7 +8,7 @@ namespace game_stuff
 {
     public static class GameTools
     {
-        public static CharGoTickMsg BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
+        public static CharGoTickResult BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
         {
             switch (idPointShape)
             {
@@ -79,6 +79,7 @@ namespace game_stuff
             return new TwoDVector(pt.x, pt.y);
         }
 
+
         public static IAntiActBuffConfig GenBuffByConfig(push_buff pushBuff)
         {
             var pushType = pushBuff.PushType switch
@@ -92,18 +93,48 @@ namespace game_stuff
             if (pushBuff.UpForce > 0)
             {
                 return new PushAirAntiActBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
-                    pushBuff.LastTick);
+                    TempConfig.GetTickByTime(pushBuff.LastTime));
             }
 
-            return new PushEarthAntiActBuffConfig(pushBuff.PushForce, pushType, pushAboutVector, pushBuff.LastTick);
+            return new PushEarthAntiActBuffConfig(pushBuff.PushForce, pushType, pushAboutVector,
+                TempConfig.GetTickByTime(pushBuff.LastTime));
         }
-
 
         public static IAntiActBuffConfig GenBuffByConfig(caught_buff caughtBuff)
         {
-            var twoDVectors = caughtBuff.CatchPoints.Select(GenVectorByConfig);
+            var twoDVectors = caughtBuff.CatchKeyPoints
+                .ToDictionary(
+                    x => TempConfig.GetTickByTime(x.key_time),
+                    x => GenVectorByConfig(x.key_point))
+                .Select(pair => (pair.Key, pair.Value))
+                .ToList();
+            twoDVectors.Sort((x, y) => x.Key.CompareTo(y.Key));
 
-            return new CatchAntiActBuffConfig(twoDVectors.ToArray(), caughtBuff.LastTick,
+            var vectors = new List<TwoDVector>();
+
+            var (key, value) = twoDVectors.FirstOrDefault();
+            if (key != 0 || value == null) throw new Exception($"no good key vectors at caught_buff {caughtBuff.id}");
+            vectors.Add(value);
+            var nk = key;
+            var nowVector = value;
+            if (twoDVectors.Count <= 1)
+                return new CatchAntiActBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
+                    Skill.GenSkillById(caughtBuff.TrickSkill));
+            for (var index = 1; index < twoDVectors.Count; index++)
+            {
+                var (k1, v1) = twoDVectors[index];
+                if (v1 != null)
+                {
+                    var genLinearListToAnother = nowVector.GenLinearListToAnother(v1, (int) (k1 - nk));
+                    vectors.AddRange(genLinearListToAnother);
+                }
+                else
+                {
+                    throw new Exception($"no good config at caught_buff {caughtBuff.id} ");
+                }
+            }
+
+            return new CatchAntiActBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
                 Skill.GenSkillById(caughtBuff.TrickSkill));
         }
     }

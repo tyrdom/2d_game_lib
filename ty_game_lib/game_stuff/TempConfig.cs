@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 
@@ -8,6 +9,16 @@ namespace game_stuff
 {
     public static class TempConfig
     {
+        public static float GetRBySize(BodySize bodySize)
+        {
+            return SizeToR[bodySize];
+        }
+
+        public static uint GetTickByTime(float time)
+        {
+            return (uint) (time / TickPerSec);
+        }
+
         public static ConfigDictionaries Configs { get; set; }
 #if NETCOREAPP
             = new ConfigDictionaries();
@@ -49,9 +60,9 @@ namespace game_stuff
 
         public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
 
-        public static int HitWallTickParam { get; private set; } = 10;
+        public static uint HitWallTickParam { get; private set; } = 10;
 
-        public static int HitWallCatchTickParam { get; private set; } = 5;
+        public static uint HitWallCatchTickParam { get; private set; } = 5;
         public static int HitWallDmgParam { get; private set; } = 10;
         public static float HitWallCatchDmgParam { get; private set; } = 5f;
 
@@ -68,15 +79,19 @@ namespace game_stuff
         public static int TrickProtect { get; private set; } = 100;
         public static int ProtectTick { get; private set; } = 10;
 
-
+        public static int TickPerSec { get; private set; } = 10;
         public static float MoveDecreaseMinMulti { get; set; } = 0.4f;
 
         public static float NormalSpeedMinCos { get; set; } = 0.7f;
 
         public static float DecreaseMinCos { get; set; } = -0.3f;
 
-        public static int StandardMaxAmmo { get; set; } = 100;
-        public static int StandardMaxStack { get; set; } = 100;
+        public static int StandardMaxAmmo { get; private set; } = 100;
+        public static int StandardMaxStack { get; private set; } = 100;
+
+        public static float PropR { get; set; } = 1f;
+
+        public static float WeaponR { get; set; } = 1f;
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
@@ -112,6 +127,9 @@ namespace game_stuff
             ProtectTick = 10;
             StandardMaxAmmo = 100;
             StandardMaxStack = 100;
+
+            PropR = 1f;
+            WeaponR = 1f;
         }
 #if NETCOREAPP
         public static void LoadConfig()

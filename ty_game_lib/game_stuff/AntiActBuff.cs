@@ -7,7 +7,7 @@ namespace game_stuff
 {
     public interface IAntiActBuff
     {
-        public int RestTick { get; set; }
+        public uint RestTick { get; set; }
         public ITwoDTwoP GetItp();
         public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt);
 
@@ -19,14 +19,14 @@ namespace game_stuff
         private TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
 
-        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, int restTick)
+        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick)
         {
             PushVector = pushVector;
             DecreasePerTick = decreasePerTick;
             RestTick = restTick;
         }
 
-        public int RestTick { get; set; }
+        public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
         {
@@ -68,7 +68,7 @@ namespace game_stuff
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
-            RestTick = RestTick + 1 + (int) (sqNorm * TempConfig.HitWallTickParam);
+            RestTick = RestTick + 1 + (uint) (sqNorm * TempConfig.HitWallTickParam);
             return sqNorm;
         }
     }
@@ -80,7 +80,7 @@ namespace game_stuff
         public float UpSpeed;
 
 
-        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, int restTick)
+        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick)
         {
             PushVector = pushVector;
             Height = height;
@@ -88,7 +88,7 @@ namespace game_stuff
             RestTick = restTick;
         }
 
-        public int RestTick { get; set; }
+        public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
         {
@@ -127,7 +127,7 @@ namespace game_stuff
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
-            RestTick = RestTick + 1 + (int) (sqNorm * TempConfig.HitWallTickParam);
+            RestTick = RestTick + 1 + (uint) (sqNorm * TempConfig.HitWallTickParam);
             return sqNorm;
         }
     }
@@ -137,14 +137,14 @@ namespace game_stuff
         public List<TwoDPoint> MovesOnPoints { get; }
         public CharacterStatus WhoCatchMe { get; }
 
-        public Caught(List<TwoDPoint> movesOnPoints, int restTick, CharacterStatus whoCatchMe)
+        public Caught(List<TwoDPoint> movesOnPoints, uint restTick, CharacterStatus whoCatchMe)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
             WhoCatchMe = whoCatchMe;
         }
 
-        public int RestTick { get; set; }
+        public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
         {

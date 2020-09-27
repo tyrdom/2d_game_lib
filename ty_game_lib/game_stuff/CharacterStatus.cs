@@ -259,12 +259,12 @@ namespace game_stuff
             NowSnipeStep = 0;
         }
 
-        private CharGoTickMsg ActNowActATick(
+        private CharGoTickResult ActNowActATick(
             TwoDVector? moveOp)
         {
             return NowCastAct switch
             {
-                null => new CharGoTickMsg(null, null, null, null),
+                null => new CharGoTickResult(null, null, null, null),
                 Prop prop => GoNowActATick(prop, moveOp),
                 Skill skill => GoNowActATick(skill, moveOp),
                 _ => throw new ArgumentOutOfRangeException(nameof(NowCastAct))
@@ -277,13 +277,13 @@ namespace game_stuff
             //todo
         }
 
-        private CharGoTickMsg GoNowActATick(ICharAct skill,
+        private CharGoTickResult GoNowActATick(ICharAct skill,
             TwoDVector? moveOp)
         {
             var limitV = skill switch
             {
-                CageActiveAct _ => null,
-                Prop _ => moveOp?.Multi(GetStandardSpeed(moveOp)),
+                Interaction _ => null,
+                Prop _ => null,
                 Skill _ => LockingWho == null
                     ? null
                     : TwoDVector.TwoDVectorByPt(GetPos(), LockingWho.GetPos())
@@ -291,7 +291,17 @@ namespace game_stuff
                         .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr()),
                 _ => throw new ArgumentOutOfRangeException(nameof(skill))
             };
-
+            var f = GetNowSnipe()?.MoveSpeedMulti[CharacterBody.BodySize];
+            var fixMove = skill switch
+            {
+                Interaction _ => null,
+                Prop _ => moveOp?.Multi(GetStandardSpeed(moveOp)),
+                Skill _ => f == null
+                    ? moveOp?.Multi(GetStandardSpeed(moveOp))
+                    : moveOp?.Multi(GetStandardSpeed(moveOp))
+                        .Multi(f.Value),
+                _ => throw new ArgumentOutOfRangeException(nameof(skill))
+            };
             //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
 
 #if DEBUG
@@ -304,14 +314,14 @@ namespace game_stuff
             }
 
             var (move, bullet, snipeOff, inCage) = skill
-                .GoATick(GetPos(), CharacterBody.Sight.Aim, limitV);
+                .GoATick(GetPos(), CharacterBody.Sight.Aim, fixMove, limitV);
 
             if (snipeOff)
             {
                 OffSnipe();
             }
 
-            if (inCage != null)
+            if (inCage != null) //todo
             {
                 switch (inCage)
                 {
@@ -327,7 +337,7 @@ namespace game_stuff
                 }
             }
 
-            return new CharGoTickMsg(move, bullet, null, null);
+            return new CharGoTickResult(move, bullet);
         }
 
         private void ComboByNext(TwoDVector? operateAim)
@@ -353,7 +363,7 @@ namespace game_stuff
             NextSkill = null;
         }
 
-        public CharGoTickMsg
+        public CharGoTickResult
             CharGoTick(Operate? operate) //角色一个tick行为
         {
             //清理消息缓存
@@ -368,7 +378,7 @@ namespace game_stuff
             {
                 PauseTick -= 1;
 
-                return new CharGoTickMsg(null, null, null, null);
+                return new CharGoTickResult(null, null, null, null);
             }
 
             //  检查保护 进入保护
@@ -393,7 +403,7 @@ namespace game_stuff
                 Console.Out.WriteLine(
                     $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {AntiActBuff?.RestTick}");
 #endif
-                return new CharGoTickMsg(twoDPoint, null, null, null);
+                return new CharGoTickResult(twoDPoint, null, null, null);
             }
 
             //
@@ -411,7 +421,7 @@ namespace game_stuff
             var opAction = operate?.GetAction();
             if (NowCastAct != null)
             {
-                // 技能进行一个tick
+                // 当前动作进行一个tick
 
                 var actNowActATick = ActNowActATick(operate?.Move);
 
@@ -450,7 +460,8 @@ namespace game_stuff
                     ? weapon
                     : Weapons.First().Value;
 
-                if (!nowWeapon.SkillGroups.TryGetValue(opAction.Value, out var skills) ||
+                if (!nowWeapon.SkillGroups.TryGetValue(CharacterBody.BodySize, out var immutableDictionary) ||
+                    !immutableDictionary.TryGetValue(opAction.Value, out var skills) ||
                     !skills.TryGetValue(status, out var skill)) return actNowActATick;
 
                 switch (NowCastAct.InWhichPeriod())
@@ -478,7 +489,7 @@ namespace game_stuff
             {
                 ResetSpeed();
                 OpChangeAim(null);
-                return new CharGoTickMsg(null, null, null, null);
+                return new CharGoTickResult(null, null, null, null);
             }
 
             // 有操作
@@ -513,8 +524,9 @@ namespace game_stuff
                 else
                 {
                     if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
-                        !weapon.SkillGroups.TryGetValue(opAction.Value, out var value) ||
-                        !value.TryGetValue(0, out var skill)) return new CharGoTickMsg(null, null, null, null);
+                        !weapon.SkillGroups.TryGetValue(CharacterBody.BodySize, out var value1) ||
+                        !value1.TryGetValue(opAction.Value, out var value) ||
+                        !value.TryGetValue(0, out var skill)) return new CharGoTickResult(null, null, null, null);
                     LoadSkill(null, skill, opAction.Value);
                     var actNowSkillATick = ActNowActATick(operate.Move);
                     return actNowSkillATick;
@@ -528,7 +540,7 @@ namespace game_stuff
                 switch (specialAction)
                 {
                     case SpecialAction.UseProp:
-                        if (Prop == null) return new CharGoTickMsg(null, null, null, null);
+                        if (Prop == null) return new CharGoTickResult(null, null, null, null);
                         if (Prop.Launch(NowPropStack))
                         {
                             NowPropStack -= Prop.StackCost;
@@ -536,7 +548,7 @@ namespace game_stuff
 
                         break;
                     case SpecialAction.OutVehicle:
-                        if (NowVehicle == null) return new CharGoTickMsg(null, null, null, null);
+                        if (NowVehicle == null) return new CharGoTickResult(null, null);
                     {
                     }
                         break;
@@ -552,7 +564,7 @@ namespace game_stuff
             if (twoDVector == null)
             {
                 ResetSpeed();
-                return new CharGoTickMsg(null, null, null, null);
+                return new CharGoTickResult(null, null);
             }
 
             // 加速跑步运动，有上限
@@ -563,12 +575,14 @@ namespace game_stuff
 
             NowMoveSpeed = GetStandardSpeed(twoDVector);
             var nowSnipe = GetNowSnipe();
-            var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti ?? NowMoveSpeed;
+            var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.BodySize] ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
-            return new CharGoTickMsg(dVector, null, null, null);
+            return new CharGoTickResult(dVector, null);
         }
 
+
+        // private float GetAndSetStandardSpeed()
 
         private float GetStandardSpeed(TwoDVector move)
         {
