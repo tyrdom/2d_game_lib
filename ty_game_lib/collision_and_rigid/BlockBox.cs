@@ -8,9 +8,23 @@ namespace collision_and_rigid
     {
         public IBlockShape Shape { get; }
 
+        public void WriteQuadRecord(Quad quad)
+        {
+        }
+
+        public Quad? GetNextQuad()
+        {
+            return null;
+        }
+
         public IShape GetShape()
         {
             return Shape;
+        }
+
+        public bool CanInteractive(TwoDPoint pos)
+        {
+            return false;
         }
 
         public Zone Zone { get; set; }

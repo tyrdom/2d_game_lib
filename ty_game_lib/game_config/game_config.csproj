@@ -48,6 +48,10 @@
       <EmbeddedResource Include="Resources\skill_group_s.json" />
       <None Remove="Resources\interaction_s.json" />
       <EmbeddedResource Include="Resources\interaction_s.json" />
+      <None Remove="Resources\vehicle_s.json" />
+      <EmbeddedResource Include="Resources\vehicle_s.json" />
+      <None Remove="Resources\prop_s.json" />
+      <EmbeddedResource Include="Resources\prop_s.json" />
     </ItemGroup>
 
 </Project>

@@ -157,6 +157,11 @@ namespace game_stuff
             return $"Id {GetId()} pos {NowPos}";
         }
 
+        public bool Include(TwoDPoint pos)
+        {
+            return false;
+        }
+
         public void Renew(CharacterInitData characterInitData)
         {
             characterInitData.ReloadCharacterBody(this);

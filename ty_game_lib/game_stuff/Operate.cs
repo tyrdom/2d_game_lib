@@ -84,8 +84,7 @@ namespace game_stuff
     public enum MapInteractive
     {
         RecycleCall,
-        Pick,
-        InVehicle
+        PickOrInVehicle
     }
 
     public enum SnipeAction

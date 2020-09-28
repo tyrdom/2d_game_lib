@@ -5,25 +5,36 @@ namespace game_stuff
 {
     public class Prop : ICharAct, ICanPutInCage
     {
+        public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti, Bullet propBullet)
+        {
+            RecyclePropStack = recyclePropStack;
+            StackCost = stackCost;
+            TotalTick = totalTick;
+            MoveMulti = moveMulti;
+            PropBullet = propBullet;
+        }
+
         public int StackCost { get; }
 
         public uint TotalTick { get; }
 
         public float MoveMulti { get; }
 
-
         public Bullet PropBullet { get; }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage) GoATick(TwoDPoint getPos,
+        public int RecyclePropStack { get; }
+
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteractive) GoATick(
+            TwoDPoint getPos,
             TwoDVector sightAim,
-            TwoDVector? rawMoveVector, TwoDVector? limitV = null)
+            TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
             var b = NowOnTick == 0;
 
-            var bullet = NowOnTick == (TotalTick - 1) ? PropBullet : null;
+            var bullet = NowOnTick == (TotalTick - 1) ? PropBullet.ActiveBullet(getPos, sightAim) : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
             NowOnTick += 1;
-            return (twoDVector, bullet, b, null);
+            return (twoDVector, bullet, b, null,MapInteractive.PickOrInVehicle);
         }
 
         public int NowTough { get; set; }
@@ -47,5 +58,15 @@ namespace game_stuff
         }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
+
+        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
+        {
+            return GameTools.GenIMapInteractable(pos, InWhichMapInteractive, this);
+        }
+
+        public bool CanPick(CharacterStatus characterStatus)
+        {
+            return true;
+        }
     }
 }

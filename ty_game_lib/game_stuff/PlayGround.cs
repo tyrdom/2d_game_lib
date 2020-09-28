@@ -325,29 +325,54 @@ namespace game_stuff
                         twoDTwoPs[gid] = twoDTwoP;
                     }
 
-                    var mapInteractive = aCharGoTickMsg.DropThing;
-                    if (mapInteractive != null)
-                    {
-                        //todo add to map
-                    }
-
                     var interactive = aCharGoTickMsg.GetThing;
 
                     if (interactive != null)
                     {
-                        //todo remove in map
+                        var removeSingleAaBbBox = CagesCanPick.RemoveSingleAaBbBox(interactive);
+                        if (!removeSingleAaBbBox)
+                        {
+                            throw new Exception("not such a interactable");
+                        }
                     }
+
+                    var mapInteractive = aCharGoTickMsg.DropThing;
+                    if (mapInteractive != null)
+                    {
+                        CagesCanPick.AddSingleAaBbBox(mapInteractive, TempConfig.QSpaceBodyMaxPerLevel);
+                    }
+
 
                     var whoPickCageCall = aCharGoTickMsg.WhoPickCageCall;
                     if (whoPickCageCall != null)
                     {
-                        //todo link pick cage
+                        var firstSingleBox = CagesCanPick.InteractiveFirstSingleBox(whoPickCageCall.GetAnchor());
+                        switch (firstSingleBox)
+                        {
+                            case null:
+                                break;
+                            case IMapInteractable mapInteractable:
+                                mapInteractable.StartPickBySomeBody(whoPickCageCall);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(firstSingleBox));
+                        }
                     }
 
                     var whoRecycleCageCall = aCharGoTickMsg.WhoRecycleCageCall;
                     if (whoRecycleCageCall != null)
                     {
-                        //todo link to recycle cage
+                        var firstSingleBox = CagesCanPick.InteractiveFirstSingleBox(whoRecycleCageCall.GetAnchor());
+                        switch (firstSingleBox)
+                        {
+                            case null:
+                                break;
+                            case IMapInteractable mapInteractable:
+                                mapInteractable.StartRecycleBySomeBody(whoRecycleCageCall);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(firstSingleBox));
+                        }
                     }
 
                     var bullet = aCharGoTickMsg.LaunchBullet;

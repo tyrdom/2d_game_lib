@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 
@@ -30,6 +29,8 @@ namespace collision_and_rigid
         public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit);
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
+
+        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos);
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();
         public int FastTouchWithARightShootPoint(TwoDPoint p);
@@ -53,14 +54,5 @@ namespace collision_and_rigid
 
 
         public AreaBox? PointInWhichArea(TwoDPoint pt);
-    }
-
-
-    public enum Quad
-    {
-        One,
-        Two,
-        Three,
-        Four
     }
 }

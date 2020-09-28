@@ -12,9 +12,23 @@ namespace collision_and_rigid
 
         public IIdPointShape IdPointShape { get; }
 
+        public void WriteQuadRecord(Quad quad)
+        {
+        }
+
+        public Quad? GetNextQuad()
+        {
+            return null;
+        }
+
         public IShape GetShape()
         {
             return IdPointShape;
+        }
+
+        public bool CanInteractive(TwoDPoint pos)
+        {
+            return false;
         }
 
         public Zone Zone { get; set; }

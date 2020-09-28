@@ -26,19 +26,19 @@ namespace game_stuff
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
-        public readonly Dictionary<BodySize, IAntiActBuffConfig> SuccessAntiActBuffConfigToOpponent;
-        public readonly Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf;
+        private Dictionary<BodySize, IAntiActBuffConfig> SuccessAntiActBuffConfigToOpponent { get; }
+        public Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf { get; }
 
-        public readonly int PauseToCaster;
-        public readonly int PauseToOpponent;
-        public float DamageMulti;
-        public int Tough;
+        private int PauseToCaster { get; }
+        private int PauseToOpponent { get; }
+        private float DamageMulti { get; }
+        private int Tough { get; }
         public ObjType TargetType { get; }
 
-        public int RestTick;
-        public int ResId;
+        private int RestTick { get; set; }
+        private int ResId { get; }
 
-        public int ProtectValueAdd;
+        private int ProtectValueAdd { get; }
 
         public static Bullet GenByBulletId(string id)
         {
@@ -121,13 +121,13 @@ namespace game_stuff
             }
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
-                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti);
+                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue);
         }
 
         private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             Dictionary<BodySize, IAntiActBuffConfig> successAntiActBuffConfigToOpponent,
             Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti)
+            ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -144,6 +144,7 @@ namespace game_stuff
             ResId = 1;
             AmmoAddWhenSuccess = ammoAddWhenSuccess;
             DamageMulti = damageMulti;
+            ProtectValueAdd = protectValueAdd;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
@@ -212,7 +213,7 @@ namespace game_stuff
                 // 目标速度瞄准重置
                 targetCharacterStatus.ResetSpeed();
                 targetCharacterStatus.ResetSnipe();
-                targetCharacterStatus.ResetSkillAct();
+                targetCharacterStatus.ResetCastAct();
                 // 我方按配置添加攻击停帧,攻击产生效果
                 Caster.PauseTick = PauseToCaster;
                 Caster.AddAmmo(AmmoAddWhenSuccess);
@@ -307,7 +308,7 @@ namespace game_stuff
                 //AttackFail 需要分两种情况 
                 //清除技能数据
                 Caster.ResetSnipe();
-                Caster.ResetSkillAct();
+                Caster.ResetCastAct();
                 //生成击中受击消息数据缓存
                 Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(Caster.GetPos(), targetCharacterStatus.GetPos());
                 targetCharacterStatus.IsHitSome = true;

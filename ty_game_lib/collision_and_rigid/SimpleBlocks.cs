@@ -93,5 +93,10 @@ namespace collision_and_rigid
         {
             return GetBlockShapes().Aggregate("", (s, x) => s + x);
         }
+
+        public bool Include(TwoDPoint pos)
+        {
+            return PtInShapeIncludeSide(pos);
+        }
     }
 }

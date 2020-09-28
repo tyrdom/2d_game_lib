@@ -18,9 +18,23 @@ namespace collision_and_rigid
         public int PolyId { get; }
 
 
+        public void WriteQuadRecord(Quad quad)
+        {
+        }
+
+        public Quad? GetNextQuad()
+        {
+            return null;
+        }
+
         public IShape GetShape()
         {
             return SimpleBlocks;
+        }
+
+        public bool CanInteractive(TwoDPoint pos)
+        {
+            return false;
         }
 
         public Zone Zone { get; set; }

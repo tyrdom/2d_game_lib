@@ -92,6 +92,8 @@ namespace game_stuff
         public static float PropR { get; set; } = 1f;
 
         public static float WeaponR { get; set; } = 1f;
+        public static float MaxRecycleTime { get; set; } = 1f;
+
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;

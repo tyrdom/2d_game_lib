@@ -27,6 +27,11 @@ namespace collision_and_rigid
             return $"{Aob.A.LogPt()}v{Aob.O.LogPt()}v{Aob.B.LogPt()}";
         }
 
+        public bool Include(TwoDPoint pos)
+        {
+            return false;
+        }
+
         public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
         {
             if (aob.CheckTuring())

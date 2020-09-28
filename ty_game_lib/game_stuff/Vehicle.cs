@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using collision_and_rigid;
 
 namespace game_stuff
 {
@@ -36,7 +37,7 @@ namespace game_stuff
         private Scope VehicleScope { get; }
         public Dictionary<int, Weapon> Weapons { get; }
 
-        private int NowAmmo { get; set; }
+        public int NowAmmo { get; set; }
 
         private int MaxAmmo { get; }
         private int WeaponCarryMax { get; }
@@ -49,8 +50,18 @@ namespace game_stuff
         private int GetInTick { get; }
 
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
-        
+
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
+
+        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
+        {
+            return GameTools.GenIMapInteractable(pos, InWhichMapInteractive, this);
+        }
+
+        public bool CanPick(CharacterStatus characterStatus)
+        {
+            return characterStatus.NowVehicle == null;
+        }
     }
 }

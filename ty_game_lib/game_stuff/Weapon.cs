@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection.Metadata;
+using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
@@ -47,12 +48,12 @@ namespace game_stuff
         }
 
 
-        public bool CanBePickUp(BodySize bodySize)
+        private bool CanBePickUp(BodySize bodySize)
         {
             return SkillGroups.TryGetValue(bodySize, out _);
         }
 
-        public void PickedBySomebody(CharacterStatus characterStatus)
+        public IMapInteractable? PickedBySomebody(CharacterStatus characterStatus)
         {
             foreach (var skill in
                 SkillGroups.SelectMany(keyValuePair => keyValuePair.Value)
@@ -62,19 +63,18 @@ namespace game_stuff
                 skill.PickedBySomeOne(characterStatus);
             }
 
+            ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.CharacterBody.Sight.StandardScope.GenNewScope(x))
+                .ToArray();
             if (characterStatus.Weapons.Count < TempConfig.WeaponNum)
             {
                 characterStatus.Weapons.Add(characterStatus.Weapons.Count, this);
-            }
-            else
-            {
-                var characterStatusNowWeapon = (characterStatus.NowWeapon + 1) % TempConfig.WeaponNum;
-                characterStatus.Weapons[characterStatusNowWeapon] = this;
-                characterStatus.NowWeapon = characterStatusNowWeapon;
+                return null;
             }
 
-            ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.CharacterBody.Sight.StandardScope.GenNewScope(x))
-                .ToArray();
+            var characterStatusNowWeapon = characterStatus.NowWeapon;
+            var characterStatusWeapon = characterStatus.Weapons[characterStatusNowWeapon];
+            characterStatus.Weapons[characterStatusNowWeapon] = this;
+            return characterStatusWeapon.GenIMapInteractable(characterStatus.GetPos());
         }
 
         private static ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> GenASkillGroup(
@@ -191,5 +191,15 @@ namespace game_stuff
         }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
+
+        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
+        {
+            return GameTools.GenIMapInteractable(pos, InWhichMapInteractive, this);
+        }
+
+        public bool CanPick(CharacterStatus characterStatus)
+        {
+            return CanBePickUp(characterStatus.CharacterBody.BodySize);
+        }
     }
 }

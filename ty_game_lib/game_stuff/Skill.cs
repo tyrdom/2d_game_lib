@@ -146,7 +146,7 @@ namespace game_stuff
                 : (int?) null;
         }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage) GoATick(
+        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteractive) GoATick(
             TwoDPoint casterPos,
             TwoDVector casterAim,
             TwoDVector? rawMoveVector, TwoDVector? limitV)
@@ -195,7 +195,7 @@ namespace game_stuff
             //GONext
             NowTough += TempConfig.ToughGrowPerTick;
             NowOnTick += 1;
-            return (move, bullet, snipeOff, null);
+            return (move, bullet, snipeOff, null,MapInteractive.PickOrInVehicle);
         }
 
         public bool Launch(int nowSnipeStep, int nowAmmo)

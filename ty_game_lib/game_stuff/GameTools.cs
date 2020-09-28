@@ -100,6 +100,21 @@ namespace game_stuff
                 TempConfig.GetTickByTime(pushBuff.LastTime));
         }
 
+        public static IMapInteractable GenIMapInteractable(TwoDPoint pos, IMapInteractable? inWhichMapInteractive,
+            ICanPutInCage canPutInCage)
+        {
+            {
+                if (inWhichMapInteractive != null)
+                {
+                    inWhichMapInteractive.ReLocate(pos);
+                    return inWhichMapInteractive;
+                }
+
+                var cageCanPick = new CageCanPick(canPutInCage, pos);
+                return cageCanPick;
+            }
+        }
+
         public static IAntiActBuffConfig GenBuffByConfig(caught_buff caughtBuff)
         {
             var twoDVectors = caughtBuff.CatchKeyPoints

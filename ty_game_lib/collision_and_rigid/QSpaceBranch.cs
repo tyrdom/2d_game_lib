@@ -237,15 +237,19 @@ namespace collision_and_rigid
                         AaBbPackBox.Add(aaBbBox);
                         break;
                     case 1:
+                        aaBbBox.WriteQuadRecord(Quad.One);
                         QuadOne.AddSingleAaBbBox(item2, limit);
                         break;
                     case 2:
+                        aaBbBox.WriteQuadRecord(Quad.Two);
                         QuadTwo.AddSingleAaBbBox(item2, limit);
                         break;
                     case 3:
+                        aaBbBox.WriteQuadRecord(Quad.Three);
                         QuadThree.AddSingleAaBbBox(item2, limit);
                         break;
                     case 4:
+                        aaBbBox.WriteQuadRecord(Quad.Four);
                         QuadFour.AddSingleAaBbBox(item2, limit);
                         break;
                 }
@@ -255,10 +259,37 @@ namespace collision_and_rigid
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)
         {
             if (AaBbPackBox.Remove(aaBbBox)) return true;
-            return QuadOne.RemoveSingleAaBbBox(aaBbBox) ||
-                   QuadTwo.RemoveSingleAaBbBox(aaBbBox) ||
-                   QuadThree.RemoveSingleAaBbBox(aaBbBox) ||
-                   QuadFour.RemoveSingleAaBbBox(aaBbBox);
+            var nextQuad = aaBbBox.GetNextQuad();
+            return nextQuad switch
+            {
+                Quad.One => QuadOne.RemoveSingleAaBbBox(aaBbBox),
+                Quad.Two => QuadTwo.RemoveSingleAaBbBox(aaBbBox),
+                Quad.Three => QuadThree.RemoveSingleAaBbBox(aaBbBox),
+                Quad.Four => QuadFour.RemoveSingleAaBbBox(aaBbBox),
+                null => QuadOne.RemoveSingleAaBbBox(aaBbBox) || QuadTwo.RemoveSingleAaBbBox(aaBbBox) ||
+                        QuadThree.RemoveSingleAaBbBox(aaBbBox) || QuadFour.RemoveSingleAaBbBox(aaBbBox),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos)
+        {
+            IAaBbBox? firstOrDefault =
+                AaBbPackBox.FirstOrDefault(x => x.CanInteractive(pos));
+            if (firstOrDefault != null)
+            {
+                return firstOrDefault;
+            }
+
+            var whichQ = pos.WhichQ(this);
+            return whichQ switch
+            {
+                Quad.One => QuadOne.InteractiveFirstSingleBox(pos),
+                Quad.Two => QuadTwo.InteractiveFirstSingleBox(pos),
+                Quad.Three => QuadThree.InteractiveFirstSingleBox(pos),
+                Quad.Four => QuadFour.InteractiveFirstSingleBox(pos),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
 

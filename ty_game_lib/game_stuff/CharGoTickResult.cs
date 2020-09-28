@@ -4,7 +4,7 @@ namespace game_stuff
 {
     public class CharGoTickResult
     {
-        public CharGoTickResult(ITwoDTwoP? move, IHitStuff? launchBullet, IMapInteractable? dropThing = null,
+        public CharGoTickResult(ITwoDTwoP? move=null, IHitStuff? launchBullet=null, IMapInteractable? dropThing = null,
             IMapInteractable? getThing = null, CharacterBody? whoPickCageCall = null,
             CharacterBody? whoRecycleCageCall = null)
         {

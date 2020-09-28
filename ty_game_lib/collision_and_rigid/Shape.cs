@@ -7,7 +7,8 @@ namespace collision_and_rigid
     public interface IShape
     {
         string ToString();
-        
+
+        bool Include(TwoDPoint pos);
     }
 
     public interface IRawBulletShape

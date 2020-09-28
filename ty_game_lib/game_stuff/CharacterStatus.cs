@@ -35,24 +35,26 @@ namespace game_stuff
 
         private int NowSnipeStep { get; set; }
 
-        //Skill Status
-        public int PauseTick { get; set; }
 
-        public int NowAmmo { get; set; }
+        public int NowAmmo
+        {
+            get => NowVehicle?.NowAmmo ?? NowAmmo;
+            set => NowAmmo = value;
+        }
 
         public int MaxAmmo { get; }
         public CharacterStatus? LockingWho { get; set; }
 
         public CharacterStatus? CatchingWho { get; set; }
 
-        public int NowWeapon { get; set; }
+        public int NowWeapon { get; private set; }
 
         public Dictionary<int, Weapon> Weapons
         {
             get => NowVehicle == null ? Weapons : NowVehicle.Weapons;
             private set => Weapons = value ?? throw new ArgumentNullException(nameof(value));
         }
-
+        //Skill Status
 
         public ICharAct? NowCastAct { get; private set; }
 
@@ -64,9 +66,19 @@ namespace game_stuff
         private int NowPropStack { get; set; }
 
         private int MaxPropStack { get; }
-        public Vehicle? NowVehicle { get; set; }
+
+        //Vehicle
+        public Vehicle? NowVehicle { get; private set; }
+
+        //Recycle status
+
+        private uint NowRecycleStack { get; set; }
+
+        private uint MaxRecycleStack { get; }
 
         //be hit status
+        public int PauseTick { get; set; }
+
         public IAntiActBuff? AntiActBuff { get; set; }
         private int NowProtectValue { get; set; }
         private int MaxProtectValue { get; }
@@ -117,6 +129,8 @@ namespace game_stuff
             NowVehicle = null;
             NowAmmo = 0;
             MaxAmmo = TempConfig.StandardMaxAmmo;
+            MaxRecycleStack = TempConfig.GetTickByTime(TempConfig.MaxRecycleTime);
+            NowRecycleStack = 0;
         }
 
         private void OpChangeAim(TwoDVector? aim)
@@ -181,12 +195,29 @@ namespace game_stuff
             NowMoveSpeed = MinMoveSpeed;
         }
 
-        public void ResetSkillAct()
+        public void ResetCastAct()
         {
+            switch (NowCastAct)
+            {
+                case null:
+                    break;
+                case Interaction aInteraction:
+                    if (aInteraction.InCage.InWhichMapInteractive != null)
+                        aInteraction.InCage.InWhichMapInteractive.NowInterCharacterBody = null;
+                    break;
+                case Prop _:
+                    break;
+                case Skill _:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(NowCastAct));
+            }
+
             NowCastAct = null;
             NextSkill = null;
             LockingWho = null;
         }
+
 
         private Snipe? GetNowSnipe()
         {
@@ -212,7 +243,9 @@ namespace game_stuff
 
                 if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
                     !weapon.Snipes.TryGetValue(snipeAction, out var snipe) || snipe.TrickTick >= SnipeCallStack) return;
+
                 NowInSnipeAct = snipeAction;
+                SnipeCallStack = 0;
                 OnSnipe(snipe);
             }
             else
@@ -313,7 +346,7 @@ namespace game_stuff
                 limitV.X = MathTools.Max(0, limitV.X);
             }
 
-            var (move, bullet, snipeOff, inCage) = skill
+            var (move, bullet, snipeOff, inCage, interactive) = skill
                 .GoATick(GetPos(), CharacterBody.Sight.Aim, fixMove, limitV);
 
             if (snipeOff)
@@ -321,23 +354,60 @@ namespace game_stuff
                 OffSnipe();
             }
 
-            if (inCage != null) //todo
+            IMapInteractable? mapInteractable = null;
+            if (inCage == null)
+                return new CharGoTickResult(move, bullet, mapInteractable, inCage?.InWhichMapInteractive);
+            switch (inCage)
             {
-                switch (inCage)
-                {
-                    case Prop prop:
+                case Prop prop:
+                    switch (interactive)
+                    {
+                        case MapInteractive.RecycleCall:
+                            RecycleAProp(prop);
+                            break;
+                        case MapInteractive.PickOrInVehicle:
+                            mapInteractable = PickAProp(prop);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
 
-                        break;
-                    case Vehicle vehicle:
-                        break;
-                    case Weapon weapon:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(inCage));
-                }
+                    break;
+                case Vehicle vehicle:
+                    GetInAVehicle(vehicle);
+                    break;
+                case Weapon weapon:
+                    mapInteractable = PicAWeapon(weapon);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(inCage));
             }
 
-            return new CharGoTickResult(move, bullet);
+            return new CharGoTickResult(move, bullet, mapInteractable, inCage?.InWhichMapInteractive);
+        }
+
+        private void RecycleAProp(Prop prop)
+        {
+            NowPropStack = Math.Min(MaxPropStack, NowPropStack + prop.RecyclePropStack);
+        }
+
+        private IMapInteractable? PicAWeapon(Weapon weapon)
+        {
+            return weapon.PickedBySomebody(this);
+        }
+
+        private void GetInAVehicle(Vehicle vehicle)
+        {
+            if (NowVehicle != null) throw new Exception("have in a vehicle");
+            NowVehicle = vehicle;
+            vehicle.WhoDrive = this;
+        }
+
+        private IMapInteractable? PickAProp(Prop prop)
+        {
+            if (Prop != null) return prop.GenIMapInteractable(GetPos());
+            Prop = prop;
+            return null;
         }
 
         private void ComboByNext(TwoDVector? operateAim)
@@ -378,7 +448,7 @@ namespace game_stuff
             {
                 PauseTick -= 1;
 
-                return new CharGoTickResult(null, null, null, null);
+                return new CharGoTickResult();
             }
 
             //  检查保护 进入保护
@@ -492,13 +562,38 @@ namespace game_stuff
                 return new CharGoTickResult(null, null, null, null);
             }
 
-            // 有操作
+            // 有各种操作
+
+            // 与地图上物品互动
+            var mapInteractive = operate.GetMapInteractive();
+
+            if (mapInteractive != null)
+            {
+                switch (mapInteractive)
+                {
+                    case MapInteractive.RecycleCall:
+                        var callRecycle = CallRecycle();
+                        return callRecycle
+                            ? new CharGoTickResult(null, null, whoRecycleCageCall: this.CharacterBody)
+                            : new CharGoTickResult(null, null);
+                    case MapInteractive.PickOrInVehicle:
+                        return new CharGoTickResult(null, null, whoPickCageCall: CharacterBody);
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            ResetReCycle();
 
             // 有瞄准请求
             var snipeAction = operate.GetSnipe();
             if (snipeAction != null)
             {
                 CallSnipe(snipeAction.Value);
+            }
+            else
+            {
+                SnipeCallStack = 0;
             }
 
             // 转换视野方向
@@ -507,7 +602,7 @@ namespace game_stuff
                 OpChangeAim(operate.Aim);
             }
 
-
+            //启动技能
             if (opAction != null)
             {
 #if DEBUG
@@ -540,18 +635,24 @@ namespace game_stuff
                 switch (specialAction)
                 {
                     case SpecialAction.UseProp:
-                        if (Prop == null) return new CharGoTickResult(null, null, null, null);
+                        if (Prop == null) return new CharGoTickResult(null, null);
                         if (Prop.Launch(NowPropStack))
                         {
                             NowPropStack -= Prop.StackCost;
+                            NowCastAct = Prop;
                         }
 
                         break;
                     case SpecialAction.OutVehicle:
                         if (NowVehicle == null) return new CharGoTickResult(null, null);
                     {
+                        NowVehicle.OutAct.Launch(0, 0);
+                        NowCastAct = NowVehicle.OutAct;
+                        NowVehicle.WhoDrive = null;
+                        var genIMapInteractable = NowVehicle.GenIMapInteractable(GetPos());
+                        return new CharGoTickResult(null, null, genIMapInteractable);
                     }
-                        break;
+
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -579,6 +680,23 @@ namespace game_stuff
             var dVector = twoDVector.Multi(multiSpeed);
 
             return new CharGoTickResult(dVector, null);
+        }
+
+        private void ResetReCycle()
+        {
+            NowRecycleStack = 0;
+        }
+
+        private bool CallRecycle()
+        {
+            NowRecycleStack += 1;
+            var b = NowRecycleStack > MaxRecycleStack;
+            if (b)
+            {
+                ResetReCycle();
+            }
+
+            return b;
         }
 
 
@@ -627,6 +745,15 @@ namespace game_stuff
             {
                 NowVehicle.AddAmmo(ammoAdd);
             }
+        }
+
+        public bool LoadInteraction(Interaction charAct)
+        {
+            var b = NowCastAct == null;
+            if (!b) return b;
+            charAct.Launch();
+            NowCastAct = charAct;
+            return b;
         }
     }
 

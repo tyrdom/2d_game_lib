@@ -2,10 +2,10 @@ using System;
 
 namespace collision_and_rigid
 {
-    public class Round : IRawBulletShape, IBulletShape,IShape
+    public class Round : IRawBulletShape, IBulletShape, IShape
     {
-        public TwoDPoint O;
-        public float R;
+        public TwoDPoint O { get; set; }
+        public float R { get; set; }
 
         public Round(TwoDPoint o, float r)
         {
@@ -40,6 +40,7 @@ namespace collision_and_rigid
 
             return (O.Y - sqrt, O.Y + sqrt);
         }
+
 
         public Zone GetZones()
         {
@@ -110,12 +111,17 @@ namespace collision_and_rigid
 
         public bool PtRealInShape(TwoDPoint point)
         {
-            return TwoDVector.TwoDVectorByPt(O, point).SqNorm() <= R * R;
+            return TwoDVector.TwoDVectorByPt(O, point).SqNorm() < R * R;
         }
 
         public string Log()
         {
             return $"O:: {O.ToString()} R::{R}";
+        }
+
+        public bool Include(TwoDPoint pos)
+        {
+            return TwoDVector.TwoDVectorByPt(O, pos).SqNorm() <= R * R;
         }
     }
 }

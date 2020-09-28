@@ -43,6 +43,11 @@ namespace collision_and_rigid
             return $"{A}|{AOut}--{B}{BOut}";
         }
 
+        public bool Include(TwoDPoint pos)
+        {
+            return false;
+        }
+
 
         public TwoDPoint GetMid()
         {
@@ -546,7 +551,7 @@ namespace collision_and_rigid
             if (!(rdR > 0)) return (null, twoDPoint);
 
             var sqrt = MathTools.Sqrt(rdR);
-            
+
             var twoDVector = GetVector().GetUnit();
             var v1 = twoDVector.Multi(sqrt);
             var v2 = twoDVector.Multi(-sqrt);
