@@ -36,23 +36,32 @@ namespace game_stuff
         private int NowSnipeStep { get; set; }
 
 
-        public int NowAmmo
+        private int NowAmmo { get; set; }
+
+        private int GetAmmo()
         {
-            get => NowVehicle?.NowAmmo ?? NowAmmo;
-            set => NowAmmo = value;
+            return NowVehicle?.NowAmmo ?? NowAmmo;
         }
 
-        public int MaxAmmo { get; }
+        private int MaxAmmo { get; }
         public CharacterStatus? LockingWho { get; set; }
 
         public CharacterStatus? CatchingWho { get; set; }
 
         public int NowWeapon { get; private set; }
 
-        public Dictionary<int, Weapon> Weapons
+        private int MaxWeaponSlot { get; }
+
+        public int GetNowMaxWeaponSlotNum()
         {
-            get => NowVehicle == null ? Weapons : NowVehicle.Weapons;
-            private set => Weapons = value ?? throw new ArgumentNullException(nameof(value));
+            return NowVehicle?.WeaponCarryMax ?? MaxWeaponSlot;
+        }
+
+        private Dictionary<int, Weapon> Weapons { get; }
+
+        public Dictionary<int, Weapon> GetWeapons()
+        {
+            return NowVehicle == null ? Weapons : NowVehicle.Weapons;
         }
         //Skill Status
 
@@ -131,6 +140,7 @@ namespace game_stuff
             MaxAmmo = TempConfig.StandardMaxAmmo;
             MaxRecycleStack = TempConfig.GetTickByTime(TempConfig.MaxRecycleTime);
             NowRecycleStack = 0;
+            MaxWeaponSlot = TempConfig.StandardWeaponNum;
         }
 
         private void OpChangeAim(TwoDVector? aim)
@@ -169,7 +179,7 @@ namespace game_stuff
 
         public Scope? GetNowScope()
         {
-            if (NowInSnipeAct == null || NowSnipeStep <= 0 || !Weapons.TryGetValue(NowWeapon, out var weapon))
+            if (NowInSnipeAct == null || NowSnipeStep <= 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
                 return null;
             var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep - 1];
             return weaponZoomStepScope;
@@ -185,7 +195,7 @@ namespace game_stuff
                 OpChangeAim(aim);
             }
 
-            if (!skill.Launch(NowSnipeStep, NowAmmo)) return;
+            if (!skill.Launch(NowSnipeStep, GetAmmo())) return;
             SkillLaunch = skillAction;
             NowCastAct = skill;
         }
@@ -221,7 +231,7 @@ namespace game_stuff
 
         private Snipe? GetNowSnipe()
         {
-            return NowInSnipeAct != null && Weapons.TryGetValue(NowWeapon, out var weapon) &&
+            return NowInSnipeAct != null && GetWeapons().TryGetValue(NowWeapon, out var weapon) &&
                    weapon.Snipes.TryGetValue(NowInSnipeAct.Value, out var snipe)
                 ? snipe
                 : null;
@@ -241,7 +251,7 @@ namespace game_stuff
                     SnipeCallStack = 1;
                 }
 
-                if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
+                if (!GetWeapons().TryGetValue(NowWeapon, out var weapon) ||
                     !weapon.Snipes.TryGetValue(snipeAction, out var snipe) || snipe.TrickTick >= SnipeCallStack) return;
 
                 NowInSnipeAct = snipeAction;
@@ -265,7 +275,7 @@ namespace game_stuff
         //关镜
         private void OffSnipe()
         {
-            if (NowInSnipeAct != null && Weapons.TryGetValue(NowWeapon, out var weapon) &&
+            if (NowInSnipeAct != null && GetWeapons().TryGetValue(NowWeapon, out var weapon) &&
                 weapon.Snipes.TryGetValue(NowInSnipeAct.Value, out var snipe))
             {
                 NowSnipeStep = Math.Max(0, NowSnipeStep - snipe.OffStepPerTick);
@@ -324,7 +334,7 @@ namespace game_stuff
                         .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr()),
                 _ => throw new ArgumentOutOfRangeException(nameof(skill))
             };
-            var f = GetNowSnipe()?.MoveSpeedMulti[CharacterBody.BodySize];
+            var f = GetNowSnipe()?.MoveSpeedMulti[CharacterBody.GetSize()];
             var fixMove = skill switch
             {
                 Interaction _ => null,
@@ -423,7 +433,7 @@ namespace game_stuff
 #endif
             if (NextSkill.Value.opAction == SkillAction.Switch)
             {
-                NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
             }
 
             var aim = operateAim ?? NextSkill.Value.Aim;
@@ -482,7 +492,6 @@ namespace game_stuff
                 NowProtectTick -= 1;
             }
 
-
             // 当前技能结束检查
             if (NowCastAct?.InWhichPeriod() == SkillPeriod.End) NowCastAct = null;
 
@@ -523,14 +532,14 @@ namespace game_stuff
                 if (b)
                 {
                     status = 0;
-                    toUse = (toUse + 1) % Weapons.Count;
+                    toUse = (toUse + 1) % GetWeapons().Count;
                 }
 
-                var nowWeapon = Weapons.TryGetValue(toUse, out var weapon)
+                var nowWeapon = GetWeapons().TryGetValue(toUse, out var weapon)
                     ? weapon
-                    : Weapons.First().Value;
+                    : GetWeapons().First().Value;
 
-                if (!nowWeapon.SkillGroups.TryGetValue(CharacterBody.BodySize, out var immutableDictionary) ||
+                if (!nowWeapon.SkillGroups.TryGetValue(CharacterBody.GetSize(), out var immutableDictionary) ||
                     !immutableDictionary.TryGetValue(opAction.Value, out var skills) ||
                     !skills.TryGetValue(status, out var skill)) return actNowActATick;
 
@@ -612,14 +621,14 @@ namespace game_stuff
                 // 非连击状态切换武器
                 if (opAction == SkillAction.Switch)
                 {
-                    NowWeapon = (NowWeapon + 1) % Weapons.Count;
+                    NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
                     SkillLaunch = SkillAction.Switch;
                 }
                 // 发动当前武器技能组的起始技能0
                 else
                 {
-                    if (!Weapons.TryGetValue(NowWeapon, out var weapon) ||
-                        !weapon.SkillGroups.TryGetValue(CharacterBody.BodySize, out var value1) ||
+                    if (!GetWeapons().TryGetValue(NowWeapon, out var weapon) ||
+                        !weapon.SkillGroups.TryGetValue(CharacterBody.GetSize(), out var value1) ||
                         !value1.TryGetValue(opAction.Value, out var value) ||
                         !value.TryGetValue(0, out var skill)) return new CharGoTickResult(null, null, null, null);
                     LoadSkill(null, skill, opAction.Value);
@@ -676,7 +685,7 @@ namespace game_stuff
 
             NowMoveSpeed = GetStandardSpeed(twoDVector);
             var nowSnipe = GetNowSnipe();
-            var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.BodySize] ?? NowMoveSpeed;
+            var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.GetSize()] ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
             return new CharGoTickResult(dVector, null);

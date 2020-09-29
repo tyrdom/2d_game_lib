@@ -8,19 +8,20 @@ namespace game_stuff
 {
     public class CharacterInitData
     {
-        public int Gid;
-        public int TeamId;
-        private Dictionary<int, Weapon> Weapons;
-        private BodySize BodySize;
-        private float MaxSpeed;
-        private float MinSpeed;
-        private float AddSpeed;
+        public int Gid { get; }
+
+        public int TeamId { get; }
+        private Dictionary<int, Weapon> Weapons { get; }
+        private BodySize BodySize { get; }
+        private float MaxSpeed { get; }
+        private float MinSpeed { get; }
+        private float AddSpeed { get; }
 
         public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, float maxSpeed,
             float minSpeed, float addSpeed)
         {
             var dictionary = new Dictionary<int, Weapon>();
-            for (var i = 0; i < MathTools.Min(TempConfig.WeaponNum, weapons.Length); i++)
+            for (var i = 0; i < MathTools.Min(TempConfig.StandardWeaponNum, weapons.Length); i++)
             {
                 dictionary[i] = Weapon.GenByConfig(weapons[i]);
             }
@@ -53,7 +54,7 @@ namespace game_stuff
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
             var characterStatus = new CharacterStatus(MaxSpeed, Gid,
-                DamageHealStatus.StartDamageHealAbout(), AddSpeed, MinSpeed,TempConfig.TrickProtect);
+                DamageHealStatus.StartDamageHealAbout(), AddSpeed, MinSpeed, TempConfig.TrickProtect);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

@@ -55,12 +55,18 @@ namespace game_stuff
             int baseTough, uint comboInputStartTick, int nextCombo,
             LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, bool canInputMove)
         {
-            var b = 0 < comboInputStartTick &&
-                    skillMustTick < totalTick &&
-                    moveStartTick + moves.Length < totalTick;
+            var b1 = 0 < comboInputStartTick;
+            var b2 = skillMustTick < totalTick;
+            var b3 = moveStartTick + moves.Length < totalTick;
+            var b = b1 &&
+                    b2 &&
+                    b3;
             if (!b)
             {
-                Console.Out.WriteLine("some skill config is error~~~~~~~");
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"some skill config is error~~~~~~~reason b1 {b1}  totalTime {b2}  move over {b3}");
+#endif
             }
 
             NowOnTick = 0;
@@ -195,7 +201,7 @@ namespace game_stuff
             //GONext
             NowTough += TempConfig.ToughGrowPerTick;
             NowOnTick += 1;
-            return (move, bullet, snipeOff, null,MapInteractive.PickOrInVehicle);
+            return (move, bullet, snipeOff, null, MapInteractive.PickOrInVehicle);
         }
 
         public bool Launch(int nowSnipeStep, int nowAmmo)

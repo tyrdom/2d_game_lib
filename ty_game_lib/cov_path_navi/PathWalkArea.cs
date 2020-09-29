@@ -127,7 +127,6 @@ namespace cov_path_navi
         }
     }
 
-   
 
     public class ContinuousWalkArea
     {
@@ -201,7 +200,6 @@ namespace cov_path_navi
                         ri = -1;
                         return;
                     }
-
 
                     var leftLine = area[li].AsTwoDVectorLine();
                     var areaCount = ri == 0 ? area.Count - 1 : ri - 1;
@@ -334,7 +332,7 @@ namespace cov_path_navi
 
                 var aggregate2 = rest.Aggregate("", (s, x) => s + x.ToString() + "\n");
                 Console.Out.WriteLine(
-                    $"cut to 2 part \n {aggregate}\n and \n{aggregate2} \n with , and go to find next cov");
+                    $"cut to 2 part \n {aggregate}\n and \n{aggregate2} \n  , and go to find next cov");
 #endif
 
                 nowId += 1;

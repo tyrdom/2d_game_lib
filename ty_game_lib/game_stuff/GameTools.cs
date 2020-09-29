@@ -41,7 +41,7 @@ namespace game_stuff
 
         public static bool IsHit(IHitStuff hitStuff, CharacterBody characterBody)
         {
-            var characterBodyBodySize = characterBody.BodySize;
+            var characterBodyBodySize = characterBody.GetSize();
             return hitStuff.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
                    bulletBox.IsHit(characterBody.NowPos, hitStuff.Pos, hitStuff.Aim);
         }
@@ -119,7 +119,11 @@ namespace game_stuff
         {
             var twoDVectors = caughtBuff.CatchKeyPoints
                 .ToDictionary(
-                    x => TempConfig.GetTickByTime(x.key_time),
+                    x =>
+                    {
+                        Console.Out.WriteLine($"time is {TempConfig.GetTickByTime(x.key_time)}");
+                        return TempConfig.GetTickByTime(x.key_time);
+                    },
                     x => GenVectorByConfig(x.key_point))
                 .Select(pair => (pair.Key, pair.Value))
                 .ToList();

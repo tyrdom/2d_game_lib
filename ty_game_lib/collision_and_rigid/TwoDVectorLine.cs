@@ -35,7 +35,7 @@ namespace collision_and_rigid
 
         public List<BlockBox> GenAabbBoxShape()
         {
-            return new List<BlockBox>() {CovToAabbPackBox()};
+            return new List<BlockBox> {CovToAabbPackBox()};
         }
 
         public override string ToString()
@@ -264,8 +264,6 @@ namespace collision_and_rigid
 
         public TwoDPoint? CrossPointForWholeLine(TwoDVectorLine lineB)
         {
-            var c = lineB.A;
-
             var sA = A.Get2S(lineB);
             var sB = B.Get2S(lineB);
             var b = sA - sB;
@@ -712,10 +710,11 @@ namespace collision_and_rigid
         }
 
 
-        public List<(TwoDPoint, CondAfterCross, CondAfterCross)> UnionByLine(TwoDVectorLine line)
+        private List<(TwoDPoint, CondAfterCross, CondAfterCross)> UnionByLine(TwoDVectorLine line)
         {
-            var pt = CrossPointForWholeLine(line);
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
+            //todo same line
+            var pt = CrossPointForWholeLine(line);
             if (pt == null) return twoDPoints;
 
             var b1 = A.GetPosOf(line) == Pt2LinePos.Left && B.GetPosOf(line) != Pt2LinePos.Left;

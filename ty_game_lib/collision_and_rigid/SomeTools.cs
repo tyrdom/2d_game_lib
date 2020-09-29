@@ -208,7 +208,7 @@ namespace collision_and_rigid
         public static bool CheckFlush(IEnumerable<IBlockShape> l1)
         {
             var blk1F = true;
-            TwoDPoint edPt1 = null!;
+            TwoDPoint? edPt1 = null;
             foreach (var blockShape in l1)
             {
                 var twoPp = blockShape.GetStartPt();
@@ -237,7 +237,7 @@ namespace collision_and_rigid
 #if DEBUG
             Console.Out.WriteLine("blk 1");
             var blk1F = true;
-            TwoDPoint edPt1 = null!;
+            TwoDPoint? edPt1 = null;
             foreach (var blockShape in l1)
             {
                 var twoPp = blockShape.GetStartPt();
@@ -248,14 +248,14 @@ namespace collision_and_rigid
                 var twoDPoint = blockShape.GetEndPt();
 
                 edPt1 = twoDPoint;
-                Console.Out.WriteLine($"a blk start {twoPp.ToString()} end {twoDPoint.ToString()} now flush is {b}");
+                Console.Out.WriteLine($"a blk start {twoPp} end {twoDPoint} now flush is {b}");
             }
 
             Console.Out.WriteLine($"blk 1~~~~ is flush {blk1F}");
 
             Console.Out.WriteLine("blk 2");
             var blk2F = true;
-            TwoDPoint edPt2 = null!;
+            TwoDPoint? edPt2 = null;
             foreach (var blockShape in l2)
             {
                 var twoPp = blockShape.GetStartPt();
@@ -263,7 +263,7 @@ namespace collision_and_rigid
                 blk2F = blk2F && b;
                 var twoDPoint = blockShape.GetEndPt();
                 edPt2 = twoDPoint;
-                Console.Out.WriteLine($"a blk start {twoPp.ToString()} end {twoDPoint.ToString()} now flush is {b}");
+                Console.Out.WriteLine($"a blk start {twoPp} end {twoDPoint} now flush is {b}");
             }
 
             Console.Out.WriteLine($"blk 2~~~~ is flush {blk2F}");
@@ -293,7 +293,6 @@ namespace collision_and_rigid
                     var blockShapeFromL2 = l2[j];
                     var crossAnotherBlockShapeReturnIsChangeAndBlocks =
                         blockShapeFromL1.CrossAnotherBlockShapeReturnCrossPtAndThisCondAnotherCond(blockShapeFromL2);
-
 
                     if (!dicL2.TryGetValue(j, out var df2)) df2 = new List<(TwoDPoint, CondAfterCross)>();
 
@@ -563,7 +562,12 @@ namespace collision_and_rigid
 #if DEBUG
             Console.Out.WriteLine($"AaBbBlocks num::{qSpace.AaBbPackBox.Count}");
 #endif
-            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+            var walkBlockQSpaceByBlockBoxes = qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+
+#if DEBUG
+            Console.Out.WriteLine($"wb ok");
+#endif
+            return walkBlockQSpaceByBlockBoxes;
         }
 
         public static IQSpace CreateAreaQSpaceByAreaBox(AreaBox[] areaBoxes, int limit)

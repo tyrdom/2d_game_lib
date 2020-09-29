@@ -65,15 +65,17 @@ namespace game_stuff
 
             ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.CharacterBody.Sight.StandardScope.GenNewScope(x))
                 .ToArray();
-            if (characterStatus.Weapons.Count < TempConfig.WeaponNum)
+            characterStatus.ResetSnipe();
+            var weapons = characterStatus.GetWeapons();
+            if (weapons.Count < characterStatus.GetNowMaxWeaponSlotNum())
             {
-                characterStatus.Weapons.Add(characterStatus.Weapons.Count, this);
+                weapons.Add(weapons.Count, this);
                 return null;
             }
 
             var characterStatusNowWeapon = characterStatus.NowWeapon;
-            var characterStatusWeapon = characterStatus.Weapons[characterStatusNowWeapon];
-            characterStatus.Weapons[characterStatusNowWeapon] = this;
+            var characterStatusWeapon = weapons[characterStatusNowWeapon];
+            weapons[characterStatusNowWeapon] = this;
             return characterStatusWeapon.GenIMapInteractable(characterStatus.GetPos());
         }
 
@@ -199,7 +201,7 @@ namespace game_stuff
 
         public bool CanPick(CharacterStatus characterStatus)
         {
-            return CanBePickUp(characterStatus.CharacterBody.BodySize);
+            return CanBePickUp(characterStatus.CharacterBody.GetSize());
         }
     }
 }

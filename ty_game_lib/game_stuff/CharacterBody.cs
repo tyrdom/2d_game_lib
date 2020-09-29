@@ -8,15 +8,11 @@ namespace game_stuff
 {
     public class CharacterBody : IIdPointShape
     {
-        public BodySize BodySize
+        private BodySize BodySize { get; }
+
+        public BodySize GetSize()
         {
-            get => CharacterStatus.NowVehicle?.VehicleSize ?? BodySize;
-            private set
-            {
-                if (!Enum.IsDefined(typeof(BodySize), value))
-                    throw new InvalidEnumArgumentException(nameof(value), (int) value, typeof(BodySize));
-                BodySize = value;
-            }
+           return CharacterStatus.NowVehicle?.VehicleSize ?? BodySize;
         }
 
         public CharacterStatus CharacterStatus { get; }
@@ -149,7 +145,7 @@ namespace game_stuff
         public CharInitMsg GenInitMsg()
         {
             return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
-                CharacterStatus.Weapons);
+                CharacterStatus.GetWeapons());
         }
 
         public override string ToString()

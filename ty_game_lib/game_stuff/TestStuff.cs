@@ -10,7 +10,8 @@ namespace game_stuff
     {
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) TestPlayGround()
         {
-            var initPlayGround = PlayGround.InitPlayGround(new[] {TestPlayer1(), TestPlayer2()}, TestInitData());
+            var initPlayGround = PlayGround.InitPlayGround(new[] {TestPlayer1(), TestPlayer2()},
+                TestInitData());
 
             return initPlayGround;
         }
@@ -19,14 +20,26 @@ namespace game_stuff
         {
             var keyValuePair = TempConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
-            return CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+
+            var characterInitData =
+                CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+#if DEBUG
+            Console.Out.WriteLine($"Test P1 ok");
+#endif
+            return characterInitData;
         }
 
         private static CharacterInitData TestPlayer2()
         {
             var keyValuePair = TempConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
-            return CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+
+            var characterInitData =
+                CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+#if DEBUG
+            Console.Out.WriteLine($"Test P2 ok");
+#endif
+            return characterInitData;
         }
 
         private static MapInitData TestInitData()
@@ -42,6 +55,9 @@ namespace game_stuff
             {
                 {1, startPts}, {2, startPts2}
             };
+#if DEBUG
+            Console.Out.WriteLine($"test map init ok");
+#endif
             return new MapInitData(testSightMap, testMap, startPaces);
         }
 
@@ -49,12 +65,17 @@ namespace game_stuff
         {
             var tuples = new List<(Poly, bool)>
             {
-                (TestPoly(), false), (TestPoly2(), true), (TestPoly3(), true)
+                (TestPoly(), false)
+                // , (TestPoly2(), true)
+                // , (TestPoly3(), true)
             };
 #if DEBUG
             Console.Out.WriteLine("test_walk_map");
 #endif
             var mapByPolys = WalkMap.CreateMapByPolys(tuples);
+#if DEBUG
+            Console.Out.WriteLine("test_walk_map_ok");
+#endif
             return mapByPolys;
         }
 

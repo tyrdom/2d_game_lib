@@ -40,7 +40,7 @@ namespace game_stuff
         public int NowAmmo { get; set; }
 
         private int MaxAmmo { get; }
-        private int WeaponCarryMax { get; }
+        public int WeaponCarryMax { get; }
         private int DestroyTick { get; }
 
         private Bullet DestroyBullet { get; }

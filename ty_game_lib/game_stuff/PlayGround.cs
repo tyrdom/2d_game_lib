@@ -206,7 +206,7 @@ namespace game_stuff
                         switch (idPts)
                         {
                             case CharacterBody characterBody:
-                                var characterBodyBodySize = characterBody.BodySize;
+                                var characterBodyBodySize = characterBody.GetSize();
                                 if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
                                     return characterBody.RelocateWithBlock(walkBlock);

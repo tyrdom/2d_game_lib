@@ -21,7 +21,7 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
-        public int AmmoAddWhenSuccess { get; }
+        private int AmmoAddWhenSuccess { get; }
 
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
@@ -206,7 +206,7 @@ namespace game_stuff
                 return;
             }
 
-            var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.BodySize;
+            var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.GetSize();
             //AttackOk 攻击成功
             if (opponentIsStun || b2 || b3 || b4)
             {
@@ -220,7 +220,6 @@ namespace game_stuff
                 //如果没有锁定目标，则锁定当前命中的目标
                 Caster.LockingWho ??= targetCharacterStatus;
                 //生成击中受击消息数据缓存
-
                 targetCharacterStatus.IsBeHitBySomeOne =
                     TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos);
 
@@ -242,11 +241,7 @@ namespace game_stuff
 
                 void InitBuff()
                 {
-                    if (PauseToOpponent > targetCharacterStatus.PauseTick)
-                    {
-                        targetCharacterStatus.PauseTick = PauseToOpponent;
-                    }
-
+                    targetCharacterStatus.PauseTick = Math.Max(PauseToOpponent, targetCharacterStatus.PauseTick);
 
                     targetCharacterStatus.AntiActBuff = antiActBuffConfig
                         .GenBuff(Pos,
@@ -335,7 +330,7 @@ namespace game_stuff
                     var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
                         targetCharacterStatus.GetAim(),
                         null,
-                        0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                        0, Caster.CharacterBody.GetSize(), targetCharacterStatus);
                     Caster.AntiActBuff = antiActBuff;
 
                     // var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
@@ -351,7 +346,7 @@ namespace game_stuff
 #endif
                     var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
                         Caster.GetPos(), Aim,
-                        null, 0, Caster.CharacterBody.BodySize, targetCharacterStatus);
+                        null, 0, Caster.CharacterBody.GetSize(), targetCharacterStatus);
                     Caster.AntiActBuff = antiActBuff;
                 }
             }

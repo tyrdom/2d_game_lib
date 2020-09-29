@@ -16,10 +16,10 @@ namespace game_stuff
 
         public static uint GetTickByTime(float time)
         {
-            return (uint) (time / TickPerSec);
+            return (uint) (time * TickPerSec);
         }
 
-        public static ConfigDictionaries Configs { get; set; }
+        public static ConfigDictionaries Configs { get; private set; }
 #if NETCOREAPP
             = new ConfigDictionaries();
 #else
@@ -29,8 +29,8 @@ namespace game_stuff
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
             [BodySize.Small] = 0.5f,
-            [BodySize.Medium] = 2f,
-            [BodySize.Big] = 3f
+            [BodySize.Medium] = 1f,
+            [BodySize.Big] = 1.5f
         };
 
         public static readonly Dictionary<BodySize, float> SizeToMass = new Dictionary<BodySize, float>
@@ -52,7 +52,7 @@ namespace game_stuff
 
         public static int MidTough { get; private set; } = 1000;
 
-        public static int WeaponNum { get; private set; } = 2;
+        public static int StandardWeaponNum { get; private set; } = 2;
 
         public static float TwoSToSeePerTick { get; private set; } = 20f;
 
@@ -106,7 +106,7 @@ namespace game_stuff
 
             ToughGrowPerTick = configs.other_configs[1].tough_grow;
             MidTough = configs.other_configs[1].mid_tough;
-            WeaponNum = configs.other_configs[1].weapon_num;
+            StandardWeaponNum = configs.other_configs[1].weapon_num;
             TwoSToSeePerTick = configs.other_configs[1].two_s_to_see_pertick;
 
             QSpaceBodyMaxPerLevel = configs.other_configs[1].qspace_max_per_level;

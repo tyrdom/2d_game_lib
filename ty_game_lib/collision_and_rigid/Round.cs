@@ -114,9 +114,10 @@ namespace collision_and_rigid
             return TwoDVector.TwoDVectorByPt(O, point).SqNorm() < R * R;
         }
 
-        public string Log()
+        public override string ToString()
+
         {
-            return $"O:: {O.ToString()} R::{R}";
+            return $"O:: {O} R::{R}";
         }
 
         public bool Include(TwoDPoint pos)

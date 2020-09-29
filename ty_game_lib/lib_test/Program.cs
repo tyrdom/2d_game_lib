@@ -12,11 +12,39 @@ namespace lib_test
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        void BlockTest(WalkBlock walkBlock, TwoDPoint ptt)
+        {
+            Console.Out.WriteLine("Block test!!!");
+            Console.Out.WriteLine("ResIsBlockIN?" + walkBlock.IsBlockIn);
+            Console.Out.WriteLine(walkBlock.QSpace != null
+                ? walkBlock.QSpace.OutZones()
+                : "all block");
+
+            var inBlock2 = walkBlock.RealCoverPoint(ptt);
+
+            var sPt = new TwoDPoint(-0.1f, -1.45f);
+            var ePt = new TwoDPoint(0.2f, -1.55f);
+
+            var pushOutToPt = walkBlock.PushOutToPt(sPt, ePt);
+
+            Console.Out.WriteLine($"push out pt {pushOutToPt.pt}");
+            Console.Out.WriteLine("!!2!!" + inBlock2);
+
+            TwoDPoint a = new TwoDPoint(0f, 0f);
+            TwoDPoint b = new TwoDPoint(1f, 1f);
+            TwoDPoint c = new TwoDPoint(0.5f, 0.5f);
+            TwoDPoint d = new TwoDPoint(0f, 1f);
+            var bLine = new TwoDVectorLine(a, b);
+            var cLine = new TwoDVectorLine(c, d);
+            var isGoTrough = cLine.IsGoTrough(bLine);
+            Console.Out.WriteLine($"is go tr {isGoTrough}");
+        }
+
+        private static void LineTest()
         {
             Console.Out.WriteLine("Line test!!");
 
-            var aPoint = new TwoDPoint(1.5f, 1);
+            var aPoint = new TwoDPoint(1.5f, 1.2f);
             var bPoint = new TwoDPoint(1, 1);
 
             var cPoint = new TwoDPoint(0, 0);
@@ -31,113 +59,12 @@ namespace lib_test
             var crossPoint = ab.CrossPointForWholeLine(cd);
             var point = ad.CrossPointForWholeLine(bc);
             Console.Out.WriteLine(
-                $"ab cross cd{crossAnotherPoint?.ToString()}\nad cross bc{anotherPoint?.ToString()}\nab cross line cd{crossPoint?.ToString()}" +
-                $"\nad cross line bc{point?.ToString()}");
+                $"ab cross cd{crossAnotherPoint}\nad cross bc{anotherPoint}\nab cross line cd{crossPoint}" +
+                $"\nad cross line bc{point}");
+        }
 
-
-            Console.Out.WriteLine("Block test!!!");
-
-//
-//            var pt1 = new TwoDPoint(1.5f, 1.3f);
-//            var pt2 = new TwoDPoint(2f, 2.8f);
-//            var pt3 = new TwoDPoint(3.6f, 0.9f);
-//            var pt4 = new TwoDPoint(2.5f, -1.7f);
-
-            var pt1 = new TwoDPoint(0.0f, 0.0f);
-            var pt2 = new TwoDPoint(1.0f, 1.0f);
-            var pt3 = new TwoDPoint(2f, 0f);
-            var pt4 = new TwoDPoint(3.0f, 1f);
-            var pt5 = new TwoDPoint(4.0f, 0f);
-
-            var pt6 = new TwoDPoint(2.0f, -2.0f);
-
-            var ptt = new TwoDPoint(2f, -1.717f);
-            var twoDPoints = new[] {pt1, pt2, pt3, pt4, pt5, pt6};
-//            foreach (var twoDPoint in twoDPoints)
-//            {
-//                Console.Out.WriteLine("res:" + twoDPoint.X);
-//            }
-
-            var poly = TestStuff.TestPoly();
-
-//            var blockShapes = poly.GenBlockShapes(0.2f, false);
-//            foreach (var blockShape in blockShapes)
-//            {
-//                var twoDPoint = blockShape.GetEndPt();
-//                Console.Out.WriteLine("l1 raw end pt::X::" + twoDPoint.X + "   Y::" + twoDPoint.Y);
-//            }
-
-
-//            var genByPoly = poly.GenWalkBlockByPoly(0.2f, 2, false);
-//            var inBlock1 = genByPoly.CoverPoint(ptt);
-//            if (genByPoly.QSpace != null) Console.Out.WriteLine(genByPoly.QSpace.OutZones());
-//            else
-//            {
-//                Console.Out.WriteLine("all block");
-//            }
-//
-//            Console.WriteLine("!!!!" + inBlock1);
-
-            var pp1 = new TwoDPoint(2f, -0.5f);
-            var pp2 = new TwoDPoint(2.5f, -1f);
-            var pp3 = new TwoDPoint(2, -1.5f);
-            var pp4 = new TwoDPoint(1.5f, -1f);
-            var dPoints = new[] {pp1, pp2, pp3, pp4};
-            var poly1 = TestStuff.TestPoly2();
-            var poly2 = TestStuff.TestPoly3();
-            var poly3 = new Poly(new[]
-                {new TwoDPoint(2, 1), new TwoDPoint(4, 1), new TwoDPoint(4, -1), new TwoDPoint(2, -1),});
-
-            var poly4 = new Poly(new[]
-                {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
-
-            var poly5 = new Poly(new[]
-            {
-                new TwoDPoint(-2, -2), new TwoDPoint(-2, -4), new TwoDPoint(-4, -4), new TwoDPoint(-4, -2)
-            });
-
-            var tuples = new List<(Poly, bool)>
-            {
-                (poly, false), (poly3, true), (poly4, true), (poly5, true)
-            };
-
-//            var genBlockShapes = poly1.GenBlockShapes(0.2f, true);
-//            foreach (var blockShape in genBlockShapes)
-//            {
-//                var twoDPoint = blockShape.GetEndPt();
-//                Console.Out.WriteLine("raw end pt::X"+ twoDPoint.X+ "   Y::"+twoDPoint.Y);
-//
-//            }
-//
-//            var genWalkBlockByPoly = poly1.GenWalkBlockByPoly(0.2f,100,true);
-//            var outZones = genWalkBlockByPoly.QSpace.OutZones();
-//            Console.Out.WriteLine("zones!!!:::"+outZones);
-
-            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 1f, 6);
-            Console.Out.WriteLine("ResIsBlockIN?" + genWalkBlockByPolys.IsBlockIn);
-            Console.Out.WriteLine(genWalkBlockByPolys.QSpace != null
-                ? genWalkBlockByPolys.QSpace.OutZones()
-                : "all block");
-
-            var inBlock2 = genWalkBlockByPolys.RealCoverPoint(ptt);
-
-            var sPt = new TwoDPoint(-0.1f, -1.45f);
-            var ePt = new TwoDPoint(0.2f, -1.55f);
-
-            var pushOutToPt = genWalkBlockByPolys.PushOutToPt(sPt, ePt);
-
-            Console.Out.WriteLine($"push out pt {pushOutToPt.pt}");
-            Console.Out.WriteLine("!!2!!" + inBlock2);
-
-            TwoDPoint a = new TwoDPoint(0f, 0f);
-            TwoDPoint b = new TwoDPoint(1f, 1f);
-            TwoDPoint c = new TwoDPoint(0.5f, 0.5f);
-            TwoDPoint d = new TwoDPoint(0f, 1f);
-            var bLine = new TwoDVectorLine(a, b);
-            var cLine = new TwoDVectorLine(c, d);
-            var isGoTrough = cLine.IsGoTrough(bLine);
-            Console.Out.WriteLine($"is go tr {isGoTrough}");
-
+        static void PathTest(WalkBlock genWalkBlockByPolys)
+        {
             Console.Out.WriteLine("path test~~~~~");
 
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
@@ -170,7 +97,7 @@ namespace lib_test
 
                 Console.Out.WriteLine($"WalkAreas \n{ss2}");
 
-                int startId = -1;
+                var startId = -1;
                 var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref startId));
 
                 var aggregate2 = pathNodeCovPolygons.Aggregate("", (s, x) => s + x + "\n");
@@ -184,17 +111,48 @@ namespace lib_test
 
             var findAPathById = pathTop.FindAPathById(0, 6, startPt, endPt);
 
-            var aggregate3 = findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
+            var aggregate3 =
+                findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
 
 
             var findAPathByPoint = pathTop.FindAPathByPoint(startPt, endPt);
-            var aggregate4 = findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
+            var aggregate4 =
+                findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
             var twoDVectorLines = findAPathByPoint.Select(x => x.Item2);
             var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.ToString());
             Console.Out.WriteLine($"way Points are {s3}");
-         
+        }
+
+        private static void Main(string[] args)
+        {
+            var poly1 = TestStuff.TestPoly2();
+            var poly2 = TestStuff.TestPoly3();
+            var poly3 = new Poly(new[]
+                {new TwoDPoint(2, 1), new TwoDPoint(4, 1), new TwoDPoint(4, -1), new TwoDPoint(2, -1),});
+
+            var poly4 = new Poly(new[]
+                {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
+
+            var poly5 = new Poly(new[]
+            {
+                new TwoDPoint(-2, -2), new TwoDPoint(-2, -4), new TwoDPoint(-4, -4), new TwoDPoint(-4, -2)
+            });
+            var poly = TestStuff.TestPoly();
+            var tuples = new List<(Poly, bool)>
+            {
+                (poly, false), (poly3, true), (poly4, true), (poly5, true)
+            };
+
+            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 2f, 6);
+
+            LineTest();
+            return;
+            // PathTest(genWalkBlockByPolys);
+            var ptt = new TwoDPoint(2f, -1.717f);
+
+
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();
@@ -209,20 +167,26 @@ namespace lib_test
                 }
             }
 
-            Console.Out.WriteLine("game test~~~~~");
-
             var (playGround, item2) = TestStuff.TestPlayGround();
-            foreach (var (key, charInitMsgs) in item2)
-            {
-                Console.Out.WriteLine($"{key}");
-                foreach (var charInitMsg in charInitMsgs)
-                {
-                    var gId = charInitMsg.GId;
-                    var logPt = charInitMsg.Pos.LogPt();
-                    var twoDVector = charInitMsg.Aim.LogVector();
-                    Console.Out.WriteLine($"{gId}::{logPt}::{twoDVector}");
-                }
-            }
+            return;
+            Console.Out.WriteLine("pg ok");
+            // void ConfigTest()
+            // {
+            //     Console.Out.WriteLine("game test~~~~~");
+            //
+            //    
+            //     foreach (var (key, charInitMsgs) in item2)
+            //     {
+            //         Console.Out.WriteLine($"{key}");
+            //         foreach (var charInitMsg in charInitMsgs)
+            //         {
+            //             var gId = charInitMsg.GId;
+            //             var logPt = charInitMsg.Pos.LogPt();
+            //             var twoDVector = charInitMsg.Aim.LogVector();
+            //             Console.Out.WriteLine($"{gId}::{logPt}::{twoDVector}");
+            //         }
+            //     }
+            // }
 
 
             var pi = MathTools.Pi();

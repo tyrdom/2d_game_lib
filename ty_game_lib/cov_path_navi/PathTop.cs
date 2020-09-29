@@ -68,7 +68,8 @@ namespace cov_path_navi
                 return FindAPathById(start.Value, end.Value, startPt, endPt);
             }
 
-            throw new Exception($"Pt{startPt.ToString()} or {endPt.ToString()} not in any area  ");
+            Console.Out.WriteLine($"Pt{startPt} or {endPt} not in any area  ");
+            return new List<(int, TwoDVectorLine?)>();
         }
 
 
