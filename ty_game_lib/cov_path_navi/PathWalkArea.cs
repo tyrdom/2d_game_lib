@@ -204,11 +204,13 @@ namespace cov_path_navi
                     var leftLine = area[li].AsTwoDVectorLine();
                     var areaCount = ri == 0 ? area.Count - 1 : ri - 1;
                     var rightLine = area[areaCount].AsTwoDVectorLine();
-
+#if DEBUG
+                    Console.Out.WriteLine($" l is {leftLine} m r is {rightLine}");
+#endif
                     if (right && rCanGo)
                     {
                         var nextR = area[ri];
-                        var canGo = CanGo(leftLine, rightLine, nextR.GetEndPt(), ref inALine, blocks);
+                        var canGo = CanGo(leftLine, rightLine, nextR.GetEndPt(), ref inALine, blocks, true);
                         if (canGo)
                             ri = ri + 1 == area.Count ? 0 : ri + 1;
 
@@ -220,7 +222,7 @@ namespace cov_path_navi
                     {
                         var nextL = area[(area.Count + li - 1) % area.Count];
 
-                        var canGo = CanGo(rightLine, leftLine, nextL.GetStartPt(), ref inALine, blocks);
+                        var canGo = CanGo(rightLine, leftLine, nextL.GetStartPt(), ref inALine, blocks, false);
 
                         if (canGo)
                             li = li == 0 ? area.Count - 1 : li - 1;
@@ -235,20 +237,24 @@ namespace cov_path_navi
                     return;
 
                     static bool CanGo(TwoDVectorLine otherLine, TwoDVectorLine thisLine,
-                        TwoDPoint next, ref bool aLine, SimpleBlocks simpleBlocks)
+                        TwoDPoint next, ref bool aLine, SimpleBlocks simpleBlocks, bool goRight)
                     {
                         var leftNPos = next.GetPosOf(thisLine);
-
+                        var same = next.Same(thisLine.GetEndPt());
                         var lCov = leftNPos != Pt2LinePos.Right;
 
                         var notOver = next.GetPosOf(otherLine) != Pt2LinePos.Right;
+                        var twoDPoint = goRight ? otherLine.GetStartPt() : otherLine.GetEndPt();
                         var twoDVectorLine =
-                            new TwoDVectorLine(otherLine.GetEndPt(), next);
+                            new TwoDVectorLine(twoDPoint, next);
+
                         var lineCross = simpleBlocks.LineCross(twoDVectorLine);
+#if DEBUG
+                        Console.Out.WriteLine($"{simpleBlocks} vs {twoDVectorLine} \n {lineCross} ");
+#endif
                         var ptInShape = simpleBlocks.PtInShapeIncludeSide(twoDVectorLine.GetMid());
                         var canGo = lCov && notOver && !lineCross && ptInShape;
-                        aLine = canGo ? leftNPos == Pt2LinePos.On && aLine : aLine;
-
+                        aLine = canGo ? leftNPos == Pt2LinePos.On && !same && aLine : aLine;
                         return canGo;
                     }
                 }
@@ -256,6 +262,9 @@ namespace cov_path_navi
                 var inALine1 = true;
                 var lfc1 = offset;
                 var rfc1 = offset + 1 >= area.Count ? 0 : offset + 1;
+
+                // CheckFirstLineCross(area, lfc1, rfc1);
+
                 GetACovInArea(ref lfc1, ref rfc1, area, true, true, ref inALine1, false, areaSimpleBlocks);
 
                 if (lfc1 == -1)
@@ -339,6 +348,13 @@ namespace cov_path_navi
                 GetACov(rest, 0, polygons, incompleteLinks, ref nowId);
             }
         }
+
+        // private static bool CheckFirstLineCross(List<IBlockShape> area, in int lfc1, in int rfc1)
+        // {
+        //     var leftLine = area[li].AsTwoDVectorLine();
+        //     var areaCount = ri == 0 ? area.Count - 1 : ri - 1;
+        //     var rightLine = area[areaCount].AsTwoDVectorLine();
+        // }
 
 
         // static (List<IBlockShape> part1, List<IBlockShape> part2, List<IBlockShape> triangle) CutAInTriangle(

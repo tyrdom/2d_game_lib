@@ -8,9 +8,9 @@ namespace collision_and_rigid
         public int Count();
         public Quad? TheQuad { get; set; }
         public QSpaceBranch? Father { get; set; }
-        public Zone Zone { get; set; }
+        public Zone Zone { get; }
 
-        public HashSet<IAaBbBox> AaBbPackBox { get; set; }
+        public HashSet<IAaBbBox> AaBbPackBox { get; }
 
         public void AddIdPoint(HashSet<IdPointBox> idPointShapes, int limit);
 
@@ -26,7 +26,7 @@ namespace collision_and_rigid
         public IEnumerable<BlockBox> TouchBy(BlockBox box);
         public bool LineIsBlockSight(TwoDVectorLine line);
 
-        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit);
+        public IQSpace AddSingleAaBbBox(IAaBbBox aaBbBox, int limit);
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
 

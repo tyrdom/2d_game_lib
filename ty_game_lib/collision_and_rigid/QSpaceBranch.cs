@@ -218,12 +218,12 @@ namespace collision_and_rigid
             return lineIsBlockSight || isBlockSight;
         }
 
-        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
+        public IQSpace AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
         {
             if (AaBbPackBox.Count < limit)
             {
                 AaBbPackBox.Add(aaBbBox);
-                return;
+                return this;
             }
 
             var (horizon, vertical) = Zone.GetMid();
@@ -238,22 +238,24 @@ namespace collision_and_rigid
                         break;
                     case 1:
                         aaBbBox.WriteQuadRecord(Quad.One);
-                        QuadOne.AddSingleAaBbBox(item2, limit);
+                        QuadOne = QuadOne.AddSingleAaBbBox(item2, limit);
                         break;
                     case 2:
                         aaBbBox.WriteQuadRecord(Quad.Two);
-                        QuadTwo.AddSingleAaBbBox(item2, limit);
+                        QuadTwo = QuadTwo.AddSingleAaBbBox(item2, limit);
                         break;
                     case 3:
                         aaBbBox.WriteQuadRecord(Quad.Three);
-                        QuadThree.AddSingleAaBbBox(item2, limit);
+                        QuadThree = QuadThree.AddSingleAaBbBox(item2, limit);
                         break;
                     case 4:
                         aaBbBox.WriteQuadRecord(Quad.Four);
-                        QuadFour.AddSingleAaBbBox(item2, limit);
+                        QuadFour = QuadFour.AddSingleAaBbBox(item2, limit);
                         break;
                 }
             }
+
+            return this;
         }
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)

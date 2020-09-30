@@ -106,6 +106,7 @@ namespace lib_test
 
             var pathTop = new PathTop(genWalkBlockByPolys);
             Console.Out.WriteLine($"\n\n pathTop is\n{pathTop}");
+            Console.Out.WriteLine($"\n\n pathTop ok");
             var startPt = new TwoDPoint(-7f, -5f);
             var endPt = new TwoDPoint(6, 0f);
 
@@ -146,13 +147,12 @@ namespace lib_test
             };
 
             var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 2f, 6);
-
-            LineTest();
+            var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
+         
+            PathTest(genWalkBlockByPolys);
             return;
-            // PathTest(genWalkBlockByPolys);
             var ptt = new TwoDPoint(2f, -1.717f);
-
-
+            
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();

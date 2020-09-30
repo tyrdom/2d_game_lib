@@ -175,16 +175,17 @@ namespace collision_and_rigid
                 select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
         }
 
-        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
+        public IQSpace AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
         {
             if (AaBbPackBox.Count < limit)
             {
                 AaBbPackBox.Add(aaBbBox);
-                return;
+                return this;
             }
 
             var tryCovToBranch = TryCovToBranch(limit);
             tryCovToBranch.AddSingleAaBbBox(aaBbBox, limit);
+            return tryCovToBranch;
         }
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)

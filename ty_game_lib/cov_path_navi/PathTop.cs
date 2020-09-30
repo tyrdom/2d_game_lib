@@ -36,14 +36,28 @@ namespace cov_path_navi
             var continuousWalkAreas = walkAreaBlocks.Select(x => x.GenWalkArea());
             var a = -1;
             var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref a)).ToList();
+#if DEBUG
+            Console.Out.WriteLine($"pathCovS ok");
+#endif
             foreach (var pathNodeCovPolygon in pathNodeCovPolygons)
             {
                 pathNodeCovPolygon.LoadLinkAndCost();
             }
-
+#if DEBUG
+            Console.Out.WriteLine($"pathCovS LoadLink ok");
+#endif
             PolygonsTop = pathNodeCovPolygons.ToDictionary(x => x.ThisPathNodeId, x => x);
+#if DEBUG
+            Console.Out.WriteLine($"pathCovS Top ok");
+#endif
             var areaBoxes = pathNodeCovPolygons.Select(x => x.GenAreaBox()).ToArray();
-            var areaQSpaceByAreaBox = SomeTools.CreateAreaQSpaceByAreaBox(areaBoxes, 6);
+#if DEBUG
+            Console.Out.WriteLine($"pathCovS Box ok");
+#endif
+            var areaQSpaceByAreaBox = SomeTools.CreateAreaQSpaceByAreaBox(areaBoxes, 5);//todo stack overflow
+#if DEBUG
+            Console.Out.WriteLine($"pathCovS CreateSpace ok");
+#endif
             AreaQSpace = areaQSpaceByAreaBox;
 
 #if DEBUG

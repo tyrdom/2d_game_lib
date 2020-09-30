@@ -558,9 +558,10 @@ namespace collision_and_rigid
 
             var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
 
+
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG
-            Console.Out.WriteLine($"AaBbBlocks num::{qSpace.AaBbPackBox.Count}");
+            Console.Out.WriteLine($"AaBbBlocks num::{aaBbPackPackBox.Count}");
 #endif
             var walkBlockQSpaceByBlockBoxes = qSpace.TryCovToLimitQSpace(maxLoadPerQ);
 
@@ -576,12 +577,16 @@ namespace collision_and_rigid
             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
 
             var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
+            var emptyRootBranch = CreateEmptyRootBranch(joinAaBbZone);
+            foreach (var aaBbBox in aaBbPackPackBox)
+            {
+                emptyRootBranch.AddSingleAaBbBox(aaBbBox, limit);
+            }
 
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
 #if DEBUG
-            Console.Out.WriteLine($"AaBbArea num::{qSpace.AaBbPackBox.Count}");
+            Console.Out.WriteLine($"AaBbArea num::{aaBbPackPackBox.Count}");
 #endif
-            return qSpace.TryCovToLimitQSpace(limit);
+            return emptyRootBranch;
         }
 
 

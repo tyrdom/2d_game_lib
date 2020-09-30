@@ -366,6 +366,8 @@ namespace collision_and_rigid
             };
         }
 
+        
+        
 
         public bool IsGoTrough(TwoDVectorLine lineB)
         {
@@ -519,7 +521,7 @@ namespace collision_and_rigid
         }
 
 
-        public float GetMultiFromA(TwoDPoint p)
+        private float GetMultiFromA(TwoDPoint p)
         {
             var twoDVector = new TwoDVectorLine(A, p).GetVector();
             var dVector = GetVector();
@@ -559,7 +561,7 @@ namespace collision_and_rigid
         }
 
 
-        public float DistanceRight(TwoDPoint p)
+        private float DistanceRight(TwoDPoint p)
         {
             var get2S = p.Get2S(this);
             return get2S / GetVector().Norm();
@@ -710,10 +712,36 @@ namespace collision_and_rigid
         }
 
 
-        private List<(TwoDPoint, CondAfterCross, CondAfterCross)> UnionByLine(TwoDVectorLine line)
+        private List<(TwoDPoint crossPt, CondAfterCross shape1CrossCond, CondAfterCross shape2CrossCond)> UnionByLine(
+            TwoDVectorLine line)
         {
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-            //todo same line
+//             //todo same line
+//             if (SameLine(line) && GetVector().Dot(line.GetVector()) < 0)
+//             {
+// #if DEBUG
+//                 Console.Out.WriteLine($"same Line block:: {this}  vs {line}");
+// #endif
+//                 var lineB = line.GetEndPt();
+//                 var endM = GetMultiFromA(lineB);
+//                 if (endM >= 1) return twoDPoints;
+//                 var lineA = line.GetStartPt();
+//                 var startM = GetMultiFromA(lineA);
+//                 if (startM <= 0) return twoDPoints;
+//
+//                 if (endM > 0)
+//                 {
+//                     twoDPoints.Add((lineB, CondAfterCross.MaybeOutToIn, CondAfterCross.ToOut));
+//                 }
+//                 if (startM <= 1)
+//                 {
+//                     var valueTuple = (lineA, CondAfterCross.ToOut, CondAfterCross.MaybeOutToIn);
+//                     twoDPoints.Add(valueTuple);
+//                 }
+//
+//                 return twoDPoints;
+//             }
+
             var pt = CrossPointForWholeLine(line);
             if (pt == null) return twoDPoints;
 
@@ -745,6 +773,11 @@ namespace collision_and_rigid
             else if (c4) twoDPoints.Add((pt, CondAfterCross.ToOut, CondAfterCross.ToOut));
 
             return twoDPoints;
+        }
+
+        private bool SameLine(TwoDVectorLine line)
+        {
+            return A.GetPosOf(line) == Pt2LinePos.On && B.GetPosOf(line) == Pt2LinePos.On;
         }
 
         public (bool, TwoDVectorLine, TwoDVectorLine) TouchByLineInSamePoly(TwoDVectorLine line)
