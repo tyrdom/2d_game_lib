@@ -54,10 +54,8 @@ namespace cov_path_navi
 #if DEBUG
             Console.Out.WriteLine($"pathCovS Box ok");
 #endif
-            var areaQSpaceByAreaBox = SomeTools.CreateAreaQSpaceByAreaBox(areaBoxes, 5);//todo stack overflow
-#if DEBUG
-            Console.Out.WriteLine($"pathCovS CreateSpace ok");
-#endif
+            var areaQSpaceByAreaBox = SomeTools.CreateAreaQSpaceByAreaBox(areaBoxes, 5);
+
             AreaQSpace = areaQSpaceByAreaBox;
 
 #if DEBUG

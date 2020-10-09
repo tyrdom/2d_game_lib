@@ -24,7 +24,7 @@ namespace game_stuff
 
         public int RecyclePropStack { get; }
 
-        public (TwoDVector? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteractive) GoATick(
+        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteractive) GoATick(
             TwoDPoint getPos,
             TwoDVector sightAim,
             TwoDVector? rawMoveVector, TwoDVector? limitV)
@@ -33,8 +33,8 @@ namespace game_stuff
 
             var bullet = NowOnTick == (TotalTick - 1) ? PropBullet.ActiveBullet(getPos, sightAim) : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
-            NowOnTick += 1;
-            return (twoDVector, bullet, b, null,MapInteractive.PickOrInVehicle);
+            NowOnTick++;
+            return (twoDVector, bullet, b, null, MapInteractive.PickOrInVehicle);
         }
 
         public int NowTough { get; set; }

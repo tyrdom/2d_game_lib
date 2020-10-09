@@ -5,7 +5,7 @@ namespace collision_and_rigid
     public class Round : IRawBulletShape, IBulletShape, IShape
     {
         public TwoDPoint O { get; set; }
-        public float R { get; set; }
+        public float R { get; private set; }
 
         public Round(TwoDPoint o, float r)
         {
@@ -40,7 +40,6 @@ namespace collision_and_rigid
 
             return (O.Y - sqrt, O.Y + sqrt);
         }
-
 
         public Zone GetZones()
         {

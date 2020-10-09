@@ -551,29 +551,8 @@ namespace collision_and_rigid
         }
 
 
-        public static IQSpace CreateWalkBlockQSpaceByBlockBoxes(BlockBox[] blockBoxes, int maxLoadPerQ)
+        private static IQSpace CreateQSpaceByAaBbBoxes(IAaBbBox[] aaBbBoxes, int limit)
         {
-            var aaBbBoxes = blockBoxes.Cast<IAaBbBox>().ToArray();
-            var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
-
-            var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
-
-
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
-#if DEBUG
-            Console.Out.WriteLine($"AaBbBlocks num::{aaBbPackPackBox.Count}");
-#endif
-            var walkBlockQSpaceByBlockBoxes = qSpace.TryCovToLimitQSpace(maxLoadPerQ);
-
-#if DEBUG
-            Console.Out.WriteLine($"wb ok");
-#endif
-            return walkBlockQSpaceByBlockBoxes;
-        }
-
-        public static IQSpace CreateAreaQSpaceByAreaBox(AreaBox[] areaBoxes, int limit)
-        {
-            var aaBbBoxes = areaBoxes.Cast<IAaBbBox>().ToArray();
             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
 
             var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
@@ -587,6 +566,47 @@ namespace collision_and_rigid
             Console.Out.WriteLine($"AaBbArea num::{aaBbPackPackBox.Count}");
 #endif
             return emptyRootBranch;
+        }
+
+        public static IQSpace CreateWalkBlockQSpaceByBlockBoxes(IEnumerable<BlockBox> blockBoxes, int maxLoadPerQ)
+        {
+            return CreateQSpaceByAaBbBoxes(blockBoxes.Cast<IAaBbBox>().ToArray(), maxLoadPerQ);
+//             var aaBbBoxes = blockBoxes.Cast<IAaBbBox>().ToArray();
+//             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
+//
+//             var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
+//
+//
+//             var qSpace = new QSpaceLeaf(Quad.One, null, joinAaBbZone, aaBbPackPackBox);
+// #if DEBUG
+//             Console.Out.WriteLine($"AaBbBlocks num::{aaBbPackPackBox.Count}");
+// #endif
+//             var walkBlockQSpaceByBlockBoxes = qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+//
+// #if DEBUG
+//             Console.Out.WriteLine($"wb ok");
+// #endif
+//             return walkBlockQSpaceByBlockBoxes;
+        }
+
+        public static IQSpace CreateAreaQSpaceByAreaBox(IEnumerable<AreaBox> areaBoxes, int limit)
+        {
+            return CreateQSpaceByAaBbBoxes(areaBoxes.Cast<IAaBbBox>().ToArray(), limit);
+
+//             var aaBbBoxes = areaBoxes.Cast<IAaBbBox>().ToArray();
+//             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
+//
+//             var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
+//             var emptyRootBranch = CreateEmptyRootBranch(joinAaBbZone);
+//             foreach (var aaBbBox in aaBbPackPackBox)
+//             {
+//                 emptyRootBranch.AddSingleAaBbBox(aaBbBox, limit);
+//             }
+//
+// #if DEBUG
+//             Console.Out.WriteLine($"AaBbArea num::{aaBbPackPackBox.Count}");
+// #endif
+//             return emptyRootBranch;
         }
 
 

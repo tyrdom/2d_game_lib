@@ -19,6 +19,24 @@ namespace game_stuff
             LocateRecord = new Queue<Quad>();
         }
 
+        private static TwoDPoint? GetInterPos(interaction interaction2, TwoDPoint pos)
+        {
+            return interaction2.ActType switch
+            {
+                actType.getIn => pos,
+                actType.pick => null,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        private static Interaction GenInteractionByConfigAndPos(ICanPutInCage canPutInCage, interaction interaction,
+            TwoDPoint pos)
+        {
+            return new Interaction(interaction.BaseTough,
+                TempConfig.GetTickByTime(interaction.TotalTime),
+                canPutInCage, GetInterPos(interaction, pos));
+        }
+
         public CageCanPick(ICanPutInCage canPutInCage, TwoDPoint pos)
         {
             Round roundP;
@@ -29,20 +47,17 @@ namespace game_stuff
                 case Prop prop:
                     roundP = new Round(pos, TempConfig.PropR);
                     var interaction1 = configsInteraction[interactionAct.pick_prop];
-                    interaction = new Interaction(interaction1.BaseTough,
-                        interaction1.TotalTick,
-                        prop);
+                    interaction = GenInteractionByConfigAndPos(prop, interaction1, pos);
                     break;
                 case Vehicle vehicle:
                     roundP = new Round(pos, TempConfig.GetRBySize(vehicle.VehicleSize));
                     var interaction2 = configsInteraction[interactionAct.get_in_vehicle];
-                    interaction = new Interaction(interaction2.BaseTough, interaction2.TotalTick,
-                        vehicle);
+                    interaction = GenInteractionByConfigAndPos(vehicle, interaction2, pos);
                     break;
                 case Weapon weapon:
                     roundP = new Round(pos, TempConfig.WeaponR);
                     var interaction3 = configsInteraction[interactionAct.pick_weapon];
-                    interaction = new Interaction(interaction3.BaseTough, interaction3.TotalTick, weapon);
+                    interaction = GenInteractionByConfigAndPos(weapon, interaction3, pos);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(canPutInCage));
@@ -81,6 +96,7 @@ namespace game_stuff
         public Interaction CharAct { get; }
 
         public Queue<Quad> LocateRecord { get; set; }
+
 
         public Interaction? GetAct(CharacterStatus characterStatus)
         {
