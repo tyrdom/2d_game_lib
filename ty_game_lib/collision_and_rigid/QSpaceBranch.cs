@@ -274,9 +274,9 @@ namespace collision_and_rigid
             };
         }
 
-        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos)
+        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter)
         {
-            IAaBbBox? firstOrDefault =
+            var firstOrDefault =
                 AaBbPackBox.FirstOrDefault(x => x.CanInteractive(pos));
             if (firstOrDefault != null)
             {
@@ -286,10 +286,10 @@ namespace collision_and_rigid
             var whichQ = pos.WhichQ(this);
             return whichQ switch
             {
-                Quad.One => QuadOne.InteractiveFirstSingleBox(pos),
-                Quad.Two => QuadTwo.InteractiveFirstSingleBox(pos),
-                Quad.Three => QuadThree.InteractiveFirstSingleBox(pos),
-                Quad.Four => QuadFour.InteractiveFirstSingleBox(pos),
+                Quad.One => QuadOne.InteractiveFirstSingleBox(pos, filter),
+                Quad.Two => QuadTwo.InteractiveFirstSingleBox(pos, filter),
+                Quad.Three => QuadThree.InteractiveFirstSingleBox(pos, filter),
+                Quad.Four => QuadFour.InteractiveFirstSingleBox(pos, filter),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

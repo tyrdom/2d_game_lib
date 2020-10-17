@@ -13,17 +13,17 @@ namespace game_stuff
         private Dictionary<int, CharacterBody> GidToBody; //gid到玩家地图实体对应
         private Dictionary<int, List<IHitStuff>> TeamToBullet;
 
-        public IQSpace CagesCanPick;
+        private IQSpace MapInteractableThings { get; }
         // private TempConfig TempConfig { get; }
 
         public PlayGround(Dictionary<int, IQSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
-            Dictionary<int, CharacterBody> gidToBody, IQSpace cagesCanPick)
+            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings)
         {
             TeamToBodies = teamToBodies;
             _sightMap = sightMap;
             _walkMap = walkMap;
             GidToBody = gidToBody;
-            CagesCanPick = cagesCanPick;
+            MapInteractableThings = mapInteractableThings;
             TeamToBullet = new Dictionary<int, List<IHitStuff>>();
         }
 
@@ -296,6 +296,25 @@ namespace game_stuff
             return whoHitGid;
         }
 
+
+        private static readonly Func<IAaBbBox, bool> IsC = x =>
+        {
+            return x switch
+            {
+                IMapInteractable mapInteractable => mapInteractable.IsCage(),
+                _ => false
+            };
+        };
+
+        private static readonly Func<IAaBbBox, bool> IsV = x =>
+        {
+            return x switch
+            {
+                IMapInteractable mapInteractable => mapInteractable.IsVehicle(),
+                _ => false
+            };
+        };
+
         private Dictionary<int, ITwoDTwoP> EveryBodyGoATick(Dictionary<int, Operate> gidToOperates)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
@@ -329,7 +348,7 @@ namespace game_stuff
 
                     if (interactive != null)
                     {
-                        var removeSingleAaBbBox = CagesCanPick.RemoveSingleAaBbBox(interactive);
+                        var removeSingleAaBbBox = MapInteractableThings.RemoveSingleAaBbBox(interactive);
                         if (!removeSingleAaBbBox)
                         {
                             throw new Exception("not such a interactable");
@@ -337,38 +356,35 @@ namespace game_stuff
                     }
 
                     var mapInteractive = aCharGoTickMsg.DropThing;
-                    if (mapInteractive != null)
+                    foreach (var aInteractable in mapInteractive)
                     {
-                        CagesCanPick.AddSingleAaBbBox(mapInteractive, TempConfig.QSpaceBodyMaxPerLevel);
+                        MapInteractableThings.AddSingleAaBbBox(aInteractable, TempConfig.QSpaceBodyMaxPerLevel);
                     }
 
-
-                    var whoPickCageCall = aCharGoTickMsg.WhoPickCageCall;
+                    var whoPickCageCall = aCharGoTickMsg.WhoInteractCall;
                     if (whoPickCageCall != null)
                     {
-                        var firstSingleBox = CagesCanPick.InteractiveFirstSingleBox(whoPickCageCall.GetAnchor());
-                        switch (firstSingleBox)
+                        var firstSingleBox = aCharGoTickMsg.MapInteractive switch
                         {
-                            case null:
-                                break;
-                            case IMapInteractable mapInteractable:
-                                mapInteractable.StartPickBySomeBody(whoPickCageCall);
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException(nameof(firstSingleBox));
-                        }
-                    }
+                            MapInteract.RecycleCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                                whoPickCageCall.GetAnchor(), IsC), true),
+                            MapInteract.InVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                                whoPickCageCall.GetAnchor(), IsV), false),
+                            MapInteract.PickPropOrWeaponCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                                whoPickCageCall.GetAnchor(), IsC), false),
+                            MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                                whoPickCageCall.GetAnchor(), IsV), true),
+                            null => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg)),
+                            _ => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg))
+                        };
 
-                    var whoRecycleCageCall = aCharGoTickMsg.WhoRecycleCageCall;
-                    if (whoRecycleCageCall != null)
-                    {
-                        var firstSingleBox = CagesCanPick.InteractiveFirstSingleBox(whoRecycleCageCall.GetAnchor());
-                        switch (firstSingleBox)
+                        switch (firstSingleBox.Item1)
                         {
                             case null:
                                 break;
                             case IMapInteractable mapInteractable:
-                                mapInteractable.StartRecycleBySomeBody(whoRecycleCageCall);
+                                if (firstSingleBox.Item2) mapInteractable.StartActTwoBySomeBody(whoPickCageCall);
+                                else mapInteractable.StartActOneBySomeBody(whoPickCageCall);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException(nameof(firstSingleBox));

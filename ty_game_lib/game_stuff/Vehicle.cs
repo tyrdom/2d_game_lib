@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -37,7 +39,7 @@ namespace game_stuff
         private Scope VehicleScope { get; }
         public Dictionary<int, Weapon> Weapons { get; }
 
-        public int NowAmmo { get; set; }
+        public int NowAmmo { get; private set; }
 
         private int MaxAmmo { get; }
         public int WeaponCarryMax { get; }
@@ -56,12 +58,42 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            return GameTools.GenIMapInteractable(pos, InWhichMapInteractive, this);
+            if (InWhichMapInteractive == null)
+            {
+                return new VehicleCanIn(this, pos);
+            }
+
+            InWhichMapInteractive.ReLocate(pos);
+            return InWhichMapInteractive;
         }
 
-        public bool CanPick(CharacterStatus characterStatus)
+        public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
             return characterStatus.NowVehicle == null;
+        }
+
+        public bool CanInterActTwoBy(CharacterStatus characterStatus)
+        {
+            return true;
+        }
+
+        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        {
+            return interactive switch
+            {
+                MapInteract.InVehicleCall => characterStatus.GetInAVehicle(this),
+                MapInteract.KickVehicleCall => KickBySomeBody(characterStatus.GetPos()),
+                _ => throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null)
+            };
+        }
+
+        private IEnumerable<IMapInteractable> KickBySomeBody(TwoDPoint pos)
+        {
+            var opos = InWhichMapInteractive == null ? pos : InWhichMapInteractive.GetPos().GetMid(pos);
+
+            var mapIntractable = Weapons.Select(x => x.Value.GenIMapInteractable(opos));
+            Weapons.Clear();
+            return mapIntractable;
         }
     }
 }

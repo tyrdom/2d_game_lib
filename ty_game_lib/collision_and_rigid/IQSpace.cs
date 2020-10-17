@@ -30,7 +30,7 @@ namespace collision_and_rigid
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
 
-        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos);
+        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter =null);
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();
         public int FastTouchWithARightShootPoint(TwoDPoint p);

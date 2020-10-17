@@ -196,12 +196,42 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            return GameTools.GenIMapInteractable(pos, InWhichMapInteractive, this);
+            if (InWhichMapInteractive == null)
+            {
+                return new CageCanPick(this, pos);
+            }
+
+            InWhichMapInteractive.ReLocate(pos);
+            return InWhichMapInteractive;
         }
 
-        public bool CanPick(CharacterStatus characterStatus)
+        public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
             return CanBePickUp(characterStatus.CharacterBody.GetSize());
+        }
+
+        public bool CanInterActTwoBy(CharacterStatus characterStatus)
+        {
+            return true;
+        }
+
+        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        {
+            switch (interactive)
+            {
+                case MapInteract.RecycleCall:
+                    characterStatus.RecycleWeapon(this);
+                    return new List<IMapInteractable>();
+                    break;
+                case MapInteract.PickPropOrWeaponCall:
+                    var picAWeapon = characterStatus.PicAWeapon(this);
+                    return picAWeapon == null
+                        ? new List<IMapInteractable>()
+                        : new List<IMapInteractable> {picAWeapon};
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+            }
         }
     }
 }

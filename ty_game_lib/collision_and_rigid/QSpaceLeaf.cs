@@ -193,9 +193,10 @@ namespace collision_and_rigid
             return AaBbPackBox.Remove(aaBbBox);
         }
 
-        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos)
+        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter)
         {
-            return AaBbPackBox.FirstOrDefault(x => x.Zone.IncludePt(pos) && x.GetShape().Include(pos));
+            return AaBbPackBox.FirstOrDefault(x => x.CanInteractive(pos) &&
+                                                   (filter == null || filter(x)));
         }
 
         public void InsertBlockBox(BlockBox box)

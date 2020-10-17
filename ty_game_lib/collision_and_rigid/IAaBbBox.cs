@@ -9,6 +9,7 @@ namespace collision_and_rigid
         public Quad? GetNextQuad();
         public IShape GetShape();
 
+        public TwoDPoint GetPos();
         public bool CanInteractive(TwoDPoint pos);
         public Zone Zone { get; set; }
         public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical);

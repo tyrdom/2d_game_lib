@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -24,17 +25,17 @@ namespace game_stuff
 
         public int RecyclePropStack { get; }
 
-        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteractive) GoATick(
-            TwoDPoint getPos,
-            TwoDVector sightAim,
-            TwoDVector? rawMoveVector, TwoDVector? limitV)
+        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
+            interactive) GoATick(TwoDPoint getPos,
+                TwoDVector sightAim,
+                TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
             var b = NowOnTick == 0;
 
-            var bullet = NowOnTick == (TotalTick - 1) ? PropBullet.ActiveBullet(getPos, sightAim) : null;
+            var bullet = NowOnTick == TotalTick - 1 ? PropBullet.ActiveBullet(getPos, sightAim) : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
             NowOnTick++;
-            return (twoDVector, bullet, b, null, MapInteractive.PickOrInVehicle);
+            return (twoDVector, bullet, b, null, MapInteract.PickPropOrWeaponCall);
         }
 
         public int NowTough { get; set; }
@@ -61,12 +62,38 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            return GameTools.GenIMapInteractable(pos, InWhichMapInteractive, this);
+            if (InWhichMapInteractive == null)
+            {
+                return new CageCanPick(this, pos);
+            }
+
+            InWhichMapInteractive.ReLocate(pos);
+            return InWhichMapInteractive;
         }
 
-        public bool CanPick(CharacterStatus characterStatus)
+        public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
             return true;
+        }
+
+        public bool CanInterActTwoBy(CharacterStatus characterStatus)
+        {
+            return true;
+        }
+
+        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        {
+            switch (interactive)
+            {
+                case MapInteract.RecycleCall:
+                    characterStatus.RecycleAProp(this);
+                    return new List<IMapInteractable>();
+                case MapInteract.PickPropOrWeaponCall:
+                    var pickAProp = characterStatus.PickAProp(this);
+                    return pickAProp == null ? new List<IMapInteractable>() : new List<IMapInteractable> {pickAProp};
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+            }
         }
     }
 }

@@ -1,124 +1,188 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
 {
+    public static class MapInteractableDefault
+    {
+        public static List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical,
+            IMapInteractable mapInteractable)
+        {
+            var splitByQuads = mapInteractable.Zone.SplitByQuads(horizon, vertical);
+            return splitByQuads
+                .Select(x => (x.Item1,
+                    mapInteractable.FactAaBbBox(x.Item2)))
+                .ToList();
+        }
+
+        public static Quad? GetNextQuad(IMapInteractable mapInteractable)
+        {
+            var nextQuad = mapInteractable.LocateRecord.Count > 0
+                ? mapInteractable.LocateRecord.Dequeue()
+                : (Quad?) null;
+            return nextQuad;
+        }
+
+        public static void ReLocate(TwoDPoint pos, IMapInteractable mapInteractable)
+        {
+            mapInteractable.LocateRecord.Clear();
+            mapInteractable.CanInterActiveRound.O = pos;
+            mapInteractable.NowInterCharacterBody = null;
+            mapInteractable.Zone = mapInteractable.CanInterActiveRound.GetZones();
+        }
+
+        public static void StartActOneBySomeBody(CharacterBody characterBody, IMapInteractable mapInteractable)
+        {
+            var actOne = mapInteractable.GetActOne(characterBody.CharacterStatus);
+            if (actOne == null)
+            {
+                return;
+            }
+
+            if (characterBody.CharacterStatus.LoadInteraction(mapInteractable.CharActOne))
+                mapInteractable.NowInterCharacterBody = characterBody;
+        }
+
+        public static void StartActTwoBySomeBody(CharacterBody characterBody, IMapInteractable mapInteractable)
+        {
+            var actOne = mapInteractable.GetActTwo(characterBody.CharacterStatus);
+            if (actOne == null)
+            {
+                return;
+            }
+
+            if (characterBody.CharacterStatus.LoadInteraction(mapInteractable.CharActTwo))
+                mapInteractable.NowInterCharacterBody = characterBody;
+        }
+
+        public static void WriteQuadRecord(Quad quad, IMapInteractable mapInteractable)
+        {
+            mapInteractable.LocateRecord.Enqueue(quad);
+        }
+    }
+
     public class CageCanPick : IMapInteractable
     {
-        private CageCanPick(Interaction charAct, Round canInterActiveRound, Zone zone)
+        private CageCanPick(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
         {
-            CharAct = charAct;
-            CharAct.InCage.InWhichMapInteractive = this;
+            CharActOne = charActOne;
+            CharActOne.InCage.InWhichMapInteractive = this;
+            CharActTwo = charActTwo;
+            CharActTwo.InCage.InWhichMapInteractive = this;
             CanInterActiveRound = canInterActiveRound;
             Zone = zone;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
         }
 
-        private static TwoDPoint? GetInterPos(interaction interaction2, TwoDPoint pos)
-        {
-            return interaction2.ActType switch
-            {
-                actType.getIn => pos,
-                actType.pick => null,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
 
-        private static Interaction GenInteractionByConfigAndPos(ICanPutInCage canPutInCage, interaction interaction,
-            TwoDPoint pos)
+        private static Interaction GenInteractionByConfig(ICanPutInCage canPutInCage, interaction interaction,
+            MapInteract mapInteract)
         {
             return new Interaction(interaction.BaseTough,
                 TempConfig.GetTickByTime(interaction.TotalTime),
-                canPutInCage, GetInterPos(interaction, pos));
+                canPutInCage, null, mapInteract);
         }
 
         public CageCanPick(ICanPutInCage canPutInCage, TwoDPoint pos)
         {
-            Round roundP;
-            Interaction interaction;
             var configsInteraction = TempConfig.Configs.interactions;
-            switch (canPutInCage)
-            {
-                case Prop prop:
-                    roundP = new Round(pos, TempConfig.PropR);
-                    var interaction1 = configsInteraction[interactionAct.pick_prop];
-                    interaction = GenInteractionByConfigAndPos(prop, interaction1, pos);
-                    break;
-                case Vehicle vehicle:
-                    roundP = new Round(pos, TempConfig.GetRBySize(vehicle.VehicleSize));
-                    var interaction2 = configsInteraction[interactionAct.get_in_vehicle];
-                    interaction = GenInteractionByConfigAndPos(vehicle, interaction2, pos);
-                    break;
-                case Weapon weapon:
-                    roundP = new Round(pos, TempConfig.WeaponR);
-                    var interaction3 = configsInteraction[interactionAct.pick_weapon];
-                    interaction = GenInteractionByConfigAndPos(weapon, interaction3, pos);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(canPutInCage));
-            }
 
-            CharAct = interaction;
+            var roundP = canPutInCage switch
+            {
+                Prop _ => new Round(pos, TempConfig.PropR),
+                Weapon _ => new Round(pos, TempConfig.WeaponR),
+                _ => throw new ArgumentOutOfRangeException(nameof(canPutInCage))
+            };
+            var interaction1 = configsInteraction[interactionAct.pick_weapon_or_prop];
+            Interaction interaction =
+                GenInteractionByConfig(canPutInCage, interaction1, MapInteract.PickPropOrWeaponCall);
+            var interaction2 = configsInteraction[interactionAct.recycle_prop_or_weapon];
+            Interaction interaction22 = GenInteractionByConfig(canPutInCage, interaction2, MapInteract.RecycleCall);
+
             var zonesP = roundP.GetZones();
             Zone = zonesP;
             CanInterActiveRound = roundP;
-            CharAct.InCage.InWhichMapInteractive = this;
+            CharActTwo = interaction22;
+            CharActOne = interaction;
+            CharActOne.InCage.InWhichMapInteractive = this;
+            CharActTwo.InCage.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
         }
 
+
         public void ReLocate(TwoDPoint pos)
         {
-            LocateRecord.Clear();
-            CanInterActiveRound.O = pos;
-            NowInterCharacterBody = null;
-            Zone = CanInterActiveRound.GetZones();
+            MapInteractableDefault.ReLocate(pos, this);
         }
 
-        public void StartPickBySomeBody(CharacterBody characterBody)
+        public void StartActOneBySomeBody(CharacterBody characterBody)
         {
-            CharAct.Interactive = MapInteractive.PickOrInVehicle;
-            if (characterBody.CharacterStatus.LoadInteraction(CharAct)) NowInterCharacterBody = characterBody;
+            MapInteractableDefault.StartActOneBySomeBody(characterBody, this);
         }
 
-        public void StartRecycleBySomeBody(CharacterBody characterBody)
+        public void StartActTwoBySomeBody(CharacterBody characterBody)
         {
-            CharAct.Interactive = MapInteractive.RecycleCall;
-            if (characterBody.CharacterStatus.LoadInteraction(CharAct)) NowInterCharacterBody = characterBody;
+            MapInteractableDefault.StartActTwoBySomeBody(characterBody, this);
         }
 
         public CharacterBody? NowInterCharacterBody { get; set; }
-        public Interaction CharAct { get; }
+        public Interaction CharActOne { get; }
+        public Interaction CharActTwo { get; }
+
+        public IAaBbBox FactAaBbBox(
+            Zone zone)
+        {
+            return new CageCanPick(CharActOne, CharActTwo, CanInterActiveRound, zone);
+        }
+
+        public bool IsCage()
+        {
+            return true;
+        }
+
+        public bool IsVehicle()
+        {
+            return false;
+        }
 
         public Queue<Quad> LocateRecord { get; set; }
 
 
-        public Interaction? GetAct(CharacterStatus characterStatus)
+        public Interaction? GetActOne(CharacterStatus characterStatus)
         {
-            return CharAct.InCage.CanPick(characterStatus) ? CharAct : null;
+            return CharActOne.InCage.CanInterActOneBy(characterStatus) ? CharActOne : null;
+        }
+
+        public Interaction? GetActTwo(CharacterStatus characterStatus)
+        {
+            return CharActTwo.InCage.CanInterActTwoBy(characterStatus) ? CharActTwo : null;
         }
 
         public Round CanInterActiveRound { get; }
 
         public void WriteQuadRecord(Quad quad)
         {
-            LocateRecord.Enqueue(quad);
+            MapInteractableDefault.WriteQuadRecord(quad, this);
         }
 
         public Quad? GetNextQuad()
         {
-            var nextQuad = LocateRecord.Count > 0 ? LocateRecord.Dequeue() : (Quad?) null;
-            return nextQuad;
+            return MapInteractableDefault.GetNextQuad(this);
         }
 
         public IShape GetShape()
         {
             return CanInterActiveRound;
+        }
+
+        public TwoDPoint GetPos()
+        {
+            return CanInterActiveRound.O;
         }
 
         public bool CanInteractive(TwoDPoint pos)
@@ -130,11 +194,7 @@ namespace game_stuff
 
         public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
-            var (f, vertical1) = Zone.GetMid();
-            var splitByQuads = Zone.SplitByQuads(f, vertical1);
-            return splitByQuads
-                .Select(x => (x.Item1, new CageCanPick(CharAct, CanInterActiveRound, x.Item2) as IAaBbBox))
-                .ToList();
+            return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
         }
     }
 }

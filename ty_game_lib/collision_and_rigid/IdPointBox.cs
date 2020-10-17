@@ -26,6 +26,11 @@ namespace collision_and_rigid
             return IdPointShape;
         }
 
+        public TwoDPoint GetPos()
+        {
+            return IdPointShape.GetAnchor();
+        }
+
         public bool CanInteractive(TwoDPoint pos)
         {
             return false;

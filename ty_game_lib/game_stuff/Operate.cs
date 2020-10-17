@@ -10,19 +10,18 @@ namespace game_stuff
         // public TwoDVector? Move;
         public TwoDVector? Aim { get; }
 
-
         public SkillAction? Action { get; }
 
         public TwoDVector? Move { get; }
 
         public SnipeAction? SnipeAction { get; }
 
-        public MapInteractive? MapInteractive { get; }
+        public MapInteract? MapInteractive { get; }
 
         public SpecialAction? SpecialAction { get; }
 
         public Operate(TwoDVector? aim, SkillAction? action, TwoDVector? move, SpecialAction? specialAction = null,
-            MapInteractive? mapInteractive = null,
+            MapInteract? mapInteractive = null,
             SnipeAction? snipeAction = null)
         {
             Aim = aim;
@@ -38,7 +37,7 @@ namespace game_stuff
             return SpecialAction;
         }
 
-        public MapInteractive? GetMapInteractive()
+        public MapInteract? GetMapInteractive()
         {
             if (Action == null && SnipeAction == null)
             {
@@ -81,15 +80,16 @@ namespace game_stuff
     }
 
 
-    public enum MapInteractive
+    public enum MapInteract
     {
         RecycleCall,
-        PickOrInVehicle
+        PickPropOrWeaponCall,
+        InVehicleCall,
+        KickVehicleCall
     }
 
     public enum SnipeAction
     {
-        //Snipe
         SnipeOn1,
         SnipeOn2,
         SnipeOn3,

@@ -248,5 +248,11 @@ namespace collision_and_rigid
 
             return 0;
         }
+
+        public TwoDPoint GetMid(TwoDPoint pos)
+        {
+            return new TwoDPoint((pos.X + X) / 2,
+                (pos.Y + Y) / 2);
+        }
     }
 }

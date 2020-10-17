@@ -5,29 +5,30 @@ namespace game_stuff
 {
     public class Interaction : ICharAct
     {
-        public Interaction(int nowTough, uint totalTick, ICanPutInCage inCage, TwoDPoint? interactionPos)
+        public Interaction(int nowTough, uint totalTick, ICanPutInCage inCage, TwoDPoint? interactionPos,
+            MapInteract mapInteract)
         {
             NowTough = nowTough;
             TotalTick = totalTick;
             InCage = inCage;
             InteractionPos = interactionPos;
-            Interactive = MapInteractive.PickOrInVehicle;
+            Interact = mapInteract;
             NowOnTick = 0;
         }
 
-        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteractive) GoATick(
-            TwoDPoint getPos,
-            TwoDVector sightAim,
-            TwoDVector? rawMoveVector, TwoDVector? limitV)
+        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
+            interactive) GoATick(TwoDPoint getPos,
+                TwoDVector sightAim,
+                TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
             var b = NowOnTick == 0;
             var twd = b ? InteractionPos : null;
             var inCage = NowOnTick == TotalTick - 1 ? InCage : null;
             NowOnTick++;
-            return (twd, null, b, inCage, Interactive);
+            return (twd, null, b, inCage, Interact);
         }
 
-        public MapInteractive Interactive { get; set; }
+        public MapInteract Interact { get;  }
 
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }

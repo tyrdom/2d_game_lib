@@ -165,7 +165,7 @@ namespace game_stuff
                 return (pt, this);
             }
 #if DEBUG
-            Console.Out.WriteLine($"~~~~~caught gen_earth buff~~~~~~{pt.ToString()}");
+            Console.Out.WriteLine($"~~~~~caught gen_earth buff~~~~~~{pt}");
 #endif
             if (RestTick > 0)
             {

@@ -6,14 +6,19 @@ namespace game_stuff
 {
     public interface IMapInteractable : IAaBbBox
     {
+        public IAaBbBox FactAaBbBox(Zone zone);
+
+        public bool IsCage();
+        public bool IsVehicle();
         public Queue<Quad> LocateRecord { get; set; }
-        public Interaction? GetAct(CharacterStatus characterStatus);
+        public Interaction? GetActOne(CharacterStatus characterStatus);
+        public Interaction? GetActTwo(CharacterStatus characterStatus);
         Round CanInterActiveRound { get; }
         public CharacterBody? NowInterCharacterBody { get; set; }
-        public Interaction CharAct { get; }
+        public Interaction CharActOne { get; }
+        public Interaction CharActTwo { get; }
         public void ReLocate(TwoDPoint pos);
-
-        public void StartPickBySomeBody(CharacterBody characterBody);
-        public void StartRecycleBySomeBody(CharacterBody characterBody);
+        public void StartActOneBySomeBody(CharacterBody characterBody);
+        public void StartActTwoBySomeBody(CharacterBody characterBody);
     }
 }

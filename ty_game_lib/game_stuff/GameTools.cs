@@ -100,19 +100,19 @@ namespace game_stuff
                 TempConfig.GetTickByTime(pushBuff.LastTime));
         }
 
-        public static IMapInteractable GenIMapInteractable(TwoDPoint pos, IMapInteractable? inWhichMapInteractive,
-            ICanPutInCage canPutInCage)
+        public static List<IMapInteractable> DropWeapon(Dictionary<int, Weapon> weapons, BodySize bodySize,
+            TwoDPoint pos)
         {
+            var mapInteractable = new List<IMapInteractable>();
+            foreach (var keyValuePair in weapons)
             {
-                if (inWhichMapInteractive != null)
-                {
-                    inWhichMapInteractive.ReLocate(pos);
-                    return inWhichMapInteractive;
-                }
-
-                var cageCanPick = new CageCanPick(canPutInCage, pos);
-                return cageCanPick;
+                if (!keyValuePair.Value.SkillGroups.TryGetKey(bodySize, out _)) continue;
+                var genIMapInteractable = keyValuePair.Value.GenIMapInteractable(pos);
+                mapInteractable.Add(genIMapInteractable);
+                weapons.Remove(keyValuePair.Key);
             }
+
+            return mapInteractable;
         }
 
         public static IAntiActBuffConfig GenBuffByConfig(caught_buff caughtBuff)

@@ -22,6 +22,12 @@ namespace collision_and_rigid
             return Shape;
         }
 
+        public TwoDPoint GetPos()
+        {
+            var (horizon, vertical) = Zone.GetMid();
+            return new TwoDPoint(vertical, horizon);
+        }
+
         public bool CanInteractive(TwoDPoint pos)
         {
             return false;
