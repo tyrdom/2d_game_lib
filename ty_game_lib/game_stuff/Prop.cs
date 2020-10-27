@@ -1,29 +1,40 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using collision_and_rigid;
 
 namespace game_stuff
 {
     public class Prop : ICharAct, ICanPutInCage
     {
-        public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti, Bullet propBullet)
+        public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti, Bullet propBullet,
+            uint launchTick, float moveMustMulti, float minCos)
         {
             RecyclePropStack = recyclePropStack;
             StackCost = stackCost;
             TotalTick = totalTick;
             MoveMulti = moveMulti;
             PropBullet = propBullet;
+            LaunchTick = launchTick;
+            MoveMustMulti = moveMustMulti;
+            MinCos = minCos;
+            LastMoveVector = null;
         }
 
+
         public int StackCost { get; }
-
         public uint TotalTick { get; }
-
-        public float MoveMulti { get; }
-
-        public Bullet PropBullet { get; }
-
+        private float MoveMulti { get; }
+        private Bullet PropBullet { get; }
+        private uint LaunchTick { get; }
         public int RecyclePropStack { get; }
+
+        //推进器类专用
+        private float? MoveMustMulti { get; }
+
+        private TwoDVector? LastMoveVector { get; set; }
+
+        private float MinCos { get; }
 
         public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint getPos,
@@ -32,8 +43,25 @@ namespace game_stuff
         {
             var b = NowOnTick == 0;
 
-            var bullet = NowOnTick == TotalTick - 1 ? PropBullet.ActiveBullet(getPos, sightAim) : null;
+            var bullet = NowOnTick == LaunchTick ? PropBullet.ActiveBullet(getPos, sightAim) : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
+            if (MoveMustMulti != null && limitV != null)
+            {
+                var moveVector = rawMoveVector ?? limitV;
+                if (LastMoveVector != null)
+                {
+                    var cos = moveVector.GetCos(LastMoveVector);
+                    if (cos < MinCos)
+                    {
+                        
+                    }
+                }
+
+                twoDVector = moveVector.Multi(MoveMustMulti.Value);
+
+                LastMoveVector = moveVector;
+            }
+
             NowOnTick++;
             return (twoDVector, bullet, b, null, MapInteract.PickPropOrWeaponCall);
         }

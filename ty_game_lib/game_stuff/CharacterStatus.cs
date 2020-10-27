@@ -328,12 +328,13 @@ namespace game_stuff
             var limitV = charAct switch
             {
                 Interaction _ => null,
-                Prop _ => null,
+                Prop _ => GetAim().Multi(GetStandardSpeed(GetAim())),
                 Skill _ => LockingWho == null
                     ? null
                     : TwoDVector.TwoDVectorByPt(GetPos(), LockingWho.GetPos())
                         .ClockwiseTurn(CharacterBody.Sight.Aim)
-                        .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr()),
+                        .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr())
+                        .MaxFixX(0), //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
                 _ => throw new ArgumentOutOfRangeException(nameof(charAct))
             };
             var f = GetNowSnipe()?.MoveSpeedMulti[CharacterBody.GetSize()];
@@ -347,19 +348,15 @@ namespace game_stuff
                         .Multi(f.Value),
                 _ => throw new ArgumentOutOfRangeException(nameof(charAct))
             };
-            //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
+
 
 #if DEBUG
             var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GId.ToString();
             Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV}");
 #endif
-            if (limitV != null)
-            {
-                limitV.X = MathTools.Max(0, limitV.X);
-            }
 
             var (move, bullet, snipeOff, getThing, interactive) = charAct
-                .GoATick(GetPos(), CharacterBody.Sight.Aim, fixMove, limitV);
+                .GoATick(GetPos(), GetAim(), fixMove, limitV);
             if (snipeOff)
             {
                 OffSnipe();

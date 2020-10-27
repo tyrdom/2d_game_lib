@@ -34,9 +34,31 @@ namespace collision_and_rigid
             return $"[{X}||{Y}]";
         }
 
-        public float X { get; set; }
 
-        public float Y { get; set; }
+        public TwoDVector MaxFixX(float a)
+        {
+            X = MathTools.Max(a, X);
+            return this;
+        }
+
+        public Pt2LinePos GetPosOfAnother(TwoDVector another)
+        {
+            return ToPt().GetPosOf(new TwoDVectorLine(TwoDPoint.Zero(), another.ToPt()));
+        }
+
+        public float GetSin(TwoDVector end)
+        {
+            return Cross(end) / Norm() / end.Norm();
+        }
+
+        public float GetCos(TwoDVector end)
+        {
+            return Dot(end) / Norm() / end.Norm();
+        }
+
+        public float X { get; private set; }
+
+        public float Y { get; private set; }
 
         public static TwoDVector TwoDVectorByPt(TwoDPoint a, TwoDPoint b)
         {
