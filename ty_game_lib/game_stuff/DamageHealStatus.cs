@@ -40,6 +40,8 @@ namespace game_stuff
             return new DamageHealStatus(TempConfig.StartHp, TempConfig.StartHp, 0, 0, 0, 0, 5, 1, 0);
         }
 
+        
+        
         public void TakeDamage(Damage damage)
         {
             var rest = damage.StandardDamageValue;

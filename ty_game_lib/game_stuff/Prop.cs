@@ -45,21 +45,28 @@ namespace game_stuff
 
             var bullet = NowOnTick == LaunchTick ? PropBullet.ActiveBullet(getPos, sightAim) : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
-            if (MoveMustMulti != null && limitV != null)
+            if (MoveMustMulti != null && limitV != null) // 推进类prop
             {
                 var moveVector = rawMoveVector ?? limitV;
-                if (LastMoveVector != null)
+                var dVector = LastMoveVector?.GetUnit2();
+                var nVector = moveVector.GetUnit2();
+                if (dVector != null && nVector != null && LastMoveVector != null)
                 {
-                    var cos = moveVector.GetCos(LastMoveVector);
+                    var cos = dVector.Dot(nVector);
                     if (cos < MinCos)
                     {
-                        
+                        var sin = dVector.Cross(nVector);
+                        var clockwiseTurn = LastMoveVector.ClockwiseTurn(new TwoDVector(cos, sin));
+                        twoDVector = clockwiseTurn;
                     }
+                    else
+                    {
+                        twoDVector = moveVector.Multi(MoveMustMulti.Value);
+                    }
+                    
                 }
 
-                twoDVector = moveVector.Multi(MoveMustMulti.Value);
-
-                LastMoveVector = moveVector;
+                LastMoveVector = twoDVector;
             }
 
             NowOnTick++;

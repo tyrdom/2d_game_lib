@@ -366,8 +366,6 @@ namespace collision_and_rigid
             };
         }
 
-        
-        
 
         public bool IsGoTrough(TwoDVectorLine lineB)
         {
@@ -716,7 +714,7 @@ namespace collision_and_rigid
             TwoDVectorLine line)
         {
             var twoDPoints = new List<(TwoDPoint, CondAfterCross, CondAfterCross)>();
-//             //todo same line
+
 //             if (SameLine(line) && GetVector().Dot(line.GetVector()) < 0)
 //             {
 // #if DEBUG

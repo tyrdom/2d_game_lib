@@ -317,7 +317,7 @@ namespace game_stuff
         }
 
 
-        public void HitBySelfBullet(Bullet bullet)
+        public void HitBySelfEffect(SelfEffect selfEffect)
         {
             //todo
         }
