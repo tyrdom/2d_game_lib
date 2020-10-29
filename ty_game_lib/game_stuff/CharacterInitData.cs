@@ -54,7 +54,7 @@ namespace game_stuff
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
             var characterStatus = new CharacterStatus(MaxSpeed, Gid,
-                DamageHealStatus.StartDamageHealAbout(), AddSpeed, MinSpeed, TempConfig.TrickProtect);
+                SurvivalStatus.StartDamageHealAbout(), AddSpeed, MinSpeed, TempConfig.TrickProtect);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {
@@ -75,7 +75,7 @@ namespace game_stuff
 
         public void ReloadCharacterBody(CharacterBody characterBody)
         {
-            characterBody.CharacterStatus.ReloadInitData(DamageHealStatus.StartDamageHealAbout(), MaxSpeed, AddSpeed,
+            characterBody.CharacterStatus.ReloadInitData(SurvivalStatus.StartDamageHealAbout(), MaxSpeed, AddSpeed,
                 MinSpeed);
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

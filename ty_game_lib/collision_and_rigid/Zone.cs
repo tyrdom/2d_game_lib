@@ -269,6 +269,11 @@ namespace collision_and_rigid
         }
 
 
+        public static Zone Join(Zone? a, Zone b)
+        {
+            return a?.Join(b) ?? b;
+        }
+
         public Zone Join(Zone another)
         {
             var nUp = MathTools.Max(Up, another.Up);

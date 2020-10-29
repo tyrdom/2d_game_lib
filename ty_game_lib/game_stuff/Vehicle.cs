@@ -10,7 +10,7 @@ namespace game_stuff
     {
         public Vehicle(BodySize vehicleSize, float vehicleMaxMoveSpeed, float vehicleMinMoveSpeed,
             float vehicleAddMoveSpeed, Scope vehicleScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
-            DamageHealStatus damageHealStatus, int destroyTick, int weaponCarryMax, int getInTick, int nowAmmo,
+            SurvivalStatus survivalStatus, int destroyTick, int weaponCarryMax, int getInTick, int nowAmmo,
             int maxAmmo,
             Skill outAct)
         {
@@ -21,7 +21,7 @@ namespace game_stuff
             VehicleScope = vehicleScope;
             Weapons = weapons;
             DestroyBullet = destroyBullet;
-            DamageHealStatus = damageHealStatus;
+            SurvivalStatus = survivalStatus;
             DestroyTick = destroyTick;
             WeaponCarryMax = weaponCarryMax;
             GetInTick = getInTick;
@@ -46,7 +46,7 @@ namespace game_stuff
         private int DestroyTick { get; }
 
         private Bullet DestroyBullet { get; }
-        private DamageHealStatus DamageHealStatus { get; }
+        private SurvivalStatus SurvivalStatus { get; }
 
         public Skill OutAct { get; }
         private int GetInTick { get; }

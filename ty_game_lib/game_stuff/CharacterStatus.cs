@@ -90,12 +90,21 @@ namespace game_stuff
         public int PauseTick { get; set; }
 
         public IAntiActBuff? AntiActBuff { get; set; }
+        
+        //protect status
         private int NowProtectValue { get; set; }
         private int MaxProtectValue { get; }
-        public List<DamageBuff> DamageBuffs { get; set; }
-
-        public DamageHealStatus DamageHealStatus;
+        
         public int NowProtectTick { get; private set; }
+        
+        //Game other Status
+        
+        public List<IPassiveTrait> Traits { get; set; }
+        public List<IPlayBuff> DamageBuffs { get; set; }
+
+        public AttackStatus AttackStatus;
+        public SurvivalStatus SurvivalStatus;
+       
 
         // for_tick_msg
         public SkillAction? SkillLaunch { get; private set; }
@@ -105,7 +114,7 @@ namespace game_stuff
 
 
         public CharacterStatus(float maxMoveSpeed, int gId,
-            DamageHealStatus damageHealStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue)
+            SurvivalStatus survivalStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue)
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
@@ -118,8 +127,8 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
-            DamageBuffs = new List<DamageBuff>();
-            DamageHealStatus = damageHealStatus;
+            DamageBuffs = new List<IPlayBuff>();
+            SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
             MinMoveSpeed = minMoveSpeed;
@@ -150,7 +159,7 @@ namespace game_stuff
             CharacterBody.Sight.OpChangeAim(aim, GetNowScope());
         }
 
-        public void ReloadInitData(DamageHealStatus damageHealStatus, float maxMoveSpeed,
+        public void ReloadInitData(SurvivalStatus survivalStatus, float maxMoveSpeed,
             float addMoveSpeed, float minMoveSpeed)
         {
             CharacterBody = null!;
@@ -164,8 +173,8 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
-            DamageBuffs = new List<DamageBuff>();
-            DamageHealStatus = damageHealStatus;
+            DamageBuffs = new List<IPlayBuff>();
+            SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
             MinMoveSpeed = minMoveSpeed;
@@ -388,7 +397,7 @@ namespace game_stuff
             return GameTools.DropWeapon(Weapons, bodySize, GetPos());
         }
 
-        public List<IMapInteractable> GetInAVehicle(Vehicle vehicle)
+        public IEnumerable<IMapInteractable> GetInAVehicle(Vehicle vehicle)
         {
             if (NowVehicle != null) throw new Exception("have in a vehicle");
             var mapIntractable = DropWeapon(vehicle.VehicleSize);
@@ -735,9 +744,10 @@ namespace game_stuff
             return CharacterBody.Sight.Aim;
         }
 
-        public static Damage GenDamage(float damageMulti)
+        public uint GenDamage(float damageMulti)
         {
-            return new Damage(0);
+            return  AttackStatus.GenDamage(damageMulti);
+            
         }
 
         public void AddProtect(int protectValueAdd)
@@ -770,9 +780,5 @@ namespace game_stuff
         {
             throw new NotImplementedException();
         }
-    }
-
-    public class DamageBuff
-    {
     }
 }

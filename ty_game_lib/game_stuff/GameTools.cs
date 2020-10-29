@@ -39,11 +39,11 @@ namespace game_stuff
                 GenDicBulletBox(rawBulletShape);
         }
 
-        public static bool IsHit(IHitStuff hitStuff, CharacterBody characterBody)
+        public static bool IsHit(IEffectMedia effectMedia, CharacterBody characterBody)
         {
             var characterBodyBodySize = characterBody.GetSize();
-            return hitStuff.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
-                   bulletBox.IsHit(characterBody.NowPos, hitStuff.Pos, hitStuff.Aim);
+            return effectMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
+                   bulletBox.IsHit(characterBody.NowPos, effectMedia.Pos, effectMedia.Aim);
         }
 
         public static float GetMaxUpSpeed(float? height)
@@ -61,8 +61,11 @@ namespace game_stuff
         public static Zone GenRdBox(Dictionary<BodySize, BulletBox> bulletBoxes)
         {
             var enumerable = bulletBoxes.Select(x => x.Value.Zone);
-            var aggregate = enumerable.Aggregate(new Zone(0, 0, 0, 0), (s, x) => s.Join(x));
-            var bulletRdBox = aggregate.GetBulletRdBox();
+
+            Zone? z = null;
+            var aggregate = enumerable.Aggregate(z, (s, x) => Zone.Join(s, x));
+            if (aggregate == null) throw new ArgumentException("bullet have no hit box!!");
+            var bulletRdBox = aggregate.Value.GetBulletRdBox();
             return bulletRdBox;
         }
 

@@ -3,7 +3,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class SelfEffect : IHitStuff
+    public class SelfEffect : IEffectMedia
     {
         public SelfEffect(CharacterStatus? caster)
         {
@@ -20,6 +20,7 @@ namespace game_stuff
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public CharacterStatus? Caster { get; set; }
+
 
         public HashSet<int> HitTeam(IQSpace qSpace)
         {

@@ -9,16 +9,16 @@ namespace game_stuff
         public TwoDPoint Pos;
         public TwoDVector Aim;
 
-        private DamageHealStatus _damageHealStatus;
+        private SurvivalStatus _survivalStatus;
         public Dictionary<int, Weapon> WeaponConfigs { get; set; }
 
-        public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus,
+        public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             Dictionary<int, Weapon> weaponConfigs)
         {
             GId = gId;
             Pos = pos;
             Aim = aim;
-            _damageHealStatus = damageHealStatus;
+            _survivalStatus = survivalStatus;
             WeaponConfigs = weaponConfigs;
         }
     }

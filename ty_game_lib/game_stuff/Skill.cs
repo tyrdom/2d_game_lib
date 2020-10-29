@@ -152,7 +152,7 @@ namespace game_stuff
                 : (int?) null;
         }
 
-        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint casterPos,
                 TwoDVector casterAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
@@ -184,7 +184,7 @@ namespace game_stuff
             }
 
             // GenBullet 生成子弹
-            IHitStuff? bullet = null;
+            IEffectMedia? bullet = null;
             if (NowOnTick == 0 && _lockArea != null)
             {
                 bullet = _lockArea.ActiveArea(casterPos, casterAim);

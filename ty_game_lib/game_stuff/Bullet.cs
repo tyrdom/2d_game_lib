@@ -14,7 +14,7 @@ namespace game_stuff
         AllTeam
     }
 
-    public class Bullet : IHitStuff
+    public class Bullet : IEffectMedia
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
@@ -234,7 +234,7 @@ namespace game_stuff
 
                 //对手承受伤害
                 targetCharacterStatus.AddProtect(ProtectValueAdd);
-                targetCharacterStatus.DamageHealStatus.TakeDamage(CharacterStatus.GenDamage(DamageMulti));
+                targetCharacterStatus.SurvivalStatus.TakeDamage(Caster.GenDamage(DamageMulti));
 
 
                 var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
@@ -282,7 +282,6 @@ namespace game_stuff
                         }
 
                         var height = pushOnAir.Height;
-
                         var antiActBuff = antiActBuffConfig.GenBuff(Pos,
                             targetCharacterStatus.GetPos(),
                             Aim,

@@ -6,7 +6,7 @@ using collision_and_rigid;
 namespace game_stuff
 {
     //在技能开始时，如果技能有锁定区域，那么可以获得到一个锁定
-    public class LockArea : IHitStuff
+    public class LockArea : IEffectMedia
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }

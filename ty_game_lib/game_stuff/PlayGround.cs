@@ -11,7 +11,7 @@ namespace game_stuff
         private readonly SightMap _sightMap; //视野地图
         private readonly WalkMap _walkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody; //gid到玩家地图实体对应
-        private Dictionary<int, List<IHitStuff>> TeamToBullet;
+        private Dictionary<int, List<IEffectMedia>> TeamToBullet;
 
         private IQSpace MapInteractableThings { get; }
         // private TempConfig TempConfig { get; }
@@ -24,7 +24,7 @@ namespace game_stuff
             _walkMap = walkMap;
             GidToBody = gidToBody;
             MapInteractableThings = mapInteractableThings;
-            TeamToBullet = new Dictionary<int, List<IHitStuff>>();
+            TeamToBullet = new Dictionary<int, List<IEffectMedia>>();
         }
 
         //初始化状态信息,包括玩家信息和地图信息
@@ -226,9 +226,9 @@ namespace game_stuff
         }
 
 
-        private Dictionary<int, HashSet<IHitStuff>> BulletsDo()
+        private Dictionary<int, HashSet<IEffectMedia>> BulletsDo()
         {
-            var whoHitGid = new Dictionary<int, HashSet<IHitStuff>>();
+            var whoHitGid = new Dictionary<int, HashSet<IEffectMedia>>();
             foreach (var ii in TeamToBullet)
             {
                 var team = ii.Key;
@@ -253,7 +253,7 @@ namespace game_stuff
                                 }
                                 else
                                 {
-                                    whoHitGid[i] = new HashSet<IHitStuff> {bullet};
+                                    whoHitGid[i] = new HashSet<IEffectMedia> {bullet};
                                 }
                             }
 
@@ -278,7 +278,7 @@ namespace game_stuff
                                 }
                                 else
                                 {
-                                    whoHitGid[i] = new HashSet<IHitStuff> {bullet};
+                                    whoHitGid[i] = new HashSet<IEffectMedia> {bullet};
                                 }
                             }
 
@@ -399,7 +399,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        TeamToBullet[team] = new List<IHitStuff> {bullet};
+                        TeamToBullet[team] = new List<IEffectMedia> {bullet};
                     }
                 }
             }

@@ -9,7 +9,7 @@ namespace game_stuff
         public TwoDPoint Pos;
         public TwoDVector Aim;
         public float Speed;
-        private DamageHealStatus _damageHealStatus;
+        private SurvivalStatus _survivalStatus;
         public bool IsPause;
         public float SightR;
         public SkillAction? SkillLaunch;
@@ -18,14 +18,14 @@ namespace game_stuff
         public TwoDVector? IsBeHit;
         public bool IsHitSome;
 
-        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, DamageHealStatus damageHealStatus,
+        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, TwoDVector? isBeHit, bool isHitSome)
         {
             Gid = gid;
             Pos = pos;
             Aim = aim;
-            _damageHealStatus = damageHealStatus;
+            _survivalStatus = survivalStatus;
             SkillLaunch = skillLaunch;
             IsStun = antiBuff;
             Speed = speed;

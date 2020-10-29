@@ -6,7 +6,7 @@ namespace game_stuff
 {
     public class CharGoTickResult
     {
-        public CharGoTickResult(ITwoDTwoP? move = null, IHitStuff? launchBullet = null,
+        public CharGoTickResult(ITwoDTwoP? move = null, IEffectMedia? launchBullet = null,
             List<IMapInteractable>? dropThing = null,
             IMapInteractable? getThing = null, ValueTuple<MapInteract, CharacterBody>? mapInteractiveAbout = null
         )
@@ -21,7 +21,7 @@ namespace game_stuff
 
 
         public ITwoDTwoP? Move { get; }
-        public IHitStuff? LaunchBullet { get; }
+        public IEffectMedia? LaunchBullet { get; }
         public List<IMapInteractable> DropThing { get; }
         public IMapInteractable? GetThing { get; }
         public MapInteract? MapInteractive { get; }

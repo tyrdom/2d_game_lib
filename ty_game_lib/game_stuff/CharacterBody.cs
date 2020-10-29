@@ -127,8 +127,8 @@ namespace game_stuff
             }
 
             var hitWall = characterStatusAntiActBuff.HitWall();
-            var hitWallDmgParam = 1 + (int) (TempConfig.HitWallDmgParam * hitWall);
-            CharacterStatus.DamageHealStatus.TakeDamage(new Damage(hitWallDmgParam));
+            var hitWallDmgParam = 1 + (uint) (TempConfig.HitWallDmgParam * hitWall);
+            CharacterStatus.SurvivalStatus.TakeDamage(hitWallDmgParam);
         }
 
         public CharTickMsg GenTickMsg()
@@ -136,7 +136,7 @@ namespace game_stuff
             var isStun = CharacterStatus.AntiActBuff != null;
             var skillAct = CharacterStatus.NowCastAct != null;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
-            return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
+            return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome);
@@ -144,7 +144,7 @@ namespace game_stuff
 
         public CharInitMsg GenInitMsg()
         {
-            return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.DamageHealStatus,
+            return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.GetWeapons());
         }
 

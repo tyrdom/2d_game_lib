@@ -73,7 +73,7 @@ namespace game_stuff
         public static IAntiActBuffConfig CommonBuffConfig { get; private set; } =
             new PushEarthAntiActBuffConfig(1f, PushType.Center, null, 12);
 
-        public static int StartHp { get; private set; } = 1000;
+        public static uint StartHp { get; private set; } = 1000;
         private static int TestAtk { get; set; } = 10;
 
         public static int TrickProtect { get; private set; } = 100;

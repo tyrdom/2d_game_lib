@@ -3,7 +3,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface IHitStuff
+    public interface IEffectMedia
     {
         public Zone RdZone { get; }
         public TwoDPoint Pos { get; set; }

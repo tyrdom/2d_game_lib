@@ -36,7 +36,7 @@ namespace game_stuff
 
         private float MinCos { get; }
 
-        public (ITwoDTwoP? move, IHitStuff? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
