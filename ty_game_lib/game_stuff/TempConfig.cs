@@ -73,13 +73,19 @@ namespace game_stuff
         public static IAntiActBuffConfig CommonBuffConfig { get; private set; } =
             new PushEarthAntiActBuffConfig(1f, PushType.Center, null, 12);
 
-        public static uint StartHp { get; private set; } = 1000;
-        private static int TestAtk { get; set; } = 10;
+        public static uint BaseHp { get; private set; } = 500;
+        public static uint BaseArmor { get; private set; } = 250;
+        public static uint BaseArmorDef { get; private set; } = 50;
+        public static uint BaseShield { get; private set; } = 250;
+        public static uint BaseShieldInstability { get; private set; } = 50;
+        public static uint BaseShieldReg { get; private set; } = 50;
+        public static uint BaseShieldDelayTick { get; private set; } = 50;
+
+        private static int BaseAtk { get; set; } = 50;
 
         public static int TrickProtect { get; private set; } = 100;
         public static int ProtectTick { get; private set; } = 10;
-
-        public static int TickPerSec { get; private set; } = 10;
+        private static int TickPerSec { get; set; } = 10;
         public static float MoveDecreaseMinMulti { get; set; } = 0.4f;
 
         public static float NormalSpeedMinCos { get; set; } = 0.7f;
@@ -89,41 +95,42 @@ namespace game_stuff
         public static int StandardMaxAmmo { get; private set; } = 100;
         public static int StandardMaxStack { get; private set; } = 100;
 
-        public static float PropR { get; set; } = 1f;
+        public static float PropR { get; private set; } = 1f;
 
-        public static float WeaponR { get; set; } = 1f;
+        public static float WeaponR { get; private set; } = 1f;
         public static float MaxRecycleTime { get; set; } = 1f;
 
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
-            G = configs.other_configs[1].g_acc;
+            var configsOtherConfig = configs.other_configs[1];
+            G = configsOtherConfig.g_acc;
 
-            MaxHeight = configs.other_configs[1].max_hegiht;
+            MaxHeight = configsOtherConfig.max_hegiht;
             MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
 
-            Friction = configs.other_configs[1].friction;
+            Friction = configsOtherConfig.friction;
 
-            ToughGrowPerTick = configs.other_configs[1].tough_grow;
-            MidTough = configs.other_configs[1].mid_tough;
-            StandardWeaponNum = configs.other_configs[1].weapon_num;
-            TwoSToSeePerTick = configs.other_configs[1].two_s_to_see_pertick;
+            ToughGrowPerTick = configsOtherConfig.tough_grow;
+            MidTough = configsOtherConfig.mid_tough;
+            StandardWeaponNum = configsOtherConfig.weapon_num;
+            TwoSToSeePerTick = configsOtherConfig.two_s_to_see_pertick;
 
-            QSpaceBodyMaxPerLevel = configs.other_configs[1].qspace_max_per_level;
+            QSpaceBodyMaxPerLevel = configsOtherConfig.qspace_max_per_level;
 
-            HitWallTickParam = configs.other_configs[1].hit_wall_add_tick_by_speed_param;
-            HitWallCatchTickParam = configs.other_configs[1].hit_wall_catch_tick_param;
-            HitWallDmgParam = configs.other_configs[1].hit_wall_dmg_param;
-            HitWallCatchDmgParam = configs.other_configs[1].hit_wall_catch_dmg_param;
+            HitWallTickParam = configsOtherConfig.hit_wall_add_tick_by_speed_param;
+            HitWallCatchTickParam = configsOtherConfig.hit_wall_catch_tick_param;
+            HitWallDmgParam = configsOtherConfig.hit_wall_dmg_param;
+            HitWallCatchDmgParam = configsOtherConfig.hit_wall_catch_dmg_param;
 
             StandardSightVector =
-                new TwoDVector(configs.other_configs[1].sight_length, configs.other_configs[1].sight_width);
+                new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
 
             CommonBuffConfig =
-                GameTools.GenBuffByConfig(configs.push_buffs[configs.other_configs[1].common_fail_antibuff]);
+                GameTools.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
 
-            StartHp = 1000;
-            TestAtk = 10;
+            BaseHp = 1000;
+            BaseAtk = 10;
 
             TrickProtect = 100;
             ProtectTick = 10;

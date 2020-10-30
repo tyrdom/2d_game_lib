@@ -90,21 +90,21 @@ namespace game_stuff
         public int PauseTick { get; set; }
 
         public IAntiActBuff? AntiActBuff { get; set; }
-        
+
         //protect status
         private int NowProtectValue { get; set; }
         private int MaxProtectValue { get; }
-        
-        public int NowProtectTick { get; private set; }
-        
-        //Game other Status
-        
-        public List<IPassiveTrait> Traits { get; set; }
-        public List<IPlayBuff> DamageBuffs { get; set; }
 
-        public AttackStatus AttackStatus;
-        public SurvivalStatus SurvivalStatus;
-       
+        public int NowProtectTick { get; private set; }
+
+        //Game other Status
+
+        private List<IPassiveTrait> Traits { get; }
+        private List<IPlayingBuff> DamageBuffs { get; set; }
+
+        private AttackStatus AttackStatus { get; }
+        public SurvivalStatus SurvivalStatus { get; private set; }
+
 
         // for_tick_msg
         public SkillAction? SkillLaunch { get; private set; }
@@ -114,7 +114,8 @@ namespace game_stuff
 
 
         public CharacterStatus(float maxMoveSpeed, int gId,
-            SurvivalStatus survivalStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue)
+            SurvivalStatus survivalStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue,
+            AttackStatus attackStatus)
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
@@ -127,12 +128,14 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
-            DamageBuffs = new List<IPlayBuff>();
+            DamageBuffs = new List<IPlayingBuff>();
             SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
             MinMoveSpeed = minMoveSpeed;
             MaxProtectValue = maxProtectValue;
+            Traits = new List<IPassiveTrait>();
+            AttackStatus = attackStatus;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
@@ -164,16 +167,14 @@ namespace game_stuff
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
-
             PauseTick = 0;
             LockingWho = null;
             CatchingWho = null;
             NowWeapon = 0;
-
             NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
-            DamageBuffs = new List<IPlayBuff>();
+            DamageBuffs = new List<IPlayingBuff>();
             SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
@@ -746,8 +747,7 @@ namespace game_stuff
 
         public uint GenDamage(float damageMulti)
         {
-            return  AttackStatus.GenDamage(damageMulti);
-            
+            return AttackStatus.GenDamage(damageMulti);
         }
 
         public void AddProtect(int protectValueAdd)

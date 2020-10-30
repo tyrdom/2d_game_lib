@@ -9,9 +9,8 @@ namespace game_stuff
         public uint Level { get; set; }
     }
 
-
-    public interface IPassiveTraitTalent
+    public interface IAttackTrait : IPassiveTrait
     {
-        public uint Level { get; set; }
+        
     }
 }

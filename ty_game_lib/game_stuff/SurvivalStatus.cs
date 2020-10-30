@@ -17,12 +17,12 @@ namespace game_stuff
         private uint NowDelayTick { get; set; }
 
         private uint ShieldDelayTick { get; }
-
+        private uint ShieldInstability { get; }
         private uint ShieldRecover { get; }
 
 
         private SurvivalStatus(uint maxHp, uint nowHp, uint nowArmor, uint maxArmor, uint nowShield, uint maxShield,
-            uint shieldDelayTick, uint armorDefence, uint shieldRecover)
+            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability)
         {
             MaxHp = maxHp;
             NowHp = nowHp;
@@ -33,11 +33,12 @@ namespace game_stuff
             ShieldDelayTick = shieldDelayTick;
             ArmorDefence = armorDefence;
             ShieldRecover = shieldRecover;
+            ShieldInstability = shieldInstability;
         }
 
         public static SurvivalStatus StartDamageHealAbout()
         {
-            return new SurvivalStatus(TempConfig.StartHp, TempConfig.StartHp, 0, 0, 0, 0, 5, 1, 0);
+            return new SurvivalStatus(TempConfig.BaseHp, TempConfig.BaseHp, 0, 0, 0, 0, 5, 1, 0, 0);
         }
 
 
@@ -46,13 +47,14 @@ namespace game_stuff
             return NowHp == 0;
         }
 
+        
         public void TakeDamage(uint damage)
         {
             var rest = (int) damage;
 
             NowDelayTick = ShieldDelayTick;
 
-            var nowShield = (int) NowShield - rest;
+            var nowShield = (int) (NowShield - ShieldInstability) - rest;
 
             if (nowShield >= 0)
             {

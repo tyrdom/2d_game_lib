@@ -2,7 +2,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface IPlayBuff
+    public interface IPlayingBuff
     {
         uint RestTick { get; set; }
         bool IsFinish();
