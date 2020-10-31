@@ -47,36 +47,86 @@ namespace game_stuff
             return NowHp == 0;
         }
 
-        
-        public void TakeDamage(uint damage)
+        public void TakeDamage(Damage damage)
+        {
+            NowDelayTick = ShieldDelayTick;
+            TakeOneDamage(damage.MainDamage);
+            TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
+        }
+
+        private void TakeMultiDamage(uint damage, uint times)
+        {
+            static uint GetTime(int restDamage, uint damage)
+            {
+                return (uint) restDamage / damage;
+            }
+
+            var restDamage = (int) (damage * times);
+            var restTime = GetTime(restDamage, damage);
+            if (NowShield > 0)
+            {
+                var nowShield = (int) NowShield - (int) (ShieldInstability * restTime) - restDamage;
+                if (nowShield >= 0)
+                {
+                    NowShield = (uint) nowShield;
+                    return;
+                }
+
+                NowShield = 0;
+                restDamage = -nowShield;
+                restTime = GetTime(restDamage, damage);
+            }
+
+            if (NowArmor > 0)
+            {
+                var nowArmor = (int) NowArmor + (int) (ArmorDefence * restTime) - restDamage;
+
+                if (nowArmor >= 0)
+                {
+                    NowArmor = (uint) nowArmor;
+                    return;
+                }
+
+                NowArmor = 0;
+                restDamage = -nowArmor;
+            }
+
+            NowHp -= (uint) restDamage;
+        }
+
+
+        public void TakeOneDamage(uint damage)
         {
             var rest = (int) damage;
 
-            NowDelayTick = ShieldDelayTick;
-
-            var nowShield = (int) (NowShield - ShieldInstability) - rest;
-
-            if (nowShield >= 0)
+            if (NowShield > 0)
             {
-                NowShield = (uint) nowShield;
-                return;
+                var nowShield = (int) NowShield - (int) ShieldInstability - rest;
+
+                if (nowShield >= 0)
+                {
+                    NowShield = (uint) nowShield;
+                    return;
+                }
+
+                NowShield = 0;
+                rest = -nowShield;
             }
 
-            NowShield = 0;
-            rest = -nowShield;
-
-            var nowArmor = (int) NowArmor - rest + (int) ArmorDefence;
-
-
-            if (nowArmor >= 0)
+            if (NowArmor > 0)
             {
-                NowArmor = (uint) nowArmor;
-                return;
-            }
+                var nowArmor = (int) NowArmor + (int) ArmorDefence - rest;
 
-            {
-                NowArmor = 0;
-                rest = -nowArmor;
+                if (nowArmor >= 0)
+                {
+                    NowArmor = (uint) nowArmor;
+                    return;
+                }
+
+                {
+                    NowArmor = 0;
+                    rest = -nowArmor;
+                }
             }
 
             NowHp -= (uint) rest;

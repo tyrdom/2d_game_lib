@@ -234,7 +234,7 @@ namespace game_stuff
 
                 //对手承受伤害
                 targetCharacterStatus.AddProtect(ProtectValueAdd);
-                targetCharacterStatus.SurvivalStatus.TakeDamage(Caster.GenDamage(DamageMulti));
+                targetCharacterStatus.SurvivalStatus.TakeOneDamage(Caster.GenDamage(DamageMulti));
 
 
                 var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
@@ -371,13 +371,17 @@ namespace game_stuff
         }
     }
 
-    public class Damage
+    public readonly struct Damage
     {
-        public int StandardDamageValue;
+        public uint MainDamage { get; }
+        public uint ShardedDamage { get; }
+        public uint ShardedNum { get; }
 
-        public Damage(int standardDamageValue)
+        public Damage(uint shardedNum, uint mainDamage, uint shardedDamage)
         {
-            StandardDamageValue = standardDamageValue;
+            ShardedNum = shardedNum;
+            MainDamage = mainDamage;
+            ShardedDamage = shardedDamage;
         }
     }
 }

@@ -118,7 +118,7 @@ namespace game_stuff
             return charGoTick;
         }
 
-        public void HitWall()
+        private void HitWall()
         {
             var characterStatusAntiActBuff = CharacterStatus.AntiActBuff;
             if (characterStatusAntiActBuff == null)
@@ -128,7 +128,7 @@ namespace game_stuff
 
             var hitWall = characterStatusAntiActBuff.HitWall();
             var hitWallDmgParam = 1 + (uint) (TempConfig.HitWallDmgParam * hitWall);
-            CharacterStatus.SurvivalStatus.TakeDamage(hitWallDmgParam);
+            CharacterStatus.SurvivalStatus.TakeOneDamage(hitWallDmgParam);
         }
 
         public CharTickMsg GenTickMsg()

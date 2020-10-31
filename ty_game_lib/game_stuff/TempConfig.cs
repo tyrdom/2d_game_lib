@@ -81,6 +81,7 @@ namespace game_stuff
         public static uint BaseShieldReg { get; private set; } = 50;
         public static uint BaseShieldDelayTick { get; private set; } = 50;
 
+        public static float ShardedAttackMulti { get; private set; } = 0.05f;
         private static int BaseAtk { get; set; } = 50;
 
         public static int TrickProtect { get; private set; } = 100;
