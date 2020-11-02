@@ -100,7 +100,7 @@ namespace game_stuff
         //Game other Status
 
         private List<IPassiveTrait> Traits { get; }
-        private List<IPlayingBuff> DamageBuffs { get; set; }
+        private List<IPlayingBuff> PlayingBuffs { get; set; }
 
         private AttackStatus AttackStatus { get; }
         public SurvivalStatus SurvivalStatus { get; private set; }
@@ -128,7 +128,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
-            DamageBuffs = new List<IPlayingBuff>();
+            PlayingBuffs = new List<IPlayingBuff>();
             SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
@@ -174,7 +174,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             AntiActBuff = null;
-            DamageBuffs = new List<IPlayingBuff>();
+            PlayingBuffs = new List<IPlayingBuff>();
             SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
             AddMoveSpeed = addMoveSpeed;
@@ -745,7 +745,7 @@ namespace game_stuff
             return CharacterBody.Sight.Aim;
         }
 
-        public uint GenDamage(float damageMulti)
+        public Damage GenDamage(float damageMulti)
         {
             return AttackStatus.GenDamage(damageMulti);
         }
@@ -779,6 +779,11 @@ namespace game_stuff
         public void RecycleWeapon(Weapon weapon)
         {
             throw new NotImplementedException();
+        }
+
+        public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
+        {
+            PlayBuffStandard.AddBuffs(this.PlayingBuffs, playingBuffs);
         }
     }
 }

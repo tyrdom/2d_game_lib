@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using collision_and_rigid;
@@ -39,6 +40,9 @@ namespace game_stuff
             [BodySize.Medium] = 4f,
             [BodySize.Big] = 9f
         };
+
+        public static ImmutableDictionary<uint, IPlayingBuffConfig> BuffConfigs { get; set; } =
+            ImmutableDictionary<uint, IPlayingBuffConfig>.Empty;
 
         public static float G { get; private set; } = 1;
 

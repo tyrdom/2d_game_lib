@@ -8,11 +8,15 @@ namespace game_stuff
 
         private uint ShardedAttack { get; }
 
+        private uint BaseShardedNum { get; }
         private uint ShardedNum { get; set; }
 
-        public uint GenDamage(float damageMulti)
+        public Damage GenDamage(float damageMulti)
         {
-            return (uint) (MainAttack * damageMulti);
+            var mainDamage = (uint) (MainAttack * damageMulti);
+            var shardedDamage = (uint) (ShardedAttack * damageMulti);
+            var damage = new Damage(ShardedNum, mainDamage, shardedDamage);
+            return damage;
         }
 
 
@@ -24,6 +28,7 @@ namespace game_stuff
         {
             BaseAttack = baseAttack;
             ShardedAttack = (uint) (baseAttack * TempConfig.ShardedAttackMulti);
+            BaseShardedNum = 0;
             ShardedNum = 0;
             MainAttack = baseAttack;
         }
@@ -31,6 +36,10 @@ namespace game_stuff
         public static AttackStatus StandardAttackStatus()
         {
             return new AttackStatus(100);
+        }
+
+        public void GetPassiveDo(IPassiveTrait passiveTrait)
+        {
         }
     }
 }

@@ -1,29 +1,54 @@
-using game_config;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace game_stuff
 {
-    public interface IPlayingBuff
+    public interface IPlayingBuffConfig
     {
-        uint RestTick { get; set; }
-        bool IsFinish();
-
-        bool AddToCharacter();
+        uint OriginRestTick { get; }
+        IPlayingBuff CreateBuff();
+        StackMode StackMode { get; }
     }
 
 
-    public class AttackBuff : IPlayingBuff
+    public interface IPlayingBuff
     {
+        uint BuffId { get; }
+        uint RestTick { get; set; }
+        bool IsFinish();
+        uint Stack { get; set; }
+    }
+
+    public enum StackMode
+    {
+        More,
+        Stack,
+        Time
+    }
+
+
+    public class AddDamageBuff : IPlayingBuff
+    {
+        public AddDamageBuff(uint buffId, uint restTick, float damageMulti, uint stack)
+        {
+            BuffId = buffId;
+            RestTick = restTick;
+            DamageMulti = damageMulti;
+            Stack = stack;
+        }
+
+        public uint BuffId { get; }
         public uint RestTick { get; set; }
+        public uint Stack { get; set; }
 
         public bool IsFinish()
         {
-            throw new System.NotImplementedException();
+            return PlayBuffStandard.IsFinish(this);
         }
 
-        public bool AddToCharacter()
-        {
-            throw new System.NotImplementedException();
-        }
+
+        public float DamageMulti { get; }
     }
 
     public static class PlayBuffStandard
@@ -31,6 +56,53 @@ namespace game_stuff
         public static bool IsFinish(IPlayingBuff playingBuff)
         {
             return playingBuff.RestTick <= 0;
+        }
+
+
+        public static float StackDamage(IEnumerable<AddDamageBuff> damageBuffs)
+        {
+            var sum = damageBuffs.Sum(x => x.DamageMulti);
+            return sum;
+        }
+
+        public static List<IPlayingBuff> AddBuffs(List<IPlayingBuff> playingBuffs1,
+            IEnumerable<IPlayingBuff> playingBuffs2
+        )
+        {
+            playingBuffs1.AddRange(playingBuffs2);
+
+            var groupBy = playingBuffs1.GroupBy(x => x.BuffId);
+            var buffs = new List<IPlayingBuff>();
+            foreach (var grouping in groupBy)
+            {
+                if (TempConfig.BuffConfigs.TryGetValue(grouping.Key, out var playingBuffConfig))
+                {
+                    var valueStackMode = playingBuffConfig.StackMode;
+                    switch (valueStackMode)
+                    {
+                        case StackMode.More:
+                            var enumerable = grouping.Select(x => x);
+                            buffs.AddRange(enumerable);
+                            break;
+                        case StackMode.Stack:
+                            var sum = grouping.Sum(x => x.Stack);
+                            var stack = grouping.First();
+                            stack.Stack = (uint) sum;
+                            buffs.Add(stack);
+                            break;
+                        case StackMode.Time:
+                            var sum2 = grouping.Sum(x => x.RestTick);
+                            var time = grouping.First();
+                            time.RestTick = (uint) sum2;
+                            buffs.Add(time);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+
+            return buffs;
         }
     }
 }
