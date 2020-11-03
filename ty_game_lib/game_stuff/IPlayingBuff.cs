@@ -7,7 +7,7 @@ namespace game_stuff
     public interface IPlayingBuffConfig
     {
         uint OriginRestTick { get; }
-        IPlayingBuff CreateBuff();
+        IPlayingBuff CreateBuff(uint buffId);
         StackMode StackMode { get; }
     }
 
@@ -18,6 +18,7 @@ namespace game_stuff
         uint RestTick { get; set; }
         bool IsFinish();
         uint Stack { get; set; }
+        void GoATick();
     }
 
     public enum StackMode
@@ -27,14 +28,35 @@ namespace game_stuff
         Time
     }
 
+    public class AddDamageBuffConfig : IPlayingBuffConfig
+    {
+        public AddDamageBuffConfig(uint originRestTick, float addDamageMulti, StackMode stackMode)
+        {
+            OriginRestTick = originRestTick;
+            AddDamageMulti = addDamageMulti;
+            StackMode = stackMode;
+        }
+
+        public uint OriginRestTick { get; }
+
+    
+
+        public float AddDamageMulti { get; }
+        public IPlayingBuff CreateBuff(uint buffId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public StackMode StackMode { get; }
+    }
 
     public class AddDamageBuff : IPlayingBuff
     {
-        public AddDamageBuff(uint buffId, uint restTick, float damageMulti, uint stack)
+        public AddDamageBuff(uint buffId, uint restTick, float addDamageMulti, uint stack)
         {
             BuffId = buffId;
             RestTick = restTick;
-            DamageMulti = damageMulti;
+            AddDamageMulti = addDamageMulti;
             Stack = stack;
         }
 
@@ -42,17 +64,27 @@ namespace game_stuff
         public uint RestTick { get; set; }
         public uint Stack { get; set; }
 
+        public void GoATick()
+        {
+            PlayBuffStandard.GoATick(this);
+        }
+
         public bool IsFinish()
         {
             return PlayBuffStandard.IsFinish(this);
         }
 
-
-        public float DamageMulti { get; }
+        public float AddDamageMulti { get; }
     }
 
     public static class PlayBuffStandard
     {
+        public static void GoATick(IPlayingBuff playingBuff)
+        {
+            playingBuff.RestTick -= 1;
+        }
+
+
         public static bool IsFinish(IPlayingBuff playingBuff)
         {
             return playingBuff.RestTick <= 0;
@@ -61,7 +93,7 @@ namespace game_stuff
 
         public static float StackDamage(IEnumerable<AddDamageBuff> damageBuffs)
         {
-            var sum = damageBuffs.Sum(x => x.DamageMulti);
+            var sum = damageBuffs.Sum(x => x.AddDamageMulti);
             return sum;
         }
 

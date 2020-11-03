@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 
@@ -18,6 +15,21 @@ namespace game_stuff
         public static uint GetTickByTime(float time)
         {
             return (uint) (time * TickPerSec);
+        }
+
+        public static float NumSecToTick(float numPerSec)
+        {
+            return numPerSec / TickPerSec;
+        }
+
+        public static uint NumSecToTick(uint numPerSec)
+        {
+            return (uint) (numPerSec / TickPerSec);
+        }
+
+        public static int NumSecToTick(int numPerSec)
+        {
+            return numPerSec / TickPerSec;
         }
 
         public static ConfigDictionaries Configs { get; private set; }
@@ -110,30 +122,22 @@ namespace game_stuff
             Configs = configs;
             var configsOtherConfig = configs.other_configs[1];
             G = configsOtherConfig.g_acc;
-
             MaxHeight = configsOtherConfig.max_hegiht;
             MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
-
             Friction = configsOtherConfig.friction;
-
             ToughGrowPerTick = configsOtherConfig.tough_grow;
             MidTough = configsOtherConfig.mid_tough;
             StandardWeaponNum = configsOtherConfig.weapon_num;
             TwoSToSeePerTick = configsOtherConfig.two_s_to_see_pertick;
-
             QSpaceBodyMaxPerLevel = configsOtherConfig.qspace_max_per_level;
-
             HitWallTickParam = configsOtherConfig.hit_wall_add_tick_by_speed_param;
             HitWallCatchTickParam = configsOtherConfig.hit_wall_catch_tick_param;
             HitWallDmgParam = configsOtherConfig.hit_wall_dmg_param;
             HitWallCatchDmgParam = configsOtherConfig.hit_wall_catch_dmg_param;
-
             StandardSightVector =
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
-
             CommonBuffConfig =
                 GameTools.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
-
             BaseHp = 1000;
             BaseAtk = 10;
 

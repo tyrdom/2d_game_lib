@@ -58,6 +58,14 @@ namespace game_config
     }
 
     [Serializable]
+    public class talent : IGameConfig
+    {
+        public int id { get; set; }
+        public SimpleObj2[] params_adds { get; set; }
+        public int NextCombo { get; set; }
+    }
+
+    [Serializable]
     public class other_config : IGameConfig
     {
         public int id { get; set; }
@@ -185,7 +193,7 @@ namespace game_config
         public bool yellow_BG { get; set; }
         public string res_pack { get; set; }
         public float scale { get; set; }
-        public SimpleObj2[] ring_pos { get; set; }
+        public SimpleObj3[] ring_pos { get; set; }
         public Point anchor_multi { get; set; }
         public float animation_play_time_span { get; set; }
         public int deep { get; set; }
@@ -196,7 +204,7 @@ namespace game_config
         public int turning_mode { get; set; }
         public float appear_time { get; set; }
         public bool is_3d_model { get; set; }
-        public SimpleObj3 param_for_3D { get; set; }
+        public SimpleObj4 param_for_3D { get; set; }
         public string[] dead_sound_list { get; set; }
         public string appear_sound { get; set; }
         public string change_bgm { get; set; }
@@ -204,8 +212,8 @@ namespace game_config
         public float appear_loop { get; set; }
         public int special_fish_type { get; set; }
         public string show_game { get; set; }
-        public SimpleObj5 rectangle_collider_anchor { get; set; }
-        public SimpleObj6 rectangle_collider { get; set; }
+        public SimpleObj6 rectangle_collider_anchor { get; set; }
+        public SimpleObj7 rectangle_collider { get; set; }
         public int spawn_rate { get; set; }
         public int size { get; set; }
         public int common_spawn_gap { get; set; }
@@ -228,9 +236,11 @@ namespace game_config
         public int id { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public size body_id { get; set; }
+        public size BodyId { get; set; }
 
-        public string attr_id { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public base_attr_id AttrId { get; set; }
+
         public int NextCombo { get; set; }
     }
 
@@ -262,7 +272,7 @@ namespace game_config
     public class weapon : IGameConfig
     {
         public int id { get; set; }
-        public SimpleObj7[] BodySizeUseAndSnipeSpeedFix { get; set; }
+        public SimpleObj8[] BodySizeUseAndSnipeSpeedFix { get; set; }
         public Dictionary<int, float> BotRange { get; set; }
         public float MaxRangeMulti { get; set; }
         public int ChangeRangeStep { get; set; }
@@ -272,28 +282,60 @@ namespace game_config
     }
 
     [Serializable]
+    public class passive : IGameConfig
+    {
+        public int id { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public passive_type passive_effect_type { get; set; }
+
+        public float[] param_values { get; set; }
+        public int NextCombo { get; set; }
+    }
+
+    [Serializable]
+    public class base_attribute : IGameConfig
+    {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public base_attr_id id { get; set; }
+
+        public uint Atk { get; set; }
+        public uint ShardedNum { get; set; }
+        public uint MaxAmmo { get; set; }
+        public float BackStabAdd { get; set; }
+        public uint MaxHP { get; set; }
+        public float HealEffect { get; set; }
+        public uint MaxArmor { get; set; }
+        public uint ArmorDefence { get; set; }
+        public uint MaxShield { get; set; }
+        public float NowDelayTime { get; set; }
+        public uint ShieldRecover { get; set; }
+        public uint ShieldInstability { get; set; }
+    }
+
+    [Serializable]
     public enum size
     {
-        @small,
-        @big,
+        @default,
         @medium,
-        @default
+        @small,
+        @big
     }
 
     [Serializable]
     public enum interactionAct
     {
-        @recycle_prop_or_weapon,
-        @pick_weapon_or_prop,
         @kick_vehicle,
-        @get_in_vehicle
+        @get_in_vehicle,
+        @pick_weapon_or_prop,
+        @recycle_prop_or_weapon
     }
 
     [Serializable]
     public enum raw_shape
     {
-        @rectangle,
-        @sector
+        @sector,
+        @rectangle
     }
 
     [Serializable]
@@ -316,24 +358,46 @@ namespace game_config
         @Vector
     }
 
+    [Serializable]
+    public enum base_attr_id
+    {
+        @standard_body,
+        @shield_mech,
+        @armor_mech,
+        @fresh_mech
+    }
+
+    [Serializable]
+    public enum passive_type
+    {
+        @Survive,
+        @Breaker,
+        @Tough,
+        @Attack,
+        @Ammo,
+        @Prop
+    }
+
     public static class ResNames
     {
         public static Dictionary<Type, string> NamesDictionary { get; } = new Dictionary<Type, string>
         {
             {typeof(skill), "skill_s.json"}, {typeof(bad_words), "bad_words_s.json"},
             {typeof(caught_buff), "caught_buff_s.json"}, {typeof(prop), "prop_s.json"},
-            {typeof(other_config), "other_config_s.json"}, {typeof(snipe), "snipe_s.json"},
-            {typeof(body), "body_s.json"}, {typeof(skill_group), "skill_group_s.json"},
+            {typeof(talent), "talent_s.json"}, {typeof(other_config), "other_config_s.json"},
+            {typeof(snipe), "snipe_s.json"}, {typeof(body), "body_s.json"}, {typeof(skill_group), "skill_group_s.json"},
             {typeof(interaction), "interaction_s.json"}, {typeof(show_text), "show_text_s.json"},
             {typeof(bullet), "bullet_s.json"}, {typeof(push_buff), "push_buff_s.json"}, {typeof(fish), "fish_s.json"},
             {typeof(vehicle), "vehicle_s.json"}, {typeof(lock_area), "lock_area_s.json"}, {typeof(item), "item_s.json"},
-            {typeof(weapon), "weapon_s.json"}
+            {typeof(weapon), "weapon_s.json"}, {typeof(passive), "passive_s.json"},
+            {typeof(base_attribute), "base_attribute_s.json"}
         };
 
         public static string[] Names { get; } =
         {
-            "skill", "bad_words", "caught_buff", "prop", "other_config", "snipe", "body", "skill_group", "interaction",
-            "show_text", "bullet", "push_buff", "fish", "vehicle", "lock_area", "item", "weapon"
+            "skill", "bad_words", "caught_buff", "prop", "talent", "other_config", "snipe", "body", "skill_group",
+            "interaction", "show_text", "bullet", "push_buff", "fish", "vehicle", "lock_area", "item", "weapon",
+            "passive", "base_attribute"
         };
     }
 
@@ -344,6 +408,7 @@ namespace game_config
         public ImmutableDictionary<int, bad_words> bad_wordss { get; set; }
         public ImmutableDictionary<string, caught_buff> caught_buffs { get; set; }
         public ImmutableDictionary<string, prop> props { get; set; }
+        public ImmutableDictionary<int, talent> talents { get; set; }
         public ImmutableDictionary<int, other_config> other_configs { get; set; }
         public ImmutableDictionary<int, snipe> snipes { get; set; }
         public ImmutableDictionary<size, body> bodys { get; set; }
@@ -357,6 +422,8 @@ namespace game_config
         public ImmutableDictionary<string, lock_area> lock_areas { get; set; }
         public ImmutableDictionary<int, item> items { get; set; }
         public ImmutableDictionary<int, weapon> weapons { get; set; }
+        public ImmutableDictionary<int, passive> passives { get; set; }
+        public ImmutableDictionary<base_attr_id, base_attribute> base_attributes { get; set; }
         public IDictionary[] all_Immutable_dictionary { get; set; }
 #if NETCOREAPP
 
@@ -367,8 +434,9 @@ namespace game_config
 
             all_Immutable_dictionary = new IDictionary[]
             {
-                skills, bad_wordss, caught_buffs, props, other_configs, snipes, bodys, skill_groups, interactions,
-                show_texts, bullets, push_buffs, fishs, vehicles, lock_areas, items, weapons
+                skills, bad_wordss, caught_buffs, props, talents, other_configs, snipes, bodys, skill_groups,
+                interactions, show_texts, bullets, push_buffs, fishs, vehicles, lock_areas, items, weapons, passives,
+                base_attributes
             };
         }
 #endif
@@ -380,8 +448,9 @@ namespace game_config
 
             all_Immutable_dictionary = new IDictionary[]
             {
-                skills, bad_wordss, caught_buffs, props, other_configs, snipes, bodys, skill_groups, interactions,
-                show_texts, bullets, push_buffs, fishs, vehicles, lock_areas, items, weapons
+                skills, bad_wordss, caught_buffs, props, talents, other_configs, snipes, bodys, skill_groups,
+                interactions, show_texts, bullets, push_buffs, fishs, vehicles, lock_areas, items, weapons, passives,
+                base_attributes
             };
         }
 
@@ -391,8 +460,9 @@ namespace game_config
 
             all_Immutable_dictionary = new IDictionary[]
             {
-                skills, bad_wordss, caught_buffs, props, other_configs, snipes, bodys, skill_groups, interactions,
-                show_texts, bullets, push_buffs, fishs, vehicles, lock_areas, items, weapons
+                skills, bad_wordss, caught_buffs, props, talents, other_configs, snipes, bodys, skill_groups,
+                interactions, show_texts, bullets, push_buffs, fishs, vehicles, lock_areas, items, weapons, passives,
+                base_attributes
             };
         }
 
@@ -403,6 +473,7 @@ namespace game_config
             bad_wordss = GameConfigTools.GenConfigDict<int, bad_words>();
             caught_buffs = GameConfigTools.GenConfigDict<string, caught_buff>();
             props = GameConfigTools.GenConfigDict<string, prop>();
+            talents = GameConfigTools.GenConfigDict<int, talent>();
             other_configs = GameConfigTools.GenConfigDict<int, other_config>();
             snipes = GameConfigTools.GenConfigDict<int, snipe>();
             bodys = GameConfigTools.GenConfigDict<size, body>();
@@ -416,6 +487,8 @@ namespace game_config
             lock_areas = GameConfigTools.GenConfigDict<string, lock_area>();
             items = GameConfigTools.GenConfigDict<int, item>();
             weapons = GameConfigTools.GenConfigDict<int, weapon>();
+            passives = GameConfigTools.GenConfigDict<int, passive>();
+            base_attributes = GameConfigTools.GenConfigDict<base_attr_id, base_attribute>();
         }
 #endif
         public void LoadAllByJson(string path = "")
@@ -424,6 +497,7 @@ namespace game_config
             bad_wordss = GameConfigTools.GenConfigDictByJsonFile<int, bad_words>(path);
             caught_buffs = GameConfigTools.GenConfigDictByJsonFile<string, caught_buff>(path);
             props = GameConfigTools.GenConfigDictByJsonFile<string, prop>(path);
+            talents = GameConfigTools.GenConfigDictByJsonFile<int, talent>(path);
             other_configs = GameConfigTools.GenConfigDictByJsonFile<int, other_config>(path);
             snipes = GameConfigTools.GenConfigDictByJsonFile<int, snipe>(path);
             bodys = GameConfigTools.GenConfigDictByJsonFile<size, body>(path);
@@ -437,6 +511,8 @@ namespace game_config
             lock_areas = GameConfigTools.GenConfigDictByJsonFile<string, lock_area>(path);
             items = GameConfigTools.GenConfigDictByJsonFile<int, item>(path);
             weapons = GameConfigTools.GenConfigDictByJsonFile<int, weapon>(path);
+            passives = GameConfigTools.GenConfigDictByJsonFile<int, passive>(path);
+            base_attributes = GameConfigTools.GenConfigDictByJsonFile<base_attr_id, base_attribute>(path);
         }
 
         public void LoadAllByJsonString(Dictionary<string, string> nameToJsonString)
@@ -446,6 +522,7 @@ namespace game_config
             caught_buffs =
                 GameConfigTools.GenConfigDictByJsonString<string, caught_buff>(nameToJsonString["caught_buff"]);
             props = GameConfigTools.GenConfigDictByJsonString<string, prop>(nameToJsonString["prop"]);
+            talents = GameConfigTools.GenConfigDictByJsonString<int, talent>(nameToJsonString["talent"]);
             other_configs =
                 GameConfigTools.GenConfigDictByJsonString<int, other_config>(nameToJsonString["other_config"]);
             snipes = GameConfigTools.GenConfigDictByJsonString<int, snipe>(nameToJsonString["snipe"]);
@@ -462,6 +539,10 @@ namespace game_config
             lock_areas = GameConfigTools.GenConfigDictByJsonString<string, lock_area>(nameToJsonString["lock_area"]);
             items = GameConfigTools.GenConfigDictByJsonString<int, item>(nameToJsonString["item"]);
             weapons = GameConfigTools.GenConfigDictByJsonString<int, weapon>(nameToJsonString["weapon"]);
+            passives = GameConfigTools.GenConfigDictByJsonString<int, passive>(nameToJsonString["passive"]);
+            base_attributes =
+                GameConfigTools.GenConfigDictByJsonString<base_attr_id, base_attribute>(
+                    nameToJsonString["base_attribute"]);
         }
     }
 
@@ -480,6 +561,13 @@ namespace game_config
     }
 
     [Serializable]
+    public class SimpleObj2 : IGameConfig
+    {
+        public int param_idx { get; set; }
+        public float add_multi { get; set; }
+    }
+
+    [Serializable]
     public class Buff : IGameConfig
     {
         [JsonConverter(typeof(StringEnumConverter))]
@@ -492,26 +580,10 @@ namespace game_config
     }
 
     [Serializable]
-    public class SimpleObj2 : IGameConfig
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public float scale { get; set; }
-    }
-
-    [Serializable]
-    public class SimpleObj4 : IGameConfig
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public int z { get; set; }
-    }
-
-    [Serializable]
     public class SimpleObj3 : IGameConfig
     {
-        public SimpleObj4 pos { get; set; }
-        public SimpleObj4 rotate { get; set; }
+        public int x { get; set; }
+        public int y { get; set; }
         public float scale { get; set; }
     }
 
@@ -520,17 +592,33 @@ namespace game_config
     {
         public int x { get; set; }
         public int y { get; set; }
+        public int z { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj4 : IGameConfig
+    {
+        public SimpleObj5 pos { get; set; }
+        public SimpleObj5 rotate { get; set; }
+        public float scale { get; set; }
     }
 
     [Serializable]
     public class SimpleObj6 : IGameConfig
+    {
+        public int x { get; set; }
+        public int y { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj7 : IGameConfig
     {
         public int width { get; set; }
         public int height { get; set; }
     }
 
     [Serializable]
-    public class SimpleObj7 : IGameConfig
+    public class SimpleObj8 : IGameConfig
     {
         [JsonConverter(typeof(StringEnumConverter))]
         public size body { get; set; }

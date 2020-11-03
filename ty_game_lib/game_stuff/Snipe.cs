@@ -15,11 +15,9 @@ namespace game_stuff
         public int OffStepPerTick { get; }
         public int TrickTick { get; }
 
-        public Snipe(ImmutableDictionary<BodySize, float> moveSpeedMulti, float[] onZoomMulti, int trickTick)
+        public Snipe(ImmutableDictionary<BodySize, float> moveSpeedMulti, int trickTick)
         {
             MoveSpeedMulti = moveSpeedMulti;
-
-
             TrickTick = trickTick;
         }
 

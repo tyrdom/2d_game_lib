@@ -52,6 +52,12 @@
       <EmbeddedResource Include="Resources\vehicle_s.json" />
       <None Remove="Resources\prop_s.json" />
       <EmbeddedResource Include="Resources\prop_s.json" />
+      <None Remove="Resources\base_attribute_s.json" />
+      <EmbeddedResource Include="Resources\base_attribute_s.json" />
+      <None Remove="Resources\talent_s.json" />
+      <EmbeddedResource Include="Resources\talent_s.json" />
+      <None Remove="Resources\passive_s.json" />
+      <EmbeddedResource Include="Resources\passive_s.json" />
     </ItemGroup>
 
 </Project>

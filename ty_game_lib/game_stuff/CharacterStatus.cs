@@ -10,15 +10,16 @@ namespace game_stuff
 {
     //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
 
-    public class CharacterStatus
+    public class CharacterStatus : IBattleUnit
     {
         public CharacterBody CharacterBody;
 
-        private float MaxMoveSpeed { get; set; }
+        public float MaxMoveSpeed { get; set; }
 
-        private float MinMoveSpeed { get; set; }
+        public float MinMoveSpeed { get; set; }
 
-        private float AddMoveSpeed { get; set; }
+        public float AddMoveSpeed { get; set; }
+        public base_attr_id BaseAttrId { get; }
 
         //move status
         public float NowMoveSpeed { get; private set; }
@@ -102,7 +103,7 @@ namespace game_stuff
         private List<IPassiveTrait> Traits { get; }
         private List<IPlayingBuff> PlayingBuffs { get; set; }
 
-        private AttackStatus AttackStatus { get; }
+        public AttackStatus AttackStatus { get; }
         public SurvivalStatus SurvivalStatus { get; private set; }
 
 
@@ -115,7 +116,7 @@ namespace game_stuff
 
         public CharacterStatus(float maxMoveSpeed, int gId,
             SurvivalStatus survivalStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue,
-            AttackStatus attackStatus)
+            AttackStatus attackStatus, base_attr_id baseAttrId)
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
@@ -136,6 +137,7 @@ namespace game_stuff
             MaxProtectValue = maxProtectValue;
             Traits = new List<IPassiveTrait>();
             AttackStatus = attackStatus;
+            BaseAttrId = baseAttrId;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
@@ -192,7 +194,7 @@ namespace game_stuff
         public Scope? GetNowScope()
         {
             if (NowInSnipeAct == null || NowSnipeStep <= 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
-                return null;
+                return NowVehicle?.Scope ?? null;
             var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep - 1];
             return weaponZoomStepScope;
         }
@@ -401,7 +403,7 @@ namespace game_stuff
         public IEnumerable<IMapInteractable> GetInAVehicle(Vehicle vehicle)
         {
             if (NowVehicle != null) throw new Exception("have in a vehicle");
-            var mapIntractable = DropWeapon(vehicle.VehicleSize);
+            var mapIntractable = DropWeapon(vehicle.Size);
             NowVehicle = vehicle;
             vehicle.WhoDrive = this;
             return mapIntractable;
@@ -745,9 +747,10 @@ namespace game_stuff
             return CharacterBody.Sight.Aim;
         }
 
-        public Damage GenDamage(float damageMulti)
+        public Damage GenDamage(float damageMulti, bool b4)
         {
-            return AttackStatus.GenDamage(damageMulti);
+            var nowVehicleAttackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
+            return nowVehicleAttackStatus.GenDamage(damageMulti, b4);
         }
 
         public void AddProtect(int protectValueAdd)

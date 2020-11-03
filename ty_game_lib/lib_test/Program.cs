@@ -128,6 +128,10 @@ namespace lib_test
 
         private static void Main(string[] args)
         {
+            uint acc = 1;
+            uint bcc = 5;
+            var u = acc - bcc;
+            Console.Out.WriteLine($"uint~~~~~~~~~:{u}");
             var poly1 = TestStuff.TestPoly2();
             var poly2 = TestStuff.TestPoly3();
             var poly3 = new Poly(new[]
@@ -148,11 +152,11 @@ namespace lib_test
 
             var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 2f, 6);
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
-         
+
             PathTest(genWalkBlockByPolys);
             return;
             var ptt = new TwoDPoint(2f, -1.717f);
-            
+
             Console.Out.WriteLine("config test~~~~~");
 
             var configDictionaries = new ConfigDictionaries();

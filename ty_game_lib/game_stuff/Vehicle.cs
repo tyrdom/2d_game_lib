@@ -3,22 +3,35 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ICanPutInCage
+    public interface IBattleUnit
     {
-        public Vehicle(BodySize vehicleSize, float vehicleMaxMoveSpeed, float vehicleMinMoveSpeed,
-            float vehicleAddMoveSpeed, Scope vehicleScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
+        float MaxMoveSpeed { get; }
+        float MinMoveSpeed { get; }
+        float AddMoveSpeed { get; }
+
+        base_attr_id BaseAttrId { get; }
+        SurvivalStatus SurvivalStatus { get; }
+
+        AttackStatus AttackStatus { get; }
+    }
+
+    public class Vehicle : ICanPutInCage, IBattleUnit
+    {
+        public Vehicle(BodySize size, float maxMoveSpeed, float minMoveSpeed,
+            float addMoveSpeed, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             SurvivalStatus survivalStatus, int destroyTick, int weaponCarryMax, int getInTick, int nowAmmo,
             int maxAmmo,
-            Skill outAct)
+            Skill outAct, AttackStatus attackStatus, base_attr_id baseAttrId)
         {
-            VehicleSize = vehicleSize;
-            VehicleMaxMoveSpeed = vehicleMaxMoveSpeed;
-            VehicleMinMoveSpeed = vehicleMinMoveSpeed;
-            VehicleAddMoveSpeed = vehicleAddMoveSpeed;
-            VehicleScope = vehicleScope;
+            Size = size;
+            MaxMoveSpeed = maxMoveSpeed;
+            MinMoveSpeed = minMoveSpeed;
+            AddMoveSpeed = addMoveSpeed;
+            Scope = scope;
             Weapons = weapons;
             DestroyBullet = destroyBullet;
             SurvivalStatus = survivalStatus;
@@ -28,15 +41,19 @@ namespace game_stuff
             NowAmmo = nowAmmo;
             MaxAmmo = maxAmmo;
             OutAct = outAct;
+            AttackStatus = attackStatus;
+            BaseAttrId = baseAttrId;
             WhoDrive = null;
         }
 
         public CharacterStatus? WhoDrive { get; set; }
-        public BodySize VehicleSize { get; }
-        private float VehicleMaxMoveSpeed { get; }
-        private float VehicleMinMoveSpeed { get; }
-        private float VehicleAddMoveSpeed { get; }
-        private Scope VehicleScope { get; }
+        public BodySize Size { get; }
+
+        public float MaxMoveSpeed { get; }
+        public float MinMoveSpeed { get; }
+        public float AddMoveSpeed { get; }
+        public base_attr_id BaseAttrId { get; }
+        public Scope Scope { get; }
         public Dictionary<int, Weapon> Weapons { get; }
 
         public int NowAmmo { get; private set; }
@@ -46,7 +63,8 @@ namespace game_stuff
         private int DestroyTick { get; }
 
         private Bullet DestroyBullet { get; }
-        private SurvivalStatus SurvivalStatus { get; }
+        public SurvivalStatus SurvivalStatus { get; }
+        public AttackStatus AttackStatus { get; }
 
         public Skill OutAct { get; }
         private int GetInTick { get; }

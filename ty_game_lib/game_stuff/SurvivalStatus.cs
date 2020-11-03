@@ -1,28 +1,30 @@
 using System;
+using collision_and_rigid;
 
 namespace game_stuff
 {
     public class SurvivalStatus
     {
-        private uint MaxHp { get; }
+        private uint MaxHp { get; set; }
         private uint NowHp { get; set; }
 
+        private float HealEffect { get; set; }
         private uint NowArmor { get; set; }
-        private uint MaxArmor { get; }
+        private uint MaxArmor { get; set; }
 
-        private uint ArmorDefence { get; }
+        private uint ArmorDefence { get; set; }
         private uint NowShield { get; set; }
-        private uint MaxShield { get; }
+        private uint MaxShield { get; set; }
 
         private uint NowDelayTick { get; set; }
 
-        private uint ShieldDelayTick { get; }
-        private uint ShieldInstability { get; }
-        private uint ShieldRecover { get; }
+        private uint ShieldDelayTick { get; set; }
+        private uint ShieldInstability { get; set; }
+        private uint ShieldRecover { get; set; }
 
 
         private SurvivalStatus(uint maxHp, uint nowHp, uint nowArmor, uint maxArmor, uint nowShield, uint maxShield,
-            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability)
+            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability, float healEffect)
         {
             MaxHp = maxHp;
             NowHp = nowHp;
@@ -34,17 +36,18 @@ namespace game_stuff
             ArmorDefence = armorDefence;
             ShieldRecover = shieldRecover;
             ShieldInstability = shieldInstability;
+            HealEffect = healEffect;
         }
 
         public static SurvivalStatus StartDamageHealAbout()
         {
-            return new SurvivalStatus(TempConfig.BaseHp, TempConfig.BaseHp, 0, 0, 0, 0, 5, 1, 0, 0);
+            return new SurvivalStatus(TempConfig.BaseHp, TempConfig.BaseHp, 0, 0, 0, 0, 5, 1, 0, 0, 1f);
         }
 
 
         private bool IsDead()
         {
-            return NowHp == 0;
+            return NowHp <= 0;
         }
 
         public void TakeDamage(Damage damage)
@@ -91,6 +94,12 @@ namespace game_stuff
                 restDamage = -nowArmor;
             }
 
+            if ((uint) restDamage >= NowHp)
+            {
+                NowHp = 0;
+                return;
+            }
+
             NowHp -= (uint) restDamage;
         }
 
@@ -129,17 +138,23 @@ namespace game_stuff
                 }
             }
 
+            if ((uint) rest >= NowHp)
+            {
+                NowHp = 0;
+                return;
+            }
+
             NowHp -= (uint) rest;
         }
 
         public void GetHeal(uint heal)
         {
-            NowHp = Math.Min(NowHp + heal, MaxHp);
+            NowHp = (uint) MathTools.Min(NowHp + heal * HealEffect, MaxHp);
         }
 
         public void FixArmor(uint fix)
         {
-            NowArmor = Math.Min(NowArmor + fix, MaxArmor);
+            NowArmor = (uint) MathTools.Min(NowArmor + fix, MaxArmor);
         }
 
         public void ChargeShield(uint charge)

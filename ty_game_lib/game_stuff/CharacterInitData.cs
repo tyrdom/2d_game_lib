@@ -55,7 +55,7 @@ namespace game_stuff
         {
             var characterStatus = new CharacterStatus(MaxSpeed, Gid,
                 SurvivalStatus.StartDamageHealAbout(), AddSpeed, MinSpeed, TempConfig.TrickProtect,
-                AttackStatus.StandardAttackStatus());
+                AttackStatus.StandardAttackStatus(), base_attr_id.standard_body);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

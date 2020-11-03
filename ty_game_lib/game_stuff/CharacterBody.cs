@@ -12,7 +12,7 @@ namespace game_stuff
 
         public BodySize GetSize()
         {
-           return CharacterStatus.NowVehicle?.VehicleSize ?? BodySize;
+           return CharacterStatus.NowVehicle?.Size ?? BodySize;
         }
 
         public CharacterStatus CharacterStatus { get; }
