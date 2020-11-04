@@ -21,7 +21,7 @@ namespace game_stuff
 
 
         public ITwoDTwoP? Move { get; }
-        public IEffectMedia? LaunchBullet { get; }
+        public IEffectMedia? LaunchBullet { get; set; }
         public List<IMapInteractable> DropThing { get; }
         public IMapInteractable? GetThing { get; }
         public MapInteract? MapInteractive { get; }

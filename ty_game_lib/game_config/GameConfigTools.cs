@@ -49,7 +49,7 @@ namespace game_config
             SaveDictByByte(dictionary, fileNameLocation);
         }
 
-        public static void SaveDictByByte<TK, TV>(ImmutableDictionary<TK, TV> dictionary, FileInfo fileNameLocation)
+        private static void SaveDictByByte<TK, TV>(ImmutableDictionary<TK, TV> dictionary, FileInfo fileNameLocation)
         {
             var vs = dictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -64,7 +64,7 @@ namespace game_config
             return LoadDictByByte<TK, TV>(GenFileInfo<TV>());
         }
 
-        public static ImmutableDictionary<TK, TV> LoadDictByByte<TK, TV>(FileInfo fileInfo)
+        private static ImmutableDictionary<TK, TV> LoadDictByByte<TK, TV>(FileInfo fileInfo)
         {
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 

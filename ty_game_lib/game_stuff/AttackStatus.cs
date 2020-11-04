@@ -27,7 +27,7 @@ namespace game_stuff
         }
 
 
-        public AttackStatus(uint baseAttack, uint bsn, float backStabAdd)
+        private AttackStatus(uint baseAttack, uint bsn, float backStabAdd)
         {
             ShardedAttack = (uint) (baseAttack * TempConfig.ShardedAttackMulti);
             ShardedNum = bsn;
@@ -40,23 +40,21 @@ namespace game_stuff
             return new AttackStatus(100, 0, 0.5f);
         }
 
-        public static AttackStatus GenByConfig(base_attr_id baseAttrId)
+
+        private static AttackStatus GenByConfig(base_attr_id baseAttrId)
         {
-            if (TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
-            {
-                var baseAttributeAtk = baseAttribute.Atk;
-                var baseAttributeShardedNum = baseAttribute.ShardedNum;
-                var baseAttributeBackStabAdd = baseAttribute.BackStabAdd;
+            if (!TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
+                throw new ArgumentException($"not such attr{baseAttrId}");
+            var baseAttributeAtk = baseAttribute.Atk;
+            var baseAttributeShardedNum = baseAttribute.ShardedNum;
+            var baseAttributeBackStabAdd = baseAttribute.BackStabAdd;
 
-                return new AttackStatus(baseAttributeAtk, baseAttributeShardedNum, baseAttributeBackStabAdd);
-            }
-
-            throw new ArgumentException($"not such attr{baseAttrId}");
+            return new AttackStatus(baseAttributeAtk, baseAttributeShardedNum, baseAttributeBackStabAdd);
         }
 
         public void PassiveChangeAtk(IEnumerable<AtkAboutPassive> passiveTrait, base_attr_id baseAttrId)
         {
-            var genByConfig = GenByConfig(baseAttrId);
+            var baseAtkStatus = GenByConfig(baseAttrId);
             var atkAboutPassives = passiveTrait.ToList();
             var sumMain = atkAboutPassives.Sum(x => x.MainAtkAddPerLevel * x.Level);
 
@@ -64,12 +62,9 @@ namespace game_stuff
 
             var sumBack = atkAboutPassives.Sum(x => x.BackStabAddPerLevel * x.Level);
 
-            genByConfig.MainAttack = (uint) (genByConfig.MainAttack * (1 + sumMain));
-            genByConfig.ShardedNum = (uint) (genByConfig.ShardedNum + sumNum);
-            genByConfig.BackStabAdd += sumBack;
-            MainAttack = genByConfig.MainAttack;
-            ShardedNum = genByConfig.ShardedNum;
-            BackStabAdd = genByConfig.BackStabAdd;
+            MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + sumMain));
+            ShardedNum = (uint) (baseAtkStatus.ShardedNum + sumNum);
+            BackStabAdd += baseAtkStatus.BackStabAdd + sumBack;
         }
     }
 }

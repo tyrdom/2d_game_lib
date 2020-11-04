@@ -28,9 +28,9 @@ namespace game_stuff
         Time
     }
 
-    public class AddDamageBuffConfig : IPlayingBuffConfig
+    public class MakeDamageBuffConfig : IPlayingBuffConfig
     {
-        public AddDamageBuffConfig(uint originRestTick, float addDamageMulti, StackMode stackMode)
+        public MakeDamageBuffConfig(uint originRestTick, float addDamageMulti, StackMode stackMode)
         {
             OriginRestTick = originRestTick;
             AddDamageMulti = addDamageMulti;

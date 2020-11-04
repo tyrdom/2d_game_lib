@@ -147,19 +147,27 @@ namespace game_stuff
             NowHp -= (uint) rest;
         }
 
-        public void GetHeal(uint heal)
+        public void GetRegen(Regeneration regeneration)
         {
-            NowHp = (uint) MathTools.Min(NowHp + heal * HealEffect, MaxHp);
+            GetHeal(regeneration.HealMulti);
+            FixArmor(regeneration.FixMulti);
+            ChargeShield(regeneration.ShieldMulti);
         }
 
-        public void FixArmor(uint fix)
+        private void GetHeal(float healMulti)
         {
-            NowArmor = (uint) MathTools.Min(NowArmor + fix, MaxArmor);
+            NowHp = (uint) MathTools.Min(NowHp + healMulti * MaxHp * HealEffect, MaxHp);
         }
 
-        public void ChargeShield(uint charge)
+        private void FixArmor(float fixMulti)
         {
-            NowShield += charge;
+            NowArmor = (uint) MathTools.Min(NowArmor + fixMulti * MaxArmor, MaxArmor);
+        }
+
+        private void ChargeShield(float chargeMulti)
+        {
+            var maxShield = (uint) (chargeMulti * MaxShield);
+            NowShield += maxShield;
         }
 
 

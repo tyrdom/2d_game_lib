@@ -13,7 +13,7 @@ namespace game_stuff
             ShardedDamage = shardedDamage;
         }
 
-        public Damage GetBuff(float damageMulti)
+        public Damage GetAtkBuff(float damageMulti)
         {
             var damageBuffDamageMultiM = (uint) (damageMulti * MainDamage);
             var damageBuffDamageMultiS = (uint) (damageMulti * ShardedDamage);

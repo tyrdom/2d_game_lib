@@ -319,19 +319,41 @@ namespace game_stuff
         private CharGoTickResult ActNowActATick(
             TwoDVector? moveOp)
         {
-            return NowCastAct switch
+            var actNowActATick = NowCastAct switch
             {
                 null => new CharGoTickResult(),
                 Prop prop => GoNowActATick(prop, moveOp),
                 Skill skill => GoNowActATick(skill, moveOp),
                 _ => throw new ArgumentOutOfRangeException(nameof(NowCastAct))
             };
+            if (actNowActATick.LaunchBullet != null)
+                switch (actNowActATick.LaunchBullet)
+                {
+                    case null:
+                        break;
+                    case SelfEffect selfEffect:
+                        HitBySelfEffect(selfEffect);
+                        actNowActATick.LaunchBullet = null;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+            return actNowActATick;
         }
 
 
-        public void HitBySelfEffect(SelfEffect selfEffect)
+        private void HitBySelfEffect(SelfEffect selfEffect)
         {
-            //todo
+            List<IPlayingBuff> playingBuffs = PlayBuffStandard.AddBuffs(PlayingBuffs, selfEffect.PlayingBuffToAdd);
+            PlayingBuffs = playingBuffs;
+
+            var selfEffectRegenerationBase = selfEffect.RegenerationBase;
+            if (selfEffectRegenerationBase != null)
+            {
+                //todo:: passive and talent
+                SurvivalStatus.GetRegen(selfEffectRegenerationBase.Value);
+            }
         }
 
         private CharGoTickResult GoNowActATick(ICharAct charAct,
