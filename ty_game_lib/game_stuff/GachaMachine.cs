@@ -38,9 +38,9 @@ namespace game_stuff
             throw new NotImplementedException();
         }
 
-        public IAaBbBox FactAaBbBox(Zone zone)
+        public IAaBbBox FactAaBbBox(int qI)
         {
-            throw new NotImplementedException();
+            return MapInteractableDefault.FactAaBbBox(qI, this);
         }
 
         public bool IsCage()

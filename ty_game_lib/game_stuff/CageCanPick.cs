@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using collision_and_rigid;
 using game_config;
 
@@ -75,10 +76,9 @@ namespace game_stuff
         public Interaction CharActOne { get; }
         public Interaction CharActTwo { get; }
 
-        public IAaBbBox FactAaBbBox(
-            Zone zone)
+        public IAaBbBox FactAaBbBox(int qI)
         {
-            return new CageCanPick(CharActOne, CharActTwo, CanInterActiveRound, zone);
+            return MapInteractableDefault.FactAaBbBox(qI, this);
         }
 
         public bool IsCage()

@@ -73,6 +73,40 @@ namespace collision_and_rigid
             return new Zone[4] {z1, z2, z3, z4};
         }
 
+        public int InWhichQ(float horizon, float vertical)
+        {
+            if (Left >= vertical)
+            {
+                if (Down >= horizon)
+                {
+                    return 1;
+                }
+
+                if (Up <= horizon)
+                {
+                    return 4;
+                }
+
+                return 0;
+            }
+
+            if (Right <= vertical)
+            {
+                if (Down >= horizon)
+                {
+                    return 2;
+                }
+
+                if (Up <= horizon)
+                {
+                    return 3;
+                }
+                return 0;
+            }
+
+            return 0;
+        }
+
         public List<(int, Zone)> SplitByQuads(float horizon, float vertical)
         {
             var valueTuples = new List<(int, Zone)>();

@@ -49,9 +49,9 @@ namespace game_stuff
             return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
         }
 
-        public IAaBbBox FactAaBbBox(Zone zone)
+        public IAaBbBox FactAaBbBox(int qI)
         {
-            throw new NotImplementedException();
+            return MapInteractableDefault.FactAaBbBox(qI, this);
         }
 
         public bool IsCage()

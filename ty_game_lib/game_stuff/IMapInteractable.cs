@@ -6,7 +6,7 @@ namespace game_stuff
 {
     public interface IMapInteractable : IAaBbBox
     {
-        public IAaBbBox FactAaBbBox(Zone zone);
+        public IAaBbBox FactAaBbBox(int qI);
 
         public bool IsCage();
         public bool IsVehicle();

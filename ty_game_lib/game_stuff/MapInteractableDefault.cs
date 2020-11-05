@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
@@ -6,14 +7,39 @@ namespace game_stuff
 {
     public static class MapInteractableDefault
     {
+        public static IAaBbBox FactAaBbBox(int qI, IMapInteractable mapInteractable)
+        {
+            switch (qI)
+            {
+                case 0:
+                    return mapInteractable;
+                case 1:
+                    mapInteractable.LocateRecord.Enqueue(Quad.One);
+                    return mapInteractable;
+                case 2:
+                    mapInteractable.LocateRecord.Enqueue(Quad.Two);
+                    return mapInteractable;
+                case 3:
+                    mapInteractable.LocateRecord.Enqueue(Quad.Three);
+                    return mapInteractable;
+                case 4:
+                    mapInteractable.LocateRecord.Enqueue(Quad.Four);
+                    return mapInteractable;
+
+                default:
+                    throw new ArgumentException($"no good id {qI}");
+            }
+        }
+
         public static List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical,
             IMapInteractable mapInteractable)
         {
-            var splitByQuads = mapInteractable.Zone.SplitByQuads(horizon, vertical);
-            return splitByQuads
-                .Select(x => (x.Item1,
-                    mapInteractable.FactAaBbBox(x.Item2)))
-                .ToList();
+            var splitByQuads = mapInteractable.Zone.InWhichQ(horizon, vertical);
+            return new List<(int, IAaBbBox)>()
+            {
+                (splitByQuads,
+                    mapInteractable.FactAaBbBox(splitByQuads))
+            };
         }
 
         public static Quad? GetNextQuad(IMapInteractable mapInteractable)

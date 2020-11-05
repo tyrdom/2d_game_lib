@@ -65,9 +65,9 @@ namespace game_stuff
             return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
         }
 
-        public IAaBbBox FactAaBbBox(Zone zone)
+        public IAaBbBox FactAaBbBox(int qI)
         {
-            return new VehicleCanIn(CharActOne, CharActTwo, CanInterActiveRound, zone);
+            return MapInteractableDefault.FactAaBbBox(qI, this);
         }
 
         public bool IsCage()
