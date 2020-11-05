@@ -83,7 +83,7 @@ namespace game_stuff
     public enum MapInteract
     {
         RecycleCall,
-        PickPropOrWeaponCall,
+        PickCall,
         InVehicleCall,
         KickVehicleCall
     }

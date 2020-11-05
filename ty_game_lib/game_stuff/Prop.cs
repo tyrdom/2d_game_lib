@@ -63,14 +63,13 @@ namespace game_stuff
                     {
                         twoDVector = moveVector.Multi(MoveMustMulti.Value);
                     }
-                    
                 }
 
                 LastMoveVector = twoDVector;
             }
 
             NowOnTick++;
-            return (twoDVector, bullet, b, null, MapInteract.PickPropOrWeaponCall);
+            return (twoDVector, bullet, b, null, MapInteract.PickCall);
         }
 
         public int NowTough { get; set; }
@@ -123,7 +122,7 @@ namespace game_stuff
                 case MapInteract.RecycleCall:
                     characterStatus.RecycleAProp(this);
                     return new List<IMapInteractable>();
-                case MapInteract.PickPropOrWeaponCall:
+                case MapInteract.PickCall:
                     var pickAProp = characterStatus.PickAProp(this);
                     return pickAProp == null ? new List<IMapInteractable>() : new List<IMapInteractable> {pickAProp};
                 default:

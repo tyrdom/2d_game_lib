@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
@@ -79,6 +78,11 @@ namespace game_stuff
         public bool IsVehicle()
         {
             return true;
+        }
+
+        public bool IsSale()
+        {
+            return false;
         }
 
         public Queue<Quad> LocateRecord { get; set; }

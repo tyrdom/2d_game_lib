@@ -201,7 +201,7 @@ namespace game_stuff
             //GONext
             NowTough += TempConfig.ToughGrowPerTick;
             NowOnTick++;
-            return (move, bullet, snipeOff, null, MapInteract.PickPropOrWeaponCall);
+            return (move, bullet, snipeOff, null, MapInteract.PickCall);
         }
 
         public bool Launch(int nowSnipeStep, int nowAmmo)

@@ -370,7 +370,7 @@ namespace game_stuff
                                 whoPickCageCall.GetAnchor(), IsC), true),
                             MapInteract.InVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsV), false),
-                            MapInteract.PickPropOrWeaponCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                            MapInteract.PickCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsC), false),
                             MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsV), true),

@@ -10,6 +10,8 @@ namespace game_stuff
 
         public bool IsCage();
         public bool IsVehicle();
+
+        public bool IsSale();
         public Queue<Quad> LocateRecord { get; set; }
         public Interaction? GetActOne(CharacterStatus characterStatus);
         public Interaction? GetActTwo(CharacterStatus characterStatus);

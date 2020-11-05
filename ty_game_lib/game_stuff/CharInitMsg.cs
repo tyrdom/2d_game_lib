@@ -9,7 +9,7 @@ namespace game_stuff
         public TwoDPoint Pos;
         public TwoDVector Aim;
 
-        private SurvivalStatus _survivalStatus;
+        private SurvivalStatus SurvivalStatus;
         public Dictionary<int, Weapon> WeaponConfigs { get; set; }
 
         public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
@@ -18,7 +18,7 @@ namespace game_stuff
             GId = gId;
             Pos = pos;
             Aim = aim;
-            _survivalStatus = survivalStatus;
+            SurvivalStatus = survivalStatus;
             WeaponConfigs = weaponConfigs;
         }
     }

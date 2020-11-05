@@ -100,7 +100,7 @@ namespace game_stuff
 
         //Game other Status
 
-        private List<IPassiveTrait> Traits { get; }
+        private Dictionary<uint, PassiveTrait> Traits { get; }
         private List<IPlayingBuff> PlayingBuffs { get; set; }
 
         public AttackStatus AttackStatus { get; }
@@ -135,7 +135,7 @@ namespace game_stuff
             AddMoveSpeed = addMoveSpeed;
             MinMoveSpeed = minMoveSpeed;
             MaxProtectValue = maxProtectValue;
-            Traits = new List<IPassiveTrait>();
+            Traits = new Dictionary<uint, PassiveTrait>();
             AttackStatus = attackStatus;
             BaseAttrId = baseAttrId;
             NowMoveSpeed = 0f;
@@ -598,8 +598,8 @@ namespace game_stuff
             {
                 switch (mapInteractive)
                 {
-                    case MapInteract.PickPropOrWeaponCall:
-                        return new CharGoTickResult(mapInteractiveAbout: (MapInteract.PickPropOrWeaponCall,
+                    case MapInteract.PickCall:
+                        return new CharGoTickResult(mapInteractiveAbout: (MapInteract.PickCall,
                             CharacterBody));
                     case MapInteract.InVehicleCall:
 
@@ -720,7 +720,7 @@ namespace game_stuff
             var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.GetSize()] ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
-            return new CharGoTickResult(dVector, null);
+            return new CharGoTickResult(dVector);
         }
 
         private void ResetLongInterAct()

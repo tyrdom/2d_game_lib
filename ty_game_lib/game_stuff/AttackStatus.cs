@@ -52,19 +52,18 @@ namespace game_stuff
             return new AttackStatus(baseAttributeAtk, baseAttributeShardedNum, baseAttributeBackStabAdd);
         }
 
-        public void PassiveChangeAtk(IEnumerable<AtkAboutPassive> passiveTrait, base_attr_id baseAttrId)
+        public void PassiveEffectChangeAtk(IEnumerable<AtkAboutPassiveEffect> passiveTrait,
+            base_attr_id baseAttrId)
         {
             var baseAtkStatus = GenByConfig(baseAttrId);
             var atkAboutPassives = passiveTrait.ToList();
-            var sumMain = atkAboutPassives.Sum(x => x.MainAtkAddPerLevel * x.Level);
+            var (main, sn, bs) = atkAboutPassives.Aggregate((0f, 0f, 0f), (s, x) =>
+                (s.Item1 + x.MainAtkMultiAddPerLevel, s.Item2 + x.ShardedNumAddPerLevel,
+                    s.Item3 + x.BackStabAddPerLevel));
 
-            var sumNum = atkAboutPassives.Sum(x => x.ShardedNumAddPerLevel * x.Level);
-
-            var sumBack = atkAboutPassives.Sum(x => x.BackStabAddPerLevel * x.Level);
-
-            MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + sumMain));
-            ShardedNum = (uint) (baseAtkStatus.ShardedNum + sumNum);
-            BackStabAdd += baseAtkStatus.BackStabAdd + sumBack;
+            MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + main));
+            ShardedNum = (uint) (baseAtkStatus.ShardedNum + sn);
+            BackStabAdd += baseAtkStatus.BackStabAdd + bs;
         }
     }
 }

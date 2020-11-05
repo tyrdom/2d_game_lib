@@ -15,7 +15,7 @@ namespace game_stuff
     public interface IPlayingBuff
     {
         uint BuffId { get; }
-        uint RestTick { get; set; }
+        int RestTick { get; set; }
         bool IsFinish();
         uint Stack { get; set; }
         void GoATick();
@@ -39,9 +39,9 @@ namespace game_stuff
 
         public uint OriginRestTick { get; }
 
-    
 
-        public float AddDamageMulti { get; }
+        private float AddDamageMulti { get; }
+
         public IPlayingBuff CreateBuff(uint buffId)
         {
             throw new NotImplementedException();
@@ -52,7 +52,7 @@ namespace game_stuff
 
     public class AddDamageBuff : IPlayingBuff
     {
-        public AddDamageBuff(uint buffId, uint restTick, float addDamageMulti, uint stack)
+        public AddDamageBuff(uint buffId, int restTick, float addDamageMulti, uint stack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -61,7 +61,7 @@ namespace game_stuff
         }
 
         public uint BuffId { get; }
-        public uint RestTick { get; set; }
+        public int RestTick { get; set; }
         public uint Stack { get; set; }
 
         public void GoATick()
@@ -125,7 +125,7 @@ namespace game_stuff
                         case StackMode.Time:
                             var sum2 = grouping.Sum(x => x.RestTick);
                             var time = grouping.First();
-                            time.RestTick = (uint) sum2;
+                            time.RestTick = sum2;
                             buffs.Add(time);
                             break;
                         default:
