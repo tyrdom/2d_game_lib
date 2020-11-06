@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -18,7 +21,7 @@ namespace game_stuff
 
         private uint NowDelayTick { get; set; }
 
-        private uint ShieldDelayTick { get; set; }
+        private uint ShieldDelayTick { get; }
         private uint ShieldInstability { get; set; }
         private uint ShieldRecover { get; set; }
 
@@ -185,6 +188,50 @@ namespace game_stuff
             }
 
             return true;
+        }
+
+
+        public static SurvivalStatus GenByConfig(base_attribute baseAttribute)
+        {
+            var baseAttributeMaxHp = baseAttribute.MaxHP;
+            var baseAttributeMaxArmor = baseAttribute.MaxArmor;
+            var baseAttributeArmorDefence = baseAttribute.ArmorDefence;
+            var baseAttributeMaxShield = baseAttribute.MaxShield;
+            var baseAttributeShieldRecover = TempConfig.NumSecToTick(baseAttribute.ShieldRecover);
+            var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
+            var baseAttributeShieldDelayTime = TempConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
+
+            var baseAttributeHealEffect = baseAttribute.HealEffect;
+            return new SurvivalStatus(baseAttributeMaxHp, baseAttributeMaxHp, baseAttributeMaxArmor,
+                baseAttributeMaxArmor, baseAttributeMaxShield, baseAttributeMaxShield,
+                baseAttributeShieldDelayTime, baseAttributeArmorDefence, baseAttributeShieldRecover,
+                baseAttributeShieldInstability, baseAttributeHealEffect);
+        }
+
+
+        public void SurvivalPassiveEffectChange(IEnumerable<SurvivalAboutPassiveEffect> passiveTrait,
+            SurvivalStatus baseSurvivalStatus)
+
+        {
+            var (hpm, hem, arm, dem, shm, srm, sim) = passiveTrait.Aggregate((0f, 0f, 0f, 0f, 0f, 0f, 0f), (s, x) =>
+                (s.Item1 + x.HpMultiAdd,
+                    s.Item2 + x.HealMultiAdd,
+                    s.Item3 + x.ArmorMultiAdd,
+                    s.Item4 + x.DefMultiAdd,
+                    s.Item5 + x.ShieldMultiAdd,
+                    s.Item6 + x.ShieldRegMultiAdd,
+                    s.Item7 + x.ShieldInstabilityMultiAdd));
+            var lossHp = MaxHp - NowHp;
+            MaxHp = (uint) (baseSurvivalStatus.MaxHp * (1 + hpm));
+            NowHp = MaxHp - lossHp;
+            HealEffect = baseSurvivalStatus.HealEffect * (1 + hem);
+            var lossAr = MaxArmor - NowArmor;
+            MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + arm));
+            NowArmor = MaxArmor - lossAr;
+            ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + dem));
+            MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + shm));
+            ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + sim));
+            ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + srm));
         }
     }
 }

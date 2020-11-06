@@ -152,7 +152,7 @@ namespace game_stuff
                 : (int?) null;
         }
 
-        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint casterPos,
                 TwoDVector casterAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)

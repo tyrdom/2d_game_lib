@@ -296,6 +296,14 @@ namespace game_stuff
             return whoHitGid;
         }
 
+        private static readonly Func<IAaBbBox, bool> IsS = x =>
+        {
+            return x switch
+            {
+                IMapInteractable mapInteractable => mapInteractable.IsSale(),
+                _ => false
+            };
+        };
 
         private static readonly Func<IAaBbBox, bool> IsC = x =>
         {
@@ -364,7 +372,7 @@ namespace game_stuff
                     var whoPickCageCall = aCharGoTickMsg.WhoInteractCall;
                     if (whoPickCageCall != null)
                     {
-                        var firstSingleBox = aCharGoTickMsg.MapInteractive switch
+                        (IAaBbBox? singleBox, bool needContinueCall) = aCharGoTickMsg.MapInteractive switch
                         {
                             MapInteract.RecycleCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsC), true),
@@ -374,20 +382,25 @@ namespace game_stuff
                                 whoPickCageCall.GetAnchor(), IsC), false),
                             MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsV), true),
+                            MapInteract.ApplyCall => (
+                                MapInteractableThings.InteractiveFirstSingleBox(whoPickCageCall.GetAnchor(), IsS),
+                                false),
+                            MapInteract.BuyCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                                whoPickCageCall.GetAnchor(), IsS), true),
                             null => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg)),
                             _ => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg))
                         };
 
-                        switch (firstSingleBox.Item1)
+                        switch (singleBox)
                         {
                             case null:
                                 break;
                             case IMapInteractable mapInteractable:
-                                if (firstSingleBox.Item2) mapInteractable.StartActTwoBySomeBody(whoPickCageCall);
+                                if (needContinueCall) mapInteractable.StartActTwoBySomeBody(whoPickCageCall);
                                 else mapInteractable.StartActOneBySomeBody(whoPickCageCall);
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException(nameof(firstSingleBox));
+                                throw new ArgumentOutOfRangeException(nameof(singleBox));
                         }
                     }
 

@@ -11,9 +11,9 @@ namespace game_stuff
         private CageCanPick(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
         {
             CharActOne = charActOne;
-            CharActOne.InCage.InWhichMapInteractive = this;
+            CharActOne.InMapInteractable.InWhichMapInteractive = this;
             CharActTwo = charActTwo;
-            CharActTwo.InCage.InWhichMapInteractive = this;
+            CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             CanInterActiveRound = canInterActiveRound;
             Zone = zone;
             NowInterCharacterBody = null;
@@ -21,37 +21,38 @@ namespace game_stuff
         }
 
 
-        private static Interaction GenInteractionByConfig(ICanPutInCage canPutInCage, interaction interaction,
+        private static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable, interaction interaction,
             MapInteract mapInteract)
         {
             return new Interaction(interaction.BaseTough,
                 TempConfig.GetTickByTime(interaction.TotalTime),
-                canPutInCage, null, mapInteract);
+                canPutInMapInteractable, null, mapInteract);
         }
 
-        public CageCanPick(ICanPutInCage canPutInCage, TwoDPoint pos)
+        public CageCanPick(ICanPutInMapInteractable canPutInMapInteractable, TwoDPoint pos)
         {
             var configsInteraction = TempConfig.Configs.interactions;
 
-            var roundP = canPutInCage switch
+            var roundP = canPutInMapInteractable switch
             {
                 Prop _ => new Round(pos, TempConfig.PropR),
                 Weapon _ => new Round(pos, TempConfig.WeaponR),
-                _ => throw new ArgumentOutOfRangeException(nameof(canPutInCage))
+                PassiveTrait _ => new Round(pos, TempConfig.PassiveR),
+                _ => throw new ArgumentOutOfRangeException(nameof(canPutInMapInteractable))
             };
-            var interaction1 = configsInteraction[interactionAct.pick_weapon_or_prop];
+            var interaction1 = configsInteraction[interactionAct.pick_up_cage];
             Interaction interaction =
-                GenInteractionByConfig(canPutInCage, interaction1, MapInteract.PickCall);
-            var interaction2 = configsInteraction[interactionAct.recycle_prop_or_weapon];
-            Interaction interaction22 = GenInteractionByConfig(canPutInCage, interaction2, MapInteract.RecycleCall);
+                GenInteractionByConfig(canPutInMapInteractable, interaction1, MapInteract.PickCall);
+            var interaction2 = configsInteraction[interactionAct.recycle_cage];
+            Interaction interaction22 = GenInteractionByConfig(canPutInMapInteractable, interaction2, MapInteract.RecycleCall);
 
             var zonesP = roundP.GetZones();
             Zone = zonesP;
             CanInterActiveRound = roundP;
             CharActTwo = interaction22;
             CharActOne = interaction;
-            CharActOne.InCage.InWhichMapInteractive = this;
-            CharActTwo.InCage.InWhichMapInteractive = this;
+            CharActOne.InMapInteractable.InWhichMapInteractive = this;
+            CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
         }
@@ -101,12 +102,12 @@ namespace game_stuff
 
         public Interaction? GetActOne(CharacterStatus characterStatus)
         {
-            return CharActOne.InCage.CanInterActOneBy(characterStatus) ? CharActOne : null;
+            return CharActOne.InMapInteractable.CanInterActOneBy(characterStatus) ? CharActOne : null;
         }
 
         public Interaction? GetActTwo(CharacterStatus characterStatus)
         {
-            return CharActTwo.InCage.CanInterActTwoBy(characterStatus) ? CharActTwo : null;
+            return CharActTwo.InMapInteractable.CanInterActTwoBy(characterStatus) ? CharActTwo : null;
         }
 
         public Round CanInterActiveRound { get; }

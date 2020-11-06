@@ -9,9 +9,9 @@ namespace game_stuff
         private VehicleCanIn(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
         {
             CharActOne = charActOne;
-            CharActOne.InCage.InWhichMapInteractive = this;
+            CharActOne.InMapInteractable.InWhichMapInteractive = this;
             CharActTwo = charActTwo;
-            CharActTwo.InCage.InWhichMapInteractive = this;
+            CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             CanInterActiveRound = canInterActiveRound;
             Zone = zone;
             NowInterCharacterBody = null;
@@ -33,8 +33,8 @@ namespace game_stuff
             var zonesP = roundP.GetZones();
             Zone = zonesP;
             CanInterActiveRound = roundP;
-            CharActOne.InCage.InWhichMapInteractive = this;
-            CharActTwo.InCage.InWhichMapInteractive = this;
+            CharActOne.InMapInteractable.InWhichMapInteractive = this;
+            CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
         }
@@ -89,12 +89,12 @@ namespace game_stuff
 
         public Interaction? GetActOne(CharacterStatus characterStatus)
         {
-            return CharActOne.InCage.CanInterActOneBy(characterStatus) ? CharActOne : null;
+            return CharActOne.InMapInteractable.CanInterActOneBy(characterStatus) ? CharActOne : null;
         }
 
         public Interaction? GetActTwo(CharacterStatus characterStatus)
         {
-            return CharActTwo.InCage.CanInterActTwoBy(characterStatus) ? CharActTwo : null;
+            return CharActTwo.InMapInteractable.CanInterActTwoBy(characterStatus) ? CharActTwo : null;
         }
 
         public Round CanInterActiveRound { get; }

@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ICanPutInCage, IBattleUnit
+    public class Vehicle : ICanPutInMapInteractable, IBattleUnit
     {
         public Vehicle(BodySize size, float maxMoveSpeed, float minMoveSpeed,
             float addMoveSpeed, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
@@ -52,7 +52,18 @@ namespace game_stuff
 
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
+
+        public void SurvivalStatusRefresh(IEnumerable<SurvivalAboutPassiveEffect> survivalAboutPassiveEffects)
+        {
+            BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects,this);
+        }
+
         public AttackStatus AttackStatus { get; }
+
+        public void AttackStatusRefresh(IEnumerable<AtkAboutPassiveEffect> atkAboutPassiveEffects)
+        {
+            BattleUnitStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
+        }
 
         public Skill OutAct { get; }
         private int GetInTick { get; }
@@ -64,13 +75,17 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            if (InWhichMapInteractive == null)
+            switch (InWhichMapInteractive)
             {
-                return new VehicleCanIn(this, pos);
-            }
+                case null:
+                    return new VehicleCanIn(this, pos);
 
-            InWhichMapInteractive.ReLocate(pos);
-            return InWhichMapInteractive;
+                case VehicleCanIn vehicleCanIn:
+                    vehicleCanIn.ReLocate(pos);
+                    return vehicleCanIn;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(InWhichMapInteractive));
+            }
         }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)

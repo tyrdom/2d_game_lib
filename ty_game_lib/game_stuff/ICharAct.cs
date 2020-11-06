@@ -4,7 +4,7 @@ namespace game_stuff
 {
     public interface ICharAct
     {
-        (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract interactive)
+        (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
             GoATick(
                 TwoDPoint getPos,
                 TwoDVector sightAim,

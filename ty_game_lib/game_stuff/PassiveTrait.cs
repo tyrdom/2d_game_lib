@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class PassiveTrait : ICanPutInCage
+    public class PassiveTrait : ICanPutInMapInteractable
     {
         public PassiveTrait(uint passId, uint level, IPassiveTraitEffect passiveTraitEffect)
         {
@@ -35,22 +36,31 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            throw new System.NotImplementedException();
+            return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
         }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
-            throw new System.NotImplementedException();
+            return true;
         }
 
         public bool CanInterActTwoBy(CharacterStatus characterStatus)
         {
-            throw new System.NotImplementedException();
+            return false;
         }
 
         public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
-            throw new System.NotImplementedException();
+            switch (interactive)
+            {
+                case MapInteract.RecycleCall:
+                    return new List<IMapInteractable>();
+                case MapInteract.PickCall:
+                    characterStatus.PickAPassive(this);
+                    return new List<IMapInteractable>();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+            }
         }
     }
 }

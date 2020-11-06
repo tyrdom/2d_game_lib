@@ -8,6 +8,19 @@ namespace game_stuff
 {
     public static class GameTools
     {
+        public static base_attribute GenBaseAttrById(base_attr_id baseAttrId)
+        {
+            if (!TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
+                throw new ArgumentException($"not such attr{baseAttrId}");
+            return baseAttribute;
+        }
+
+        public static (SurvivalStatus baseSurvivalStatus, AttackStatus baseAtkStatus) GenStatusByAttr(
+            base_attribute baseAttribute)
+        {
+            return (SurvivalStatus.GenByConfig(baseAttribute), AttackStatus.GenByConfig(baseAttribute));
+        }
+
         public static CharGoTickResult BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
         {
             switch (idPointShape)

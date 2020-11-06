@@ -5,7 +5,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ICanPutInCage
+    public class Prop : ICharAct, ICanPutInMapInteractable
     {
         public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti, Bullet propBullet,
             uint launchTick, float moveMustMulti, float minCos)
@@ -36,7 +36,7 @@ namespace game_stuff
 
         private float MinCos { get; }
 
-        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInCage? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
@@ -96,13 +96,8 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            if (InWhichMapInteractive == null)
-            {
-                return new CageCanPick(this, pos);
-            }
+            return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
 
-            InWhichMapInteractive.ReLocate(pos);
-            return InWhichMapInteractive;
         }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)

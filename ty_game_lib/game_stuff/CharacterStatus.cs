@@ -103,7 +103,14 @@ namespace game_stuff
         private Dictionary<uint, PassiveTrait> Traits { get; }
         private List<IPlayingBuff> PlayingBuffs { get; set; }
 
+
         public AttackStatus AttackStatus { get; }
+
+        public void AttackStatusRefresh(IEnumerable<AtkAboutPassiveEffect> atkAboutPassiveEffects)
+        {
+            BattleUnitStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
+        }
+
         public SurvivalStatus SurvivalStatus { get; private set; }
 
 
@@ -219,6 +226,7 @@ namespace game_stuff
             NowMoveSpeed = MinMoveSpeed;
         }
 
+
         public void ResetCastAct()
         {
             switch (NowCastAct)
@@ -226,8 +234,8 @@ namespace game_stuff
                 case null:
                     break;
                 case Interaction aInteraction:
-                    if (aInteraction.InCage.InWhichMapInteractive != null)
-                        aInteraction.InCage.InWhichMapInteractive.NowInterCharacterBody = null;
+                    if (aInteraction.InMapInteractable.InWhichMapInteractive != null)
+                        aInteraction.InMapInteractable.InWhichMapInteractive.NowInterCharacterBody = null;
                     break;
                 case Prop _:
                     break;
@@ -809,6 +817,67 @@ namespace game_stuff
         public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
         {
             PlayBuffStandard.AddBuffs(this.PlayingBuffs, playingBuffs);
+        }
+
+        private List<AtkAboutPassiveEffect> GetAtkPassiveEffects()
+        {
+            var apes = new List<AtkAboutPassiveEffect>();
+            foreach (var passiveTrait in Traits.Values)
+            {
+                if (!(passiveTrait.PassiveTraitEffect is AtkAboutPassiveEffect passiveTraitPassiveTraitEffect))
+                    continue;
+                var atkAboutPassiveEffect = passiveTraitPassiveTraitEffect.GenEffect(passiveTrait.Level);
+                apes.Add(atkAboutPassiveEffect);
+            }
+            return apes;
+        }
+
+        public void SurvivalStatusRefresh(IEnumerable<SurvivalAboutPassiveEffect> survivalAboutPassiveEffects)
+        {
+            BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
+        }
+
+        private List<SurvivalAboutPassiveEffect> GetSurvivalPassiveEffects()
+        {
+            var apes = new List<SurvivalAboutPassiveEffect>();
+            foreach (var passiveTrait in Traits.Values)
+            {
+                if (!(passiveTrait.PassiveTraitEffect is SurvivalAboutPassiveEffect passiveTraitPassiveTraitEffect))
+                    continue;
+                var atkAboutPassiveEffect = passiveTraitPassiveTraitEffect.GenEffect(passiveTrait.Level);
+                apes.Add(atkAboutPassiveEffect);
+            }
+
+            return apes;
+        }
+
+        public void PickAPassive(PassiveTrait passiveTrait)
+        {
+            var passiveTraitPassId = passiveTrait.PassId;
+            if (Traits.TryGetValue(passiveTraitPassId, out var trait))
+            {
+                trait.AddLevel(passiveTrait.Level);
+            }
+            else
+            {
+                Traits.Add(passiveTraitPassId, passiveTrait);
+            }
+
+            switch (passiveTrait.PassiveTraitEffect)
+            {
+                case AtkAboutPassiveEffect _:
+                    var atkAboutPassiveEffects = GetAtkPassiveEffects();
+                    AttackStatusRefresh(atkAboutPassiveEffects);
+                    NowVehicle?.AttackStatusRefresh(atkAboutPassiveEffects);
+                    break;
+                case SurvivalAboutPassiveEffect _:
+                    var survivalAboutPassiveEffects = GetSurvivalPassiveEffects();
+                    SurvivalStatusRefresh(survivalAboutPassiveEffects);
+                    NowVehicle?.SurvivalStatusRefresh(survivalAboutPassiveEffects);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

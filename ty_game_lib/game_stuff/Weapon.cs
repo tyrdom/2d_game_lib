@@ -8,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ICanPutInCage
+    public class Weapon : ICanPutInMapInteractable
     {
         public int WId { get; }
 
@@ -196,13 +196,7 @@ namespace game_stuff
 
         public IMapInteractable GenIMapInteractable(TwoDPoint pos)
         {
-            if (InWhichMapInteractive == null)
-            {
-                return new CageCanPick(this, pos);
-            }
-
-            InWhichMapInteractive.ReLocate(pos);
-            return InWhichMapInteractive;
+            return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
         }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)

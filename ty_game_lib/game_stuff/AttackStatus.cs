@@ -41,10 +41,8 @@ namespace game_stuff
         }
 
 
-        private static AttackStatus GenByConfig(base_attr_id baseAttrId)
+        public static AttackStatus GenByConfig(base_attribute baseAttribute)
         {
-            if (!TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
-                throw new ArgumentException($"not such attr{baseAttrId}");
             var baseAttributeAtk = baseAttribute.Atk;
             var baseAttributeShardedNum = baseAttribute.ShardedNum;
             var baseAttributeBackStabAdd = baseAttribute.BackStabAdd;
@@ -53,13 +51,12 @@ namespace game_stuff
         }
 
         public void PassiveEffectChangeAtk(IEnumerable<AtkAboutPassiveEffect> passiveTrait,
-            base_attr_id baseAttrId)
+            AttackStatus baseAtkStatus)
         {
-            var baseAtkStatus = GenByConfig(baseAttrId);
             var atkAboutPassives = passiveTrait.ToList();
             var (main, sn, bs) = atkAboutPassives.Aggregate((0f, 0f, 0f), (s, x) =>
-                (s.Item1 + x.MainAtkMultiAddPerLevel, s.Item2 + x.ShardedNumAddPerLevel,
-                    s.Item3 + x.BackStabAddPerLevel));
+                (s.Item1 + x.MainAtkMultiAdd, s.Item2 + x.ShardedNumAdd,
+                    s.Item3 + x.BackStabAdd));
 
             MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + main));
             ShardedNum = (uint) (baseAtkStatus.ShardedNum + sn);
