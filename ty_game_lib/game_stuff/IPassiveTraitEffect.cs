@@ -4,7 +4,7 @@ namespace game_stuff
     {
     }
 
-    public struct SurvivalAboutPassiveEffect : IPassiveTraitEffect
+    public readonly struct SurvivalAboutPassiveEffect : IPassiveTraitEffect
     {
         public float HpMultiAdd { get; }
 
@@ -20,7 +20,7 @@ namespace game_stuff
 
         public float ShieldInstabilityMultiAdd { get; }
 
-        public SurvivalAboutPassiveEffect(float hpMultiAdd, float healMultiAdd, float armorMultiAdd, float defMultiAdd,
+        private SurvivalAboutPassiveEffect(float hpMultiAdd, float healMultiAdd, float armorMultiAdd, float defMultiAdd,
             float shieldMultiAdd, float shieldRegMultiAdd, float shieldInstabilityMultiAdd)
         {
             HpMultiAdd = hpMultiAdd;
@@ -46,7 +46,7 @@ namespace game_stuff
         }
     }
 
-    public struct AtkAboutPassiveEffect : IPassiveTraitEffect
+    public readonly struct AtkAboutPassiveEffect : IPassiveTraitEffect
     {
         public AtkAboutPassiveEffect(float mainAtkMultiAdd, float shardedNumAdd,
             float backStabAdd)

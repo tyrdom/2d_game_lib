@@ -54,6 +54,7 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
+                    characterStatus.RecyclePass(this);
                     return new List<IMapInteractable>();
                 case MapInteract.PickCall:
                     characterStatus.PickAPassive(this);

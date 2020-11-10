@@ -116,7 +116,7 @@ namespace game_stuff
 
         public static float WeaponR { get; private set; } = 1f;
         public static float MaxRecycleTime { get; set; } = 1f;
-
+        
         public static float PassiveR { get; private set; } = 1f;
         private static void ReLoadP(ConfigDictionaries configs)
         {

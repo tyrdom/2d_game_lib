@@ -1,1 +1,186 @@
-{"content_name": {"id": "", "passive_effect_type": "", "param_values": ""}, "content_info": {"id": "", "passive_effect_type": "", "param_values": ""}, "content_schema": {"id": "int", "passive_effect_type": "passive_type@enum", "param_values": "float[]"}, "content": {"1": {"id": 1, "passive_effect_type": "Attack", "param_values": [0.1, 0.0, 0.0]}, "2": {"id": 2, "passive_effect_type": "Attack", "param_values": [0.0, 0.05, 0.0]}, "3": {"id": 3, "passive_effect_type": "Attack", "param_values": [0.0, 0.0, 1.0]}, "4": {"id": 4, "passive_effect_type": "Survive", "param_values": [0.05, 0.05, 0.0, 0.0, 0.0, 0.0]}, "5": {"id": 5, "passive_effect_type": "Survive", "param_values": [0.0, 0.0, 0.05, 0.05, 0.0, 0.0]}, "6": {"id": 6, "passive_effect_type": "Survive", "param_values": [0.0, 0.0, 0.0, 0.0, 0.05, 0.05]}, "7": {"id": 7, "passive_effect_type": "Breaker", "param_values": [1.0]}, "8": {"id": 8, "passive_effect_type": "Tough", "param_values": [1.0]}, "9": {"id": 9, "passive_effect_type": "Ammo", "param_values": [0.05]}, "10": {"id": 10, "passive_effect_type": "Prop", "param_values": [0.05]}, "11": {"id": 11, "passive_effect_type": "Recycle", "param_values": [0.05]}}}
+{
+  "content_name": {
+    "id": "",
+    "passive_effect_type": "",
+    "recycle_money": "",
+    "param_values": ""
+  },
+  "content_info": {
+    "id": "",
+    "passive_effect_type": "",
+    "recycle_money": "",
+    "param_values": ""
+  },
+  "content_schema": {
+    "id": "int",
+    "passive_effect_type": "passive_type@enum",
+    "recycle_money": "{item|item=num|int}[]",
+    "param_values": "float[]"
+  },
+  "content": {
+    "1": {
+      "id": 1,
+      "passive_effect_type": "Attack",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.1,
+        0.0,
+        0.0
+      ]
+    },
+    "2": {
+      "id": 2,
+      "passive_effect_type": "Attack",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.0,
+        0.05,
+        0.0
+      ]
+    },
+    "3": {
+      "id": 3,
+      "passive_effect_type": "Attack",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    "4": {
+      "id": 4,
+      "passive_effect_type": "Survive",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.05,
+        0.05,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "5": {
+      "id": 5,
+      "passive_effect_type": "Survive",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.0,
+        0.0,
+        0.05,
+        0.05,
+        0.0,
+        0.0
+      ]
+    },
+    "6": {
+      "id": 6,
+      "passive_effect_type": "Survive",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.05,
+        0.05
+      ]
+    },
+    "7": {
+      "id": 7,
+      "passive_effect_type": "Breaker",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        1.0
+      ]
+    },
+    "8": {
+      "id": 8,
+      "passive_effect_type": "Tough",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        1.0
+      ]
+    },
+    "9": {
+      "id": 9,
+      "passive_effect_type": "Ammo",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.05
+      ]
+    },
+    "10": {
+      "id": 10,
+      "passive_effect_type": "Prop",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.05
+      ]
+    },
+    "11": {
+      "id": 11,
+      "passive_effect_type": "Recycle",
+      "recycle_money": [
+        {
+          "item": 1,
+          "num": 100
+        }
+      ],
+      "param_values": [
+        0.05
+      ]
+    }
+  }
+}

@@ -55,7 +55,7 @@ namespace game_stuff
 
         public void SurvivalStatusRefresh(IEnumerable<SurvivalAboutPassiveEffect> survivalAboutPassiveEffects)
         {
-            BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects,this);
+            BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
         }
 
         public AttackStatus AttackStatus { get; }
@@ -115,6 +115,11 @@ namespace game_stuff
             var mapIntractable = Weapons.Select(x => x.Value.GenIMapInteractable(opos));
             Weapons.Clear();
             return mapIntractable;
+        }
+
+        public void FullAmmo()
+        {
+            NowAmmo = MaxAmmo;
         }
     }
 }

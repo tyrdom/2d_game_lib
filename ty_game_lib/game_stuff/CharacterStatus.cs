@@ -809,9 +809,10 @@ namespace game_stuff
             return b;
         }
 
-        public void RecycleWeapon(Weapon weapon)
+        public void RecycleWeapon()
         {
-            throw new NotImplementedException();
+            NowAmmo = MaxAmmo;
+            NowVehicle?.FullAmmo();
         }
 
         public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
@@ -829,6 +830,7 @@ namespace game_stuff
                 var atkAboutPassiveEffect = passiveTraitPassiveTraitEffect.GenEffect(passiveTrait.Level);
                 apes.Add(atkAboutPassiveEffect);
             }
+
             return apes;
         }
 
@@ -878,6 +880,11 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        public void RecyclePass(PassiveTrait passiveTrait)
+        {
+            throw new NotImplementedException();
         }
     }
 }

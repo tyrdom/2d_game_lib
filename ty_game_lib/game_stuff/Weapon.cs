@@ -214,7 +214,7 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
-                    characterStatus.RecycleWeapon(this);
+                    characterStatus.RecycleWeapon();
                     return new List<IMapInteractable>();
                     break;
                 case MapInteract.PickCall:
