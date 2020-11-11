@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using collision_and_rigid;
 
 namespace game_stuff
 {
@@ -30,14 +29,9 @@ namespace game_stuff
             Level = 0;
         }
 
-        public uint Level { get; set; }
+        public uint Level { get; private set; }
         public IPassiveTraitEffect PassiveTraitEffect { get; }
         public IMapInteractable? InWhichMapInteractive { get; set; }
-
-        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
-        {
-            return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
-        }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)
         {

@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ICanPutInMapInteractable, IBattleUnit
+    public class Vehicle : ICanPutInMapInteractable, IBattleUnit,ICanDrop
     {
         public Vehicle(BodySize size, float maxMoveSpeed, float minMoveSpeed,
             float addMoveSpeed, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
@@ -73,7 +73,7 @@ namespace game_stuff
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
-        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
+        public IMapInteractable DropAsIMapInteractable(TwoDPoint pos)
         {
             switch (InWhichMapInteractive)
             {
@@ -95,7 +95,7 @@ namespace game_stuff
 
         public bool CanInterActTwoBy(CharacterStatus characterStatus)
         {
-            return true;
+            return WhoDrive == null;
         }
 
         public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
@@ -112,7 +112,7 @@ namespace game_stuff
         {
             var opos = InWhichMapInteractive == null ? pos : InWhichMapInteractive.GetPos().GetMid(pos);
 
-            var mapIntractable = Weapons.Select(x => x.Value.GenIMapInteractable(opos));
+            var mapIntractable = Weapons.Select(x => x.Value.DropAsIMapInteractable(opos));
             Weapons.Clear();
             return mapIntractable;
         }

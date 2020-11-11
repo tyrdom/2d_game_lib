@@ -5,19 +5,16 @@ using game_config;
 
 namespace game_stuff
 {
-    public class ShopUnit 
+    public interface ICanDrop
     {
-    }
-
-    public interface ICanBeInShop
-    {
+        public IMapInteractable DropAsIMapInteractable(TwoDPoint pos);
     }
 
     public interface ICanPutInMapInteractable
     {
         IMapInteractable? InWhichMapInteractive { get; set; }
 
-        public IMapInteractable GenIMapInteractable(TwoDPoint pos);
+
         bool CanInterActOneBy(CharacterStatus characterStatus);
 
         bool CanInterActTwoBy(CharacterStatus characterStatus);

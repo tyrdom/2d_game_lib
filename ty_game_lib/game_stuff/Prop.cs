@@ -5,7 +5,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ICanPutInMapInteractable
+    public class Prop : ICharAct, ICanPutInMapInteractable,ICanDrop
     {
         public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti, Bullet propBullet,
             uint launchTick, float moveMustMulti, float minCos)
@@ -94,7 +94,7 @@ namespace game_stuff
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
-        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
+        public IMapInteractable DropAsIMapInteractable(TwoDPoint pos)
         {
             return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
 

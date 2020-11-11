@@ -113,6 +113,7 @@ namespace game_stuff
 
         public SurvivalStatus SurvivalStatus { get; private set; }
 
+        public PlayingItemBag PlayingItemBag { get; }
 
         // for_tick_msg
         public SkillAction? SkillLaunch { get; private set; }
@@ -123,7 +124,7 @@ namespace game_stuff
 
         public CharacterStatus(float maxMoveSpeed, int gId,
             SurvivalStatus survivalStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue,
-            AttackStatus attackStatus, base_attr_id baseAttrId)
+            AttackStatus attackStatus, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
@@ -145,6 +146,7 @@ namespace game_stuff
             Traits = new Dictionary<uint, PassiveTrait>();
             AttackStatus = attackStatus;
             BaseAttrId = baseAttrId;
+            PlayingItemBag = playingItemBag;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
@@ -441,7 +443,7 @@ namespace game_stuff
 
         public IMapInteractable? PickAProp(Prop prop)
         {
-            if (Prop != null) return prop.GenIMapInteractable(GetPos());
+            if (Prop != null) return prop.DropAsIMapInteractable(GetPos());
             Prop = prop;
             return null;
         }
@@ -698,7 +700,7 @@ namespace game_stuff
                         NowVehicle.OutAct.Launch(0, 0);
                         NowCastAct = NowVehicle.OutAct;
                         NowVehicle.WhoDrive = null;
-                        var genIMapInteractable = NowVehicle.GenIMapInteractable(GetPos());
+                        var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                         return new CharGoTickResult(null, null, new List<IMapInteractable> {genIMapInteractable});
                     }
 

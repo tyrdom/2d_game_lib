@@ -8,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ICanPutInMapInteractable
+    public class Weapon : ICanPutInMapInteractable,ICanDrop
     {
         public int WId { get; }
 
@@ -76,7 +76,7 @@ namespace game_stuff
             var characterStatusNowWeapon = characterStatus.NowWeapon;
             var characterStatusWeapon = weapons[characterStatusNowWeapon];
             weapons[characterStatusNowWeapon] = this;
-            return characterStatusWeapon.GenIMapInteractable(characterStatus.GetPos());
+            return characterStatusWeapon.DropAsIMapInteractable(characterStatus.GetPos());
         }
 
         private static ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> GenASkillGroup(
@@ -194,7 +194,7 @@ namespace game_stuff
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
-        public IMapInteractable GenIMapInteractable(TwoDPoint pos)
+        public IMapInteractable DropAsIMapInteractable(TwoDPoint pos)
         {
             return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
         }

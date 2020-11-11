@@ -123,7 +123,7 @@ namespace game_stuff
             foreach (var keyValuePair in weapons)
             {
                 if (!keyValuePair.Value.SkillGroups.TryGetKey(bodySize, out _)) continue;
-                var genIMapInteractable = keyValuePair.Value.GenIMapInteractable(pos);
+                var genIMapInteractable = keyValuePair.Value.DropAsIMapInteractable(pos);
                 mapInteractable.Add(genIMapInteractable);
                 weapons.Remove(keyValuePair.Key);
             }

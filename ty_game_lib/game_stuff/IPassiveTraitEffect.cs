@@ -48,7 +48,7 @@ namespace game_stuff
 
     public readonly struct AtkAboutPassiveEffect : IPassiveTraitEffect
     {
-        public AtkAboutPassiveEffect(float mainAtkMultiAdd, float shardedNumAdd,
+        private AtkAboutPassiveEffect(float mainAtkMultiAdd, float shardedNumAdd,
             float backStabAdd)
         {
             MainAtkMultiAdd = mainAtkMultiAdd;
