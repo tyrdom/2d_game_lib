@@ -435,9 +435,10 @@ namespace game_stuff
         public IEnumerable<IMapInteractable> GetInAVehicle(Vehicle vehicle)
         {
             if (NowVehicle != null) throw new Exception("have in a vehicle");
+
             var mapIntractable = DropWeapon(vehicle.Size);
             NowVehicle = vehicle;
-            vehicle.WhoDrive = this;
+            vehicle.WhoDriveOrCanDrive = this;
             return mapIntractable;
         }
 
@@ -612,7 +613,6 @@ namespace game_stuff
                         return new CharGoTickResult(mapInteractiveAbout: (MapInteract.PickCall,
                             CharacterBody));
                     case MapInteract.InVehicleCall:
-
                         return NowVehicle == null
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.InVehicleCall,
                                 CharacterBody))
@@ -699,8 +699,10 @@ namespace game_stuff
                     {
                         NowVehicle.OutAct.Launch(0, 0);
                         NowCastAct = NowVehicle.OutAct;
-                        NowVehicle.WhoDrive = null;
+                        NowVehicle.WhoDriveOrCanDrive = null;
+
                         var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
+                        NowVehicle = null;
                         return new CharGoTickResult(null, null, new List<IMapInteractable> {genIMapInteractable});
                     }
 

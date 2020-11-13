@@ -296,32 +296,13 @@ namespace game_stuff
             return whoHitGid;
         }
 
-        private static readonly Func<IAaBbBox, bool> IsS = x =>
-        {
-            return x switch
-            {
-                IMapInteractable mapInteractable => mapInteractable.IsSale(),
-                _ => false
-            };
-        };
+        private static readonly Func<IAaBbBox, bool> IsS = x => x is SaleBox;
 
-        private static readonly Func<IAaBbBox, bool> IsC = x =>
-        {
-            return x switch
-            {
-                IMapInteractable mapInteractable => mapInteractable.IsCage(),
-                _ => false
-            };
-        };
 
-        private static readonly Func<IAaBbBox, bool> IsV = x =>
-        {
-            return x switch
-            {
-                IMapInteractable mapInteractable => mapInteractable.IsVehicle(),
-                _ => false
-            };
-        };
+        private static readonly Func<IAaBbBox, bool> IsC = x => x is CageCanPick;
+
+
+        private static readonly Func<IAaBbBox, bool> IsV = x => x is VehicleCanIn;
 
         private Dictionary<int, ITwoDTwoP> EveryBodyGoATick(Dictionary<int, Operate> gidToOperates)
         {

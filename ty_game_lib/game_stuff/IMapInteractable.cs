@@ -8,11 +8,7 @@ namespace game_stuff
     {
         public IAaBbBox FactAaBbBox(int qI);
 
-        public bool IsCage();
-        public bool IsVehicle();
-
-        public bool IsSale();
-        public Queue<Quad> LocateRecord { get; set; }
+        public Queue<Quad> LocateRecord { get; }
         public Interaction? GetActOne(CharacterStatus characterStatus);
         public Interaction? GetActTwo(CharacterStatus characterStatus);
         Round CanInterActiveRound { get; }

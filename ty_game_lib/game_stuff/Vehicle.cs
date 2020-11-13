@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ICanPutInMapInteractable, IBattleUnit,ICanDrop
+    public class Vehicle : ICanPutInMapInteractable, IBattleUnit, ICanDrop
     {
         public Vehicle(BodySize size, float maxMoveSpeed, float minMoveSpeed,
             float addMoveSpeed, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
@@ -25,16 +25,15 @@ namespace game_stuff
             SurvivalStatus = survivalStatus;
             DestroyTick = destroyTick;
             WeaponCarryMax = weaponCarryMax;
-            GetInTick = getInTick;
             NowAmmo = nowAmmo;
             MaxAmmo = maxAmmo;
             OutAct = outAct;
             AttackStatus = attackStatus;
             BaseAttrId = baseAttrId;
-            WhoDrive = null;
+            WhoDriveOrCanDrive = null;
         }
 
-        public CharacterStatus? WhoDrive { get; set; }
+        public CharacterStatus? WhoDriveOrCanDrive { get; set; }
         public BodySize Size { get; }
 
         public float MaxMoveSpeed { get; }
@@ -66,7 +65,6 @@ namespace game_stuff
         }
 
         public Skill OutAct { get; }
-        private int GetInTick { get; }
 
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
 
@@ -90,12 +88,13 @@ namespace game_stuff
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
-            return characterStatus.NowVehicle == null;
+            var b = WhoDriveOrCanDrive == null || WhoDriveOrCanDrive == characterStatus;
+            return b && characterStatus.NowVehicle == null;
         }
 
         public bool CanInterActTwoBy(CharacterStatus characterStatus)
         {
-            return WhoDrive == null;
+            return WhoDriveOrCanDrive == null || WhoDriveOrCanDrive == characterStatus;
         }
 
         public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
