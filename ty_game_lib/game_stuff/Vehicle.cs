@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ICanPutInMapInteractable, IBattleUnit, ICanDrop
+    public class Vehicle : ISaleStuff, IBattleUnit, ICanDrop
     {
         public Vehicle(BodySize size, float maxMoveSpeed, float minMoveSpeed,
             float addMoveSpeed, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace game_stuff
@@ -6,51 +7,53 @@ namespace game_stuff
     public interface ISaleUnit : ICanPutInMapInteractable
     {
         GameItem Cost { get; }
+        Dictionary<CharacterStatus, int> DoneDictionary { get; }
+
+        int Stack { get; }
+
+        ISaleStuff GetGood();
     }
 
-    public class OneSaleUnit : ISaleUnit
+    public static class SaleUnitStandard
     {
-        public OneSaleUnit(IMapInteractable? inWhichMapInteractive, GameItem cost, ICanPutInMapInteractable good,
-            List<CharacterStatus> doneList)
+        private static bool IsStackOk(CharacterStatus characterStatus, ISaleUnit saleUnit)
         {
-            if (good is ISaleUnit) throw new TypeAccessException($"cant put this {good.GetType()} in OneSale");
-            InWhichMapInteractive = inWhichMapInteractive;
-            Cost = cost;
-            Good = good;
-            DoneList = doneList;
+            if (saleUnit.DoneDictionary.TryGetValue(characterStatus, out var nowStack)
+            )
+            {
+                return nowStack <= saleUnit.Stack;
+            }
+
+            saleUnit.DoneDictionary[characterStatus] = 0;
+            return true;
         }
 
-        public IMapInteractable? InWhichMapInteractive { get; set; }
-
-        public GameItem Cost { get; }
-
-        public ICanPutInMapInteractable Good { get; }
-
-        public List<CharacterStatus> DoneList { get; }
-
-        public bool CanInterActOneBy(CharacterStatus characterStatus)
+        public static bool CanInterActOneBy(CharacterStatus characterStatus, ISaleUnit saleUnit)
         {
-            var contains = DoneList.Contains(characterStatus);
-            return !contains;
+            return IsStackOk(characterStatus, saleUnit);
         }
 
-        public bool CanInterActTwoBy(CharacterStatus characterStatus)
+        public static bool CanInterActTwoBy(CharacterStatus characterStatus, ISaleUnit saleUnit)
         {
-            return !DoneList.Contains(characterStatus) && characterStatus.PlayingItemBag.CanCost(Cost);
+            return IsStackOk(characterStatus, saleUnit) && characterStatus.PlayingItemBag.CanCost(saleUnit.Cost);
         }
 
-        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public static IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus,
+            MapInteract interactive, ISaleUnit saleUnit
+        )
         {
             switch (interactive)
             {
                 case MapInteract.ApplyCall:
+                    //todo check msg to char
                     return new List<IMapInteractable>();
                 case MapInteract.BuyCall:
 
-                    var cost = characterStatus.PlayingItemBag.Cost(Cost);
+                    var cost = characterStatus.PlayingItemBag.Cost(saleUnit.Cost);
                     if (cost)
                     {
-                        switch (Good)
+                        saleUnit.DoneDictionary[characterStatus] = saleUnit.DoneDictionary[characterStatus] + 1;
+                        switch (saleUnit.GetGood())
                         {
                             case PassiveTrait passiveTrait:
                                 return passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
@@ -58,15 +61,14 @@ namespace game_stuff
                                 return prop.ActWhichChar(characterStatus, MapInteract.PickCall);
                             case Vehicle vehicle:
                                 vehicle.WhoDriveOrCanDrive = characterStatus;
-                                var twoDPoint = InWhichMapInteractive?.GetPos() ?? characterStatus.GetPos();
+                                var twoDPoint = saleUnit.InWhichMapInteractive?.GetPos() ?? characterStatus.GetPos();
 
                                 var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
                                 return new List<IMapInteractable> {dropAsIMapInteractable};
-
                             case Weapon weapon:
                                 return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
                             default:
-                                throw new ArgumentOutOfRangeException(nameof(Good));
+                                throw new ArgumentOutOfRangeException(nameof(saleUnit.GetGood));
                         }
                     }
 

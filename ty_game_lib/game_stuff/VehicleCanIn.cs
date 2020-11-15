@@ -70,21 +70,6 @@ namespace game_stuff
             return MapInteractableDefault.FactAaBbBox(qI, this);
         }
 
-        public bool IsCage()
-        {
-            return false;
-        }
-
-        public bool IsVehicle()
-        {
-            return true;
-        }
-
-        public bool IsSale()
-        {
-            return false;
-        }
-
         public Queue<Quad> LocateRecord { get; set; }
 
         public Interaction? GetActOne(CharacterStatus characterStatus)

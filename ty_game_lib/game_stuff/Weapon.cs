@@ -8,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ICanPutInMapInteractable,ICanDrop
+    public class Weapon : ISaleStuff,ICanDrop
     {
         public int WId { get; }
 
