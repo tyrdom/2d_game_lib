@@ -158,11 +158,11 @@ namespace game_stuff
             NowSnipeStep = 0;
             Prop = null;
             NowPropStack = 0;
-            MaxPropStack = TempConfig.StandardMaxStack;
+            MaxPropStack = TempConfig.StandardPropMaxStack;
             NowVehicle = null;
             NowAmmo = 0;
-            MaxAmmo = TempConfig.StandardMaxAmmo;
-            MaxCallLongStack = TempConfig.GetTickByTime(TempConfig.MaxRecycleTime);
+            MaxAmmo = TempConfig.BodyMaxAmmo;
+            MaxCallLongStack = TempConfig.MaxCallActTwoTick;
             NowCallLongStack = 0;
             NowMapInteractive = null;
             MaxWeaponSlot = TempConfig.StandardWeaponNum;

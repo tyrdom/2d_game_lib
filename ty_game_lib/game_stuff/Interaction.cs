@@ -34,7 +34,7 @@ namespace game_stuff
         public uint NowOnTick { get; set; }
         public uint TotalTick { get; }
         public ICanPutInMapInteractable InMapInteractable { get; }
-        public TwoDPoint? InteractionPos { get; }
+        private TwoDPoint? InteractionPos { get; }
 
         public SkillPeriod InWhichPeriod()
         {

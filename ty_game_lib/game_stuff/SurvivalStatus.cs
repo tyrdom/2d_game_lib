@@ -42,9 +42,9 @@ namespace game_stuff
             HealEffect = healEffect;
         }
 
-        public static SurvivalStatus StartDamageHealAbout()
+        public static SurvivalStatus StartTestSurvivalStatus()
         {
-            return new SurvivalStatus(TempConfig.BaseHp, TempConfig.BaseHp, 0, 0, 0, 0, 5, 1, 0, 0, 1f);
+            return new SurvivalStatus(1000, 1000, 0, 0, 0, 0, 5, 1, 0, 0, 1f);
         }
 
 

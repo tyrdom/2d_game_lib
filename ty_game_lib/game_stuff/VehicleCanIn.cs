@@ -24,12 +24,14 @@ namespace game_stuff
 
             var roundP = new Round(pos, TempConfig.GetRBySize(vehicle.Size));
             var interaction1 = configsInteraction[interactionAct.get_in_vehicle];
-            Interaction interaction =
+            var interaction11
+                =
                 GenInteractionByConfig(vehicle, interaction1, MapInteract.InVehicleCall, pos);
             var interaction2 = configsInteraction[interactionAct.kick_vehicle];
-            Interaction interaction22 = GenInteractionByConfig(vehicle, interaction2, MapInteract.KickVehicleCall, pos);
+            var interaction22 = GenInteractionByConfig(vehicle, interaction2, MapInteract.KickVehicleCall, pos);
+            CharActOne = interaction11;
             CharActTwo = interaction22;
-            CharActOne = interaction;
+          
             var zonesP = roundP.GetZones();
             Zone = zonesP;
             CanInterActiveRound = roundP;
@@ -39,7 +41,7 @@ namespace game_stuff
             LocateRecord = new Queue<Quad>();
         }
 
-        private static Interaction GenInteractionByConfig(Vehicle vehicle, interaction interaction1,
+        private static Interaction GenInteractionByConfig(ICanPutInMapInteractable vehicle, interaction interaction1,
             MapInteract interact, TwoDPoint twoDPoint)
         {
             return new Interaction(interaction1.BaseTough,

@@ -15,6 +15,9 @@ namespace game_stuff
             DoneDictionary = new Dictionary<CharacterStatus, int>();
         }
 
+
+      
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public GameItem Cost { get; }

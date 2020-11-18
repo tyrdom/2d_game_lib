@@ -48,7 +48,6 @@ namespace game_stuff
                     //todo check msg to char
                     return new List<IMapInteractable>();
                 case MapInteract.BuyCall:
-
                     var cost = characterStatus.PlayingItemBag.Cost(saleUnit.Cost);
                     if (cost)
                     {

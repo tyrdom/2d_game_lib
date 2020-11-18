@@ -21,7 +21,7 @@ namespace game_stuff
         }
 
 
-        private static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable, interaction interaction,
+        public static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable, interaction interaction,
             MapInteract mapInteract)
         {
             return new Interaction(interaction.BaseTough,

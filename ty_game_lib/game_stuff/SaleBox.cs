@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -15,6 +16,19 @@ namespace game_stuff
             NowInterCharacterBody = nowInterCharacterBody;
             CharActOne = charActOne;
             CharActTwo = charActTwo;
+        }
+
+
+        public SaleBox(ISaleUnit saleUnit, TwoDPoint pos)
+        {
+            var configsInteraction = TempConfig.Configs.interactions;
+            var RoundP = new Round(pos, TempConfig.SaleBoxR);
+            var interaction1 = configsInteraction[interactionAct.apply];
+            var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.InVehicleCall);
+            var interaction2 = configsInteraction[interactionAct.buy];
+            var interaction22 = CageCanPick.GenInteractionByConfig(saleUnit, interaction2, MapInteract.KickVehicleCall);
+            CharActOne = interaction11;
+            CharActTwo = interaction22;
         }
 
         public void WriteQuadRecord(Quad quad)

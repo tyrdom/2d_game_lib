@@ -53,6 +53,7 @@ namespace game_stuff
             [BodySize.Big] = 9f
         };
 
+
         public static ImmutableDictionary<uint, IPlayingBuffConfig> BuffConfigs { get; set; } =
             ImmutableDictionary<uint, IPlayingBuffConfig>.Empty;
 
@@ -89,16 +90,9 @@ namespace game_stuff
         public static IAntiActBuffConfig CommonBuffConfig { get; private set; } =
             new PushEarthAntiActBuffConfig(1f, PushType.Center, null, 12);
 
-        public static uint BaseHp { get; private set; } = 500;
-        public static uint BaseArmor { get; private set; } = 250;
-        public static uint BaseArmorDef { get; private set; } = 50;
-        public static uint BaseShield { get; private set; } = 250;
-        public static uint BaseShieldInstability { get; private set; } = 50;
-        public static uint BaseShieldReg { get; private set; } = 50;
-        public static uint BaseShieldDelayTick { get; private set; } = 50;
 
         public static float ShardedAttackMulti { get; private set; } = 0.05f;
-        private static int BaseAtk { get; set; } = 50;
+
 
         public static int TrickProtect { get; private set; } = 100;
         public static int ProtectTick { get; private set; } = 10;
@@ -109,15 +103,17 @@ namespace game_stuff
 
         public static float DecreaseMinCos { get; set; } = -0.3f;
 
-        public static int StandardMaxAmmo { get; private set; } = 100;
-        public static int StandardMaxStack { get; private set; } = 100;
+        public static int BodyMaxAmmo { get; private set; } = 100;
+        public static int StandardPropMaxStack { get; private set; } = 100;
 
         public static float PropR { get; private set; } = 1f;
 
         public static float WeaponR { get; private set; } = 1f;
-        public static float MaxRecycleTime { get; set; } = 1f;
-        
+
+
         public static float PassiveR { get; private set; } = 1f;
+        public static float SaleBoxR { get; private set; } = 1f;
+        public static uint MaxCallActTwoTick { get; private set; } = 10;
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
@@ -139,16 +135,17 @@ namespace game_stuff
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
             CommonBuffConfig =
                 GameTools.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
-            BaseHp = 1000;
-            BaseAtk = 10;
 
-            TrickProtect = 100;
-            ProtectTick = 10;
-            StandardMaxAmmo = 100;
-            StandardMaxStack = 100;
+            MaxCallActTwoTick = GetTickByTime(configsOtherConfig.interaction_act2_call_time);
+            TrickProtect = configsOtherConfig.trick_protect_value;
+            ProtectTick = (int) GetTickByTime(configsOtherConfig.protect_time);
+            BodyMaxAmmo = configs.base_attributes[base_attr_id.standard_body].MaxAmmo;
+            StandardPropMaxStack = configsOtherConfig.standard_max_prop_stack;
 
-            PropR = 1f;
-            WeaponR = 1f;
+            PropR = configsOtherConfig.prop_R;
+            WeaponR = configsOtherConfig.weapon_R;
+            PassiveR = configsOtherConfig.pass_R;
+            SaleBoxR = configsOtherConfig.saleBox_R;
         }
 #if NETCOREAPP
         public static void LoadConfig()
