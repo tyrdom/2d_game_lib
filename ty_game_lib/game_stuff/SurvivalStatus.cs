@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using collision_and_rigid;
 using game_config;
 
@@ -209,29 +210,22 @@ namespace game_stuff
         }
 
 
-        public void SurvivalPassiveEffectChange(IEnumerable<SurvivalAboutPassiveEffect> passiveTrait,
+        public void SurvivalPassiveEffectChange(Vector<float> v,
             SurvivalStatus baseSurvivalStatus)
 
         {
-            var (hpm, hem, arm, dem, shm, srm, sim) = passiveTrait.Aggregate((0f, 0f, 0f, 0f, 0f, 0f, 0f), (s, x) =>
-                (s.Item1 + x.HpMultiAdd,
-                    s.Item2 + x.HealMultiAdd,
-                    s.Item3 + x.ArmorMultiAdd,
-                    s.Item4 + x.DefMultiAdd,
-                    s.Item5 + x.ShieldMultiAdd,
-                    s.Item6 + x.ShieldRegMultiAdd,
-                    s.Item7 + x.ShieldInstabilityMultiAdd));
+    
             var lossHp = MaxHp - NowHp;
-            MaxHp = (uint) (baseSurvivalStatus.MaxHp * (1 + hpm));
+            MaxHp = (uint) (baseSurvivalStatus.MaxHp * (1 + v[0]));
             NowHp = MaxHp - lossHp;
-            HealEffect = baseSurvivalStatus.HealEffect * (1 + hem);
+            HealEffect = baseSurvivalStatus.HealEffect * (1 + v[1]);
             var lossAr = MaxArmor - NowArmor;
-            MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + arm));
+            MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + v[2]));
             NowArmor = MaxArmor - lossAr;
-            ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + dem));
-            MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + shm));
-            ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + sim));
-            ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + srm));
+            ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + v[3]));
+            MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + v[4]));
+            ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));
+            ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[6]));
         }
     }
 }

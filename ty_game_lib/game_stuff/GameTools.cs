@@ -15,6 +15,14 @@ namespace game_stuff
             return baseAttribute;
         }
 
+        public static (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack,
+            float RecycleMulti) GenOtherBaseStatusByAttr(base_attribute baseAttribute)
+        {
+            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed, baseAttribute.MoveMinSpeed,
+                baseAttribute.MoveAddSpeed,
+                TempConfig.StandardPropMaxStack, baseAttribute.RecycleMulti);
+        }
+
         public static (SurvivalStatus baseSurvivalStatus, AttackStatus baseAtkStatus) GenStatusByAttr(
             base_attribute baseAttribute)
         {

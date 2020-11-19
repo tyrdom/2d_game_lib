@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using game_config;
 
 namespace game_stuff
@@ -50,17 +51,12 @@ namespace game_stuff
             return new AttackStatus(baseAttributeAtk, baseAttributeShardedNum, baseAttributeBackStabAdd);
         }
 
-        public void PassiveEffectChangeAtk(IEnumerable<AtkAboutPassiveEffect> passiveTrait,
+        public void PassiveEffectChangeAtk(Vector<float> passiveTrait,
             AttackStatus baseAtkStatus)
         {
-            var atkAboutPassives = passiveTrait.ToList();
-            var (main, sn, bs) = atkAboutPassives.Aggregate((0f, 0f, 0f), (s, x) =>
-                (s.Item1 + x.MainAtkMultiAdd, s.Item2 + x.ShardedNumAdd,
-                    s.Item3 + x.BackStabAdd));
-
-            MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + main));
-            ShardedNum = (uint) (baseAtkStatus.ShardedNum + sn);
-            BackStabAdd += baseAtkStatus.BackStabAdd + bs;
+            MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + passiveTrait[0]));
+            ShardedNum = (uint) (baseAtkStatus.ShardedNum + passiveTrait[1]);
+            BackStabAdd += baseAtkStatus.BackStabAdd + passiveTrait[2];
         }
     }
 }

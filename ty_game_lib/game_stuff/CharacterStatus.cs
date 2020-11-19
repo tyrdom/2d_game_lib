@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.SymbolStore;
 using System.Linq;
-using System.Security.Principal;
+using System.Numerics;
 using collision_and_rigid;
 using game_config;
 
@@ -13,13 +12,12 @@ namespace game_stuff
     public class CharacterStatus : IBattleUnit
     {
         public CharacterBody CharacterBody;
-
-        public float MaxMoveSpeed { get; set; }
-
-        public float MinMoveSpeed { get; set; }
-
-        public float AddMoveSpeed { get; set; }
         public base_attr_id BaseAttrId { get; }
+        public float MaxMoveSpeed { get; private set; }
+
+        public float MinMoveSpeed { get; private set; }
+
+        public float AddMoveSpeed { get; private set; }
 
         //move status
         public float NowMoveSpeed { get; private set; }
@@ -36,7 +34,6 @@ namespace game_stuff
 
         private int NowSnipeStep { get; set; }
 
-
         private int NowAmmo { get; set; }
 
         private int GetAmmo()
@@ -44,7 +41,7 @@ namespace game_stuff
             return NowVehicle?.NowAmmo ?? NowAmmo;
         }
 
-        private int MaxAmmo { get; }
+        private int MaxAmmo { get; set; }
         public CharacterStatus? LockingWho { get; set; }
 
         public CharacterStatus? CatchingWho { get; set; }
@@ -75,7 +72,7 @@ namespace game_stuff
 
         private int NowPropStack { get; set; }
 
-        private int MaxPropStack { get; }
+        private int MaxPropStack { get; set; }
 
         //Vehicle
         public Vehicle? NowVehicle { get; private set; }
@@ -106,13 +103,19 @@ namespace game_stuff
 
         public AttackStatus AttackStatus { get; }
 
-        public void AttackStatusRefresh(IEnumerable<AtkAboutPassiveEffect> atkAboutPassiveEffects)
+        public void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects)
         {
             BattleUnitStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
         }
 
+        public void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects)
+        {
+            BattleUnitStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
+        }
+
         public SurvivalStatus SurvivalStatus { get; private set; }
 
+        public float RecycleMulti { get; set; }
         public PlayingItemBag PlayingItemBag { get; }
 
         // for_tick_msg
@@ -122,12 +125,12 @@ namespace game_stuff
         public bool IsHitSome { get; set; }
 
 
-        public CharacterStatus(float maxMoveSpeed, int gId,
-            SurvivalStatus survivalStatus, float addMoveSpeed, float minMoveSpeed, int maxProtectValue,
-            AttackStatus attackStatus, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
+        public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
         {
+            var (max, min, add, maxAmmo, recycle, baseAtkStatus, baseSurvivalStatus) = GenAttrBaseByConfig(baseAttrId);
+
             CharacterBody = null!;
-            MaxMoveSpeed = maxMoveSpeed;
+            MaxMoveSpeed = max;
             GId = gId;
             PauseTick = 0;
             LockingWho = null;
@@ -138,13 +141,13 @@ namespace game_stuff
             NextSkill = null;
             AntiActBuff = null;
             PlayingBuffs = new List<IPlayingBuff>();
-            SurvivalStatus = survivalStatus;
+            SurvivalStatus = baseSurvivalStatus;
             NowProtectTick = 0;
-            AddMoveSpeed = addMoveSpeed;
-            MinMoveSpeed = minMoveSpeed;
+            AddMoveSpeed = add;
+            MinMoveSpeed = min;
             MaxProtectValue = maxProtectValue;
             Traits = new Dictionary<uint, PassiveTrait>();
-            AttackStatus = attackStatus;
+            AttackStatus = baseAtkStatus;
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
             NowMoveSpeed = 0f;
@@ -161,11 +164,29 @@ namespace game_stuff
             MaxPropStack = TempConfig.StandardPropMaxStack;
             NowVehicle = null;
             NowAmmo = 0;
-            MaxAmmo = TempConfig.BodyMaxAmmo;
+            MaxAmmo = maxAmmo;
             MaxCallLongStack = TempConfig.MaxCallActTwoTick;
             NowCallLongStack = 0;
             NowMapInteractive = null;
             MaxWeaponSlot = TempConfig.StandardWeaponNum;
+            RecycleMulti = recycle;
+        }
+
+        public static (float max, float min, float add, int maxAmmo, float recycle, AttackStatus attackStatus,
+            SurvivalStatus
+            survivalStatus)
+            GenAttrBaseByConfig(base_attr_id baseAttrId)
+        {
+            if (TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var attribute))
+            {
+                var (baseSurvivalStatus, baseAtkStatus) = GameTools.GenStatusByAttr(attribute);
+                return (attribute.MoveMaxSpeed, attribute.MoveMinSpeed, attribute.MoveAddSpeed, attribute.MaxAmmo,
+                        attribute.RecycleMulti,
+                        baseAtkStatus, baseSurvivalStatus
+                    );
+            }
+
+            throw new Exception($"no such attr {baseAttrId}");
         }
 
         private void OpChangeAim(TwoDVector? aim)
@@ -174,7 +195,8 @@ namespace game_stuff
         }
 
         public void ReloadInitData(SurvivalStatus survivalStatus, float maxMoveSpeed,
-            float addMoveSpeed, float minMoveSpeed)
+                float addMoveSpeed, float minMoveSpeed)
+            //todo use attr_id
         {
             CharacterBody = null!;
             MaxMoveSpeed = maxMoveSpeed;
@@ -617,6 +639,9 @@ namespace game_stuff
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.InVehicleCall,
                                 CharacterBody))
                             : new CharGoTickResult();
+                    case MapInteract.ApplyCall:
+                        return new CharGoTickResult(mapInteractiveAbout: (MapInteract.ApplyCall,
+                            CharacterBody));
                     case MapInteract.RecycleCall:
                         return CallLongTouch(MapInteract.RecycleCall)
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.RecycleCall,
@@ -627,6 +652,12 @@ namespace game_stuff
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.KickVehicleCall,
                                 CharacterBody))
                             : new CharGoTickResult();
+                    case MapInteract.BuyCall:
+                        return CallLongTouch(MapInteract.BuyCall)
+                            ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.BuyCall,
+                                CharacterBody))
+                            : new CharGoTickResult();
+                        break;
                     case null:
                         break;
                     default:
@@ -766,9 +797,25 @@ namespace game_stuff
             ));
             var moveDecreaseMinMulti = TempConfig.MoveDecreaseMinMulti +
                                        (1f - TempConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
-            var maxMoveSpeed = MaxMoveSpeed * moveDecreaseMinMulti;
-            var nowMoveSpeed = MathTools.Max(MinMoveSpeed, MathTools.Min(maxMoveSpeed, NowMoveSpeed + AddMoveSpeed));
+            var maxMoveSpeed = GetMaxMoveSpeed() * moveDecreaseMinMulti;
+            var nowMoveSpeed = MathTools.Max(GetMinMoveSpeed(), MathTools.Min(maxMoveSpeed,
+                NowMoveSpeed + GetAddMoveSpeed()));
             return nowMoveSpeed;
+        }
+
+        private float GetAddMoveSpeed()
+        {
+            return NowVehicle?.AddMoveSpeed ?? AddMoveSpeed;
+        }
+
+        private float GetMinMoveSpeed()
+        {
+            return NowVehicle?.MinMoveSpeed ?? MinMoveSpeed;
+        }
+
+        private float GetMaxMoveSpeed()
+        {
+            return NowVehicle?.MaxMoveSpeed ?? MaxMoveSpeed;
         }
 
         public TwoDPoint GetPos()
@@ -804,6 +851,27 @@ namespace game_stuff
             }
         }
 
+
+        public void PassiveEffectChangeOther(Vector<float> otherAttrPassiveEffects,
+            (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
+                RecycleMulti) otherBaseStatus)
+        {
+            var lossAmmo = MaxAmmo - NowAmmo;
+            var (maxAmmo, moveMaxSpeed, _, moveAddSpeed, _, recycleMulti) = otherBaseStatus;
+            MaxAmmo = (int) (maxAmmo * (1f + otherAttrPassiveEffects[0]));
+            NowAmmo = MaxAmmo - lossAmmo;
+            var max = otherAttrPassiveEffects[1];
+            MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
+            var add = otherAttrPassiveEffects[2];
+            MaxMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
+
+            var lossP = MaxPropStack - NowPropStack;
+
+            MaxPropStack = (int) (TempConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
+            NowPropStack = MaxPropStack - lossP;
+            RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
+        }
+
         public bool LoadInteraction(Interaction charAct)
         {
             var b = NowCastAct == null;
@@ -821,41 +889,26 @@ namespace game_stuff
 
         public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
         {
-            PlayBuffStandard.AddBuffs(this.PlayingBuffs, playingBuffs);
+            PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffs);
         }
 
-        private List<AtkAboutPassiveEffect> GetAtkPassiveEffects()
+        private Vector<float>? GetPassiveEffects<T>() where T : IPassiveTraitEffect
         {
-            var apes = new List<AtkAboutPassiveEffect>();
-            foreach (var passiveTrait in Traits.Values)
-            {
-                if (!(passiveTrait.PassiveTraitEffect is AtkAboutPassiveEffect passiveTraitPassiveTraitEffect))
-                    continue;
-                var atkAboutPassiveEffect = passiveTraitPassiveTraitEffect.GenEffect(passiveTrait.Level);
-                apes.Add(atkAboutPassiveEffect);
-            }
-
-            return apes;
+            var passiveTraits = Traits.Values.Where(x => x.PassiveTraitEffect is T);
+            var passiveTraitEffects = passiveTraits.Select(x => x.PassiveTraitEffect.GenEffect(x.Level));
+            var traitEffects = passiveTraitEffects.ToList();
+            var firstOrDefault = traitEffects.FirstOrDefault();
+            var z = firstOrDefault?.GetZero();
+            var r = traitEffects.Aggregate(z, (s, x) => s + x.GetVector());
+            return r;
         }
 
-        public void SurvivalStatusRefresh(IEnumerable<SurvivalAboutPassiveEffect> survivalAboutPassiveEffects)
+
+        public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
         {
             BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
         }
 
-        private List<SurvivalAboutPassiveEffect> GetSurvivalPassiveEffects()
-        {
-            var apes = new List<SurvivalAboutPassiveEffect>();
-            foreach (var passiveTrait in Traits.Values)
-            {
-                if (!(passiveTrait.PassiveTraitEffect is SurvivalAboutPassiveEffect passiveTraitPassiveTraitEffect))
-                    continue;
-                var atkAboutPassiveEffect = passiveTraitPassiveTraitEffect.GenEffect(passiveTrait.Level);
-                apes.Add(atkAboutPassiveEffect);
-            }
-
-            return apes;
-        }
 
         public void PickAPassive(PassiveTrait passiveTrait)
         {
@@ -871,13 +924,24 @@ namespace game_stuff
 
             switch (passiveTrait.PassiveTraitEffect)
             {
+                case OtherAttrPassiveEffect _:
+                    var ammoPassiveEffects =
+                        GetPassiveEffects<OtherAttrPassiveEffect>() ?? OtherAttrPassiveEffect.Zero();
+                    OtherStatusRefresh(ammoPassiveEffects);
+                    NowVehicle?.OtherStatusRefresh(ammoPassiveEffects);
+
+
+                    break;
                 case AtkAboutPassiveEffect _:
-                    var atkAboutPassiveEffects = GetAtkPassiveEffects();
+                    var atkAboutPassiveEffects =
+                        GetPassiveEffects<AtkAboutPassiveEffect>() ?? AtkAboutPassiveEffect.Zero();
                     AttackStatusRefresh(atkAboutPassiveEffects);
                     NowVehicle?.AttackStatusRefresh(atkAboutPassiveEffects);
                     break;
                 case SurvivalAboutPassiveEffect _:
-                    var survivalAboutPassiveEffects = GetSurvivalPassiveEffects();
+                    var survivalAboutPassiveEffects =
+                        GetPassiveEffects<SurvivalAboutPassiveEffect>() ??
+                        SurvivalAboutPassiveEffect.Zero();
                     SurvivalStatusRefresh(survivalAboutPassiveEffects);
                     NowVehicle?.SurvivalStatusRefresh(survivalAboutPassiveEffects);
                     break;
@@ -885,6 +949,7 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
+
 
         public void RecyclePass(PassiveTrait passiveTrait)
         {

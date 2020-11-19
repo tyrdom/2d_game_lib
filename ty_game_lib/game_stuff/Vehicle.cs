@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using collision_and_rigid;
 using game_config;
 
@@ -9,23 +10,24 @@ namespace game_stuff
 {
     public class Vehicle : ISaleStuff, IBattleUnit, ICanDrop
     {
-        public Vehicle(BodySize size, float maxMoveSpeed, float minMoveSpeed,
-            float addMoveSpeed, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
-            SurvivalStatus survivalStatus, int destroyTick, int weaponCarryMax, int getInTick, int nowAmmo,
-            int maxAmmo,
-            Skill outAct, AttackStatus attackStatus, base_attr_id baseAttrId)
+        public Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
+            int destroyTick, int weaponCarryMax,
+            Skill outAct, base_attr_id baseAttrId)
         {
+            var (max, min, add, maxAmmo, _, attackStatus, survivalStatus) =
+                CharacterStatus.GenAttrBaseByConfig(baseAttrId);
+
             Size = size;
-            MaxMoveSpeed = maxMoveSpeed;
-            MinMoveSpeed = minMoveSpeed;
-            AddMoveSpeed = addMoveSpeed;
+            MaxMoveSpeed = max;
+            MinMoveSpeed = min;
+            AddMoveSpeed = add;
             Scope = scope;
             Weapons = weapons;
             DestroyBullet = destroyBullet;
             SurvivalStatus = survivalStatus;
             DestroyTick = destroyTick;
             WeaponCarryMax = weaponCarryMax;
-            NowAmmo = nowAmmo;
+            NowAmmo = 0;
             MaxAmmo = maxAmmo;
             OutAct = outAct;
             AttackStatus = attackStatus;
@@ -52,21 +54,33 @@ namespace game_stuff
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
 
-        public void SurvivalStatusRefresh(IEnumerable<SurvivalAboutPassiveEffect> survivalAboutPassiveEffects)
+        public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
         {
             BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
         }
 
         public AttackStatus AttackStatus { get; }
 
-        public void AttackStatusRefresh(IEnumerable<AtkAboutPassiveEffect> atkAboutPassiveEffects)
+        public void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects)
         {
             BattleUnitStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
+        }
+
+        public void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects)
+        {
+            BattleUnitStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
         }
 
         public Skill OutAct { get; }
 
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
+
+        public void PassiveEffectChangeOther(Vector<float> otherAttrPassiveEffects,
+            (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
+                RecycleMulti) otherBaseStatus)
+        {
+            throw new NotImplementedException();
+        }
 
 
         public IMapInteractable? InWhichMapInteractive { get; set; }

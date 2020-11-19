@@ -103,7 +103,7 @@ namespace game_stuff
 
         public static float DecreaseMinCos { get; set; } = -0.3f;
 
-        public static int BodyMaxAmmo { get; private set; } = 100;
+
         public static int StandardPropMaxStack { get; private set; } = 100;
 
         public static float PropR { get; private set; } = 1f;
@@ -139,7 +139,6 @@ namespace game_stuff
             MaxCallActTwoTick = GetTickByTime(configsOtherConfig.interaction_act2_call_time);
             TrickProtect = configsOtherConfig.trick_protect_value;
             ProtectTick = (int) GetTickByTime(configsOtherConfig.protect_time);
-            BodyMaxAmmo = configs.base_attributes[base_attr_id.standard_body].MaxAmmo;
             StandardPropMaxStack = configsOtherConfig.standard_max_prop_stack;
 
             PropR = configsOtherConfig.prop_R;

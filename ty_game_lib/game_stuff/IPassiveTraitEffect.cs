@@ -1,69 +1,137 @@
+using System.Numerics;
+
 namespace game_stuff
 {
     public interface IPassiveTraitEffect
+    {
+        IPassiveTraitEffect GenEffect(uint level);
+
+
+        Vector<float> GetZero();
+        Vector<float> GetVector();
+    }
+
+    public static class PassiveEffectStandard
     {
     }
 
     public readonly struct SurvivalAboutPassiveEffect : IPassiveTraitEffect
     {
-        public float HpMultiAdd { get; }
+        public Vector<float> SurvivalMultiAdd { get; }
+        // public float HpMultiAdd { get; }0
+        //
+        // public float HealMultiAdd { get; }1
+        //
+        // public float ArmorMultiAdd { get; }2
+        //
+        // public float DefMultiAdd { get; }3
+        //
+        // public float ShieldMultiAdd { get; }4
+        //
+        // public float ShieldRegMultiAdd { get; }5
+        //
+        // public float ShieldInstabilityMultiAdd { get; }6
 
-        public float HealMultiAdd { get; }
-
-        public float ArmorMultiAdd { get; }
-
-        public float DefMultiAdd { get; }
-
-        public float ShieldMultiAdd { get; }
-
-        public float ShieldRegMultiAdd { get; }
-
-        public float ShieldInstabilityMultiAdd { get; }
-
-        private SurvivalAboutPassiveEffect(float hpMultiAdd, float healMultiAdd, float armorMultiAdd, float defMultiAdd,
-            float shieldMultiAdd, float shieldRegMultiAdd, float shieldInstabilityMultiAdd)
+        private SurvivalAboutPassiveEffect(Vector<float> survivalMultiAdd)
         {
-            HpMultiAdd = hpMultiAdd;
-            HealMultiAdd = healMultiAdd;
-            ArmorMultiAdd = armorMultiAdd;
-            DefMultiAdd = defMultiAdd;
-            ShieldMultiAdd = shieldMultiAdd;
-            ShieldRegMultiAdd = shieldRegMultiAdd;
-            ShieldInstabilityMultiAdd = shieldInstabilityMultiAdd;
+            SurvivalMultiAdd = survivalMultiAdd;
         }
 
-        public SurvivalAboutPassiveEffect GenEffect(uint level)
+        public IPassiveTraitEffect GenEffect(uint level)
         {
-            return new SurvivalAboutPassiveEffect(
-                HpMultiAdd * level,
-                HealMultiAdd * level,
-                ArmorMultiAdd * level,
-                DefMultiAdd * level,
-                ShieldMultiAdd * level,
-                ShieldRegMultiAdd * level,
-                ShieldInstabilityMultiAdd * level
-            );
+            return new SurvivalAboutPassiveEffect(Vector.Multiply(level, SurvivalMultiAdd));
+        }
+
+        public Vector<float> GetZero()
+        {
+            return Zero();
+        }
+
+        public Vector<float> GetVector()
+        {
+            return SurvivalMultiAdd;
+        }
+
+        public static Vector<float> Zero()
+        {
+            return new Vector<float>(new[] {0f, 0f, 0f, 0f, 0f, 0f, 0f});
+        }
+    }
+
+
+    public readonly struct OtherAttrPassiveEffect : IPassiveTraitEffect
+    {
+        private OtherAttrPassiveEffect(Vector<float> otherAttrAdd)
+        {
+            OtherAttrAdd = otherAttrAdd;
+        }
+
+        private Vector<float> OtherAttrAdd { get; }
+        // public float MaxAmmoMultiAdd { get; }0
+     
+        // public float MaxSpeedUp { get; }1
+        // public float AddSpeedUp { get; }2
+        
+        // public float MaxPropMultiAdd { get; }3
+        // public float RecycleMultiAdd { get; }4
+
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            var multiply = Vector.Multiply(level, OtherAttrAdd);
+            return new OtherAttrPassiveEffect(multiply);
+        }
+
+        Vector<float> IPassiveTraitEffect.GetZero()
+        {
+            return Zero();
+        }
+
+        public Vector<float> GetVector()
+        {
+            return OtherAttrAdd;
+        }
+
+        public static Vector<float> Zero()
+        {
+            return new Vector<float>(new[] {0f, 0f, 0f, 0f, 0f});
         }
     }
 
     public readonly struct AtkAboutPassiveEffect : IPassiveTraitEffect
     {
-        private AtkAboutPassiveEffect(float mainAtkMultiAdd, float shardedNumAdd,
-            float backStabAdd)
+        private AtkAboutPassiveEffect(Vector<float> atkAttrAdd)
         {
-            MainAtkMultiAdd = mainAtkMultiAdd;
-            ShardedNumAdd = shardedNumAdd;
-            BackStabAdd = backStabAdd;
+            // MainAtkMultiAdd = mainAtkMultiAdd;
+            // ShardedNumAdd = shardedNumAdd;
+            // BackStabAdd = backStabAdd;
+            AtkAttrAdd = atkAttrAdd;
         }
 
-        public float MainAtkMultiAdd { get; }
-        public float ShardedNumAdd { get; }
-        public float BackStabAdd { get; }
-
-        public AtkAboutPassiveEffect GenEffect(uint level)
+        public static Vector<float> Zero()
         {
-            return new AtkAboutPassiveEffect(MainAtkMultiAdd * level, ShardedNumAdd * level,
-                BackStabAdd * level);
+            return new Vector<float>(new[] {0f, 0f, 0f});
+        }
+
+        private Vector<float> AtkAttrAdd { get; }
+        // public float MainAtkMultiAdd { get; }
+        // public float ShardedNumAdd { get; }
+        // public float BackStabAdd { get; }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            var multiply = Vector.Multiply(level, AtkAttrAdd);
+            return new AtkAboutPassiveEffect(multiply);
+        }
+
+        Vector<float> IPassiveTraitEffect.GetZero()
+        {
+            return Zero();
+        }
+
+        public Vector<float> GetVector()
+        {
+            return AtkAttrAdd;
         }
     }
 }
