@@ -214,14 +214,14 @@ namespace game_stuff
             SurvivalStatus baseSurvivalStatus)
 
         {
-    
             var lossHp = MaxHp - NowHp;
             MaxHp = (uint) (baseSurvivalStatus.MaxHp * (1 + v[0]));
-            NowHp = MaxHp - lossHp;
+
+            NowHp = MaxHp <= lossHp ? 1 : MaxHp - lossHp;
             HealEffect = baseSurvivalStatus.HealEffect * (1 + v[1]);
             var lossAr = MaxArmor - NowArmor;
             MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + v[2]));
-            NowArmor = MaxArmor - lossAr;
+            NowArmor = MaxArmor < lossAr ? 0 : MaxArmor - lossAr;
             ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + v[3]));
             MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + v[4]));
             ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));

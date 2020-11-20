@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using collision_and_rigid;
 
@@ -7,15 +8,14 @@ namespace game_stuff
 {
     public class Prop : ICharAct, ISaleStuff, ICanDrop
     {
-        public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti, Bullet propBullet,
-            uint launchTick, float moveMustMulti, float minCos)
+        public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti,
+            ImmutableDictionary<uint, Bullet> propBullets, float moveMustMulti, float minCos)
         {
             RecyclePropStack = recyclePropStack;
             StackCost = stackCost;
             TotalTick = totalTick;
             MoveMulti = moveMulti;
-            PropBullet = propBullet;
-            LaunchTick = launchTick;
+            PropBullets = propBullets;
             MoveMustMulti = moveMustMulti;
             MinCos = minCos;
             LastMoveVector = null;
@@ -25,8 +25,8 @@ namespace game_stuff
         public int StackCost { get; }
         public uint TotalTick { get; }
         private float MoveMulti { get; }
-        private Bullet PropBullet { get; }
-        private uint LaunchTick { get; }
+        private ImmutableDictionary<uint, Bullet> PropBullets { get; }
+
         public int RecyclePropStack { get; }
 
         //推进器类专用
@@ -43,7 +43,7 @@ namespace game_stuff
         {
             var b = NowOnTick == 0;
 
-            var bullet = NowOnTick == LaunchTick ? PropBullet.ActiveBullet(getPos, sightAim) : null;
+            var bullet = PropBullets.TryGetValue(NowOnTick, out var aBullet) ? aBullet : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
             if (MoveMustMulti != null && limitV != null) // 推进类prop
             {
