@@ -41,6 +41,7 @@ namespace game_stuff
 
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
+            [BodySize.Tiny] = 0.3f,
             [BodySize.Small] = 0.5f,
             [BodySize.Medium] = 1f,
             [BodySize.Big] = 1.5f
@@ -48,6 +49,7 @@ namespace game_stuff
 
         public static readonly Dictionary<BodySize, float> SizeToMass = new Dictionary<BodySize, float>
         {
+            [BodySize.Tiny] = 1f,
             [BodySize.Small] = 1f,
             [BodySize.Medium] = 4f,
             [BodySize.Big] = 9f
@@ -114,6 +116,8 @@ namespace game_stuff
         public static float PassiveR { get; private set; } = 1f;
         public static float SaleBoxR { get; private set; } = 1f;
         public static uint MaxCallActTwoTick { get; private set; } = 10;
+        public static uint StandardMaxTrap { get; set; } = 2;
+
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
@@ -145,6 +149,7 @@ namespace game_stuff
             WeaponR = configsOtherConfig.weapon_R;
             PassiveR = configsOtherConfig.pass_R;
             SaleBoxR = configsOtherConfig.saleBox_R;
+            StandardMaxTrap = configsOtherConfig.standard_trap_max;
         }
 #if NETCOREAPP
         public static void LoadConfig()

@@ -16,7 +16,7 @@ namespace game_stuff
             NowOnTick = 0;
         }
 
-        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IHitMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)

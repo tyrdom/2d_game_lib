@@ -8,13 +8,12 @@ namespace game_stuff
 {
     public enum ObjType
     {
-        OnlyMyself,
         OtherTeam,
         SameTeam,
         AllTeam
     }
 
-    public class Bullet : IEffectMedia
+    public class Bullet : IHitMedia
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
@@ -154,12 +153,12 @@ namespace game_stuff
             return RestTick > 0;
         }
 
-        public bool IsHit(CharacterBody characterBody)
+        public bool IsHit(ICanBeHit characterBody)
         {
             return GameTools.IsHit(this, characterBody);
         }
 
-        private bool IsHitBody(IIdPointShape targetBody)
+        public bool IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -170,11 +169,11 @@ namespace game_stuff
                         HitOne(characterBody1.CharacterStatus);
                     }
 
-// #if DEBUG
-//                     Console.Out.WriteLine($"bullet hit::{isHit}");
-// #endif
+#if DEBUG
+                    Console.Out.WriteLine($"bullet hit::{isHit}");
+#endif
                     return isHit;
-
+             
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
@@ -234,7 +233,7 @@ namespace game_stuff
 
                 //对手承受伤害
                 targetCharacterStatus.AddProtect(ProtectValueAdd);
-                targetCharacterStatus.SurvivalStatus.TakeDamage(Caster.GenDamage(DamageMulti,b4));
+                targetCharacterStatus.SurvivalStatus.TakeDamage(Caster.GenDamage(DamageMulti, b4));
 
 
                 var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
@@ -353,9 +352,7 @@ namespace game_stuff
 
         public HashSet<int> HitTeam(IQSpace qSpace)
         {
-            var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.IsHitBody(body),
-                this, RdZone.MoveToAnchor(Pos));
-            return SomeTools.EnumerableToHashSet(mapToGidList.Select(x => x.GetId()));
+            return HitAbleMediaStandard.HitTeam(qSpace, this);
         }
 
         public BulletMsg GenMsg()

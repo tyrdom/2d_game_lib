@@ -6,7 +6,7 @@ using collision_and_rigid;
 namespace game_stuff
 {
     //在技能开始时，如果技能有锁定区域，那么可以获得到一个锁定
-    public class LockArea : IEffectMedia
+    public class LockArea : IHitMedia
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
@@ -39,12 +39,12 @@ namespace game_stuff
             return false;
         }
 
-        public bool IsHit(CharacterBody characterBody)
+        public bool IsHit(ICanBeHit characterBody)
         {
             return GameTools.IsHit(this, characterBody);
         }
 
-        private bool HitBody(IIdPointShape targetBody)
+        public bool IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -57,7 +57,8 @@ namespace game_stuff
                     }
 
                     return isHit;
-
+                case Trap trap:
+                    return IsHit(trap);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
@@ -72,9 +73,7 @@ namespace game_stuff
 
         public HashSet<int> HitTeam(IQSpace qSpace)
         {
-            var mapToGidList = qSpace.FilterToGIdPsList((body, bullet) => bullet.HitBody(body),
-                this, RdZone.MoveToAnchor(Pos));
-            return SomeTools.EnumerableToHashSet(mapToGidList.Select(x => x.GetId()));
+            return HitAbleMediaStandard.HitTeam(qSpace, this);
         }
     }
 }

@@ -7,24 +7,25 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private Dictionary<int, IQSpace> TeamToBodies { get; } //角色放置到四叉树中，方便子弹碰撞逻辑
-        private readonly SightMap _sightMap; //视野地图
-        private readonly WalkMap _walkMap; //碰撞地图
-        private Dictionary<int, CharacterBody> GidToBody; //gid到玩家地图实体对应
-        private Dictionary<int, List<IEffectMedia>> TeamToBullet;
+        private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色放置到四叉树中，方便子弹碰撞逻辑
+        private readonly SightMap SightMap; //视野地图
+        private readonly WalkMap WalkMap; //碰撞地图
+        private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
+        private Dictionary<int, List<IHitMedia>> TeamToHitEffect { get; }
 
         private IQSpace MapInteractableThings { get; }
         // private TempConfig TempConfig { get; }
 
-        public PlayGround(Dictionary<int, IQSpace> teamToBodies, SightMap sightMap, WalkMap walkMap,
+        private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
+            WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings)
         {
             TeamToBodies = teamToBodies;
-            _sightMap = sightMap;
-            _walkMap = walkMap;
+            SightMap = sightMap;
+            WalkMap = walkMap;
             GidToBody = gidToBody;
             MapInteractableThings = mapInteractableThings;
-            TeamToBullet = new Dictionary<int, List<IEffectMedia>>();
+            TeamToHitEffect = new Dictionary<int, List<IHitMedia>>();
         }
 
         //初始化状态信息,包括玩家信息和地图信息
@@ -61,12 +62,12 @@ namespace game_stuff
                     var aabbBoxShapes =
                         SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
                     emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
-                    return emptyRootBranch;
+                    return (emptyRootBranch, emptyRootBranch);
                 });
 #if DEBUG
             foreach (var qSpace in spaces)
             {
-                Console.Out.WriteLine($"init:{qSpace.Key} team : {qSpace.Value.Count()} body");
+                Console.Out.WriteLine($"init:{qSpace.Key} team : {qSpace.Value.Item1.Count()} body");
             }
 #endif
 
@@ -104,8 +105,7 @@ namespace game_stuff
             foreach (var kv in gidToOperates)
             {
                 if (!GidToBody.TryGetValue(kv.Key, out var characterBody)) continue;
-                if (dictionary.TryGetValue(characterBody.Team, out var gidToOp
-                    )
+                if (dictionary.TryGetValue(characterBody.Team, out var gidToOp)
                 )
                 {
                     gidToOp[kv.Key] = kv.Value;
@@ -163,7 +163,7 @@ namespace game_stuff
                 foreach (var kv2 in TeamToBodies)
                 {
                     var bTeam = kv2.Key;
-                    var qSpace = kv2.Value;
+                    var qSpace = kv2.Value.playerBodies;
 // #if DEBUG
 //                     Console.Out.WriteLine($"team{bTeam}:have:{qSpace.Count()} body");
 // #endif
@@ -179,7 +179,7 @@ namespace game_stuff
                     else
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, _sightMap),
+                            qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
                                 characterBody);
                         var bodies = filterToGIdPsList.OfType<CharacterBody>();
 
@@ -200,7 +200,7 @@ namespace game_stuff
         {
             foreach (var qSpace in TeamToBodies.Select(kv => kv.Value))
             {
-                var mapToDicGidToSth = qSpace.MapToDicGidToSth(
+                var mapToDicGidToSth = qSpace.playerBodies.MapToDicGidToSth(
                     (idPts, dic) =>
                     {
                         switch (idPts)
@@ -218,18 +218,18 @@ namespace game_stuff
                         }
 
                         throw new Exception("not good idPts");
-                    }, _walkMap);
+                    }, WalkMap);
 
 
-                qSpace.MoveIdPoint(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
+                qSpace.playerBodies.MoveIdPoint(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
             }
         }
 
 
-        private Dictionary<int, HashSet<IEffectMedia>> BulletsDo()
+        private Dictionary<int, HashSet<IHitMedia>> BulletsDo()
         {
-            var whoHitGid = new Dictionary<int, HashSet<IEffectMedia>>();
-            foreach (var ii in TeamToBullet)
+            var whoHitGid = new Dictionary<int, HashSet<IHitMedia>>();
+            foreach (var ii in TeamToHitEffect)
             {
                 var team = ii.Key;
                 var bullets = ii.Value;
@@ -240,7 +240,7 @@ namespace game_stuff
                         case ObjType.OtherTeam:
                             foreach (var i in from kvv in TeamToBodies
                                 let bodyTeam = kvv.Key
-                                let value = kvv.Value
+                                let value = kvv.Value.playerBodies
                                 where team != bodyTeam
                                 select bullet.HitTeam(value)
                                 into hitTeam
@@ -253,7 +253,7 @@ namespace game_stuff
                                 }
                                 else
                                 {
-                                    whoHitGid[i] = new HashSet<IEffectMedia> {bullet};
+                                    whoHitGid[i] = new HashSet<IHitMedia> {bullet};
                                 }
                             }
 
@@ -261,7 +261,7 @@ namespace game_stuff
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
-                                bullet.HitTeam(qSpace);
+                                bullet.HitTeam(qSpace.playerBodies);
                             }
 
                             break;
@@ -278,13 +278,12 @@ namespace game_stuff
                                 }
                                 else
                                 {
-                                    whoHitGid[i] = new HashSet<IEffectMedia> {bullet};
+                                    whoHitGid[i] = new HashSet<IHitMedia> {bullet};
                                 }
                             }
 
                             break;
-                        case ObjType.OnlyMyself:
-                            throw new Exception("this bullet is no need to hit any one");
+
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -317,7 +316,7 @@ namespace game_stuff
                     ? gidToOp
                     : new Dictionary<int, Operate>();
 
-                var mapToDicGidToSth = qSpace.MapToDicGidToSth(GameTools.BodyGoATick, gto);
+                var mapToDicGidToSth = qSpace.playerBodies.MapToDicGidToSth(GameTools.BodyGoATick, gto);
                 foreach (var gtb in mapToDicGidToSth)
                 {
                     // (gid, (twoDTwoP, bullet))
@@ -386,14 +385,28 @@ namespace game_stuff
                     }
 
                     var bullet = aCharGoTickMsg.LaunchBullet;
-                    if (bullet == null) continue;
-                    if (TeamToBullet.TryGetValue(team, out var b))
+                    switch (bullet)
                     {
-                        b.Add(bullet);
-                    }
-                    else
-                    {
-                        TeamToBullet[team] = new List<IEffectMedia> {bullet};
+                        case null:
+                            continue;
+
+                        case IHitMedia hitAbleMedia:
+
+                            if (TeamToHitEffect.TryGetValue(team, out var b))
+                            {
+                                b.Add(hitAbleMedia);
+                            }
+                            else
+                            {
+                                TeamToHitEffect[team] = new List<IHitMedia> {hitAbleMedia};
+                            }
+
+                            break;
+                        case Summons summons:
+                            // todo
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(bullet));
                     }
                 }
             }
@@ -427,14 +440,15 @@ namespace game_stuff
                 var listToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.CovToAaBbPackBox()));
                 if (TeamToBodies.TryGetValue(teamId, out var qSpace))
                 {
-                    qSpace.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
+                    qSpace.playerBodies.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
                 }
                 else
                 {
-                    var valueZone = TeamToBodies.First().Value.Zone;
+                    var valueZone = TeamToBodies.First().Value.playerBodies.Zone;
                     var newQs = SomeTools.CreateEmptyRootBranch(valueZone);
+                    var newQs2 = SomeTools.CreateEmptyRootBranch(valueZone);
                     newQs.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
-                    TeamToBodies[teamId] = newQs;
+                    TeamToBodies[teamId] = (newQs, newQs2);
                 }
             }
         }

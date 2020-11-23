@@ -77,6 +77,12 @@ namespace game_stuff
         //Vehicle
         public Vehicle? NowVehicle { get; private set; }
 
+        //traps
+
+        public uint MaxTrap { get; }
+
+        public List<Trap> Traps { get; }
+
         //InterAct CallLong status
 
         private MapInteract? NowMapInteractive { get; set; }
@@ -123,12 +129,17 @@ namespace game_stuff
         public bool IsPause { get; private set; }
         public TwoDVector? IsBeHitBySomeOne { get; set; }
         public bool IsHitSome { get; set; }
+        public List<TwoDPoint> MayBeSomeThing { get; }
 
 
         public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
         {
             var (max, min, add, maxAmmo, recycle, baseAtkStatus, baseSurvivalStatus) = GenAttrBaseByConfig(baseAttrId);
 
+
+            MaxTrap = TempConfig.StandardMaxTrap;
+            Traps = new List<Trap>();
+            MayBeSomeThing = new List<TwoDPoint>();
             CharacterBody = null!;
             MaxMoveSpeed = max;
             GId = gId;
@@ -494,13 +505,19 @@ namespace game_stuff
             NextSkill = null;
         }
 
+        private void TempMsgClear()
+        {
+            if (SkillLaunch != null) SkillLaunch = null;
+            if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
+            if (IsHitSome) IsHitSome = false;
+            MayBeSomeThing.Clear();
+        }
+
         public CharGoTickResult
             CharGoTick(Operate? operate) //角色一个tick行为
         {
             //清理消息缓存
-            if (SkillLaunch != null) SkillLaunch = null;
-            if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
-            if (IsHitSome) IsHitSome = false;
+            TempMsgClear();
 
             // 命中停帧 输入无效
             var b1 = PauseTick > 0;

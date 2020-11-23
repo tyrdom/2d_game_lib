@@ -6,7 +6,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : IIdPointShape
+    public class CharacterBody : IIdPointShape ,ICanBeHit
     {
         private BodySize BodySize { get; }
 

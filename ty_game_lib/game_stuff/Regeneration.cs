@@ -12,5 +12,7 @@ namespace game_stuff
         public float HealMulti { get; }
         public float FixMulti { get; }
         public float ShieldMulti { get; }
+        
+        
     }
 }

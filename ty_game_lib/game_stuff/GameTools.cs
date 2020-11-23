@@ -15,7 +15,8 @@ namespace game_stuff
             return baseAttribute;
         }
 
-        public static (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack,
+        public static (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack
+            ,
             float RecycleMulti) GenOtherBaseStatusByAttr(base_attribute baseAttribute)
         {
             return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed, baseAttribute.MoveMinSpeed,
@@ -60,11 +61,11 @@ namespace game_stuff
                 GenDicBulletBox(rawBulletShape);
         }
 
-        public static bool IsHit(IEffectMedia effectMedia, CharacterBody characterBody)
+        public static bool IsHit(IHitMedia hitMedia, ICanBeHit characterBody)
         {
             var characterBodyBodySize = characterBody.GetSize();
-            return effectMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
-                   bulletBox.IsHit(characterBody.NowPos, effectMedia.Pos, effectMedia.Aim);
+            return hitMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
+                   bulletBox.IsHit(characterBody.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
         }
 
         public static float GetMaxUpSpeed(float? height)

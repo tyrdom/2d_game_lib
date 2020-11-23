@@ -2,8 +2,9 @@
 
 namespace game_stuff
 {
-    public enum BodySize 
+    public enum BodySize
     {
+        @Tiny,
         @Small,
         @Medium,
         @Big

@@ -38,7 +38,10 @@ namespace collision_and_rigid
         TwoDVectorLine GetMoveVectorLine();
 
         ITwoDTwoP RelocateWithBlock(WalkBlock walkBlock);
+        
     }
+
+    
 
 
     public interface IBlockShape : IShape
