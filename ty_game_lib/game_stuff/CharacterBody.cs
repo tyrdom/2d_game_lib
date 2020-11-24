@@ -6,13 +6,13 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : IIdPointShape ,ICanBeHit
+    public class CharacterBody : IIdPointShape, ICanBeHit
     {
         private BodySize BodySize { get; }
 
         public BodySize GetSize()
         {
-           return CharacterStatus.NowVehicle?.Size ?? BodySize;
+            return CharacterStatus.NowVehicle?.Size ?? BodySize;
         }
 
         public CharacterStatus CharacterStatus { get; }
@@ -28,6 +28,7 @@ namespace game_stuff
             TwoDPoint lastPos,
             AngleSight sight, int team)
         {
+            InWhichBox = null;
             NowPos = nowPos;
             BodySize = bodySize;
             characterStatus.CharacterBody = this;
@@ -105,8 +106,10 @@ namespace game_stuff
             return pt;
         }
 
+        public IdPointBox? InWhichBox { get; set; }
 
-        public CharGoTickResult BodyGoATick(Dictionary<int, Operate> gidToOp)
+
+        public CharGoTickResult GoATick(Dictionary<int, Operate> gidToOp)
         {
             LastPos = NowPos;
             var id = GetId();

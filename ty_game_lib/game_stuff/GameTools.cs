@@ -32,14 +32,20 @@ namespace game_stuff
 
         public static CharGoTickResult BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
         {
-            switch (idPointShape)
+            return idPointShape switch
             {
-                case CharacterBody characterBody:
-                    var doOpFromDic = characterBody.BodyGoATick(gidToOp);
-                    return doOpFromDic;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(idPointShape));
-            }
+                CharacterBody characterBody => characterBody.GoATick(gidToOp),
+                _ => throw new ArgumentOutOfRangeException(nameof(idPointShape))
+            };
+        }
+
+        public static TrapGoTickResult TrapGoATick(IIdPointShape idPointShape)
+        {
+            return idPointShape switch
+            {
+                Trap characterBody => TrapGoATick(characterBody),
+                _ => throw new ArgumentOutOfRangeException(nameof(idPointShape))
+            };
         }
 
         public static Dictionary<BodySize, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,

@@ -7,24 +7,39 @@ namespace game_stuff
     public class Trap : IIdPointShape, ICanBeHit
     {
         private CharacterStatus Caster { get; }
+
         private SurvivalStatus SurvivalStatus { get; }
 
         private bool CanBeSee { get; }
         private TwoDPoint Pos { get; }
         private int tid { get; }
 
+        private BodySize BodySize { get; }
+
         public uint CallTrapTick { get; }
 
-        public uint MaxLifeTime { get; }
+        public uint MaxLifeTimeTick { get; }
 
-        public uint NowLifeTime { get; }
+        public uint NowLifeTimeTick { get; }
         public IHitMedia TrapMedia { get; }
 
-        public IHitMedia LaunchMedia { get; }
 
-        public IHitMedia GoATick { get; }
+        public IHitMedia? LaunchMedia { get; }
 
-        public BodySize BodySize { get; }
+
+        public TrapGoTickResult GoATick()
+        {
+            var goATickAndCheckAlive = SurvivalStatus.GoATickAndCheckAlive() && NowLifeTimeTick < MaxLifeTimeTick;
+
+            var b = NowLifeTimeTick % CallTrapTick == 0;
+
+            var t = b ? TrapMedia : null;
+
+            return goATickAndCheckAlive
+                ? new TrapGoTickResult(true, t)
+                : new TrapGoTickResult(false, null, InWhichBox);
+        }
+
 
         //todo trap
         public bool Include(TwoDPoint pos)
@@ -44,7 +59,7 @@ namespace game_stuff
 
         public BodySize GetSize()
         {
-            throw new System.NotImplementedException();
+            return BodySize;
         }
 
         public TwoDPoint GetAnchor()
@@ -61,6 +76,8 @@ namespace game_stuff
         {
             return Pos;
         }
+
+        public IdPointBox? InWhichBox { get; set; }
     }
 
     public interface ICanBeHit

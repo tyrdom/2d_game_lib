@@ -44,7 +44,7 @@ namespace collision_and_rigid
         public IQSpace QuadFour { get; set; }
         public IQSpace QuadThree { get; set; }
 
-        public void AddIdPoint(HashSet<IdPointBox> idPointShapes, int limit)
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointShapes, int limit, bool needRecord = false)
         {
             var outZone = new HashSet<IdPointBox>();
             var q1 = new HashSet<IdPointBox>();
@@ -99,46 +99,49 @@ namespace collision_and_rigid
                 }
             }
 
-            Father?.AddIdPoint(outZone, limit);
+            Father?.AddIdPointBoxes(outZone, limit);
 
 
-            QuadOne.AddIdPoint(q1, limit);
+            QuadOne.AddIdPointBoxes(q1, limit);
 
-            QuadTwo.AddIdPoint(q2, limit);
+            QuadTwo.AddIdPointBoxes(q2, limit);
 
-            QuadThree.AddIdPoint(q3, limit);
+            QuadThree.AddIdPointBoxes(q3, limit);
 
-            QuadFour.AddIdPoint(q4, limit);
+            QuadFour.AddIdPointBoxes(q4, limit);
         }
 
-        public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
+        public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
             AaBbPackBox = inZone;
 
             if (Father != null)
             {
-                Father.AddIdPoint(outZone, limit);
+                Father.AddIdPointBoxes(outZone, limit);
             }
             else
             {
                 AaBbPackBox.UnionWith(outZone);
             }
 
-            QuadOne.MoveIdPoint(gidToMove, limit);
-            QuadTwo.MoveIdPoint(gidToMove, limit);
-            QuadThree.MoveIdPoint(gidToMove, limit);
-            QuadFour.MoveIdPoint(gidToMove, limit);
+            QuadOne.MoveIdPointBoxes(gidToMove, limit);
+            QuadTwo.MoveIdPointBoxes(gidToMove, limit);
+            QuadThree.MoveIdPointBoxes(gidToMove, limit);
+            QuadFour.MoveIdPointBoxes(gidToMove, limit);
         }
 
-        public void RemoveIdPoint(IdPointBox idPointBox)
+        public void RemoveIdPointBoxById(List<(int id, List<Quad> record)> iPidS)
         {
-            var remove = AaBbPackBox.Remove(idPointBox);
-            if (remove) return;
-            QuadOne.RemoveIdPoint(idPointBox);
-            QuadTwo.RemoveIdPoint(idPointBox);
-            QuadThree.RemoveIdPoint(idPointBox);
-            QuadFour.RemoveIdPoint(idPointBox);
+            
+            
+            var remove = AaBbPackBox.RemoveWhere(x =>
+                (x is IdPointBox idb) && iPidS.Select(x2 => x2.id).Contains(idb.GetId()));
+            if (remove > 0) return;
+            QuadOne.RemoveIdPointBoxById(iPidS);
+            QuadTwo.RemoveIdPointBoxById(iPidS);
+            QuadThree.RemoveIdPointBoxById(iPidS);
+            QuadFour.RemoveIdPointBoxById(iPidS);
         }
 
 
@@ -494,15 +497,15 @@ namespace collision_and_rigid
             return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t, zone);
         }
 
-        public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
+        public Dictionary<int, T> MapToIDict<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
         )
         {
-            var dicIntToTu = new HashSet<T>();
+            var dicIntToTu = new Dictionary<int, T>();
 
             void Act(IIdPointShape id, bool a)
             {
                 var withIIdPtsShape = funcWithIIdPtsShape(id);
-                dicIntToTu.Add(withIIdPtsShape);
+                dicIntToTu[id.GetId()] = withIIdPtsShape;
             }
 
             ForeachDoWithOutMove(Act, true);

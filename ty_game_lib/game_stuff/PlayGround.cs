@@ -61,7 +61,7 @@ namespace game_stuff
                     var hashSet = p.Value;
                     var aabbBoxShapes =
                         SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
-                    emptyRootBranch.AddIdPoint(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
+                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return (emptyRootBranch, emptyRootBranch);
                 });
 #if DEBUG
@@ -120,7 +120,8 @@ namespace game_stuff
         }
 
 
-        public (Dictionary<int, IEnumerable<BulletMsg>>, Dictionary<int, IEnumerable<CharTickMsg>> gidToCharTickMsg)
+        public (Dictionary<int, IEnumerable<BulletMsg>> gidToBulletsMsg, Dictionary<int, IEnumerable<CharTickMsg>>
+            gidToCharTickMsg)
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
@@ -140,7 +141,7 @@ namespace game_stuff
             //     qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
             // }
 
-            BodiesQSpacePlace();
+            BodiesQSpaceReplace();
             var playerSee = GetPlayerSee();
             var gidToBulletsMsg = gidToWhichBulletHit.ToDictionary(pair => pair.Key, pair => pair.Value.OfType<Bullet>()
                 .Select(x => x.GenMsg()));
@@ -196,11 +197,11 @@ namespace game_stuff
             return gidToCharacterBodies;
         }
 
-        public void BodiesQSpacePlace()
+        private void BodiesQSpaceReplace()
         {
-            foreach (var qSpace in TeamToBodies.Select(kv => kv.Value))
+            foreach (var (playerBodies, _) in TeamToBodies.Select(kv => kv.Value))
             {
-                var mapToDicGidToSth = qSpace.playerBodies.MapToDicGidToSth(
+                var mapToDicGidToSth = playerBodies.MapToDicGidToSth(
                     (idPts, dic) =>
                     {
                         switch (idPts)
@@ -221,7 +222,7 @@ namespace game_stuff
                     }, WalkMap);
 
 
-                qSpace.playerBodies.MoveIdPoint(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.MoveIdPointBoxes(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
             }
         }
 
@@ -311,18 +312,29 @@ namespace game_stuff
             foreach (var tq in TeamToBodies)
             {
                 var team = tq.Key;
-                var qSpace = tq.Value;
+                var (playerBodies, traps) = tq.Value;
                 var gto = sepOperatesToTeam.TryGetValue(team, out var gidToOp)
                     ? gidToOp
                     : new Dictionary<int, Operate>();
 
-                var mapToDicGidToSth = qSpace.playerBodies.MapToDicGidToSth(GameTools.BodyGoATick, gto);
+                var mapToDicGidToSth = playerBodies.MapToDicGidToSth(GameTools.BodyGoATick, gto);
+                var trapGoTickResults = traps.MapToIDict(GameTools.TrapGoATick);
+                
                 foreach (var gtb in mapToDicGidToSth)
                 {
                     // (gid, (twoDTwoP, bullet))
+
                     var gid = gtb.Key;
                     var aCharGoTickMsg = gtb.Value;
                     var twoDTwoP = aCharGoTickMsg.Move;
+                    var stillAlive = aCharGoTickMsg.StillAlive;
+
+
+                    if (!stillAlive)
+                    {
+                        continue;
+                    }
+
                     if (twoDTwoP != null)
                     {
 #if DEBUG
@@ -440,14 +452,14 @@ namespace game_stuff
                 var listToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.CovToAaBbPackBox()));
                 if (TeamToBodies.TryGetValue(teamId, out var qSpace))
                 {
-                    qSpace.playerBodies.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
+                    qSpace.playerBodies.AddIdPointBoxes(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
                 }
                 else
                 {
                     var valueZone = TeamToBodies.First().Value.playerBodies.Zone;
                     var newQs = SomeTools.CreateEmptyRootBranch(valueZone);
                     var newQs2 = SomeTools.CreateEmptyRootBranch(valueZone);
-                    newQs.AddIdPoint(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
+                    newQs.AddIdPointBoxes(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
                     TeamToBodies[teamId] = (newQs, newQs2);
                 }
             }

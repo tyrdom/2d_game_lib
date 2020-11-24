@@ -26,7 +26,7 @@ namespace collision_and_rigid
 
         public HashSet<IAaBbBox> AaBbPackBox { get; set; }
 
-        public void AddIdPoint(HashSet<IdPointBox> idPointShapes, int limit)
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointShapes, int limit, bool needRecord = false)
         {
             var rawCount = AaBbPackBox.Count;
             if (rawCount + idPointShapes.Count <= limit)
@@ -53,12 +53,15 @@ namespace collision_and_rigid
                             else
                             {
                                 var whichQ = twoDPoint.WhichQ(Zone);
+                                aabbBoxShape.AddRecord(whichQ);
                                 switch (whichQ)
                                 {
                                     case Quad.One:
+
                                         q1.Add(aabbBoxShape);
                                         break;
                                     case Quad.Two:
+
                                         q2.Add(aabbBoxShape);
                                         break;
                                     case Quad.Three:
@@ -112,7 +115,7 @@ namespace collision_and_rigid
             }
         }
 
-        public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
+        public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) =
                 SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
@@ -120,7 +123,7 @@ namespace collision_and_rigid
             AaBbPackBox = inZone;
             if (Father != null)
             {
-                Father.AddIdPoint(outZone, limit);
+                Father.AddIdPointBoxes(outZone, limit);
             }
             else
             {
@@ -128,9 +131,10 @@ namespace collision_and_rigid
             }
         }
 
-        public void RemoveIdPoint(IdPointBox idPointBox)
+        public void RemoveIdPointBoxById(List<(int id, List<Quad> record)> iPid_s)
         {
-            AaBbPackBox.Remove(idPointBox);
+            AaBbPackBox.RemoveWhere(x =>
+                x is IdPointBox idPointBox && iPid_s.Select(x => x.id).Contains(idPointBox.GetId()));
         }
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)
@@ -306,15 +310,14 @@ namespace collision_and_rigid
             return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t, zone);
         }
 
-        public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
-        )
+        public Dictionary<int, T> MapToIDict<T>(Func<IIdPointShape, T> funcWithIIdPtsShape)
         {
-            var dicIntToTu = new HashSet<T>();
+            var dicIntToTu = new Dictionary<int, T>();
 
             void Act(IIdPointShape id, bool a)
             {
                 var withIIdPtsShape = funcWithIIdPtsShape(id);
-                dicIntToTu.Add(withIIdPtsShape);
+                dicIntToTu[id.GetId()] = withIIdPtsShape;
             }
 
             ForeachDoWithOutMove(Act, true);

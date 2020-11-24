@@ -12,12 +12,12 @@ namespace collision_and_rigid
 
         public HashSet<IAaBbBox> AaBbPackBox { get; }
 
-        public void AddIdPoint(HashSet<IdPointBox> idPointShapes, int limit);
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointShapes, int limit,bool needRecord =false);
 
-        public void MoveIdPoint(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
+        public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
 
-        public void RemoveIdPoint(IdPointBox idPointBox);
+        public void RemoveIdPointBoxById(List<(int id,List<Quad> record)> iPidS);
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true);
 
@@ -47,8 +47,7 @@ namespace collision_and_rigid
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t, Zone zone);
 
-        public IEnumerable<T> MapToIEnum<T>(Func<IIdPointShape, T> funcWithIIdPtsShape
-        );
+        public Dictionary<int, T> MapToIDict<T>(Func<IIdPointShape, T> funcWithIIdPtsShape);
 
         public HashSet<IBlockShape> GetAllIBlocks();
 

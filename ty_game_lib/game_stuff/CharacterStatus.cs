@@ -441,12 +441,12 @@ namespace game_stuff
 
 
             if (getThing == null)
-                return new CharGoTickResult(move, bullet);
+                return new CharGoTickResult(true, move, bullet);
 
             var dropThings = getThing.ActWhichChar(this, interactive);
 
 
-            return new CharGoTickResult(move, bullet, dropThings.ToList(), getThing?.InWhichMapInteractive);
+            return new CharGoTickResult(true, move, bullet, dropThings.ToList(), getThing?.InWhichMapInteractive);
         }
 
         public void RecycleAProp(Prop prop)
@@ -551,7 +551,13 @@ namespace game_stuff
                 Console.Out.WriteLine(
                     $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {AntiActBuff?.RestTick}");
 #endif
-                return new CharGoTickResult(twoDPoint, null, null, null);
+                return new CharGoTickResult(true, twoDPoint, null, null, null);
+            }
+
+//
+            if (!SurvivalStatus.GoATickAndCheckAlive())
+            {
+                return new CharGoTickResult(false);
             }
 
             //
@@ -751,7 +757,7 @@ namespace game_stuff
 
                         var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                         NowVehicle = null;
-                        return new CharGoTickResult(null, null, new List<IMapInteractable> {genIMapInteractable});
+                        return new CharGoTickResult(true, null, null, new List<IMapInteractable> {genIMapInteractable});
                     }
 
 
@@ -780,7 +786,7 @@ namespace game_stuff
             var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.GetSize()] ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
-            return new CharGoTickResult(dVector);
+            return new CharGoTickResult(true, dVector);
         }
 
         private void ResetLongInterAct()

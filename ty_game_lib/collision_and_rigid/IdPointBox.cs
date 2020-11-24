@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace collision_and_rigid
 {
@@ -8,8 +9,30 @@ namespace collision_and_rigid
         {
             IdPointShape = idPointShape;
             Zone = zone;
+            
+            LocateRecord = new List<Quad>();
+            idPointShape.InWhichBox = this;
         }
 
+        public bool RemoveLastRecord()
+        {
+            return LocateRecord.Remove(LocateRecord.LastOrDefault());
+        }
+
+        public void AddRecord(Quad quad)
+        {
+            LocateRecord.Add(quad);
+        }
+
+        public Quad? ReadRecord()
+        {
+            if (LocateRecord.Count <= 0) return null;
+            var firstOrDefault = LocateRecord[0];
+            LocateRecord.Remove(firstOrDefault);
+            return firstOrDefault;
+        }
+
+        public List<Quad> LocateRecord { get; }
         public IIdPointShape IdPointShape { get; }
 
         public void WriteQuadRecord(Quad quad)
@@ -24,6 +47,11 @@ namespace collision_and_rigid
         public IShape GetShape()
         {
             return IdPointShape;
+        }
+
+        public int GetId()
+        {
+            return IdPointShape.GetId();
         }
 
         public TwoDPoint GetPos()
