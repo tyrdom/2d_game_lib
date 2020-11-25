@@ -9,7 +9,7 @@ namespace game_stuff
 {
     //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
 
-    public class CharacterStatus : IBattleUnit
+    public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
         public CharacterBody CharacterBody;
         public base_attr_id BaseAttrId { get; }
@@ -42,7 +42,12 @@ namespace game_stuff
         }
 
         private int MaxAmmo { get; set; }
-        public CharacterStatus? LockingWho { get; set; }
+        public IBattleUnitStatus? LockingWho { get; set; }
+
+        public List<TwoDPoint>? GetMayBeSomeThing()
+        {
+            return MayBeSomeThing;
+        }
 
         public CharacterStatus? CatchingWho { get; set; }
 
@@ -93,7 +98,7 @@ namespace game_stuff
         //be hit status
         public int PauseTick { get; set; }
 
-        public IAntiActBuff? AntiActBuff { get; set; }
+        public IStunBuff? StunBuff { get; set; }
 
         //protect status
         private int NowProtectValue { get; set; }
@@ -150,7 +155,7 @@ namespace game_stuff
             Weapons = new Dictionary<int, Weapon>();
             NowCastAct = null;
             NextSkill = null;
-            AntiActBuff = null;
+            StunBuff = null;
             PlayingBuffs = new List<IPlayingBuff>();
             SurvivalStatus = baseSurvivalStatus;
             NowProtectTick = 0;
@@ -217,7 +222,7 @@ namespace game_stuff
             NowWeapon = 0;
             NowCastAct = null;
             NextSkill = null;
-            AntiActBuff = null;
+            StunBuff = null;
             PlayingBuffs = new List<IPlayingBuff>();
             SurvivalStatus = survivalStatus;
             NowProtectTick = 0;
@@ -410,7 +415,7 @@ namespace game_stuff
                     ? null
                     : TwoDVector.TwoDVectorByPt(GetPos(), LockingWho.GetPos())
                         .ClockwiseTurn(CharacterBody.Sight.Aim)
-                        .AddX(-CharacterBody.GetRr() - LockingWho.CharacterBody.GetRr())
+                        .AddX(-GetRr() - LockingWho.GetRr())
                         .MaxFixX(0), //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
                 _ => throw new ArgumentOutOfRangeException(nameof(charAct))
             };
@@ -428,7 +433,7 @@ namespace game_stuff
 
 
 #if DEBUG
-            var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GId.ToString();
+            var lockingWhoGId = LockingWho == null ? "null" : LockingWho.GetId().ToString();
             Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV}");
 #endif
 
@@ -538,18 +543,18 @@ namespace game_stuff
 
             //  被硬直状态 输入无效
             var dPoint = GetPos();
-            if (AntiActBuff != null)
+            if (StunBuff != null)
             {
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{GId}  {AntiActBuff.GetType()} ::anti v::{AntiActBuff.GetItp().ToString()}::anti buff :: {AntiActBuff.RestTick}");
+                    $"{GId}  {StunBuff.GetType()} ::anti v::{StunBuff.GetItp().ToString()}::anti buff :: {StunBuff.RestTick}");
 #endif
-                var (twoDPoint, antiActBuff) = AntiActBuff.GoTickDrivePos(dPoint);
-                AntiActBuff = antiActBuff;
+                var (twoDPoint, antiActBuff) = StunBuff.GoTickDrivePos(dPoint);
+                StunBuff = antiActBuff;
 
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{GId} {AntiActBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {AntiActBuff?.RestTick}");
+                    $"{GId} {StunBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {StunBuff?.RestTick}");
 #endif
                 return new CharGoTickResult(true, twoDPoint, null, null, null);
             }
@@ -846,6 +851,20 @@ namespace game_stuff
             return CharacterBody.NowPos;
         }
 
+        public int GetId()
+        {
+            return GId;
+        }
+
+        public void BaseBulletAtkOk(int pauseToCaster, int ammoAddWhenSuccess, IBattleUnitStatus targetCharacterStatus)
+        {
+            PauseTick = pauseToCaster;
+            AddAmmo(ammoAddWhenSuccess);
+            //如果没有锁定目标，则锁定当前命中的目标
+            LockingWho ??= targetCharacterStatus;
+            IsHitSome = true;
+        }
+
         public TwoDVector GetAim()
         {
             return CharacterBody.Sight.Aim;
@@ -855,6 +874,17 @@ namespace game_stuff
         {
             var nowVehicleAttackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
             return nowVehicleAttackStatus.GenDamage(damageMulti, b4);
+        }
+
+        public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)
+        {
+            LoadSkill(aim, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick);
+            NextSkill = null;
+        }
+
+        public float GetRr()
+        {
+            return CharacterBody.GetRr();
         }
 
         public void AddProtect(int protectValueAdd)
@@ -977,6 +1007,34 @@ namespace game_stuff
         public void RecyclePass(PassiveTrait passiveTrait)
         {
             throw new NotImplementedException();
+        }
+
+        public void BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
+            float damageMulti, bool back)
+        {
+            ResetSpeed();
+            ResetSnipe();
+            ResetCastAct();
+
+
+            IsBeHitBySomeOne =
+                TwoDVector.TwoDVectorByPt(GetPos(), pos);
+
+
+            if (CatchingWho != null)
+            {
+                CatchingWho.StunBuff = TempConfig.OutCaught;
+                CatchingWho = null;
+            }
+
+
+            AddProtect(protectValueAdd);
+            SurvivalStatus.TakeDamage(bodyCaster.GenDamage(damageMulti, back));
+        }
+
+        public bool CheckCanBeHit()
+        {
+            return !SurvivalStatus.IsDead() || StunBuff != null;
         }
     }
 }

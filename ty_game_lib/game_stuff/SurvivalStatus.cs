@@ -49,7 +49,7 @@ namespace game_stuff
         }
 
 
-        private bool IsDead()
+        public bool IsDead()
         {
             return NowHp <= 0;
         }

@@ -4,45 +4,42 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Radar : IHitMedia
+    public class RadarWave : IHitMedia
     {
-        public Radar(ObjType targetType, Dictionary<BodySize, BulletBox> sizeToBulletCollision, Zone rdZone,
-            TwoDPoint pos, TwoDVector aim)
+        private CharacterStatus? Caster1;
+
+        public RadarWave(ObjType targetType, Dictionary<BodySize, BulletBox> sizeToBulletCollision, Zone rdZone,
+            TwoDPoint pos, TwoDVector aim, IBattleUnitStatus? caster)
         {
             TargetType = targetType;
             SizeToBulletCollision = sizeToBulletCollision;
             RdZone = rdZone;
             Pos = pos;
             Aim = aim;
+            Caster = caster;
         }
 
         public Zone RdZone { get; }
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        public CharacterStatus? Caster { get; set; }
+        public IBattleUnitStatus? Caster { get; set; }
 
         public bool IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
-                case CharacterBody characterBody1:
+                case ICanBeHit characterBody1:
 
 
                     if (Caster == null || !IsHit(characterBody1)) return false;
-                    Caster.MayBeSomeThing.Add(targetBody.GetAnchor());
-                    return true;
-                case Trap trap:
-                   
-                    if (Caster == null || !IsHit(trap)) return false;
-                    Caster.MayBeSomeThing.Add(targetBody.GetAnchor());
-                    return true;
-
-                // #if DEBUG
+                    Caster.GetMayBeSomeThing()?.Add(targetBody.GetAnchor());
+// #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif
-                
-                
+                    return true;
+
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
@@ -59,6 +56,7 @@ namespace game_stuff
         {
             return false;
         }
+
 
         public bool IsHit(ICanBeHit characterBody)
         {

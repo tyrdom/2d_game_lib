@@ -8,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ISaleStuff, IBattleUnit, ICanDrop
+    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop
     {
         public Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             int destroyTick, int weaponCarryMax,

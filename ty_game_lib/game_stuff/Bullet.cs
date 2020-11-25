@@ -22,11 +22,10 @@ namespace game_stuff
 
         private int AmmoAddWhenSuccess { get; }
 
-
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        public CharacterStatus? Caster { get; set; }
-        private Dictionary<BodySize, IAntiActBuffConfig> SuccessAntiActBuffConfigToOpponent { get; }
-        public Dictionary<BodySize, IAntiActBuffConfig> FailActBuffConfigToSelf { get; }
+        public IBattleUnitStatus? Caster { get; set; }
+        private Dictionary<BodySize, IStunBuffConfig> SuccessStunBuffConfigToOpponent { get; }
+        public Dictionary<BodySize, IStunBuffConfig> FailActBuffConfigToSelf { get; }
 
         private int PauseToCaster { get; }
         private int PauseToOpponent { get; }
@@ -52,6 +51,15 @@ namespace game_stuff
         public void PickedBySomeOne(CharacterStatus characterStatus)
         {
             Caster = characterStatus;
+
+            foreach (var antiActBuffConfig in SuccessStunBuffConfigToOpponent)
+            {
+                if (antiActBuffConfig.Value is CatchStunBuffConfig catchAntiActBuffConfig)
+                {
+                    catchAntiActBuffConfig
+                        .PickBySomeOne(characterStatus);
+                }
+            }
         }
 
         public static Bullet GenByConfig(bullet bullet, uint pairKey = 0)
@@ -70,7 +78,7 @@ namespace game_stuff
 
             var antiActBuffConfigs = GAntiActBuffConfigs(bulletFailActBuffConfigToSelf);
 
-            static IAntiActBuffConfig GenBuffByC(buff_type? buffConfigToOpponentType, string? configToOpponent) =>
+            static IStunBuffConfig GenBuffByC(buff_type? buffConfigToOpponentType, string? configToOpponent) =>
                 buffConfigToOpponentType switch
                 {
                     buff_type.push_buff => GameTools.GenBuffByConfig(TempConfig.Configs.push_buffs![configToOpponent]),
@@ -80,7 +88,7 @@ namespace game_stuff
                 };
 
 
-            static Dictionary<BodySize, IAntiActBuffConfig>
+            static Dictionary<BodySize, IStunBuffConfig>
                 GAntiActBuffConfigs(IEnumerable<Buff> bulletFailActBuffConfigToSelf)
             {
                 var actBuffConfigs = TempConfig.SizeToR.ToDictionary(
@@ -101,6 +109,11 @@ namespace game_stuff
                                 var firstOrDefault3 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                                     x.size == size.big || x.size == size.@default);
                                 return GenBuffByC(firstOrDefault3?.buff_type, firstOrDefault3?.buff_id);
+                            case BodySize.Tiny:
+                                var firstOrDefault4 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                                    x.size == size.tiny || x.size == size.@default);
+                                return GenBuffByC(firstOrDefault4?.buff_type, firstOrDefault4?.buff_id);
+
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
@@ -124,15 +137,15 @@ namespace game_stuff
         }
 
         private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
-            Dictionary<BodySize, IAntiActBuffConfig> successAntiActBuffConfigToOpponent,
-            Dictionary<BodySize, IAntiActBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
+            Dictionary<BodySize, IStunBuffConfig> successStunBuffConfigToOpponent,
+            Dictionary<BodySize, IStunBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
             SizeToBulletCollision = sizeToBulletCollision;
             Caster = null;
-            SuccessAntiActBuffConfigToOpponent = successAntiActBuffConfigToOpponent;
+            SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
             PauseToCaster = pauseToCaster;
             PauseToOpponent = pauseToOpponent;
@@ -162,98 +175,136 @@ namespace game_stuff
         {
             switch (targetBody)
             {
-                case CharacterBody characterBody1:
-                    var isHit = Caster != null && IsHit(characterBody1);
+                case CharacterBody targetCharacterBody:
+                    var isHit = IsHit(targetCharacterBody);
                     if (isHit)
                     {
-                        HitOne(characterBody1.CharacterStatus);
+                        HitOne(targetCharacterBody.CharacterStatus);
                     }
-
 #if DEBUG
                     Console.Out.WriteLine($"bullet hit::{isHit}");
 #endif
                     return isHit;
-             
+                case Trap trap:
+                    var isHitBody = IsHit(trap);
+                    if (isHitBody)
+                    {
+                        HitOne(trap);
+                    }
+
+
+                    return isHitBody;
+
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
         }
 
+        private void HitOne(Trap targetTrap)
+        {
+            switch (Caster)
+            {
+                case null: throw new Exception("there is a no Caster Bullet");
+                case CharacterStatus characterStatusCaster:
+                    HitOne(targetTrap, characterStatusCaster);
+                    break;
+                case Trap trapCaster:
+                    HitOne(targetTrap, trapCaster);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Caster));
+            }
+        }
+
+
+        private void HitOne(Trap targetTrap, IBattleUnitStatus caster)
+        {
+            //目标为trap 直接成功攻击
+            caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetTrap);
+
+            targetTrap.TakeDamage(caster.GenDamage(DamageMulti, true));
+        }
+
         private void HitOne(CharacterStatus targetCharacterStatus)
         {
-            if (Caster == null)
+            switch (Caster)
             {
-                throw new Exception("there is a no Caster Bullet");
-            }
+                case null: throw new Exception("there is a no Caster Bullet");
+                case CharacterStatus characterStatusCaster:
 
-            var protecting = targetCharacterStatus.NowProtectTick > 0;
+                    HitOne(targetCharacterStatus, characterStatusCaster);
+                    break;
+                case Trap trapCaster:
+                    HitOne(targetCharacterStatus, trapCaster);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Caster));
+            }
+        }
+
+        private (bool atkOk, bool b4, IStunBuff? opponentCharacterStatusAntiActBuff, bool isActSkill) IsAtkPass(
+            CharacterStatus targetCharacterStatus)
+        {
             var nowCastSkill = targetCharacterStatus.NowCastAct;
             var objTough = nowCastSkill?.NowTough;
-            var opponentCharacterStatusAntiActBuff = targetCharacterStatus.AntiActBuff;
+            var opponentCharacterStatusAntiActBuff = targetCharacterStatus.StunBuff;
             var opponentIsStun = opponentCharacterStatusAntiActBuff != null;
             var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
             var b3 = !isActSkill && Tough < TempConfig.MidTough; //如果对手不在释放技能，攻击坚韧小于中值，攻击成功
+            var atkOk = opponentIsStun || b2 || b3 || b4;
+
 #if DEBUG
             Console.Out.WriteLine(
                 $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{TempConfig.MidTough}");
 #endif
+            return (atkOk, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+        }
+
+
+        private void HitOne(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster)
+        {
+            var protecting = targetCharacterStatus.NowProtectTick > 0;
             if (protecting)
             {
                 return;
             }
 
+            var (atkOk, back, opponentCharacterStatusAntiActBuff, isActSkill) = IsAtkPass(targetCharacterStatus);
+
             var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.GetSize();
             //AttackOk 攻击成功
-            if (opponentIsStun || b2 || b3 || b4)
+            if (atkOk)
             {
-                // 目标速度瞄准重置
-                targetCharacterStatus.ResetSpeed();
-                targetCharacterStatus.ResetSnipe();
-                targetCharacterStatus.ResetCastAct();
-                // 我方按配置添加攻击停帧,攻击产生效果
-                Caster.PauseTick = PauseToCaster;
-                Caster.AddAmmo(AmmoAddWhenSuccess);
-                //如果没有锁定目标，则锁定当前命中的目标
-                Caster.LockingWho ??= targetCharacterStatus;
-                //生成击中受击消息数据缓存
-                targetCharacterStatus.IsBeHitBySomeOne =
-                    TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos);
+                //基本方面
+                // 释放方基本状态
+                caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetCharacterStatus);
 
-                Caster.IsHitSome = true;
-                //如果对手有抓取对象
-                if (targetCharacterStatus.CatchingWho != null)
-                {
-                    //抓取脱手
-                    targetCharacterStatus.CatchingWho.AntiActBuff = TempConfig.OutCaught;
-                    targetCharacterStatus.CatchingWho = null;
-                }
+                // 被击中方基本状态改变 包括伤害
+                targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back);
 
-                //对手承受伤害
-                targetCharacterStatus.AddProtect(ProtectValueAdd);
-                targetCharacterStatus.SurvivalStatus.TakeDamage(Caster.GenDamage(DamageMulti, b4));
-
-
-                var antiActBuffConfig = SuccessAntiActBuffConfigToOpponent[targetCharacterBodyBodySize];
+                //stun buff方面
+                var antiActBuffConfig = SuccessStunBuffConfigToOpponent[targetCharacterBodyBodySize];
 
                 void InitBuff()
                 {
                     targetCharacterStatus.PauseTick = Math.Max(PauseToOpponent, targetCharacterStatus.PauseTick);
 
-                    targetCharacterStatus.AntiActBuff = antiActBuffConfig
+                    targetCharacterStatus.StunBuff = antiActBuffConfig
                         .GenBuff(Pos,
                             targetCharacterStatus.GetPos(),
                             Aim,
                             null, 0,
-                            targetCharacterBodyBodySize, Caster);
+                            targetCharacterBodyBodySize, caster);
                     //初始化buff时，如果是抓取技能，会触发技能
                     switch (antiActBuffConfig)
                     {
-                        case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                            Caster.LoadSkill(null, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick);
-                            Caster.NextSkill = null;
+                        case CatchStunBuffConfig catchAntiActBuffConfig:
+                            caster.LoadCatchTrickSkill(null, catchAntiActBuffConfig);
+
                             break;
                     }
                 }
@@ -263,11 +314,10 @@ namespace game_stuff
                 {
                     case null:
                         InitBuff();
-
                         break;
                     //对手被其他人抓取时，不在添加停顿帧和改变其buff 除非是自己抓的目标
                     case Caught _:
-                        if (Caster.CatchingWho == targetCharacterStatus)
+                        if (caster.CatchingWho == targetCharacterStatus)
                         {
                             InitBuff();
                         }
@@ -285,8 +335,8 @@ namespace game_stuff
                             targetCharacterStatus.GetPos(),
                             Aim,
                             height,
-                            pushOnAir.UpSpeed, targetCharacterBodyBodySize, Caster);
-                        targetCharacterStatus.AntiActBuff = antiActBuff;
+                            pushOnAir.UpSpeed, targetCharacterBodyBodySize, caster);
+                        targetCharacterStatus.StunBuff = antiActBuff;
                         break;
                     case PushOnEarth _:
 
@@ -298,55 +348,65 @@ namespace game_stuff
             }
             else
             {
-                //AttackFail 需要分两种情况 
-                //清除技能数据
-                Caster.ResetSnipe();
-                Caster.ResetCastAct();
-                //生成击中受击消息数据缓存
-                Caster.IsBeHitBySomeOne = TwoDVector.TwoDVectorByPt(Caster.GetPos(), targetCharacterStatus.GetPos());
-                targetCharacterStatus.IsHitSome = true;
-
-                if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
+                //AttackFail 
+                switch (caster)
                 {
-                    if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff)) return;
-                    var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
-
-                    //如果为抓取技能，会马上装载抓取buff附带的触发技能
-                    switch (failAntiBuff)
-                    {
-                        case CatchAntiActBuffConfig catchAntiActBuffConfig:
-                            targetCharacterStatus.CatchingWho = Caster;
-
-                            targetCharacterStatus.LoadSkill(aim, catchAntiActBuffConfig.TrickSkill,
-                                SkillAction.CatchTrick);
-                            targetCharacterStatus.NextSkill = null;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
-                    }
-
-                    var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
-                        targetCharacterStatus.GetAim(),
-                        null,
-                        0, Caster.CharacterBody.GetSize(), targetCharacterStatus);
-                    Caster.AntiActBuff = antiActBuff;
-
-                    // var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), Caster.GetPos(),
-                    //     targetCharacterStatus.GetAim(),
-                    //     null,
-                    //     0, Caster.CharacterBody.BodySize, targetCharacterStatus);
-                    // Caster.AntiActBuff = antiActBuff;
+                    case CharacterStatus characterStatus:
+                        CharAtkFail(characterStatus, targetCharacterStatus, isActSkill, targetCharacterBodyBodySize);
+                        break;
+                    case Trap trap:
+                        trap.FailAtk();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(caster));
                 }
-                else //在攻击状态，通过通用失败buff读取
+            }
+        }
+
+
+        private void CharAtkFail(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus, bool isActSkill,
+            BodySize targetCharacterBodyBodySize)
+        {
+            //清除技能数据
+            bodyCaster.ResetSnipe();
+            bodyCaster.ResetCastAct();
+            //生成击中受击消息数据缓存
+            bodyCaster.IsBeHitBySomeOne =
+                TwoDVector.TwoDVectorByPt(bodyCaster.GetPos(), targetCharacterStatus.GetPos());
+
+            targetCharacterStatus.IsHitSome = true;
+
+            if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
+            {
+                if (!FailActBuffConfigToSelf.TryGetValue(targetCharacterBodyBodySize, out var failAntiBuff)) return;
+                var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
+
+                //如果为抓取技能，会马上装载抓取buff附带的触发技能
+                switch (failAntiBuff)
                 {
+                    case CatchStunBuffConfig catchAntiActBuffConfig:
+                        targetCharacterStatus.CatchingWho = bodyCaster;
+                        targetCharacterStatus.LoadCatchTrickSkill(aim, catchAntiActBuffConfig);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
+                }
+
+                var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), bodyCaster.GetPos(),
+                    targetCharacterStatus.GetAim(),
+                    null,
+                    0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
+                bodyCaster.StunBuff = antiActBuff;
+            }
+            else //对手在攻击状态，通过通用失败buff读取
+            {
 #if DEBUG
-                    Console.Out.WriteLine($"Gen Common Back");
+                Console.Out.WriteLine($"Gen Common Back");
 #endif
-                    var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
-                        Caster.GetPos(), Aim,
-                        null, 0, Caster.CharacterBody.GetSize(), targetCharacterStatus);
-                    Caster.AntiActBuff = antiActBuff;
-                }
+                var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
+                    bodyCaster.GetPos(), Aim,
+                    null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
+                bodyCaster.StunBuff = antiActBuff;
             }
         }
 

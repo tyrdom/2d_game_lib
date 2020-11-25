@@ -11,7 +11,7 @@ namespace game_stuff
         private readonly SightMap SightMap; //视野地图
         private readonly WalkMap WalkMap; //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
-        private Dictionary<int, List<IHitMedia>> TeamToHitEffect { get; }
+        private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; }
 
         private IQSpace MapInteractableThings { get; }
         // private TempConfig TempConfig { get; }
@@ -25,7 +25,7 @@ namespace game_stuff
             WalkMap = walkMap;
             GidToBody = gidToBody;
             MapInteractableThings = mapInteractableThings;
-            TeamToHitEffect = new Dictionary<int, List<IHitMedia>>();
+            TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
         //初始化状态信息,包括玩家信息和地图信息
@@ -125,8 +125,10 @@ namespace game_stuff
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
-            var everyBodyGoATick = EveryBodyGoATick(gidToOperates);
-            var gidToWhichBulletHit = BulletsDo();
+            var everyBodyGoATick = EveryTeamGoATick(gidToOperates);
+
+
+            var gidToWhichBulletHit = HitMediasDo();
 
             foreach (var twoDTwoP in everyBodyGoATick)
             {
@@ -227,10 +229,10 @@ namespace game_stuff
         }
 
 
-        private Dictionary<int, HashSet<IHitMedia>> BulletsDo()
+        private Dictionary<int, HashSet<IHitMedia>> HitMediasDo()
         {
             var whoHitGid = new Dictionary<int, HashSet<IHitMedia>>();
-            foreach (var ii in TeamToHitEffect)
+            foreach (var ii in TeamToHitMedia)
             {
                 var team = ii.Key;
                 var bullets = ii.Value;
@@ -239,14 +241,14 @@ namespace game_stuff
                     switch (bullet.TargetType)
                     {
                         case ObjType.OtherTeam:
-                            foreach (var i in from kvv in TeamToBodies
-                                let bodyTeam = kvv.Key
-                                let value = kvv.Value.playerBodies
-                                where team != bodyTeam
-                                select bullet.HitTeam(value)
-                                into hitTeam
-                                from i in hitTeam
-                                select i)
+
+                            foreach (var i in TeamToBodies.Select(kvv => new {kvv, bodyTeam = kvv.Key})
+                                .Select(t => new {t, value = t.kvv.Value})
+                                .Where(tt => team != tt.t.bodyTeam)
+                                .Select(ttt => (bullet.HitTeam(ttt.value.playerBodies),
+                                    bullet.HitTeam(ttt.value.Traps)))
+                                .SelectMany(x => x.Item1)
+                            )
                             {
                                 if (whoHitGid.TryGetValue(i, out var hBullets))
                                 {
@@ -258,11 +260,13 @@ namespace game_stuff
                                 }
                             }
 
+
                             break;
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
                                 bullet.HitTeam(qSpace.playerBodies);
+                                bullet.HitTeam(qSpace.Traps);
                             }
 
                             break;
@@ -304,7 +308,7 @@ namespace game_stuff
 
         private static readonly Func<IAaBbBox, bool> IsV = x => x is VehicleCanIn;
 
-        private Dictionary<int, ITwoDTwoP> EveryBodyGoATick(Dictionary<int, Operate> gidToOperates)
+        private Dictionary<int, ITwoDTwoP> EveryTeamGoATick(Dictionary<int, Operate> gidToOperates)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
 
@@ -319,7 +323,24 @@ namespace game_stuff
 
                 var mapToDicGidToSth = playerBodies.MapToDicGidToSth(GameTools.BodyGoATick, gto);
                 var trapGoTickResults = traps.MapToIDict(GameTools.TrapGoATick);
-                
+
+                foreach (var trapGoTickResult in trapGoTickResults)
+                {
+                    var goTickResult = trapGoTickResult.Value;
+
+                    var stillAlive = goTickResult.StillAlive;
+
+                    if (!stillAlive)
+                    {
+                        continue;
+                    }
+
+                    var launchBullet = goTickResult.LaunchBullet;
+                    if (launchBullet == null) continue;
+
+                    AddBulletToDict(team, launchBullet);
+                }
+
                 foreach (var gtb in mapToDicGidToSth)
                 {
                     // (gid, (twoDTwoP, bullet))
@@ -397,33 +418,36 @@ namespace game_stuff
                     }
 
                     var bullet = aCharGoTickMsg.LaunchBullet;
-                    switch (bullet)
-                    {
-                        case null:
-                            continue;
-
-                        case IHitMedia hitAbleMedia:
-
-                            if (TeamToHitEffect.TryGetValue(team, out var b))
-                            {
-                                b.Add(hitAbleMedia);
-                            }
-                            else
-                            {
-                                TeamToHitEffect[team] = new List<IHitMedia> {hitAbleMedia};
-                            }
-
-                            break;
-                        case Summons summons:
-                            // todo
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(bullet));
-                    }
+                    if (bullet == null) continue;
+                    AddBulletToDict(team, bullet);
                 }
             }
 
             return twoDTwoPs;
+        }
+
+        private void AddBulletToDict(int team, IEffectMedia bullet)
+        {
+            switch (bullet)
+            {
+                case IHitMedia hitAbleMedia:
+
+                    if (TeamToHitMedia.TryGetValue(team, out var b))
+                    {
+                        b.Add(hitAbleMedia);
+                    }
+                    else
+                    {
+                        TeamToHitMedia[team] = new List<IHitMedia> {hitAbleMedia};
+                    }
+
+                    break;
+                case Summon summons:
+                    // todo
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(bullet));
+            }
         }
 
         public void InsertBodies(HashSet<CharacterBody> characterBodies)

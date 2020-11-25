@@ -6,13 +6,18 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : IIdPointShape, ICanBeHit
+    public class CharacterBody : ICanBeHit
     {
         private BodySize BodySize { get; }
 
         public BodySize GetSize()
         {
             return CharacterStatus.NowVehicle?.Size ?? BodySize;
+        }
+
+        public bool CheckCanBeHit()
+        {
+            return CharacterStatus.CheckCanBeHit();
         }
 
         public CharacterStatus CharacterStatus { get; }
@@ -123,7 +128,7 @@ namespace game_stuff
 
         private void HitWall()
         {
-            var characterStatusAntiActBuff = CharacterStatus.AntiActBuff;
+            var characterStatusAntiActBuff = CharacterStatus.StunBuff;
             if (characterStatusAntiActBuff == null)
             {
                 return;
@@ -136,7 +141,7 @@ namespace game_stuff
 
         public CharTickMsg GenTickMsg()
         {
-            var isStun = CharacterStatus.AntiActBuff != null;
+            var isStun = CharacterStatus.StunBuff != null;
             var skillAct = CharacterStatus.NowCastAct != null;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,

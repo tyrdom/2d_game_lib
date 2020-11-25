@@ -5,16 +5,16 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface IAntiActBuff
+    public interface IStunBuff
     {
         public uint RestTick { get; set; }
         public ITwoDTwoP GetItp();
-        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt);
+        public (ITwoDTwoP, IStunBuff?) GoTickDrivePos(TwoDPoint oldPt);
 
         public float HitWall();
     }
 
-    class PushOnEarth : IAntiActBuff
+    class PushOnEarth : IStunBuff
     {
         private TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
@@ -33,7 +33,7 @@ namespace game_stuff
             return PushVector;
         }
 
-        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
+        public (ITwoDTwoP, IStunBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             RestTick -= 1;
             if (RestTick <= 0)
@@ -73,7 +73,7 @@ namespace game_stuff
         }
     }
 
-    public class PushOnAir : IAntiActBuff
+    public class PushOnAir : IStunBuff
     {
         public TwoDVector PushVector { get; set; }
         public float Height;
@@ -95,7 +95,7 @@ namespace game_stuff
             return PushVector;
         }
 
-        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
+        public (ITwoDTwoP, IStunBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             var nowHeight = Height + UpSpeed;
             RestTick -= 1;
@@ -132,12 +132,12 @@ namespace game_stuff
         }
     }
 
-    class Caught : IAntiActBuff
+    class Caught : IStunBuff
     {
         public List<TwoDPoint> MovesOnPoints { get; }
-        public CharacterStatus WhoCatchMe { get; }
+        public IBattleUnitStatus WhoCatchMe { get; }
 
-        public Caught(List<TwoDPoint> movesOnPoints, uint restTick, CharacterStatus whoCatchMe)
+        public Caught(List<TwoDPoint> movesOnPoints, uint restTick, IBattleUnitStatus whoCatchMe)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
@@ -151,7 +151,7 @@ namespace game_stuff
             return MovesOnPoints.Count > 0 ? MovesOnPoints[0] : TwoDPoint.Zero();
         }
 
-        public (ITwoDTwoP, IAntiActBuff?) GoTickDrivePos(TwoDPoint oldPt)
+        public (ITwoDTwoP, IStunBuff?) GoTickDrivePos(TwoDPoint oldPt)
         {
             RestTick -= 1;
             var count = MovesOnPoints.Count;

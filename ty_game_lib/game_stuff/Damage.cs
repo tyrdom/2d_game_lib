@@ -19,5 +19,10 @@ namespace game_stuff
             var damageBuffDamageMultiS = (uint) (damageMulti * ShardedDamage);
             return new Damage(ShardedNum, damageBuffDamageMultiM, damageBuffDamageMultiS);
         }
+
+        public static Damage Zero()
+        {
+            return new Damage(0, 0, 0);
+        }
     }
 }

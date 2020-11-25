@@ -4,25 +4,23 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface IAntiActBuffConfig
+    public interface IStunBuffConfig
     {
         public uint TickLast { get; }
 
-        public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterStatus whoDid);
-
-        public void PickBySomeOne(CharacterStatus characterStatus);
+        public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+            BodySize bodySize, IBattleUnitStatus whoDid);
     }
 
 
-    public class PushEarthAntiActBuffConfig : IAntiActBuffConfig
+    public class PushEarthStunBuffConfig : IStunBuffConfig
     {
         private float PushForce; //推力
         private PushType PushType; //方向或者中心
         private TwoDVector? PushFixVector; //修正向量，中心push为中心点，方向为方向修正
         public uint TickLast { get; }
 
-        public PushEarthAntiActBuffConfig(float pushForce, PushType pushType, TwoDVector? pushFixVector,
+        public PushEarthStunBuffConfig(float pushForce, PushType pushType, TwoDVector? pushFixVector,
             uint lastTick)
         {
             PushForce = pushForce;
@@ -31,7 +29,7 @@ namespace game_stuff
             TickLast = lastTick;
         }
 
-        private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction)
+        private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction)
         {
             var dVector1 = unit.Multi(speed);
 
@@ -52,8 +50,8 @@ namespace game_stuff
             }
         }
 
-        public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterStatus whoDid)
+        public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+            BodySize bodySize, IBattleUnitStatus whoDid)
         {
             var mass = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -77,13 +75,9 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-        public void PickBySomeOne(CharacterStatus characterStatus)
-        {
-        }
     }
 
-    public class PushAirAntiActBuffConfig : IAntiActBuffConfig
+    public class PushAirStunBuffConfig : IStunBuffConfig
     {
         private float PushForce;
         private PushType PushType;
@@ -92,7 +86,7 @@ namespace game_stuff
         private TwoDVector? PushFixVector;
         public uint TickLast { get; }
 
-        public PushAirAntiActBuffConfig(float pushForce, PushType pushType, float upForce,
+        public PushAirStunBuffConfig(float pushForce, PushType pushType, float upForce,
             TwoDVector? pushFixVector, uint tickLast)
         {
             PushForce = pushForce;
@@ -108,8 +102,8 @@ namespace game_stuff
             return MathTools.Min(maxUp, UpForce / bodyMass);
         }
 
-        public IAntiActBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
-            , float upSpeed, BodySize bodySize, CharacterStatus whoDid)
+        public IStunBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
+            , float upSpeed, BodySize bodySize, IBattleUnitStatus whoDid)
         {
             var mass = TempConfig.SizeToMass[bodySize];
             switch (PushType)
@@ -132,11 +126,7 @@ namespace game_stuff
             }
         }
 
-        public void PickBySomeOne(CharacterStatus characterStatus)
-        {
-        }
-
-        private IAntiActBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
+        private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
         {
             var max = MathTools.Max(GenUp(height, f), upSpeed);
             var pushOnAir = new PushOnAir(unit.Multi(speed), height.GetValueOrDefault(0), max, TickLast);
@@ -150,9 +140,9 @@ namespace game_stuff
         Vector
     }
 
-    public class CatchAntiActBuffConfig : IAntiActBuffConfig
+    public class CatchStunBuffConfig : IStunBuffConfig
     {
-        public CatchAntiActBuffConfig(TwoDVector[] twoDVectors, uint tickLast, Skill trickSkill
+        public CatchStunBuffConfig(TwoDVector[] twoDVectors, uint tickLast, Skill trickSkill
         )
         {
             TwoDVectors = twoDVectors;
@@ -165,29 +155,29 @@ namespace game_stuff
         public Skill TrickSkill { get; }
 
 
-        private IAntiActBuff GenABuff(TwoDPoint anchor, TwoDVector aim, CharacterStatus whoDid)
+        private IStunBuff GenABuff(TwoDPoint anchor, TwoDVector aim, IBattleUnitStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
                 .Select(anchor.Move)
                 .ToList();
 #if DEBUG
-            Console.Out.WriteLine($"pos {anchor.ToString()} aim {aim.ToString()}");
+            Console.Out.WriteLine($"pos {anchor} aim {aim}");
             foreach (var twoDVector in TwoDVectors)
             {
-                Console.Out.WriteLine($"{twoDVector.ToString()}");
+                Console.Out.WriteLine($"{twoDVector}");
             }
 
             foreach (var twoDPoint in twoDPoints)
             {
-                Console.Out.WriteLine($"{twoDPoint.ToString()}");
+                Console.Out.WriteLine($"{twoDPoint}");
             }
 #endif
             var caught = new Caught(twoDPoints, TickLast, whoDid);
             return caught;
         }
 
-        public IAntiActBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, CharacterStatus whoDid)
+        public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+            BodySize bodySize, IBattleUnitStatus whoDid)
         {
             var antiActBuff = GenABuff(pos, aim, whoDid);
             return antiActBuff;

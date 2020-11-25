@@ -17,7 +17,7 @@ namespace game_stuff
 
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
-        public CharacterStatus? Caster { get; set; }
+        public IBattleUnitStatus? Caster { get; set; }
         public List<IPlayingBuff> PlayingBuffToAdd { get; }
         public Regeneration? RegenerationBase { get; }
 

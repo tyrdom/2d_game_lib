@@ -14,6 +14,7 @@ namespace game_stuff
         public HashSet<int> HitTeam(IQSpace qSpace);
         public ObjType TargetType { get; }
         public bool IsHit(ICanBeHit characterBody);
+       
     }
 
     public static class HitAbleMediaStandard
@@ -24,6 +25,5 @@ namespace game_stuff
                 hitMedia, hitMedia.RdZone.MoveToAnchor(hitMedia.Pos));
             return SomeTools.EnumerableToHashSet(mapToGidList.Select(x => x.GetId()));
         }
-        
     }
 }

@@ -3,7 +3,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Summons : IEffectMedia
+    public class Summon : IEffectMedia
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
@@ -13,6 +13,8 @@ namespace game_stuff
             return false;
         }
 
-        public CharacterStatus? Caster { get; set; }
+        public IBattleUnitStatus? Caster { get; set; }
+
+        public Trap Trap { get; }
     }
 }

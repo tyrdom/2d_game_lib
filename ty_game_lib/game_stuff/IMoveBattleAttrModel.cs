@@ -4,7 +4,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface IBattleUnit
+    public interface IMoveBattleAttrModel
     {
         float MaxMoveSpeed { get; }
         float MinMoveSpeed { get; }
@@ -26,27 +26,28 @@ namespace game_stuff
     public static class BattleUnitStandard
     {
         public static void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects,
-            IBattleUnit battleUnit)
+            IMoveBattleAttrModel moveBattleAttrModel)
         {
-            
-
-            var (baseSurvivalStatus, _) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(battleUnit.BaseAttrId));
-            battleUnit.SurvivalStatus.SurvivalPassiveEffectChange(survivalAboutPassiveEffects, baseSurvivalStatus);
+            var (baseSurvivalStatus, _) =
+                GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
+            moveBattleAttrModel.SurvivalStatus.SurvivalPassiveEffectChange(survivalAboutPassiveEffects,
+                baseSurvivalStatus);
         }
 
         public static void AtkStatusRefresh(Vector<float> atkAboutPassiveEffects,
-            IBattleUnit battleUnit)
+            IMoveBattleAttrModel moveBattleAttrModel)
         {
-            var (_, baseAtkStatus) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(battleUnit.BaseAttrId));
-            battleUnit.AttackStatus.PassiveEffectChangeAtk(atkAboutPassiveEffects, baseAtkStatus);
+            var (_, baseAtkStatus) =
+                GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
+            moveBattleAttrModel.AttackStatus.PassiveEffectChangeAtk(atkAboutPassiveEffects, baseAtkStatus);
         }
 
         public static void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects,
-            IBattleUnit battleUnit)
+            IMoveBattleAttrModel moveBattleAttrModel)
         {
             var otherBaseStatus =
-                GameTools.GenOtherBaseStatusByAttr(GameTools.GenBaseAttrById(battleUnit.BaseAttrId));
-            battleUnit.PassiveEffectChangeOther(otherAttrPassiveEffects, otherBaseStatus);
+                GameTools.GenOtherBaseStatusByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
+            moveBattleAttrModel.PassiveEffectChangeOther(otherAttrPassiveEffects, otherBaseStatus);
         }
     }
 }

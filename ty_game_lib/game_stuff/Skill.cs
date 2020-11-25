@@ -46,7 +46,7 @@ namespace game_stuff
         {
             return LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
                 .Select(characterStatus =>
-                    characterStatus?.GId.ToString() == null ? "!null!" : characterStatus.GId.ToString())
+                    characterStatus?.GetId().ToString() == null ? "!null!" : characterStatus.GetId().ToString())
                 .Aggregate("", (current, @null) => current + @null);
         }
 

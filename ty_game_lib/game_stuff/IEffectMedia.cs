@@ -7,6 +7,6 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public bool CanGoNextTick();
-        public CharacterStatus? Caster { get; set; }
+        public IBattleUnitStatus? Caster { get; set; }
     }
 }

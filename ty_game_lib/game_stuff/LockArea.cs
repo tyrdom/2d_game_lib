@@ -11,7 +11,7 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        public CharacterStatus? Caster { get; set; }
+        public IBattleUnitStatus? Caster { get; set; }
 
         public Zone RdZone { get; }
 
@@ -50,9 +50,9 @@ namespace game_stuff
             {
                 case CharacterBody characterBody1:
                     var isHit = IsHit(characterBody1);
-                    if (isHit && Caster != null)
+                    if (isHit && Caster != null && Caster is CharacterStatus characterStatus)
                     {
-                        Caster.LockingWho =
+                        characterStatus.LockingWho =
                             characterBody1.CharacterStatus;
                     }
 

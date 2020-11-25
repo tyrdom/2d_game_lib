@@ -69,8 +69,9 @@ namespace game_stuff
 
         public static bool IsHit(IHitMedia hitMedia, ICanBeHit characterBody)
         {
+            var checkAlive = characterBody.CheckCanBeHit();
             var characterBodyBodySize = characterBody.GetSize();
-            return hitMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
+            return checkAlive && hitMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
                    bulletBox.IsHit(characterBody.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
         }
 
@@ -111,7 +112,7 @@ namespace game_stuff
         }
 
 
-        public static IAntiActBuffConfig GenBuffByConfig(push_buff pushBuff)
+        public static IStunBuffConfig GenBuffByConfig(push_buff pushBuff)
         {
             var pushType = pushBuff.PushType switch
             {
@@ -123,11 +124,11 @@ namespace game_stuff
 
             if (pushBuff.UpForce > 0)
             {
-                return new PushAirAntiActBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
+                return new PushAirStunBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
                     TempConfig.GetTickByTime(pushBuff.LastTime));
             }
 
-            return new PushEarthAntiActBuffConfig(pushBuff.PushForce, pushType, pushAboutVector,
+            return new PushEarthStunBuffConfig(pushBuff.PushForce, pushType, pushAboutVector,
                 TempConfig.GetTickByTime(pushBuff.LastTime));
         }
 
@@ -146,7 +147,7 @@ namespace game_stuff
             return mapInteractable;
         }
 
-        public static IAntiActBuffConfig GenBuffByConfig(caught_buff caughtBuff)
+        public static IStunBuffConfig GenBuffByConfig(caught_buff caughtBuff)
         {
             var twoDVectors = caughtBuff.CatchKeyPoints
                 .ToDictionary(
@@ -168,7 +169,7 @@ namespace game_stuff
             var nk = key;
             var nowVector = value;
             if (twoDVectors.Count <= 1)
-                return new CatchAntiActBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
+                return new CatchStunBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
                     Skill.GenSkillById(caughtBuff.TrickSkill));
             for (var index = 1; index < twoDVectors.Count; index++)
             {
@@ -184,7 +185,7 @@ namespace game_stuff
                 }
             }
 
-            return new CatchAntiActBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
+            return new CatchStunBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
                 Skill.GenSkillById(caughtBuff.TrickSkill));
         }
     }
