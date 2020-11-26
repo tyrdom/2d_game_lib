@@ -9,7 +9,7 @@ namespace game_stuff
         public TwoDPoint Pos;
         public TwoDVector Aim;
         public float Speed;
-        private SurvivalStatus _survivalStatus;
+        public SurvivalStatus SurvivalStatus;
         public bool IsPause;
         public float SightR;
         public SkillAction? SkillLaunch;
@@ -25,7 +25,7 @@ namespace game_stuff
             Gid = gid;
             Pos = pos;
             Aim = aim;
-            _survivalStatus = survivalStatus;
+            SurvivalStatus = survivalStatus;
             SkillLaunch = skillLaunch;
             IsStun = antiBuff;
             Speed = speed;

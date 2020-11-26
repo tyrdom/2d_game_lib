@@ -4,9 +4,8 @@ namespace game_stuff
 {
     public interface ICharAct
     {
-        (ITwoDTwoP? move, IHitMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
-            GoATick(
-                TwoDPoint getPos,
+        (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
+            GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV);
 

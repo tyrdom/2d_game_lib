@@ -371,22 +371,26 @@ namespace game_stuff
                 Skill skill => GoNowActATick(skill, moveOp),
                 _ => throw new ArgumentOutOfRangeException(nameof(NowCastAct))
             };
-            if (actNowActATick.LaunchBullet != null)
-                switch (actNowActATick.LaunchBullet)
-                {
-                    case null:
-                        break;
-                    case SelfEffect selfEffect:
-                        HitBySelfEffect(selfEffect);
-                        actNowActATick.LaunchBullet = null;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+
 
             return actNowActATick;
         }
 
+        private IPosMedia? SelfEffectFilter(IEffectMedia? effectMedia)
+        {
+            switch (effectMedia)
+            {
+                case null:
+                    return null;
+                case IPosMedia posMedia:
+                    return posMedia;
+                case SelfEffect selfEffect:
+                    HitBySelfEffect(selfEffect);
+                    return null;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(effectMedia));
+            }
+        }
 
         private void HitBySelfEffect(SelfEffect selfEffect)
         {
@@ -441,15 +445,20 @@ namespace game_stuff
                 OffSnipe();
             }
 
+            var selfEffectFilter = SelfEffectFilter(bullet);
 
             if (getThing == null)
-                return new CharGoTickResult(true, move, bullet);
+            {
+                return new CharGoTickResult(true, move, selfEffectFilter);
+            }
 
             var dropThings = getThing.ActWhichChar(this, interactive);
 
 
-            return new CharGoTickResult(true, move, bullet, dropThings.ToList(), getThing?.InWhichMapInteractive);
+            return new CharGoTickResult(true, move, selfEffectFilter, dropThings.ToList(),
+                getThing.InWhichMapInteractive);
         }
+
 
         public void RecycleAProp(Prop prop)
         {
@@ -479,6 +488,7 @@ namespace game_stuff
 
         public IMapInteractable? PickAProp(Prop prop)
         {
+            prop.Sign(this);
             if (Prop != null) return prop.DropAsIMapInteractable(GetPos());
             Prop = prop;
             return null;

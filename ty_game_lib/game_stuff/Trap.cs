@@ -141,6 +141,14 @@ namespace game_stuff
             return true;
         }
 
+        public IdPointBox CovToIdBox()
+        {
+            var zone = Zone.Zero();
+            var covToAaBbPackBox = new IdPointBox(zone, this);
+            IdPointBox = covToAaBbPackBox;
+            return covToAaBbPackBox;
+        }
+
         public TwoDPoint GetAnchor()
         {
             return Pos;
@@ -173,7 +181,7 @@ namespace game_stuff
 
         public Damage GenDamage(float damageMulti, bool b)
         {
-            return Owner?.AttackStatus.GenDamage(damageMulti, b) ?? Damage.Zero();
+            return Owner.AttackStatus.GenDamage(damageMulti, b);
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)

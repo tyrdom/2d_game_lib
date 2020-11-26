@@ -48,7 +48,7 @@ namespace game_stuff
             throw new ArgumentOutOfRangeException();
         }
 
-        public void PickedBySomeOne(CharacterStatus characterStatus)
+        public void Sign(CharacterStatus characterStatus)
         {
             Caster = characterStatus;
 
@@ -420,11 +420,10 @@ namespace game_stuff
             return new BulletMsg(Pos, Aim, ResId, Caster?.GetPos());
         }
 
-        public Bullet ActiveBullet(TwoDPoint casterPos, TwoDVector casterAim)
+        public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
         {
-            Pos = casterPos;
-            Aim = casterAim;
-            return this;
+            return
+                PosMediaStandard.Active(casterPos, casterAim, this);
         }
     }
 }

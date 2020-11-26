@@ -5,7 +5,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface IHitMedia : IEffectMedia
+    public interface IHitMedia : IEffectMedia ,IPosMedia
     {
         public Zone RdZone { get; }
 
@@ -14,7 +14,6 @@ namespace game_stuff
         public HashSet<int> HitTeam(IQSpace qSpace);
         public ObjType TargetType { get; }
         public bool IsHit(ICanBeHit characterBody);
-       
     }
 
     public static class HitAbleMediaStandard

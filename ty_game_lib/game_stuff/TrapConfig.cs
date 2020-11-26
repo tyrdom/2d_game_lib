@@ -1,3 +1,6 @@
+using collision_and_rigid;
+using game_config;
+
 namespace game_stuff
 {
     public class TrapConfig
@@ -6,7 +9,6 @@ namespace game_stuff
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
             float? survivalStatusMulti)
         {
-            Owner = null;
             CanBeSee = canBeSee;
             FailChance = failChance;
             BodySize = bodySize;
@@ -16,18 +18,23 @@ namespace game_stuff
             TrickDelayTick = trickDelayTick;
             TrickStack = trickStack;
             LaunchMedia = launchMedia;
-            SurvivalStatusMulti = survivalStatusMulti;
         }
 
-        public void PickBySomeOne(CharacterStatus characterStatus)
+        public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)
         {
-            Owner = characterStatus;
+            var id = characterStatus.GetId() * TempConfig.UpMaxTrap + characterStatus.Traps.Count;
+
+            var genStatusByAttr = BaseAttrId != null
+                ? GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value)).baseSurvivalStatus
+                : null;
+            var trap = new Trap(characterStatus, genStatusByAttr, CanBeSee, pos, id, BodySize, CallTrapTick,
+                MaxLifeTimeTick, 0,
+                TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChance);
+            return trap;
         }
 
-        private CharacterStatus? Owner { get; set; }
+        private base_attr_id? BaseAttrId { get; }
 
-
-        private float? SurvivalStatusMulti { get; }
 
         private bool CanBeSee { get; }
 

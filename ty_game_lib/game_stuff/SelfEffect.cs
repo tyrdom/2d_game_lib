@@ -5,19 +5,20 @@ namespace game_stuff
 {
     public class SelfEffect : IEffectMedia
     {
-        public SelfEffect(CharacterStatus? caster, List<IPlayingBuff> playingBuffToAdd, Regeneration? regeneration)
+        public SelfEffect(List<IPlayingBuff> playingBuffToAdd, Regeneration? regeneration)
         {
-            Pos = TwoDPoint.Zero();
-            Aim = TwoDVector.Zero();
-            Caster = caster;
+            Caster = null;
             PlayingBuffToAdd = playingBuffToAdd;
             RegenerationBase = regeneration;
         }
 
-
-        public TwoDPoint Pos { get; set; }
-        public TwoDVector Aim { get; set; }
         public IBattleUnitStatus? Caster { get; set; }
+
+        public void Sign(CharacterStatus characterStatus)
+        {
+            Caster = characterStatus;
+        }
+
         public List<IPlayingBuff> PlayingBuffToAdd { get; }
         public Regeneration? RegenerationBase { get; }
 

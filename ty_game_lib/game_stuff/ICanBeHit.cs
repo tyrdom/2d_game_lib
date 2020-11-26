@@ -6,5 +6,12 @@ namespace game_stuff
     {
         BodySize GetSize();
         bool CheckCanBeHit();
+
+        public IdPointBox CovToIdBox();
+    }
+
+    public static class CanBeHitStandard
+    {
+      
     }
 }

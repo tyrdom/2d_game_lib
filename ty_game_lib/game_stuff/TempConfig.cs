@@ -118,6 +118,7 @@ namespace game_stuff
         public static uint MaxCallActTwoTick { get; private set; } = 10;
         public static uint StandardMaxTrap { get; set; } = 2;
 
+        public static int UpMaxTrap { get; set; } = 10;
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
@@ -150,6 +151,7 @@ namespace game_stuff
             PassiveR = configsOtherConfig.pass_R;
             SaleBoxR = configsOtherConfig.saleBox_R;
             StandardMaxTrap = configsOtherConfig.standard_trap_max;
+            UpMaxTrap = 10;
         }
 #if NETCOREAPP
         public static void LoadConfig()

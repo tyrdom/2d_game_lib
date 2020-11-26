@@ -216,7 +216,6 @@ namespace game_stuff
                 case MapInteract.RecycleCall:
                     characterStatus.RecycleWeapon();
                     return new List<IMapInteractable>();
-                    break;
                 case MapInteract.PickCall:
                     var picAWeapon = characterStatus.PicAWeapon(this);
                     return picAWeapon == null

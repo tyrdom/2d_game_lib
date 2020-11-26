@@ -20,8 +20,19 @@ namespace game_stuff
         public Zone RdZone { get; }
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
+        public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
+        {
+            return
+                PosMediaStandard.Active(casterPos, casterAim, this);
+        }
+
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
+
+        public void Sign(CharacterStatus characterStatus)
+        {
+            Caster = characterStatus;
+        }
 
         public bool IsHitBody(IIdPointShape targetBody)
         {

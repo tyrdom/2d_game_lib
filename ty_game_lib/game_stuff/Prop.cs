@@ -9,7 +9,7 @@ namespace game_stuff
     public class Prop : ICharAct, ISaleStuff, ICanDrop
     {
         public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti,
-            ImmutableDictionary<uint, Bullet> propBullets, float moveMustMulti, float minCos)
+            ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos)
         {
             RecyclePropStack = recyclePropStack;
             StackCost = stackCost;
@@ -25,7 +25,7 @@ namespace game_stuff
         public int StackCost { get; }
         public uint TotalTick { get; }
         private float MoveMulti { get; }
-        private ImmutableDictionary<uint, Bullet> PropBullets { get; }
+        private ImmutableDictionary<uint, IEffectMedia> PropBullets { get; }
 
         public int RecyclePropStack { get; }
 
@@ -36,7 +36,7 @@ namespace game_stuff
 
         private float MinCos { get; }
 
-        public (ITwoDTwoP? move, IHitMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
@@ -121,6 +121,14 @@ namespace game_stuff
                     return pickAProp == null ? new List<IMapInteractable>() : new List<IMapInteractable> {pickAProp};
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+            }
+        }
+
+        public void Sign(CharacterStatus characterStatus)
+        {
+            foreach (var keyValuePair in PropBullets)
+            {
+                keyValuePair.Value.Sign(characterStatus);
             }
         }
     }

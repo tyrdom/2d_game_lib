@@ -16,7 +16,7 @@ namespace game_stuff
 
     public class Skill : ICharAct
     {
-        private readonly LockArea? _lockArea;
+        private LockArea? LockArea { get; }
         public uint NowOnTick { get; set; }
         public int NowTough { get; set; }
 
@@ -79,7 +79,7 @@ namespace game_stuff
             BaseTough = baseTough;
             ComboInputStartTick = comboInputStartTick;
             NextCombo = nextCombo;
-            _lockArea = lockArea;
+            LockArea = lockArea;
             SnipeBreakTick = snipeBreakTick;
             SnipeStepNeed = snipeStepNeed;
             AmmoCost = ammoCost;
@@ -89,10 +89,10 @@ namespace game_stuff
 
         public void PickedBySomeOne(CharacterStatus characterStatus)
         {
-            if (_lockArea != null) _lockArea.Caster = characterStatus;
+            LockArea?.Sign(characterStatus);
             foreach (var bullet in LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value))
             {
-                bullet.PickedBySomeOne(characterStatus);
+                bullet.Sign(characterStatus);
             }
         }
 
@@ -152,7 +152,7 @@ namespace game_stuff
                 : (int?) null;
         }
 
-        public (ITwoDTwoP? move, IHitMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
+        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint casterPos,
                 TwoDVector casterAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
@@ -184,15 +184,15 @@ namespace game_stuff
             }
 
             // GenBullet 生成子弹
-            IHitMedia? bullet = null;
-            if (NowOnTick == 0 && _lockArea != null)
+            IPosMedia? bullet = null;
+            if (NowOnTick == 0 && LockArea != null)
             {
-                bullet = _lockArea.ActiveArea(casterPos, casterAim);
+                bullet = LockArea.Active(casterPos, casterAim);
             }
 
             if (LaunchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {
-                bullet = nowBullet.ActiveBullet(casterPos, casterAim);
+                bullet = nowBullet.Active(casterPos, casterAim);
             }
 
             // 是否退出Snipe状态

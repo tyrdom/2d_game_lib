@@ -13,6 +13,11 @@ namespace game_stuff
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
+        public void Sign(CharacterStatus characterStatus)
+        {
+            Caster = characterStatus;
+        }
+
         public Zone RdZone { get; }
 
         private LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
@@ -64,11 +69,10 @@ namespace game_stuff
             }
         }
 
-        public LockArea ActiveArea(TwoDPoint casterPos, TwoDVector casterAim)
+        public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
         {
-            Pos = casterPos;
-            Aim = casterAim;
-            return this;
+            return
+                PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
         public HashSet<int> HitTeam(IQSpace qSpace)
