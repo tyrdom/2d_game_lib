@@ -21,7 +21,6 @@ ty_game_lib/.idea/.idea.ty_game_lib/.idea/shelf/Uncommitted_changes_before_Updat
 ty_game_lib/.idea/.idea.ty_game_lib/.idea/shelf/Uncommitted_changes_before_Update_at_7_6_20__9_33___Default_Changelist_.xml
 ty_game_lib/.idea/.idea.ty_game_lib/.idea/vcs.xml
 ty_game_lib/.idea/.idea.ty_game_lib/riderModule.iml
-ty_game_lib/collision_and_rigid/collision_and_rigid.csproj
 ty_game_lib/collision_and_rigid/obj/Debug/net45/collision_and_rigid.AssemblyInfo.cs
 ty_game_lib/collision_and_rigid/obj/Debug/net45/collision_and_rigid.AssemblyInfoInputs.cache
 ty_game_lib/collision_and_rigid/obj/Debug/net45/collision_and_rigid.assets.cache
@@ -162,7 +161,6 @@ ty_game_lib/cov_path_navi/bin/Debug/netcoreapp3.1/collision_and_rigid.pdb
 ty_game_lib/cov_path_navi/bin/Debug/netcoreapp3.1/cov_path_navi.deps.json
 ty_game_lib/cov_path_navi/bin/Debug/netcoreapp3.1/cov_path_navi.dll
 ty_game_lib/cov_path_navi/bin/Debug/netcoreapp3.1/cov_path_navi.pdb
-ty_game_lib/cov_path_navi/cov_path_navi.csproj
 ty_game_lib/cov_path_navi/obj/Debug/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
 ty_game_lib/cov_path_navi/obj/Debug/netcoreapp3.1/cov_path_navi.AssemblyInfo.cs
 ty_game_lib/cov_path_navi/obj/Debug/netcoreapp3.1/cov_path_navi.assets.cache
