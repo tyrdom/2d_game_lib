@@ -44,7 +44,7 @@ namespace game_stuff
         private int MaxAmmo { get; set; }
         public IBattleUnitStatus? LockingWho { get; set; }
 
-        public List<TwoDPoint>? GetMayBeSomeThing()
+        public List<TwoDPoint> GetMayBeSomeThing()
         {
             return MayBeSomeThing;
         }
@@ -70,7 +70,7 @@ namespace game_stuff
 
         public ICharAct? NowCastAct { get; private set; }
 
-        public (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
+        private (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
         //Prop
         private Prop? Prop { get; set; }
@@ -86,7 +86,7 @@ namespace game_stuff
 
         public uint MaxTrap { get; }
 
-        public List<Trap> Traps { get; }
+        public HashSet<Trap> Traps { get; }
 
         //InterAct CallLong status
 
@@ -143,7 +143,7 @@ namespace game_stuff
 
 
             MaxTrap = TempConfig.StandardMaxTrap;
-            Traps = new List<Trap>();
+            Traps = new HashSet<Trap>();
             MayBeSomeThing = new List<TwoDPoint>();
             CharacterBody = null!;
             MaxMoveSpeed = max;
@@ -193,16 +193,13 @@ namespace game_stuff
             survivalStatus)
             GenAttrBaseByConfig(base_attr_id baseAttrId)
         {
-            if (TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var attribute))
-            {
-                var (baseSurvivalStatus, baseAtkStatus) = GameTools.GenStatusByAttr(attribute);
-                return (attribute.MoveMaxSpeed, attribute.MoveMinSpeed, attribute.MoveAddSpeed, attribute.MaxAmmo,
-                        attribute.RecycleMulti,
-                        baseAtkStatus, baseSurvivalStatus
-                    );
-            }
-
-            throw new Exception($"no such attr {baseAttrId}");
+            if (!TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var attribute))
+                throw new Exception($"no such attr {baseAttrId}");
+            var (baseSurvivalStatus, baseAtkStatus) = GameTools.GenStatusByAttr(attribute);
+            return (attribute.MoveMaxSpeed, attribute.MoveMinSpeed, attribute.MoveAddSpeed, attribute.MaxAmmo,
+                    attribute.RecycleMulti,
+                    baseAtkStatus, baseSurvivalStatus
+                );
         }
 
         private void OpChangeAim(TwoDVector? aim)

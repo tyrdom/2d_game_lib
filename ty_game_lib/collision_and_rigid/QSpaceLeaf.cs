@@ -26,12 +26,12 @@ namespace collision_and_rigid
 
         public HashSet<IAaBbBox> AaBbPackBox { get; set; }
 
-        public void AddIdPointBoxes(HashSet<IdPointBox> idPointShapes, int limit, bool needRecord = false)
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false)
         {
             var rawCount = AaBbPackBox.Count;
-            if (rawCount + idPointShapes.Count <= limit)
+            if (rawCount + idPointBox.Count <= limit)
             {
-                AaBbPackBox.UnionWith(idPointShapes);
+                AaBbPackBox.UnionWith(idPointBox);
             }
             else
             {
@@ -39,36 +39,36 @@ namespace collision_and_rigid
                 var q2 = new HashSet<IAaBbBox>();
                 var q3 = new HashSet<IAaBbBox>();
                 var q4 = new HashSet<IAaBbBox>();
-                foreach (var aabbBoxShape in idPointShapes)
+                foreach (var pointBox in idPointBox)
                 {
-                    var shape = aabbBoxShape.GetShape();
+                    var shape = pointBox.GetShape();
                     switch (shape)
                     {
                         case IIdPointShape idPointShape:
                             var twoDPoint = idPointShape.GetAnchor();
                             if (AaBbPackBox.Count <= limit)
                             {
-                                AaBbPackBox.Add(aabbBoxShape);
+                                AaBbPackBox.Add(pointBox);
                             }
                             else
                             {
                                 var whichQ = twoDPoint.WhichQ(Zone);
-                                aabbBoxShape.AddRecord(whichQ);
+                                if (needRecord) pointBox.AddRecord(whichQ);
                                 switch (whichQ)
                                 {
                                     case Quad.One:
 
-                                        q1.Add(aabbBoxShape);
+                                        q1.Add(pointBox);
                                         break;
                                     case Quad.Two:
 
-                                        q2.Add(aabbBoxShape);
+                                        q2.Add(pointBox);
                                         break;
                                     case Quad.Three:
-                                        q3.Add(aabbBoxShape);
+                                        q3.Add(pointBox);
                                         break;
                                     case Quad.Four:
-                                        q4.Add(aabbBoxShape);
+                                        q4.Add(pointBox);
                                         break;
                                     default:
                                         throw new ArgumentOutOfRangeException();
@@ -131,10 +131,17 @@ namespace collision_and_rigid
             }
         }
 
-        public void RemoveIdPointBoxById(List<(int id, List<Quad> record)> iPid_s)
+        public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes)
         {
-            AaBbPackBox.RemoveWhere(x =>
-                x is IdPointBox idPointBox && iPid_s.Select(x => x.id).Contains(idPointBox.GetId()));
+            if (idPointBoxes.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var idPointBox in idPointBoxes)
+            {
+                AaBbPackBox.Remove(idPointBox);
+            }
         }
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)

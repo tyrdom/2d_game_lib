@@ -60,7 +60,7 @@ namespace game_stuff
                 {
                     var hashSet = p.Value;
                     var aabbBoxShapes =
-                        SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToAaBbPackBox()));
+                        SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToIdBox()));
                     emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return (emptyRootBranch, emptyRootBranch);
                 });
@@ -324,6 +324,7 @@ namespace game_stuff
                 var mapToDicGidToSth = playerBodies.MapToDicGidToSth(GameTools.BodyGoATick, gto);
                 var trapGoTickResults = traps.MapToIDict(GameTools.TrapGoATick);
 
+                var thisTeamToRemove = new HashSet<IdPointBox>();
                 foreach (var trapGoTickResult in trapGoTickResults)
                 {
                     var goTickResult = trapGoTickResult.Value;
@@ -332,6 +333,7 @@ namespace game_stuff
 
                     if (!stillAlive)
                     {
+                        if (goTickResult.Self?.IdPointBox != null) thisTeamToRemove.Add(goTickResult.Self.IdPointBox);
                         continue;
                     }
 
@@ -340,6 +342,8 @@ namespace game_stuff
 
                     AddBulletToDict(team, launchBullet);
                 }
+
+                traps.RemoveIdPointBox(thisTeamToRemove);
 
                 foreach (var gtb in mapToDicGidToSth)
                 {
@@ -443,6 +447,7 @@ namespace game_stuff
 
                     break;
                 case Summon summons:
+
                     // todo
                     break;
                 default:
@@ -473,7 +478,7 @@ namespace game_stuff
             foreach (var grouping in characterBodies.GroupBy(x => x.Team))
             {
                 var teamId = grouping.Key;
-                var listToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.CovToAaBbPackBox()));
+                var listToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.CovToIdBox()));
                 if (TeamToBodies.TryGetValue(teamId, out var qSpace))
                 {
                     qSpace.playerBodies.AddIdPointBoxes(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);

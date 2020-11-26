@@ -21,19 +21,19 @@ namespace game_stuff
         }
 
         public CharacterStatus CharacterStatus { get; }
-        public TwoDPoint LastPos { get; private set; }
+        private TwoDPoint LastPos { get; set; }
 
         public TwoDPoint NowPos { get; private set; }
         public AngleSight Sight { get; }
         public int Team { get; }
-        private IdPointBox? IdPointBox { get; set; }
+        public IdPointBox? IdPointBox { get; set; }
 
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
         {
-            InWhichBox = null;
+            IdPointBox = null;
             NowPos = nowPos;
             BodySize = bodySize;
             characterStatus.CharacterBody = this;
@@ -48,10 +48,10 @@ namespace game_stuff
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map, CharacterStatus.GetNowScope());
         }
 
-        public IdPointBox CovToAaBbPackBox()
+        public IdPointBox CovToIdBox()
         {
             if (IdPointBox != null) return IdPointBox;
-            var zone = new Zone(0f, 0f, 0f, 0f);
+            var zone = Zone.Zero();
             var covToAaBbPackBox = new IdPointBox(zone, this);
             IdPointBox = covToAaBbPackBox;
             return covToAaBbPackBox;
@@ -110,8 +110,6 @@ namespace game_stuff
 
             return pt;
         }
-
-        public IdPointBox? InWhichBox { get; set; }
 
 
         public CharGoTickResult GoATick(Dictionary<int, Operate> gidToOp)

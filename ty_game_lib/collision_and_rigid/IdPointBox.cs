@@ -9,9 +9,9 @@ namespace collision_and_rigid
         {
             IdPointShape = idPointShape;
             Zone = zone;
-            
+
             LocateRecord = new List<Quad>();
-            idPointShape.InWhichBox = this;
+            idPointShape.IdPointBox = this;
         }
 
         public bool RemoveLastRecord()

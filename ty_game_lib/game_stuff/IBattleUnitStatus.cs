@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public interface IBattleUnitStatus
     {
-        List<TwoDPoint>? GetMayBeSomeThing();
+        List<TwoDPoint> GetMayBeSomeThing();
         CharacterStatus? CatchingWho { get; set; }
         TwoDPoint GetPos();
         int GetId();

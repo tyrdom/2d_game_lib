@@ -6,8 +6,6 @@ namespace game_stuff
 {
     public class RadarWave : IHitMedia
     {
-        private CharacterStatus? Caster1;
-
         public RadarWave(ObjType targetType, Dictionary<BodySize, BulletBox> sizeToBulletCollision, Zone rdZone,
             TwoDPoint pos, TwoDVector aim, IBattleUnitStatus? caster)
         {
@@ -33,7 +31,7 @@ namespace game_stuff
 
 
                     if (Caster == null || !IsHit(characterBody1)) return false;
-                    Caster.GetMayBeSomeThing()?.Add(targetBody.GetAnchor());
+                    Caster.GetMayBeSomeThing().Add(targetBody.GetAnchor());
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif

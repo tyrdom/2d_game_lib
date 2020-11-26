@@ -12,12 +12,12 @@ namespace collision_and_rigid
 
         public HashSet<IAaBbBox> AaBbPackBox { get; }
 
-        public void AddIdPointBoxes(HashSet<IdPointBox> idPointShapes, int limit,bool needRecord =false);
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit,bool needRecord =false);
 
         public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
 
-        public void RemoveIdPointBoxById(List<(int id,List<Quad> record)> iPidS);
+        public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes);
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true);
 

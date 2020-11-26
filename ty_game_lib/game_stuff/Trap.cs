@@ -9,11 +9,12 @@ namespace game_stuff
 {
     public class Trap : ICanBeHit, IBattleUnitStatus
     {
-        public Trap(SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos, int tid,
+        public Trap(CharacterStatus characterStatus, SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos,
+            int tid,
             BodySize bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
             uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChance)
         {
-            Owner = null;
+            Owner = characterStatus;
             SurvivalStatus = survivalStatus;
             CanBeSee = canBeSee;
             Pos = pos;
@@ -28,19 +29,13 @@ namespace game_stuff
             OnTrick = false;
             TrickStack = trickStack;
             LaunchMedia = launchMedia;
-            MayBeSomeThing = new List<TwoDPoint>();
+
             FailChance = failChance;
-            InWhichBox = null;
-        }
-
-        public void PickBySomeOne(CharacterStatus owner)
-        {
-            Owner = owner;
-            MayBeSomeThing = owner.MayBeSomeThing;
+            IdPointBox = null;
         }
 
 
-        private CharacterStatus? Owner { get; set; }
+        private CharacterStatus Owner { get; }
 
 
         private SurvivalStatus? SurvivalStatus { get; }
@@ -67,6 +62,10 @@ namespace game_stuff
 
         public IHitMedia? LaunchMedia { get; }
 
+        public int GetTeam()
+        {
+            return Owner.CharacterBody.Team;
+        }
 
         public void StartTrick()
         {
@@ -83,7 +82,7 @@ namespace game_stuff
                 && (SurvivalStatus == null || SurvivalStatus.GoATickAndCheckAlive())
                 && (MaxLifeTimeTick == null || NowLifeTimeTick < MaxLifeTimeTick);
 
-            if (!goATickAndCheckAlive) return new TrapGoTickResult(false, null, InWhichBox);
+            if (!goATickAndCheckAlive) return new TrapGoTickResult(false, null, this);
             IHitMedia? hitMedia = null;
 
             if (OnTrick)
@@ -157,12 +156,12 @@ namespace game_stuff
             return Pos;
         }
 
-        public IdPointBox? InWhichBox { get; set; }
-        public List<TwoDPoint> MayBeSomeThing { get; private set; }
+        public IdPointBox? IdPointBox { get; set; }
 
-        public List<TwoDPoint>? GetMayBeSomeThing()
+
+        public List<TwoDPoint> GetMayBeSomeThing()
         {
-            return Owner?.MayBeSomeThing;
+            return Owner.MayBeSomeThing;
         }
 
         public CharacterStatus? CatchingWho { get; set; }

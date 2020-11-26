@@ -39,7 +39,7 @@ namespace collision_and_rigid
 
         ITwoDTwoP RelocateWithBlock(WalkBlock walkBlock);
 
-        IdPointBox? InWhichBox { get; set; }
+        IdPointBox? IdPointBox { get; set; }
     }
 
     

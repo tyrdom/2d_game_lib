@@ -5,9 +5,9 @@ namespace game_stuff
     public readonly struct TrapGoTickResult : IGameUnitTickResult
     {
         public TrapGoTickResult(bool stillAlive = true, IEffectMedia? launchBullet = null,
-            IdPointBox? idPointBox = null)
+            Trap? self = null)
         {
-            IdPointBox = idPointBox;
+            Self = self;
             StillAlive = stillAlive;
             LaunchBullet = launchBullet;
         }
@@ -15,6 +15,6 @@ namespace game_stuff
         public bool StillAlive { get; }
         public IEffectMedia? LaunchBullet { get; }
 
-        public IdPointBox? IdPointBox { get; }
+        public Trap? Self { get; }
     }
 }

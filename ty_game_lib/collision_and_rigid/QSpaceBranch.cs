@@ -44,16 +44,16 @@ namespace collision_and_rigid
         public IQSpace QuadFour { get; set; }
         public IQSpace QuadThree { get; set; }
 
-        public void AddIdPointBoxes(HashSet<IdPointBox> idPointShapes, int limit, bool needRecord = false)
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false)
         {
             var outZone = new HashSet<IdPointBox>();
             var q1 = new HashSet<IdPointBox>();
             var q2 = new HashSet<IdPointBox>();
             var q3 = new HashSet<IdPointBox>();
             var q4 = new HashSet<IdPointBox>();
-            foreach (var aabbBoxShape in idPointShapes)
+            foreach (var pointBox in idPointBox)
             {
-                var shape = aabbBoxShape.GetShape();
+                var shape = pointBox.GetShape();
                 switch (shape)
                 {
                     case IIdPointShape idPointShape:
@@ -63,24 +63,25 @@ namespace collision_and_rigid
                         {
                             if (AaBbPackBox.Count <= limit)
                             {
-                                AaBbPackBox.Add(aabbBoxShape);
+                                AaBbPackBox.Add(pointBox);
                             }
                             else
                             {
                                 var whichQ = twoDPoint.WhichQ(this);
+                                if (needRecord) pointBox.AddRecord(whichQ);
                                 switch (whichQ)
                                 {
                                     case Quad.One:
-                                        q1.Add(aabbBoxShape);
+                                        q1.Add(pointBox);
                                         break;
                                     case Quad.Two:
-                                        q2.Add(aabbBoxShape);
+                                        q2.Add(pointBox);
                                         break;
                                     case Quad.Three:
-                                        q3.Add(aabbBoxShape);
+                                        q3.Add(pointBox);
                                         break;
                                     case Quad.Four:
-                                        q4.Add(aabbBoxShape);
+                                        q4.Add(pointBox);
                                         break;
                                     default:
                                         throw new ArgumentOutOfRangeException();
@@ -90,7 +91,8 @@ namespace collision_and_rigid
 
                         else
                         {
-                            outZone.Add(aabbBoxShape);
+                            outZone.Add(pointBox);
+                            if (needRecord) pointBox.RemoveLastRecord();
                         }
 
                         break;
@@ -100,7 +102,6 @@ namespace collision_and_rigid
             }
 
             Father?.AddIdPointBoxes(outZone, limit);
-
 
             QuadOne.AddIdPointBoxes(q1, limit);
 
@@ -131,17 +132,60 @@ namespace collision_and_rigid
             QuadFour.MoveIdPointBoxes(gidToMove, limit);
         }
 
-        public void RemoveIdPointBoxById(List<(int id, List<Quad> record)> iPidS)
+        public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes)
         {
-            
-            
-            var remove = AaBbPackBox.RemoveWhere(x =>
-                (x is IdPointBox idb) && iPidS.Select(x2 => x2.id).Contains(idb.GetId()));
-            if (remove > 0) return;
-            QuadOne.RemoveIdPointBoxById(iPidS);
-            QuadTwo.RemoveIdPointBoxById(iPidS);
-            QuadThree.RemoveIdPointBoxById(iPidS);
-            QuadFour.RemoveIdPointBoxById(iPidS);
+            if (idPointBoxes.Count == 0)
+            {
+                return;
+            }
+
+            var q1 = new HashSet<IdPointBox>();
+            var q2 = new HashSet<IdPointBox>();
+            var q3 = new HashSet<IdPointBox>();
+            var q4 = new HashSet<IdPointBox>();
+            foreach (var idPointBox in idPointBoxes)
+            {
+                var readRecord = idPointBox.ReadRecord();
+                switch (readRecord)
+                {
+                    case Quad.One:
+                        q1.Add(idPointBox);
+                        idPointBoxes.Remove(idPointBox);
+                        break;
+                    case Quad.Two:
+                        q2.Add(idPointBox);
+                        idPointBoxes.Remove(idPointBox);
+                        break;
+                    case Quad.Three:
+                        q3.Add(idPointBox);
+                        idPointBoxes.Remove(idPointBox);
+                        break;
+                    case Quad.Four:
+                        q4.Add(idPointBox);
+                        idPointBoxes.Remove(idPointBox);
+                        break;
+                    case null:
+                        var remove = AaBbPackBox.Remove(idPointBox);
+                        if (remove)
+                        {
+                            idPointBoxes.Remove(idPointBox);
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            QuadOne.RemoveIdPointBox(q1);
+            QuadTwo.RemoveIdPointBox(q2);
+            QuadThree.RemoveIdPointBox(q3);
+            QuadFour.RemoveIdPointBox(q4);
+            if (idPointBoxes.Count == 0) return;
+            QuadOne.RemoveIdPointBox(idPointBoxes);
+            QuadTwo.RemoveIdPointBox(idPointBoxes);
+            QuadThree.RemoveIdPointBox(idPointBoxes);
+            QuadFour.RemoveIdPointBox(idPointBoxes);
         }
 
 
