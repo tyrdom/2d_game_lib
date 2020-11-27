@@ -10,8 +10,43 @@ namespace game_stuff
 {
     public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop
     {
+        public static Vehicle GenByConfig(vehicle vehicle)
+        {
+            var bodySize = TempConfig.GetBodySize(vehicle.BodyId);
+            var tickByTime = TempConfig.GetTickByTime(vehicle.DestoryDelayTime);
+
+            var genByBulletId = Bullet.GenByBulletId(vehicle.DestoryBullet);
+            var genSkillById = Skill.GenSkillById(vehicle.OutActSkill);
+
+            var vehicleVScope = vehicle.VScope;
+            var vScope = vehicleVScope == null
+                ? Scope.StandardScope()
+                : new Scope(new TwoDVector(vehicleVScope.x, vehicleVScope.y));
+
+
+            var dictionary = new Dictionary<int, Weapon>();
+
+            for (var index = 0; index < vehicle.Weapons.Length; index++)
+            {
+                var vehicleWeapon = vehicle.Weapons[index];
+
+                var genById = Weapon.GenById(vehicleWeapon);
+                if (index < vehicle.MaxWeaponSlot)
+                {
+                    dictionary[index] = genById;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return new Vehicle(bodySize, vScope, dictionary, genByBulletId, tickByTime,
+                vehicle.MaxWeaponSlot, genSkillById, vehicle.AttrId);
+        }
+
         public Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
-            int destroyTick, int weaponCarryMax,
+            uint destroyTick, int weaponCarryMax,
             Skill outAct, base_attr_id baseAttrId)
         {
             var (max, min, add, maxAmmo, _, attackStatus, survivalStatus) =
@@ -49,7 +84,7 @@ namespace game_stuff
 
         private int MaxAmmo { get; }
         public int WeaponCarryMax { get; }
-        private int DestroyTick { get; }
+        private uint DestroyTick { get; }
 
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }

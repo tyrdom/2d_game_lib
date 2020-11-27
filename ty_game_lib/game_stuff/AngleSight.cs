@@ -3,53 +3,6 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Scope
-    {
-        public static Scope StandardScope()
-        {
-            return new Scope(TempConfig.StandardSightVector);
-        }
-
-
-        public Scope(TwoDVector faceRightLeftPt, TwoDVector faceRightRightPt, float maxR, float theta)
-        {
-            FaceRightLeftPt = faceRightLeftPt;
-            FaceRightRightPt = faceRightRightPt;
-            MaxR = maxR;
-            Theta = theta;
-        }
-
-        public TwoDVector FaceRightLeftPt { get; }
-        public TwoDVector FaceRightRightPt { get; }
-        public float MaxR { get; }
-        public float Theta { get; }
-
-        private Scope(TwoDVector upLeft)
-        {
-            var maxR = upLeft.Norm();
-
-            var vector = upLeft.GetUnit();
-            var cosA = vector.X;
-            var cos2A = 2 * cosA * cosA - 1;
-            FaceRightLeftPt = vector;
-            FaceRightRightPt = new TwoDVector(vector.X, -vector.Y);
-            Theta = MathTools.Acos(cos2A);
-            MaxR = maxR;
-        }
-
-        public Scope GenNewScope(float multi)
-        {
-            var theta = Theta / multi;
-            var maxR = MaxR * multi;
-            var f = theta / 2;
-            var cos = MathTools.Cos(f);
-            var sin = MathTools.Sin(f);
-            var twoDVector = new TwoDVector(cos, sin);
-            var twoDVector2 = new TwoDVector(cos, -sin);
-            return new Scope(twoDVector, twoDVector2, maxR, theta);
-        }
-    }
-
     public class AngleSight
     {
         public Scope StandardScope { get; }
@@ -134,29 +87,7 @@ namespace game_stuff
         public void OpChangeAim(TwoDVector? newAim)
         {
             OpChangeAim(newAim, StandardScope);
-            // var oldAim = Aim;
-            //
-            // if (newAim != null) Aim = newAim.GetUnit();
-            //
-            // var cosT = Aim.GetUnit().Dot(oldAim) / oldAim.Norm();
-            // var cosA = StandardScope.FaceRightLeftPt.X;
-            // var cos2A = 2 * cosA * cosA - 1;
-            // var t = cosT > cos2A ? MathTools.Acos(cosT) : StandardScope.Theta;
-            //
-            // var nowRSquare = NowR * NowR;
-            // var snowR = nowRSquare * t;
-            // var twoSr = TempConfig.TwoSToSeePerTick - snowR;
-            // if (twoSr <= 0)
-            // {
-            //     var sqrt = MathTools.Sqrt(TempConfig.TwoSToSeePerTick / t);
-            //     NowR = MathTools.Min(StandardScope.MaxR, sqrt);
-            // }
-            // else
-            // {
-            //     var rSquare = twoSr / StandardScope.Theta + nowRSquare;
-            //     var sqrt = MathTools.Sqrt(rSquare);
-            //     NowR = MathTools.Min(StandardScope.MaxR, sqrt);
-            // }
+         
         }
     }
 }

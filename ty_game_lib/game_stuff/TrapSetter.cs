@@ -3,9 +3,9 @@ using game_config;
 
 namespace game_stuff
 {
-    public class TrapConfig
+    public class TrapSetter
     {
-        public TrapConfig(bool canBeSee, int? failChance, BodySize bodySize, uint callTrapTick,
+        public TrapSetter(bool canBeSee, int? failChance, BodySize bodySize, uint callTrapTick,
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
             base_attr_id? baseAttrId)
         {
@@ -40,15 +40,9 @@ namespace game_stuff
         private BodySize BodySize { get; }
         private uint CallTrapTick { get; }
         private uint? MaxLifeTimeTick { get; }
-
-
         public IHitMedia TrapMedia { get; }
-
         private uint TrickDelayTick { get; }
-
-
         private int? TrickStack { get; }
-
         public IHitMedia? LaunchMedia { get; }
     }
 }

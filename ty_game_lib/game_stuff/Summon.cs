@@ -5,12 +5,12 @@ namespace game_stuff
 {
     public class Summon : IPosMedia
     {
-        public Summon(TwoDPoint pos, TwoDVector aim, TrapConfig trapConfig)
+        public Summon(TwoDPoint pos, TwoDVector aim, TrapSetter trapSetter)
         {
             Pos = pos;
             Aim = aim;
             Caster = null;
-            TrapConfig = trapConfig;
+            TrapSetter = trapSetter;
         }
 
         public TwoDPoint Pos { get; set; }
@@ -29,7 +29,7 @@ namespace game_stuff
 
         public IBattleUnitStatus? Caster { get; set; }
 
-        private TrapConfig TrapConfig { get; }
+        private TrapSetter TrapSetter { get; }
 
 
         public IdPointBox? SetATrap()
@@ -39,7 +39,7 @@ namespace game_stuff
                 case null:
                     return null;
                 case CharacterStatus characterStatus:
-                    var genATrap = TrapConfig.GenATrap(characterStatus, Pos);
+                    var genATrap = TrapSetter.GenATrap(characterStatus, Pos);
                     characterStatus.AddTrap(genATrap);
                     return genATrap.CovToIdBox();
                 case Trap _:
@@ -52,8 +52,8 @@ namespace game_stuff
         public void Sign(CharacterStatus characterStatus)
         {
             Caster = characterStatus;
-            TrapConfig.LaunchMedia?.Sign(characterStatus);
-            TrapConfig.TrapMedia.Sign(characterStatus);
+            TrapSetter.LaunchMedia?.Sign(characterStatus);
+            TrapSetter.TrapMedia.Sign(characterStatus);
         }
     }
 }

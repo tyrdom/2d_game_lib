@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
 using collision_and_rigid;
@@ -8,7 +9,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ISaleStuff,ICanDrop
+    public class Weapon : ISaleStuff, ICanDrop
     {
         public int WId { get; }
 
@@ -75,8 +76,9 @@ namespace game_stuff
 
             var characterStatusNowWeapon = characterStatus.NowWeapon;
             var characterStatusWeapon = weapons[characterStatusNowWeapon];
+            var dropAsIMapInteractable = characterStatusWeapon.DropAsIMapInteractable(characterStatus.GetPos());
             weapons[characterStatusNowWeapon] = this;
-            return characterStatusWeapon.DropAsIMapInteractable(characterStatus.GetPos());
+            return dropAsIMapInteractable;
         }
 
         private static ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> GenASkillGroup(
@@ -115,6 +117,16 @@ namespace game_stuff
                 size.@default => BodySize.Small,
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+
+        public static Weapon GenById(int id)
+        {
+            if (TempConfig.Configs.weapons.TryGetValue(id, out var weapon))
+            {
+                return GenByConfig(weapon);
+            }
+
+            throw new DirectoryNotFoundException($"cant find weapon id {id}");
         }
 
         public static Weapon GenByConfig(weapon weapon)

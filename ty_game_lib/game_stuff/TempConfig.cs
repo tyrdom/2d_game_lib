@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using collision_and_rigid;
 using game_config;
@@ -10,6 +11,20 @@ namespace game_stuff
         public static float GetRBySize(BodySize bodySize)
         {
             return SizeToR[bodySize];
+        }
+
+
+        public static BodySize GetBodySize(size size)
+        {
+            return size switch
+            {
+                size.tiny => BodySize.Tiny,
+                size.small => BodySize.Small,
+                size.medium => BodySize.Medium,
+                size.@default => BodySize.Small,
+                size.big => BodySize.Big,
+                _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+            };
         }
 
         public static uint GetTickByTime(float time)
