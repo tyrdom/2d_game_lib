@@ -325,6 +325,8 @@ namespace game_stuff
                 var trapGoTickResults = traps.MapToIDict(GameTools.TrapGoATick);
 
                 var thisTeamToRemove = new HashSet<IdPointBox>();
+
+                var idPointBoxesToAdd = new HashSet<IdPointBox>();
                 foreach (var trapGoTickResult in trapGoTickResults)
                 {
                     var goTickResult = trapGoTickResult.Value;
@@ -340,7 +342,8 @@ namespace game_stuff
                     var launchBullet = goTickResult.LaunchBullet;
                     if (launchBullet == null) continue;
 
-                    AddBulletToDict(team, launchBullet);
+                    var addBulletToDict = AddBulletToDict(team, launchBullet);
+                    if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
                 traps.RemoveIdPointBox(thisTeamToRemove);
@@ -423,14 +426,17 @@ namespace game_stuff
 
                     var bullet = aCharGoTickMsg.LaunchBullet;
                     if (bullet == null) continue;
-                    AddBulletToDict(team, bullet);
+                    var addBulletToDict = AddBulletToDict(team, bullet);
+                    if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
+
+                traps.AddIdPointBoxes(idPointBoxesToAdd, TempConfig.QSpaceBodyMaxPerLevel, true);
             }
 
             return twoDTwoPs;
         }
 
-        private void AddBulletToDict(int team, IEffectMedia bullet)
+        private IdPointBox? AddBulletToDict(int team, IPosMedia bullet)
         {
             switch (bullet)
             {
@@ -445,11 +451,12 @@ namespace game_stuff
                         TeamToHitMedia[team] = new List<IHitMedia> {hitAbleMedia};
                     }
 
-                    break;
+                    return null;
                 case Summon summons:
 
-                    // todo
-                    break;
+                    var aTrap = summons.SetATrap();
+                    return aTrap;
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(bullet));
             }
@@ -492,30 +499,6 @@ namespace game_stuff
                     TeamToBodies[teamId] = (newQs, newQs2);
                 }
             }
-        }
-
-        public void ReFactBodies(HashSet<CharacterInitData> characterInitDataS)
-        {
-        }
-    }
-
-
-    public class StartPts
-    {
-        private int Now { get; set; }
-        private List<TwoDPoint> Pts { get; }
-
-        public StartPts(List<TwoDPoint> pts)
-        {
-            Pts = pts;
-            Now = 0;
-        }
-
-        public TwoDPoint GenPt()
-        {
-            var twoDPoint = Pts[Now % Pts.Count];
-            Now += 1;
-            return twoDPoint;
         }
     }
 }

@@ -15,6 +15,7 @@ namespace game_stuff
 
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
+
         public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
         {
             return
@@ -30,6 +31,23 @@ namespace game_stuff
 
         private TrapConfig TrapConfig { get; }
 
+
+        public IdPointBox? SetATrap()
+        {
+            switch (Caster)
+            {
+                case null:
+                    return null;
+                case CharacterStatus characterStatus:
+                    var genATrap = TrapConfig.GenATrap(characterStatus, Pos);
+                    characterStatus.AddTrap(genATrap);
+                    return genATrap.CovToIdBox();
+                case Trap _:
+                    return null;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Caster));
+            }
+        }
 
         public void Sign(CharacterStatus characterStatus)
         {

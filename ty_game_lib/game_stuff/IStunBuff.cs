@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -14,7 +13,7 @@ namespace game_stuff
         public float HitWall();
     }
 
-    class PushOnEarth : IStunBuff
+    public class PushOnEarth : IStunBuff
     {
         private TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
@@ -43,13 +42,13 @@ namespace game_stuff
 
             var push = PushVector;
 #if DEBUG
-            Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector.ToString()}");
+            Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector}");
 #endif
 
             var twoDVector = push.Minus(DecreasePerTick);
 #if DEBUG
             Console.Out.WriteLine(
-                $" {GetType()} Decrease~~{DecreasePerTick.ToString()}  PV  mid::{twoDVector.ToString()}");
+                $" {GetType()} Decrease~~{DecreasePerTick}  PV  mid::{twoDVector}");
 #endif
             var dot = push.Dot(twoDVector);
             if (dot <= 0)
@@ -59,7 +58,7 @@ namespace game_stuff
 
             PushVector = twoDVector;
 #if DEBUG
-            Console.Out.WriteLine($"PV after::{PushVector.ToString()}");
+            Console.Out.WriteLine($"PV after::{PushVector}");
 #endif
             return (push, this);
         }
@@ -75,7 +74,7 @@ namespace game_stuff
 
     public class PushOnAir : IStunBuff
     {
-        public TwoDVector PushVector { get; set; }
+        private TwoDVector PushVector { get; set; }
         public float Height;
         public float UpSpeed;
 
@@ -109,7 +108,7 @@ namespace game_stuff
                 var decreasePerTick = PushVector.GetUnit().Multi(TempConfig.Friction);
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{PushVector.ToString()}~~~~~air gen_earth buff~~~~~~{decreasePerTick.ToString()}");
+                    $"{PushVector}~~~~~air gen_earth buff~~~~~~{decreasePerTick}");
 
 #endif
                 var pushOnEarth =

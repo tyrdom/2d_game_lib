@@ -7,7 +7,7 @@ namespace game_stuff
     {
         public TrapConfig(bool canBeSee, int? failChance, BodySize bodySize, uint callTrapTick,
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
-            float? survivalStatusMulti)
+            base_attr_id? baseAttrId)
         {
             CanBeSee = canBeSee;
             FailChance = failChance;
@@ -18,6 +18,7 @@ namespace game_stuff
             TrickDelayTick = trickDelayTick;
             TrickStack = trickStack;
             LaunchMedia = launchMedia;
+            BaseAttrId = baseAttrId;
         }
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)
@@ -34,24 +35,19 @@ namespace game_stuff
         }
 
         private base_attr_id? BaseAttrId { get; }
-
-
         private bool CanBeSee { get; }
-
         private int? FailChance { get; }
         private BodySize BodySize { get; }
-
-        public uint CallTrapTick { get; }
-
-        public uint? MaxLifeTimeTick { get; }
+        private uint CallTrapTick { get; }
+        private uint? MaxLifeTimeTick { get; }
 
 
         public IHitMedia TrapMedia { get; }
 
-        public uint TrickDelayTick { get; }
+        private uint TrickDelayTick { get; }
 
 
-        public int? TrickStack { get; }
+        private int? TrickStack { get; }
 
         public IHitMedia? LaunchMedia { get; }
     }

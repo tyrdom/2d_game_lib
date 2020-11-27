@@ -10,7 +10,6 @@ namespace game_stuff
         TwoDPoint GetPos();
         int GetId();
 
-
         void BaseBulletAtkOk(int pauseToCaster, int ammoAddWhenSuccess, IBattleUnitStatus targetCharacterStatus);
 
         Damage GenDamage(float damageMulti, bool back);

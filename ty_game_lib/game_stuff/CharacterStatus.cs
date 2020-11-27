@@ -86,7 +86,7 @@ namespace game_stuff
 
         public uint MaxTrap { get; }
 
-        public HashSet<Trap> Traps { get; }
+        public Queue<Trap> Traps { get; }
 
         //InterAct CallLong status
 
@@ -143,7 +143,7 @@ namespace game_stuff
 
 
             MaxTrap = TempConfig.StandardMaxTrap;
-            Traps = new HashSet<Trap>();
+            Traps = new Queue<Trap>();
             MayBeSomeThing = new List<TwoDPoint>();
             CharacterBody = null!;
             MaxMoveSpeed = max;
@@ -1042,6 +1042,18 @@ namespace game_stuff
         public bool CheckCanBeHit()
         {
             return !SurvivalStatus.IsDead() || StunBuff != null;
+        }
+
+        public void AddTrap(Trap genATrap)
+        {
+            if (Traps.Count < MaxTrap)
+            {
+                Traps.Enqueue(genATrap);
+            }
+
+            var trap = Traps.Dequeue();
+            trap.NotOverFlow = false;
+            Traps.Enqueue(genATrap);
         }
     }
 }

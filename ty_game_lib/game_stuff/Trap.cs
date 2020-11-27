@@ -14,6 +14,7 @@ namespace game_stuff
             BodySize bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
             uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChance)
         {
+            NotOverFlow = true;
             Owner = characterStatus;
             SurvivalStatus = survivalStatus;
             CanBeSee = canBeSee;
@@ -34,7 +35,7 @@ namespace game_stuff
             IdPointBox = null;
         }
 
-
+        public bool NotOverFlow { get; set; }
         private CharacterStatus Owner { get; }
 
 
@@ -77,6 +78,7 @@ namespace game_stuff
         public TrapGoTickResult GoATick()
         {
             var goATickAndCheckAlive =
+                NotOverFlow &&
                 (FailChance == null || FailChance > 0) &&
                 (TrickStack == null || TrickStack > 0)
                 && (SurvivalStatus == null || SurvivalStatus.GoATickAndCheckAlive())
@@ -121,6 +123,7 @@ namespace game_stuff
         {
             return Tid;
         }
+
 
         public void BaseBulletAtkOk(int __, int _, IBattleUnitStatus ___)
         {

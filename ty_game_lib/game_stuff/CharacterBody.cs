@@ -22,7 +22,6 @@ namespace game_stuff
 
         public CharacterStatus CharacterStatus { get; }
         private TwoDPoint LastPos { get; set; }
-
         public TwoDPoint NowPos { get; private set; }
         public AngleSight Sight { get; }
         public int Team { get; }
