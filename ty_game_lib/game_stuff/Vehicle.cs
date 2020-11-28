@@ -45,7 +45,7 @@ namespace game_stuff
                 vehicle.MaxWeaponSlot, genSkillById, vehicle.AttrId);
         }
 
-        public Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
+        private Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             uint destroyTick, int weaponCarryMax,
             Skill outAct, base_attr_id baseAttrId)
         {

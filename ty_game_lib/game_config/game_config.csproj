@@ -58,6 +58,10 @@
       <EmbeddedResource Include="Resources\talent_s.json" />
       <None Remove="Resources\passive_s.json" />
       <EmbeddedResource Include="Resources\passive_s.json" />
+      <None Remove="Resources\summon_s.json" />
+      <EmbeddedResource Include="Resources\summon_s.json" />
+      <None Remove="Resources\trap_s.json" />
+      <EmbeddedResource Include="Resources\trap_s.json" />
     </ItemGroup>
 
 </Project>
