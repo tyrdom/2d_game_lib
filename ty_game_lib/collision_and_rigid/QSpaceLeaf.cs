@@ -235,6 +235,14 @@ namespace collision_and_rigid
             return i;
         }
 
+        public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t)
+        {
+            foreach (var shape in AaBbPackBox.OfType<TK>().ToList())
+            {
+                action(shape, t);
+            }
+        }
+
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
             foreach (var shape in AaBbPackBox.OfType<IdPointBox>()

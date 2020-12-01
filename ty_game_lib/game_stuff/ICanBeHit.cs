@@ -8,6 +8,7 @@ namespace game_stuff
         bool CheckCanBeHit();
 
         public IdPointBox CovToIdBox();
+        CharTickMsg GenTickMsg();
     }
 
     public static class CanBeHitStandard

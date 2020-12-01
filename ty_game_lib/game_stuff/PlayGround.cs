@@ -152,9 +152,9 @@ namespace game_stuff
             return valueTuple;
         }
 
-        private Dictionary<int, HashSet<CharacterBody>> GetPlayerSee()
+        private Dictionary<int, HashSet<ICanBeHit>> GetPlayerSee()
         {
-            var gidToCharacterBodies = new Dictionary<int, HashSet<CharacterBody>>();
+            var gidToCharacterBodies = new Dictionary<int, HashSet<ICanBeHit>>();
             foreach (var kv in GidToBody)
             {
                 var key = kv.Key;
@@ -162,22 +162,26 @@ namespace game_stuff
 // #if DEBUG
 //                 Console.Out.WriteLine($"gid::{characterBody.GetId()}");
 // #endif
-                var characterBodies = new HashSet<CharacterBody>();
+                var characterBodies = new HashSet<ICanBeHit>();
                 foreach (var kv2 in TeamToBodies)
                 {
                     var bTeam = kv2.Key;
                     var qSpace = kv2.Value.playerBodies;
+                    var traps = kv2.Value.Traps;
 // #if DEBUG
 //                     Console.Out.WriteLine($"team{bTeam}:have:{qSpace.Count()} body");
 // #endif
                     if (characterBody.Team == bTeam)
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((x, y) => true, true).OfType<CharacterBody>();
-// #if DEBUG
+                            qSpace.FilterToGIdPsList((x, y) => true, true).OfType<ICanBeHit>();
+
+                        var ofType = traps.FilterToGIdPsList((a, b) => true, true).OfType<ICanBeHit>();
+                        // #if DEBUG
 //                         Console.Out.WriteLine($"list::{filterToGIdPsList.ToArray().Length}");
-// #endif
+// #endif                
                         characterBodies.UnionWith(filterToGIdPsList);
+                        characterBodies.UnionWith(ofType);
                     }
                     else
                     {
@@ -186,10 +190,14 @@ namespace game_stuff
                                 characterBody);
                         var bodies = filterToGIdPsList.OfType<CharacterBody>();
 
+                        var trapsSee = traps.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
+                            characterBody).OfType<Trap>().Where(t => t.CanBeSee);
 // #if DEBUG
 //                         Console.Out.WriteLine($" {characterBody.Team}:other:{bTeam}::{qSpace.Count()}::{bodies.Count()}");
 // #endif
+    
                         characterBodies.UnionWith(bodies);
+                        characterBodies.UnionWith(trapsSee);
                     }
                 }
 

@@ -35,6 +35,9 @@ namespace collision_and_rigid
         public string OutZones();
         public int FastTouchWithARightShootPoint(TwoDPoint p);
 
+        
+        public void ForeachBoxDoWithOutMove<T,TK>(Action<TK, T> action, T t);
+
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t);
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t, Zone zone);
 

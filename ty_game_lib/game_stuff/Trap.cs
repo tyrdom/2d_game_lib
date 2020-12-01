@@ -41,7 +41,7 @@ namespace game_stuff
 
         private SurvivalStatus? SurvivalStatus { get; }
 
-        private bool CanBeSee { get; }
+        public bool CanBeSee { get; }
         private TwoDPoint Pos { get; }
         private int Tid { get; }
         private int? FailChance { get; set; }
@@ -150,6 +150,11 @@ namespace game_stuff
             var covToAaBbPackBox = new IdPointBox(zone, this);
             IdPointBox = covToAaBbPackBox;
             return covToAaBbPackBox;
+        }
+
+        public CharTickMsg GenTickMsg()
+        {
+            throw new NotImplementedException();
         }
 
         public TwoDPoint GetAnchor()

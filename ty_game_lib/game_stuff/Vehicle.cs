@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
@@ -10,7 +11,16 @@ namespace game_stuff
 {
     public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop
     {
-        public static Vehicle GenByConfig(vehicle vehicle)
+        public static Vehicle GenById(int id)
+        {
+            if (TempConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
+            {
+                return GenByConfig(vehicle);
+            }
+            throw new DirectoryNotFoundException();
+        }
+
+        private static Vehicle GenByConfig(vehicle vehicle)
         {
             var bodySize = TempConfig.GetBodySize(vehicle.BodyId);
             var tickByTime = TempConfig.GetTickByTime(vehicle.DestoryDelayTime);
