@@ -237,9 +237,20 @@ namespace collision_and_rigid
 
         public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t)
         {
-            foreach (var shape in AaBbPackBox.OfType<TK>().ToList())
+            foreach (var shape in AaBbPackBox.OfType<TK>())
             {
                 action(shape, t);
+            }
+        }
+
+        public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t, Zone zone)
+        {
+            foreach (var shape in AaBbPackBox)
+            {
+                if (!zone.NotCross(shape.Zone) && shape is TK tt)
+                {
+                    action(tt, t);
+                }
             }
         }
 
@@ -355,6 +366,11 @@ namespace collision_and_rigid
             T t)
         {
             return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t);
+        }
+
+        public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func, T t, Zone zone)
+        {
+            return SomeTools.FilterToBoxList(this, func, t, zone);
         }
 
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,

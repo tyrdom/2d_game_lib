@@ -17,6 +17,7 @@ namespace game_stuff
             {
                 return GenByConfig(vehicle);
             }
+
             throw new DirectoryNotFoundException();
         }
 
@@ -78,12 +79,14 @@ namespace game_stuff
             AttackStatus = attackStatus;
             BaseAttrId = baseAttrId;
             WhoDriveOrCanDrive = null;
+            NowDsTick = 0;
+            IsDsOn = false;
         }
 
         public CharacterStatus? WhoDriveOrCanDrive { get; set; }
         public BodySize Size { get; }
 
-        public float MaxMoveSpeed { get; }
+        public float MaxMoveSpeed { get; set; }
         public float MinMoveSpeed { get; }
         public float AddMoveSpeed { get; }
         public base_attr_id BaseAttrId { get; }
@@ -92,12 +95,35 @@ namespace game_stuff
 
         public int NowAmmo { get; private set; }
 
-        private int MaxAmmo { get; }
+        private int MaxAmmo { get; set; }
         public int WeaponCarryMax { get; }
         private uint DestroyTick { get; }
 
+        private bool IsDsOn { get; set; }
+        private uint NowDsTick { get; set; }
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
+
+
+        public (bool isBroken, Bullet? destroyBullet) GoATickCheckSurvival()
+        {
+            if (IsDsOn)
+            {
+                NowDsTick++;
+                if (NowDsTick > DestroyTick)
+                {
+                    return (IsDsOn, DestroyBullet);
+                }
+            }
+
+            var goATickAndCheckAlive = SurvivalStatus.GoATickAndCheckAlive();
+            if (!goATickAndCheckAlive)
+            {
+                IsDsOn = true;
+            }
+
+            return (IsDsOn, null);
+        }
 
         public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
         {
@@ -124,7 +150,14 @@ namespace game_stuff
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
                 RecycleMulti) otherBaseStatus)
         {
-            throw new NotImplementedException();
+            var lossAmmo = MaxAmmo - NowAmmo;
+            var (maxAmmo, moveMaxSpeed, _, moveAddSpeed, _, recycleMulti) = otherBaseStatus;
+            MaxAmmo = (int) (maxAmmo * (1f + otherAttrPassiveEffects[0]));
+            NowAmmo = Math.Max(0, MaxAmmo - lossAmmo);
+            var max = otherAttrPassiveEffects[1];
+            MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
+            var add = otherAttrPassiveEffects[2];
+            MaxMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
         }
 
 
@@ -168,7 +201,7 @@ namespace game_stuff
 
         private IEnumerable<IMapInteractable> KickBySomeBody(TwoDPoint pos)
         {
-            var opos = InWhichMapInteractive == null ? pos : InWhichMapInteractive.GetPos().GetMid(pos);
+            var opos = InWhichMapInteractive == null ? pos : ((IAaBbBox) InWhichMapInteractive).GetAnchor().GetMid(pos);
 
             var mapIntractable = Weapons.Select(x => x.Value.DropAsIMapInteractable(opos));
             Weapons.Clear();
@@ -178,6 +211,11 @@ namespace game_stuff
         public void FullAmmo()
         {
             NowAmmo = MaxAmmo;
+        }
+
+        public void StartDestroy()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -5,14 +5,14 @@ namespace game_stuff
 {
     public class PassiveTrait : ISaleStuff
     {
-        public PassiveTrait(uint passId, uint level, IPassiveTraitEffect passiveTraitEffect)
+        public PassiveTrait(int passId, uint level, IPassiveTraitEffect passiveTraitEffect)
         {
             PassId = passId;
             Level = level;
             PassiveTraitEffect = passiveTraitEffect;
         }
 
-        public uint PassId { get; }
+        public int PassId { get; }
 
         public void AddLevel(uint num)
         {
@@ -48,7 +48,7 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
-                    characterStatus.RecyclePass(this);
+                    characterStatus.RecyclePassive(this);
                     return new List<IMapInteractable>();
                 case MapInteract.PickCall:
                     characterStatus.PickAPassive(this);

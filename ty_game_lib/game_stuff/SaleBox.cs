@@ -18,17 +18,22 @@ namespace game_stuff
             CharActTwo = charActTwo;
         }
 
-
         public SaleBox(ISaleUnit saleUnit, TwoDPoint pos)
         {
             var configsInteraction = TempConfig.Configs.interactions;
-            var RoundP = new Round(pos, TempConfig.SaleBoxR);
+            var roundP = new Round(pos, TempConfig.SaleBoxR);
             var interaction1 = configsInteraction[interactionAct.apply];
             var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.InVehicleCall);
             var interaction2 = configsInteraction[interactionAct.buy];
             var interaction22 = CageCanPick.GenInteractionByConfig(saleUnit, interaction2, MapInteract.KickVehicleCall);
             CharActOne = interaction11;
             CharActTwo = interaction22;
+            CanInterActiveRound = roundP;
+            var zones = roundP.GetZones();
+            Zone = zones;
+            LocateRecord = new Queue<Quad>();
+            CharActOne.InMapInteractable.InWhichMapInteractive = this;
+            CharActTwo.InMapInteractable.InWhichMapInteractive = this;
         }
 
         public void WriteQuadRecord(Quad quad)
@@ -46,10 +51,6 @@ namespace game_stuff
             return CanInterActiveRound;
         }
 
-        public TwoDPoint GetPos()
-        {
-            return CanInterActiveRound.O;
-        }
 
         public bool CanInteractive(TwoDPoint pos)
         {
@@ -99,6 +100,16 @@ namespace game_stuff
         public void StartActTwoBySomeBody(CharacterBody characterBody)
         {
             MapInteractableDefault.StartActTwoBySomeBody(characterBody, this);
+        }
+
+        public TwoDPoint GetAnchor()
+        {
+            return CanInterActiveRound.O;
+        }
+
+        public ISeeTickMsg GenTickMsg()
+        {
+            throw new NotImplementedException();
         }
     }
 }

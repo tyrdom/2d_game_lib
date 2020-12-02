@@ -12,7 +12,7 @@ namespace collision_and_rigid
 
         public HashSet<IAaBbBox> AaBbPackBox { get; }
 
-        public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit,bool needRecord =false);
+        public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false);
 
         public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
@@ -30,19 +30,21 @@ namespace collision_and_rigid
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
 
-        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter =null);
+        public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter = null);
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();
         public int FastTouchWithARightShootPoint(TwoDPoint p);
 
-        
-        public void ForeachBoxDoWithOutMove<T,TK>(Action<TK, T> action, T t);
-
+        public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t);
+        public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t, Zone zone);
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t);
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t, Zone zone);
 
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t);
+
+        public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func,
+            T t, Zone zone);
 
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t);

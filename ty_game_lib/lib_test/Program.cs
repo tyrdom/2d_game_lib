@@ -242,11 +242,11 @@ namespace lib_test
             }
         }
 
-        public static void LogCPos(Dictionary<int, IEnumerable<CharTickMsg>> item2)
+        public static void LogCPos(Dictionary<int, IEnumerable<ISeeTickMsg>> item2)
         {
             foreach (var keyValuePair in item2)
             {
-                foreach (var charTickMsg in keyValuePair.Value)
+                foreach (var charTickMsg in keyValuePair.Value.OfType<CharTickMsg>())
                 {
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();

@@ -3,13 +3,11 @@ using System.Collections.Generic;
 
 namespace collision_and_rigid
 {
-    public interface IAaBbBox
+    public interface IAaBbBox : IHaveAnchor
     {
         public void WriteQuadRecord(Quad quad);
         public Quad? GetNextQuad();
         public IShape GetShape();
-
-        public TwoDPoint GetPos();
         public bool CanInteractive(TwoDPoint pos);
         public Zone Zone { get; set; }
         public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical);

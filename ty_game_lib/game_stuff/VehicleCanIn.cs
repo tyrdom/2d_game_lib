@@ -31,7 +31,7 @@ namespace game_stuff
             var interaction22 = GenInteractionByConfig(vehicle, interaction2, MapInteract.KickVehicleCall, pos);
             CharActOne = interaction11;
             CharActTwo = interaction22;
-          
+
             var zonesP = roundP.GetZones();
             Zone = zonesP;
             CanInterActiveRound = roundP;
@@ -99,10 +99,6 @@ namespace game_stuff
             return CanInterActiveRound;
         }
 
-        public TwoDPoint GetPos()
-        {
-            return CanInterActiveRound.O;
-        }
 
         public bool CanInteractive(TwoDPoint pos)
         {
@@ -117,6 +113,16 @@ namespace game_stuff
         public void StartActTwoBySomeBody(CharacterBody characterBody)
         {
             MapInteractableDefault.StartActTwoBySomeBody(characterBody, this);
+        }
+
+        public ISeeTickMsg GenTickMsg()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public TwoDPoint GetAnchor()
+        {
+            return CanInterActiveRound.O;
         }
     }
 }

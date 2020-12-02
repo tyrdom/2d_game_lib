@@ -21,7 +21,8 @@ namespace game_stuff
         }
 
 
-        public static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable, interaction interaction,
+        public static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable,
+            interaction interaction,
             MapInteract mapInteract)
         {
             return new Interaction(interaction.BaseTough,
@@ -44,7 +45,8 @@ namespace game_stuff
             Interaction interaction =
                 GenInteractionByConfig(canPutInMapInteractable, interaction1, MapInteract.PickCall);
             var interaction2 = configsInteraction[interactionAct.recycle_cage];
-            Interaction interaction22 = GenInteractionByConfig(canPutInMapInteractable, interaction2, MapInteract.RecycleCall);
+            Interaction interaction22 =
+                GenInteractionByConfig(canPutInMapInteractable, interaction2, MapInteract.RecycleCall);
 
             var zonesP = roundP.GetZones();
             Zone = zonesP;
@@ -127,10 +129,7 @@ namespace game_stuff
             return CanInterActiveRound;
         }
 
-        public TwoDPoint GetPos()
-        {
-            return CanInterActiveRound.O;
-        }
+        
 
         public bool CanInteractive(TwoDPoint pos)
         {
@@ -142,6 +141,16 @@ namespace game_stuff
         public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
+        }
+
+        public TwoDPoint GetAnchor()
+        {
+            return CanInterActiveRound.O;
+        }
+
+        public ISeeTickMsg GenTickMsg()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -4,15 +4,15 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class CharGoTickResult : IGameUnitTickResult
+    public struct CharGoTickResult : IGameUnitTickResult
     {
-        public CharGoTickResult(bool stillAlive = true, ITwoDTwoP? move = null, IPosMedia? launchBullet = null,
+        public CharGoTickResult(bool stillActive = true, ITwoDTwoP? move = null,
+            IPosMedia? launchBullet = null,
             List<IMapInteractable>? dropThing = null,
-            IMapInteractable? getThing = null, ValueTuple<MapInteract, CharacterBody>? mapInteractiveAbout = null
-        )
+            IMapInteractable? getThing = null, ValueTuple<MapInteract, CharacterBody>? mapInteractiveAbout = null)
         {
             MapInteractive = mapInteractiveAbout?.Item1;
-            StillAlive = stillAlive;
+            StillActive = stillActive;
             Move = move;
             LaunchBullet = launchBullet;
             DropThing = dropThing ?? new List<IMapInteractable>();
@@ -21,7 +21,7 @@ namespace game_stuff
         }
 
 
-        public bool StillAlive { get; }
+        public bool StillActive { get; }
         public ITwoDTwoP? Move { get; }
         public IPosMedia? LaunchBullet { get; }
         public List<IMapInteractable> DropThing { get; }

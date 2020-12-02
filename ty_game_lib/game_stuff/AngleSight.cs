@@ -89,5 +89,14 @@ namespace game_stuff
             OpChangeAim(newAim, StandardScope);
          
         }
+
+        public Zone GenZone(TwoDPoint getAnchor)
+        {
+            var up = getAnchor.Y + NowR;
+            var down = getAnchor.Y - NowR;
+            var left = getAnchor.X - NowR;
+            var right = getAnchor.X + NowR;
+          return  new Zone(up,down,left,right);
+        }
     }
 }

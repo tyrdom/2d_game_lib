@@ -32,7 +32,7 @@ namespace collision_and_rigid
             return SimpleBlocks;
         }
 
-        public TwoDPoint GetPos()
+        public TwoDPoint GetAnchor()
         {
             var (horizon, vertical) = Zone.GetMid();
             return new TwoDPoint(vertical, horizon);

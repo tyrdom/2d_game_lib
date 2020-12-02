@@ -9,7 +9,7 @@ namespace game_stuff
     {
         public readonly IQSpace Lines;
 
-        public SightMap(IQSpace lines)
+        private SightMap(IQSpace lines)
         {
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }

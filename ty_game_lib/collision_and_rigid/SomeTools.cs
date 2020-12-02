@@ -75,20 +75,36 @@ namespace collision_and_rigid
             return dicIntToTu;
         }
 
+        public static IEnumerable<TK> FilterToBoxList<TK, T>(IQSpace qSpace,
+            Func<TK, T, bool> func,
+            T t, Zone zone)
+        {
+            var hs = new HashSet<TK>();
+
+            void Act(TK id, T tt)
+            {
+                var b = func(id, tt);
+                if (b) hs.Add(id);
+            }
+
+            qSpace.ForeachBoxDoWithOutMove<T, TK>(Act, t, zone);
+            return hs;
+        }
+
         public static IEnumerable<IIdPointShape> FilterToGIdPsList<T>(IQSpace qSpace,
             Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
             T t)
         {
-            var dicIntToTu = new HashSet<IIdPointShape>();
+            var hs = new HashSet<IIdPointShape>();
 
             void Act(IIdPointShape id, T tt)
             {
                 var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-                if (withIIdPtsShape) dicIntToTu.Add(id);
+                if (withIIdPtsShape) hs.Add(id);
             }
 
             qSpace.ForeachDoWithOutMove(Act, t);
-            return dicIntToTu;
+            return hs;
         }
 
         public static Dictionary<int, TU> MapToDicGidToSthTool<TU, T>(IQSpace qSpaceBranch,
@@ -185,7 +201,6 @@ namespace collision_and_rigid
                     }
                     else
                     {
-                        
                         outZone.Add(aabbPackBoxShape);
                     }
                 }

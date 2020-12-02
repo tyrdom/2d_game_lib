@@ -42,7 +42,12 @@ namespace game_stuff
             Team = team;
         }
 
-        public bool InSight(IIdPointShape another, SightMap map)
+        public Zone GetSightZone()
+        {
+            return Sight.GenZone(GetAnchor());
+        }
+
+        public bool InSight(IHaveAnchor another, SightMap map)
         {
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map, CharacterStatus.GetNowScope());
         }
@@ -136,7 +141,7 @@ namespace game_stuff
             CharacterStatus.SurvivalStatus.TakeOneDamage(hitWallDmgParam);
         }
 
-        public CharTickMsg GenTickMsg()
+        public ISeeTickMsg GenTickMsg()
         {
             var isStun = CharacterStatus.StunBuff != null;
             var skillAct = CharacterStatus.NowCastAct != null;

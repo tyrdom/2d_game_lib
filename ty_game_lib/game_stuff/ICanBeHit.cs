@@ -2,17 +2,24 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface ICanBeHit : IIdPointShape
+    public interface ICanBeHit : IIdPointShape, ICanBeSaw
     {
         BodySize GetSize();
         bool CheckCanBeHit();
-
         public IdPointBox CovToIdBox();
-        CharTickMsg GenTickMsg();
+    }
+
+
+    public interface ICanBeSaw : IHaveAnchor
+    {
+        ISeeTickMsg GenTickMsg();
+    }
+
+    public interface ISeeTickMsg
+    {
     }
 
     public static class CanBeHitStandard
     {
-      
     }
 }

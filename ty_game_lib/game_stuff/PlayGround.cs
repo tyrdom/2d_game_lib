@@ -120,13 +120,13 @@ namespace game_stuff
         }
 
 
-        public (Dictionary<int, IEnumerable<BulletMsg>> gidToBulletsMsg, Dictionary<int, IEnumerable<CharTickMsg>>
+        public (Dictionary<int, IEnumerable<BulletMsg>> gidToBulletsMsg, Dictionary<int, IEnumerable<ISeeTickMsg>>
             gidToCharTickMsg)
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates);
-
+            MapInteractableGoATick();
 
             var gidToWhichBulletHit = HitMediasDo();
 
@@ -152,17 +152,28 @@ namespace game_stuff
             return valueTuple;
         }
 
-        private Dictionary<int, HashSet<ICanBeHit>> GetPlayerSee()
+        private void MapInteractableGoATick()
         {
-            var gidToCharacterBodies = new Dictionary<int, HashSet<ICanBeHit>>();
+            throw new NotImplementedException();
+        }
+
+        private Dictionary<int, HashSet<ICanBeSaw>> GetPlayerSee()
+        {
+            var gidToCharacterBodies = new Dictionary<int, HashSet<ICanBeSaw>>();
             foreach (var kv in GidToBody)
             {
                 var key = kv.Key;
                 var characterBody = kv.Value;
+                var sightZone = characterBody.GetSightZone();
 // #if DEBUG
 //                 Console.Out.WriteLine($"gid::{characterBody.GetId()}");
 // #endif
-                var characterBodies = new HashSet<ICanBeHit>();
+                var characterBodies = new HashSet<ICanBeSaw>();
+
+                var filterToBoxList = MapInteractableThings.FilterToBoxList<ICanBeSaw, CharacterBody>(
+                    (idp, acb) => acb.InSight(idp, SightMap),
+                    characterBody, sightZone);
+                characterBodies.UnionWith(filterToBoxList);
                 foreach (var kv2 in TeamToBodies)
                 {
                     var bTeam = kv2.Key;
@@ -174,9 +185,10 @@ namespace game_stuff
                     if (characterBody.Team == bTeam)
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((x, y) => true, true).OfType<ICanBeHit>();
+                            qSpace.FilterToGIdPsList((x, y) => true, true).OfType<ICanBeSaw>();
 
-                        var ofType = traps.FilterToGIdPsList((a, b) => true, true).OfType<ICanBeHit>();
+                        var ofType = traps.FilterToGIdPsList((a, b) => true, true)
+                            .OfType<ICanBeSaw>();
                         // #if DEBUG
 //                         Console.Out.WriteLine($"list::{filterToGIdPsList.ToArray().Length}");
 // #endif                
@@ -187,15 +199,18 @@ namespace game_stuff
                     {
                         var filterToGIdPsList =
                             qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
-                                characterBody);
+                                characterBody, sightZone);
                         var bodies = filterToGIdPsList.OfType<CharacterBody>();
 
-                        var trapsSee = traps.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
-                            characterBody).OfType<Trap>().Where(t => t.CanBeSee);
+                        var trapsSee =
+                            traps.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
+                                    characterBody, sightZone)
+                                .OfType<Trap>()
+                                .Where(t => t.CanBeSee);
 // #if DEBUG
 //                         Console.Out.WriteLine($" {characterBody.Team}:other:{bTeam}::{qSpace.Count()}::{bodies.Count()}");
 // #endif
-    
+
                         characterBodies.UnionWith(bodies);
                         characterBodies.UnionWith(trapsSee);
                     }
@@ -363,7 +378,7 @@ namespace game_stuff
                     var gid = gtb.Key;
                     var aCharGoTickMsg = gtb.Value;
                     var twoDTwoP = aCharGoTickMsg.Move;
-                    var stillAlive = aCharGoTickMsg.StillAlive;
+                    var stillAlive = aCharGoTickMsg.StillActive;
 
 
                     if (!stillAlive)

@@ -3,7 +3,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class CharTickMsg
+    public class CharTickMsg : ISeeTickMsg
     {
         public int Gid;
         public TwoDPoint Pos;

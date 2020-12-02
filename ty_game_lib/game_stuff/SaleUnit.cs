@@ -33,18 +33,6 @@ namespace game_stuff
 
         public int Stack { get; }
 
-        private bool IsStackOk(CharacterStatus characterStatus)
-        {
-            if (DoneDictionary.TryGetValue(characterStatus, out var nowStack)
-            )
-            {
-                return nowStack <= Stack;
-            }
-
-            DoneDictionary[characterStatus] = 0;
-            return true;
-        }
-
         public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
             return SaleUnitStandard.CanInterActOneBy(characterStatus, this);

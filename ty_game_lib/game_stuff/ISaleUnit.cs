@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using collision_and_rigid;
 
 namespace game_stuff
 {
@@ -60,7 +61,7 @@ namespace game_stuff
                                 return prop.ActWhichChar(characterStatus, MapInteract.PickCall);
                             case Vehicle vehicle:
                                 vehicle.WhoDriveOrCanDrive = characterStatus;
-                                var twoDPoint = saleUnit.InWhichMapInteractive?.GetPos() ?? characterStatus.GetPos();
+                                var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ?? characterStatus.GetPos();
 
                                 var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
                                 return new List<IMapInteractable> {dropAsIMapInteractable};

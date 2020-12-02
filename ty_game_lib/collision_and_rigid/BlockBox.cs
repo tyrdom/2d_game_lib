@@ -22,7 +22,7 @@ namespace collision_and_rigid
             return Shape;
         }
 
-        public TwoDPoint GetPos()
+        public TwoDPoint GetAnchor()
         {
             var (horizon, vertical) = Zone.GetMid();
             return new TwoDPoint(vertical, horizon);

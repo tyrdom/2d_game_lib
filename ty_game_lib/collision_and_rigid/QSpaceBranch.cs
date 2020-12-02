@@ -372,6 +372,36 @@ namespace collision_and_rigid
             QuadFour.ForeachBoxDoWithOutMove(action, t);
         }
 
+        public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t, Zone zone)
+        {
+            foreach (var shape in AaBbPackBox.OfType<TK>())
+            {
+                action(shape, t);
+            }
+
+            var valueTuples = Zone.SplitZones(zone);
+            foreach (var (quad, zone1) in valueTuples)
+            {
+                switch (quad)
+                {
+                    case Quad.One:
+                        QuadOne.ForeachBoxDoWithOutMove(action, t, zone1);
+                        break;
+                    case Quad.Two:
+                        QuadTwo.ForeachBoxDoWithOutMove(action, t, zone1);
+                        break;
+                    case Quad.Three:
+                        QuadThree.ForeachBoxDoWithOutMove(action, t, zone1);
+                        break;
+                    case Quad.Four:
+                        QuadFour.ForeachBoxDoWithOutMove(action, t, zone1);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
         public void ForeachDoWithOutMove<T>(Action<IIdPointShape, T> doWithIIdPointShape, T t)
         {
             foreach (var shape in AaBbPackBox.OfType<IdPointBox>()
@@ -602,6 +632,11 @@ namespace collision_and_rigid
             T t)
         {
             return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t);
+        }
+
+        public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func, T t, Zone zone)
+        {
+            return SomeTools.FilterToBoxList(this,func, t, zone);
         }
 
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,

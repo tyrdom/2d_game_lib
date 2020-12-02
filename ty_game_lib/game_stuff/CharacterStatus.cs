@@ -84,7 +84,7 @@ namespace game_stuff
 
         //traps
 
-        public uint MaxTrap { get; }
+        private uint MaxTrap { get; }
 
         public Queue<Trap> Traps { get; }
 
@@ -108,7 +108,7 @@ namespace game_stuff
 
         //Game other Status
 
-        private Dictionary<uint, PassiveTrait> Traits { get; }
+        private Dictionary<int, PassiveTrait> Traits { get; }
         private List<IPlayingBuff> PlayingBuffs { get; set; }
 
 
@@ -126,7 +126,7 @@ namespace game_stuff
 
         public SurvivalStatus SurvivalStatus { get; private set; }
 
-        public float RecycleMulti { get; set; }
+        private float RecycleMulti { get; set; }
         public PlayingItemBag PlayingItemBag { get; }
 
         // for_tick_msg
@@ -162,7 +162,7 @@ namespace game_stuff
             AddMoveSpeed = add;
             MinMoveSpeed = min;
             MaxProtectValue = maxProtectValue;
-            Traits = new Dictionary<uint, PassiveTrait>();
+            Traits = new Dictionary<int, PassiveTrait>();
             AttackStatus = baseAtkStatus;
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
@@ -243,7 +243,7 @@ namespace game_stuff
             return weaponZoomStepScope;
         }
 
-        public void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
+        private void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
         {
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
@@ -258,7 +258,7 @@ namespace game_stuff
             NowCastAct = skill;
         }
 
-        public void ResetSpeed()
+        private void ResetSpeed()
         {
             NowMoveSpeed = MinMoveSpeed;
         }
@@ -449,20 +449,21 @@ namespace game_stuff
 
             if (getThing == null)
             {
-                return new CharGoTickResult(true, move, selfEffectFilter);
+                return new CharGoTickResult(move: move, launchBullet: selfEffectFilter);
             }
 
             var dropThings = getThing.ActWhichChar(this, interactive);
 
 
-            return new CharGoTickResult(true, move, selfEffectFilter, dropThings.ToList(),
-                getThing.InWhichMapInteractive);
+            return new CharGoTickResult(move: move, launchBullet: selfEffectFilter,
+                dropThing: dropThings.ToList(),
+                getThing: getThing.InWhichMapInteractive);
         }
 
 
         public void RecycleAProp(Prop prop)
         {
-            NowPropStack = Math.Min(MaxPropStack, NowPropStack + prop.RecyclePropStack);
+            NowPropStack = Math.Min(MaxPropStack, (int) (NowPropStack + prop.RecyclePropStack * (1 + RecycleMulti)));
         }
 
         public IMapInteractable? PicAWeapon(Weapon weapon)
@@ -471,7 +472,7 @@ namespace game_stuff
         }
 
 
-        private List<IMapInteractable> DropWeapon(BodySize bodySize)
+        private IEnumerable<IMapInteractable> DropWeapon(BodySize bodySize)
         {
             return GameTools.DropWeapon(Weapons, bodySize, GetPos());
         }
@@ -563,13 +564,33 @@ namespace game_stuff
                 Console.Out.WriteLine(
                     $"{GId} {StunBuff?.GetType()}  ::IPt {twoDPoint.ToString()} ::anti buff :: {StunBuff?.RestTick}");
 #endif
-                return new CharGoTickResult(true, twoDPoint, null, null, null);
+                return new CharGoTickResult(move: twoDPoint);
             }
 
 //
+            if (NowVehicle != null)
+            {
+                var (isBroken, destroyBullet) = NowVehicle.GoATickCheckSurvival();
+                if (isBroken)
+                {
+                    if (operate?.SpecialAction == SpecialAction.OutVehicle)
+                    {
+                        return OutNowVehicle();
+                    }
+
+                    if (destroyBullet == null)
+                        return new CharGoTickResult();
+
+
+                    NowVehicle = null;
+                    return new CharGoTickResult(launchBullet: destroyBullet);
+                }
+            }
+
+
             if (!SurvivalStatus.GoATickAndCheckAlive())
             {
-                return new CharGoTickResult(false);
+                return new CharGoTickResult(stillActive: false);
             }
 
             //
@@ -580,7 +601,6 @@ namespace game_stuff
 
             // 当前技能结束检查
             if (NowCastAct?.InWhichPeriod() == SkillPeriod.End) NowCastAct = null;
-
 
             // 当前技能的释放时候
             var opAction = operate?.GetAction();
@@ -761,16 +781,7 @@ namespace game_stuff
 
                         break;
                     case SpecialAction.OutVehicle:
-                        if (NowVehicle == null) return new CharGoTickResult();
-                    {
-                        NowVehicle.OutAct.Launch(0, 0);
-                        NowCastAct = NowVehicle.OutAct;
-                        NowVehicle.WhoDriveOrCanDrive = null;
-
-                        var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
-                        NowVehicle = null;
-                        return new CharGoTickResult(true, null, null, new List<IMapInteractable> {genIMapInteractable});
-                    }
+                        return OutNowVehicle();
 
 
                     default:
@@ -798,7 +809,26 @@ namespace game_stuff
             var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.GetSize()] ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
-            return new CharGoTickResult(true, dVector);
+            return new CharGoTickResult(move: dVector);
+        }
+
+        private CharGoTickResult OutNowVehicle()
+        {
+            if (NowVehicle == null) return new CharGoTickResult();
+            {
+                NowVehicle.OutAct.Launch(0, 0);
+                NowCastAct = NowVehicle.OutAct;
+                NowVehicle.WhoDriveOrCanDrive = null;
+
+                var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
+                NowVehicle = null;
+                return new CharGoTickResult(dropThing: new List<IMapInteractable> {genIMapInteractable});
+            }
+        }
+
+        private void DestroyVehicle()
+        {
+            NowVehicle?.StartDestroy();
         }
 
         private void ResetLongInterAct()
@@ -919,7 +949,7 @@ namespace game_stuff
             var lossAmmo = MaxAmmo - NowAmmo;
             var (maxAmmo, moveMaxSpeed, _, moveAddSpeed, _, recycleMulti) = otherBaseStatus;
             MaxAmmo = (int) (maxAmmo * (1f + otherAttrPassiveEffects[0]));
-            NowAmmo = MaxAmmo - lossAmmo;
+            NowAmmo = Math.Max(0, MaxAmmo - lossAmmo);
             var max = otherAttrPassiveEffects[1];
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
@@ -1011,9 +1041,15 @@ namespace game_stuff
         }
 
 
-        public void RecyclePass(PassiveTrait passiveTrait)
+        public void RecyclePassive(PassiveTrait passiveTrait)
         {
-            throw new NotImplementedException();
+            if (!TempConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
+            var passiveRecycleMoney =
+                passive.recycle_money.Select(x => new GameItem(x.item, (uint) (x.num * (1 + this.RecycleMulti))));
+            foreach (var gameItem in passiveRecycleMoney)
+            {
+                PlayingItemBag.Gain(gameItem);
+            }
         }
 
         public void BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,

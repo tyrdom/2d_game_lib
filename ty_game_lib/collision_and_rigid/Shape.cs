@@ -29,11 +29,16 @@ namespace collision_and_rigid
         string ToString();
     }
 
-    public interface IIdPointShape : IShape
+    public interface IHaveAnchor
+    {
+        TwoDPoint GetAnchor();
+    }
+
+    public interface IIdPointShape : IShape, IHaveAnchor
     {
         public int GetId();
         TwoDPoint Move(ITwoDTwoP vector);
-        TwoDPoint GetAnchor();
+
 
         TwoDVectorLine GetMoveVectorLine();
 
@@ -41,8 +46,6 @@ namespace collision_and_rigid
 
         IdPointBox? IdPointBox { get; set; }
     }
-
-    
 
 
     public interface IBlockShape : IShape

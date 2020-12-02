@@ -17,7 +17,7 @@ namespace game_stuff
 
     public readonly struct SurvivalAboutPassiveEffect : IPassiveTraitEffect
     {
-        public Vector<float> SurvivalMultiAdd { get; }
+        private Vector<float> SurvivalMultiAdd { get; }
         // public float HpMultiAdd { get; }0
         //
         // public float HealMultiAdd { get; }1
@@ -68,10 +68,10 @@ namespace game_stuff
 
         private Vector<float> OtherAttrAdd { get; }
         // public float MaxAmmoMultiAdd { get; }0
-     
+
         // public float MaxSpeedUp { get; }1
         // public float AddSpeedUp { get; }2
-        
+
         // public float MaxPropMultiAdd { get; }3
         // public float RecycleMultiAdd { get; }4
 

@@ -54,7 +54,7 @@ namespace collision_and_rigid
             return IdPointShape.GetId();
         }
 
-        public TwoDPoint GetPos()
+        public TwoDPoint GetAnchor()
         {
             return IdPointShape.GetAnchor();
         }
