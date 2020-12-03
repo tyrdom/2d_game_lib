@@ -154,8 +154,33 @@ namespace game_stuff
 
         private void MapInteractableGoATick()
         {
-            throw new NotImplementedException();
+            var mapInteractables = new List<IHitMedia>();
+
+            var vehicleCanIns = new List<VehicleCanIn>();
+
+
+            static void Act(VehicleCanIn vehicleCanIn,
+                (List<IHitMedia> bullets, List<VehicleCanIn>vehicleCanIns) valueTuple)
+            {
+                var goATick = vehicleCanIn.GoATick();
+
+                if (goATick == null) return;
+                var (bullets, vehicleCanIns) = valueTuple;
+                bullets.Add(goATick);
+                vehicleCanIns.Add(vehicleCanIn);
+            }
+
+            MapInteractableThings
+                .ForeachBoxDoWithOutMove<(List<IHitMedia> bullets, List<VehicleCanIn>vehicleCanIns), VehicleCanIn>(Act,
+                    (mapInteractables, vehicleCanIns));
+            TeamToHitMedia[-1] = mapInteractables;
+
+            foreach (var vehicleCanIn in vehicleCanIns)
+            {
+                MapInteractableThings.RemoveSingleAaBbBox(vehicleCanIn);
+            }
         }
+
 
         private Dictionary<int, HashSet<ICanBeSaw>> GetPlayerSee()
         {

@@ -9,7 +9,7 @@ namespace game_stuff
     public class Prop : ICharAct, ISaleStuff, ICanDrop
     {
         public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti,
-            ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos)
+            ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos, int pId)
         {
             RecyclePropStack = recyclePropStack;
             StackCost = stackCost;
@@ -18,10 +18,11 @@ namespace game_stuff
             PropBullets = propBullets;
             MoveMustMulti = moveMustMulti;
             MinCos = minCos;
+            PId = pId;
             LastMoveVector = null;
         }
 
-
+        public int PId { get; }
         public int StackCost { get; }
         public uint TotalTick { get; }
         private float MoveMulti { get; }

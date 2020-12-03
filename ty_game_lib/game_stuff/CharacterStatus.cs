@@ -483,7 +483,7 @@ namespace game_stuff
 
             var mapIntractable = DropWeapon(vehicle.Size);
             NowVehicle = vehicle;
-            vehicle.WhoDriveOrCanDrive = this;
+            vehicle.Sign(this);
             return mapIntractable;
         }
 
@@ -824,11 +824,6 @@ namespace game_stuff
                 NowVehicle = null;
                 return new CharGoTickResult(dropThing: new List<IMapInteractable> {genIMapInteractable});
             }
-        }
-
-        private void DestroyVehicle()
-        {
-            NowVehicle?.StartDestroy();
         }
 
         private void ResetLongInterAct()

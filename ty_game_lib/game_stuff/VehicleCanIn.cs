@@ -124,5 +124,12 @@ namespace game_stuff
         {
             return CanInterActiveRound.O;
         }
+
+        public Bullet? GoATick()
+        {
+            if (!(CharActOne.InMapInteractable is Vehicle vehicle)) return null;
+            var (_, destroyBullet) = vehicle.GoATickCheckSurvival();
+            return destroyBullet;
+        }
     }
 }

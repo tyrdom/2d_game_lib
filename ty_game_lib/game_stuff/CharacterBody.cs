@@ -149,7 +149,7 @@ namespace game_stuff
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
-                skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome);
+                skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome, CharacterStatus.MayBeSomeThing);
         }
 
         public CharInitMsg GenInitMsg()

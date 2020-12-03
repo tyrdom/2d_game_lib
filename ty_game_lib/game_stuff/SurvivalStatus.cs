@@ -48,6 +48,10 @@ namespace game_stuff
             return new SurvivalStatus(1000, 1000, 0, 0, 0, 0, 5, 1, 0, 0, 1f);
         }
 
+        public override string ToString()
+        {
+            return $"HP: {NowHp}/{MaxHp} AM: {NowArmor}/{MaxArmor} SD: {NowShield}/{MaxShield}";
+        }
 
         public bool IsDead()
         {

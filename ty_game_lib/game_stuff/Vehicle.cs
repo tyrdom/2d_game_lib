@@ -213,9 +213,10 @@ namespace game_stuff
             NowAmmo = MaxAmmo;
         }
 
-        public void StartDestroy()
+        public void Sign(CharacterStatus characterStatus)
         {
-            throw new NotImplementedException();
+            WhoDriveOrCanDrive = characterStatus;
+            DestroyBullet.Sign(characterStatus);
         }
     }
 }

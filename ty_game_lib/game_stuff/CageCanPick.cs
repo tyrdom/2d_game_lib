@@ -129,7 +129,6 @@ namespace game_stuff
             return CanInterActiveRound;
         }
 
-        
 
         public bool CanInteractive(TwoDPoint pos)
         {
@@ -150,7 +149,33 @@ namespace game_stuff
 
         public ISeeTickMsg GenTickMsg()
         {
-            throw new NotImplementedException();
+            return CharActOne.InMapInteractable switch
+            {
+                PassiveTrait passiveTrait => new CageTickMsg(InCageT.PassiveC, passiveTrait.PassId),
+                Prop prop => new CageTickMsg(InCageT.PropC, prop.PId),
+                Weapon weapon => new CageTickMsg(InCageT.WeaponC, weapon.WId),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
+    }
+
+    public enum InCageT
+    {
+        PassiveC,
+        PropC,
+        WeaponC
+    }
+
+    public readonly struct CageTickMsg : ISeeTickMsg
+    {
+        public CageTickMsg(InCageT inCageT, int id)
+        {
+            InCageT = inCageT;
+            Id = id;
+        }
+
+        public InCageT InCageT { get; }
+
+        public int Id { get; }
     }
 }

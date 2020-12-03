@@ -17,6 +17,7 @@ namespace game_stuff
 
     public interface ISeeTickMsg
     {
+        string ToString();
     }
 
     public static class CanBeHitStandard
