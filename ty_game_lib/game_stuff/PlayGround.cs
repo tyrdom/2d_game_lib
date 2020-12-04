@@ -147,7 +147,8 @@ namespace game_stuff
             var playerSee = GetPlayerSee();
             var gidToBulletsMsg = gidToWhichBulletHit.ToDictionary(pair => pair.Key, pair => pair.Value.OfType<Bullet>()
                 .Select(x => x.GenMsg()));
-            var playerSeeMsg = playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg()));
+            var playerSeeMsg =
+                playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg(pair.Key)));
             var valueTuple = (gidToBulletsMsg, playerSeeMsg);
             return valueTuple;
         }

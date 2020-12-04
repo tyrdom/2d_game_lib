@@ -93,7 +93,8 @@ namespace game_bot
         public Operate? BotSimpleTick(IEnumerable<CharTickMsg> charTickMsgs)
         {
             //
-            var tickMsgs = charTickMsgs as CharTickMsg[] ?? charTickMsgs.ToArray();
+            var tickMsgs = charTickMsgs.ToList();
+
             var enemy = tickMsgs.FirstOrDefault(x => OtherTeamGid.Contains(x.Gid));
             var myMsg = tickMsgs.FirstOrDefault(x => x.Gid == MyGid);
             if (myMsg == null) return null;

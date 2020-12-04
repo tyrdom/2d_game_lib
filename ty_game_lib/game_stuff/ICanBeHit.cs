@@ -12,7 +12,7 @@ namespace game_stuff
 
     public interface ICanBeSaw : IHaveAnchor
     {
-        ISeeTickMsg GenTickMsg();
+        ISeeTickMsg GenTickMsg(int? gid = null);
     }
 
     public interface ISeeTickMsg

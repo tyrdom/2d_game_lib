@@ -7,6 +7,20 @@ namespace game_stuff
 {
     public class SaleRandom : ISaleUnit
     {
+        public ContainType Title { get; }
+
+        public static ContainType GetTitle(ISaleStuff saleStuff)
+        {
+            return saleStuff switch
+            {
+                PassiveTrait _ => ContainType.PassiveC,
+                Prop _ => ContainType.PropC,
+                Vehicle _ => ContainType.VehicleC,
+                Weapon _ => ContainType.WeaponC,
+                _ => throw new ArgumentOutOfRangeException(nameof(saleStuff))
+            };
+        }
+
         public SaleRandom(IMapInteractable? inWhichMapInteractive, GameItem cost, int stack, int weightTotal,
             ImmutableArray<(int weightOver, ISaleStuff good)> randomGood, Random random)
         {
@@ -16,7 +30,15 @@ namespace game_stuff
             WeightTotal = weightTotal;
             RandomGood = randomGood;
             Random = random;
-            DoneDictionary = new Dictionary<CharacterStatus, int>();
+            var firstOrDefault = randomGood.FirstOrDefault().good;
+            Title = GetTitle(firstOrDefault);
+
+            DoneDictionary = new Dictionary<int, int>();
+        }
+
+        public int GetRestStack(int gid)
+        {
+            return SaleUnitStandard.GetRestStack(gid, this);
         }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
@@ -37,7 +59,7 @@ namespace game_stuff
         }
 
         public GameItem Cost { get; }
-        public Dictionary<CharacterStatus, int> DoneDictionary { get; }
+        public Dictionary<int, int> DoneDictionary { get; }
         public int Stack { get; }
 
         public ISaleStuff GetGood()

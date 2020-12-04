@@ -1,9 +1,31 @@
+using System;
 using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
 {
+    public class VehicleCanInTickMsg : ISeeTickMsg
+    {
+        public VehicleCanInTickMsg(int vId, bool isBroken, float sStatus)
+        {
+            VId = vId;
+            IsBroken = isBroken;
+            SStatus = sStatus;
+        }
+
+        public int VId { get; }
+
+        public bool IsBroken { get; }
+
+        public float SStatus { get; }
+
+        public override string ToString()
+        {
+            return $"vId:{VId} IsBroken :{IsBroken} Status:{SStatus}";
+        }
+    }
+
     public class VehicleCanIn : IMapInteractable
     {
         private VehicleCanIn(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
@@ -115,9 +137,14 @@ namespace game_stuff
             MapInteractableDefault.StartActTwoBySomeBody(characterBody, this);
         }
 
-        public ISeeTickMsg GenTickMsg()
+        public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            throw new System.NotImplementedException();
+            if (!(CharActOne.InMapInteractable is Vehicle vehicle))
+                throw new TypeAccessException("vehicleCanIn Must contain vehicle");
+            var vehicleIsDsOn = vehicle.IsDsOn;
+            var vehicleVId = vehicle.VId;
+            var genShortStatus = vehicle.SurvivalStatus.GenShortStatus();
+            return new VehicleCanInTickMsg(vehicleVId, vehicleIsDsOn, genShortStatus);
         }
 
         public TwoDPoint GetAnchor()

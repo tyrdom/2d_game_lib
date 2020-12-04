@@ -152,7 +152,7 @@ namespace game_stuff
             return covToAaBbPackBox;
         }
 
-        public ISeeTickMsg GenTickMsg()
+        public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             throw new NotImplementedException();
         }

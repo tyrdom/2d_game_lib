@@ -36,11 +36,6 @@ namespace game_stuff
             MainAttack = baseAttack;
         }
 
-        public static AttackStatus StandardAttackStatus()
-        {
-            return new AttackStatus(100, 0, 0.5f);
-        }
-
 
         public static AttackStatus GenByConfig(base_attribute baseAttribute)
         {

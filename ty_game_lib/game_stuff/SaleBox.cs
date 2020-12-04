@@ -107,9 +107,53 @@ namespace game_stuff
             return CanInterActiveRound.O;
         }
 
-        public ISeeTickMsg GenTickMsg()
+        public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            throw new NotImplementedException();
+            switch (CharActOne.InMapInteractable)
+            {
+                case SaleRandom saleRandom:
+                    var saleRandomTitle = saleRandom.Title;
+                    return new SaleRandomTickMsg(saleRandom.Cost, saleRandomTitle);
+                case SaleUnit saleUnit:
+                    var saleRandomTitle2 = SaleRandom.GetTitle(saleUnit.Good);
+
+                    return new SaleBoxTickMsg(saleUnit.Cost, saleRandomTitle2, saleUnit.Good.GetId());
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
+    }
+
+    public class SaleBoxTickMsg : ISeeTickMsg
+    {
+        public SaleBoxTickMsg(GameItem cost, ContainType containType, int id)
+        {
+            Cost = cost;
+            ContainType = containType;
+            Id = id;
+        }
+
+        public GameItem Cost { get; }
+
+        public ContainType ContainType { get; }
+
+        public int Id { get; }
+        
+        public int StackRest{ get; }
+    }
+
+    public class SaleRandomTickMsg : ISeeTickMsg
+    {
+        public SaleRandomTickMsg(GameItem cost, ContainType containType)
+        {
+            Cost = cost;
+            ContainType = containType;
+        }
+
+        public GameItem Cost { get; }
+
+        public ContainType ContainType { get; }
+
+        public int StackRest{ get; }
     }
 }

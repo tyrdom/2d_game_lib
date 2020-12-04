@@ -147,34 +147,35 @@ namespace game_stuff
             return CanInterActiveRound.O;
         }
 
-        public ISeeTickMsg GenTickMsg()
+        public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             return CharActOne.InMapInteractable switch
             {
-                PassiveTrait passiveTrait => new CageTickMsg(InCageT.PassiveC, passiveTrait.PassId),
-                Prop prop => new CageTickMsg(InCageT.PropC, prop.PId),
-                Weapon weapon => new CageTickMsg(InCageT.WeaponC, weapon.WId),
+                PassiveTrait passiveTrait => new CageTickMsg(ContainType.PassiveC, passiveTrait.PassId),
+                Prop prop => new CageTickMsg(ContainType.PropC, prop.PId),
+                Weapon weapon => new CageTickMsg(ContainType.WeaponC, weapon.WId),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
     }
 
-    public enum InCageT
+    public enum ContainType
     {
         PassiveC,
         PropC,
-        WeaponC
+        WeaponC,
+        VehicleC
     }
 
-    public readonly struct CageTickMsg : ISeeTickMsg
+    public class CageTickMsg : ISeeTickMsg
     {
-        public CageTickMsg(InCageT inCageT, int id)
+        public CageTickMsg(ContainType containType, int id)
         {
-            InCageT = inCageT;
+            ContainType = containType;
             Id = id;
         }
 
-        public InCageT InCageT { get; }
+        public ContainType ContainType { get; }
 
         public int Id { get; }
     }

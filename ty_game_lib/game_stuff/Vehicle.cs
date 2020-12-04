@@ -53,12 +53,12 @@ namespace game_stuff
             }
 
             return new Vehicle(bodySize, vScope, dictionary, genByBulletId, tickByTime,
-                vehicle.MaxWeaponSlot, genSkillById, vehicle.AttrId);
+                vehicle.MaxWeaponSlot, genSkillById, vehicle.AttrId, vehicle.id);
         }
 
         private Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             uint destroyTick, int weaponCarryMax,
-            Skill outAct, base_attr_id baseAttrId)
+            Skill outAct, base_attr_id baseAttrId, int vId)
         {
             var (max, min, add, maxAmmo, _, attackStatus, survivalStatus) =
                 CharacterStatus.GenAttrBaseByConfig(baseAttrId);
@@ -78,11 +78,13 @@ namespace game_stuff
             OutAct = outAct;
             AttackStatus = attackStatus;
             BaseAttrId = baseAttrId;
+            VId = vId;
             WhoDriveOrCanDrive = null;
             NowDsTick = 0;
             IsDsOn = false;
         }
 
+        public int VId { get; }
         public CharacterStatus? WhoDriveOrCanDrive { get; set; }
         public BodySize Size { get; }
 
@@ -99,7 +101,7 @@ namespace game_stuff
         public int WeaponCarryMax { get; }
         private uint DestroyTick { get; }
 
-        private bool IsDsOn { get; set; }
+        public bool IsDsOn { get; set; }
         private uint NowDsTick { get; set; }
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
@@ -197,6 +199,11 @@ namespace game_stuff
                 MapInteract.KickVehicleCall => KickBySomeBody(characterStatus.GetPos()),
                 _ => throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null)
             };
+        }
+
+        public int GetId()
+        {
+            return VId;
         }
 
         private IEnumerable<IMapInteractable> KickBySomeBody(TwoDPoint pos)

@@ -12,7 +12,7 @@ namespace game_stuff
             Cost = cost;
             Good = good;
             Stack = stack;
-            DoneDictionary = new Dictionary<CharacterStatus, int>();
+            DoneDictionary = new Dictionary<int, int>();
         }
 
 
@@ -27,9 +27,14 @@ namespace game_stuff
             return Good;
         }
 
+        public int GetRestStack(int gid)
+        {
+            return SaleUnitStandard.GetRestStack(gid, this);
+        }
+
         public ISaleStuff Good { get; }
 
-        public Dictionary<CharacterStatus, int> DoneDictionary { get; }
+        public Dictionary<int, int> DoneDictionary { get; }
 
         public int Stack { get; }
 

@@ -231,5 +231,11 @@ namespace game_stuff
             ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));
             ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[6]));
         }
+
+        public float GenShortStatus()
+        {
+            var nowShield = (NowHp + NowArmor + NowShield) / (float) (MaxArmor + MaxShield + MaxHp);
+            return nowShield;
+        }
     }
 }

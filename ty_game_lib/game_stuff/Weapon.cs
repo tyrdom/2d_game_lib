@@ -238,5 +238,10 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
             }
         }
+
+        public int GetId()
+        {
+            return WId;
+        }
     }
 }

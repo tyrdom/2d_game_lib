@@ -8,24 +8,37 @@ namespace game_stuff
     public interface ISaleUnit : ICanPutInMapInteractable
     {
         GameItem Cost { get; }
-        Dictionary<CharacterStatus, int> DoneDictionary { get; }
+        Dictionary<int, int> DoneDictionary { get; }
 
         int Stack { get; }
 
         ISaleStuff GetGood();
+
+        int GetRestStack(int gid);
     }
+
 
     public static class SaleUnitStandard
     {
+        public static int GetRestStack(int gid, ISaleUnit saleUnit)
+        {
+            if (saleUnit.DoneDictionary.TryGetValue(gid, out var haveUsed))
+            {
+                return saleUnit.Stack - haveUsed;
+            }
+
+            return saleUnit.Stack;
+        }
+
         private static bool IsStackOk(CharacterStatus characterStatus, ISaleUnit saleUnit)
         {
-            if (saleUnit.DoneDictionary.TryGetValue(characterStatus, out var nowStack)
+            if (saleUnit.DoneDictionary.TryGetValue(characterStatus.GId, out var nowStack)
             )
             {
                 return nowStack <= saleUnit.Stack;
             }
 
-            saleUnit.DoneDictionary[characterStatus] = 0;
+            saleUnit.DoneDictionary[characterStatus.GId] = 0;
             return true;
         }
 
@@ -46,13 +59,22 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.ApplyCall:
-                    //todo check msg to char
                     return new List<IMapInteractable>();
                 case MapInteract.BuyCall:
                     var cost = characterStatus.PlayingItemBag.Cost(saleUnit.Cost);
-                    if (cost)
+                    var characterStatusGId = characterStatus.GId;
+                    var b = saleUnit.GetRestStack(characterStatusGId) > 0;
+                    if (cost && b)
                     {
-                        saleUnit.DoneDictionary[characterStatus] = saleUnit.DoneDictionary[characterStatus] + 1;
+                        if (saleUnit.DoneDictionary.TryGetValue(characterStatusGId, out var haveUsed))
+                        {
+                            saleUnit.DoneDictionary[characterStatusGId] = haveUsed + 1;
+                        }
+                        else
+                        {
+                            saleUnit.DoneDictionary[characterStatusGId] = 1;
+                        }
+
                         switch (saleUnit.GetGood())
                         {
                             case PassiveTrait passiveTrait:

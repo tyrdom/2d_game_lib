@@ -125,6 +125,11 @@ namespace game_stuff
             }
         }
 
+        public int GetId()
+        {
+            return PId;
+        }
+
         public void Sign(CharacterStatus characterStatus)
         {
             foreach (var keyValuePair in PropBullets)

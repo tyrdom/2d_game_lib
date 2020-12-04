@@ -141,7 +141,7 @@ namespace game_stuff
             CharacterStatus.SurvivalStatus.TakeOneDamage(hitWallDmgParam);
         }
 
-        public ISeeTickMsg GenTickMsg()
+        public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             var isStun = CharacterStatus.StunBuff != null;
             var skillAct = CharacterStatus.NowCastAct != null;
