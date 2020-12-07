@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -115,9 +116,8 @@ namespace game_stuff
                     var saleRandomTitle = saleRandom.Title;
                     return new SaleRandomTickMsg(saleRandom.Cost, saleRandomTitle);
                 case SaleUnit saleUnit:
-                    var saleRandomTitle2 = SaleRandom.GetTitle(saleUnit.Good);
-
-                    return new SaleBoxTickMsg(saleUnit.Cost, saleRandomTitle2, saleUnit.Good.GetId());
+                    return new SaleBoxTickMsg(saleUnit.Cost,
+                        saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray());
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -126,20 +126,19 @@ namespace game_stuff
 
     public class SaleBoxTickMsg : ISeeTickMsg
     {
-        public SaleBoxTickMsg(GameItem cost, ContainType containType, int id)
+        public SaleBoxTickMsg(GameItem cost, (ContainType containType, int id)[] contains)
         {
             Cost = cost;
-            ContainType = containType;
-            Id = id;
+
+            Contains = contains;
         }
 
         public GameItem Cost { get; }
 
-        public ContainType ContainType { get; }
+        public (ContainType containType, int id)[] Contains { get; }
 
-        public int Id { get; }
-        
-        public int StackRest{ get; }
+
+        public int StackRest { get; }
     }
 
     public class SaleRandomTickMsg : ISeeTickMsg
@@ -154,6 +153,6 @@ namespace game_stuff
 
         public ContainType ContainType { get; }
 
-        public int StackRest{ get; }
+        public int StackRest { get; }
     }
 }

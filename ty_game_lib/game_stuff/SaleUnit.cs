@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public class SaleUnit : ISaleUnit
     {
-        public SaleUnit(IMapInteractable? inWhichMapInteractive, GameItem cost, ISaleStuff good,
+        public SaleUnit(IMapInteractable? inWhichMapInteractive, GameItem cost, ISaleStuff[] good,
             int stack)
         {
             InWhichMapInteractive = inWhichMapInteractive;
@@ -16,13 +16,11 @@ namespace game_stuff
         }
 
 
-      
-
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public GameItem Cost { get; }
 
-        public ISaleStuff GetGood()
+        public ISaleStuff[] GetGood()
         {
             return Good;
         }
@@ -32,7 +30,7 @@ namespace game_stuff
             return SaleUnitStandard.GetRestStack(gid, this);
         }
 
-        public ISaleStuff Good { get; }
+        public ISaleStuff[] Good { get; }
 
         public Dictionary<int, int> DoneDictionary { get; }
 

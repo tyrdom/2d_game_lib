@@ -12,7 +12,7 @@ namespace game_stuff
 
         int Stack { get; }
 
-        ISaleStuff GetGood();
+        ISaleStuff[] GetGood();
 
         int GetRestStack(int gid);
     }
@@ -75,23 +75,28 @@ namespace game_stuff
                             saleUnit.DoneDictionary[characterStatusGId] = 1;
                         }
 
-                        switch (saleUnit.GetGood())
+                        var saleStuffs = saleUnit.GetGood();
+                        foreach (var saleStuff in saleStuffs)
                         {
-                            case PassiveTrait passiveTrait:
-                                return passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
-                            case Prop prop:
-                                return prop.ActWhichChar(characterStatus, MapInteract.PickCall);
-                            case Vehicle vehicle:
-                                vehicle.WhoDriveOrCanDrive = characterStatus;
-                                var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ?? characterStatus.GetPos();
+                            switch (saleStuff)
+                            {
+                                case PassiveTrait passiveTrait:
+                                    return passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                case Prop prop:
+                                    return prop.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                case Vehicle vehicle:
+                                    vehicle.WhoDriveOrCanDrive = characterStatus;
+                                    var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ?? characterStatus.GetPos();
 
-                                var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
-                                return new List<IMapInteractable> {dropAsIMapInteractable};
-                            case Weapon weapon:
-                                return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
-                            default:
-                                throw new ArgumentOutOfRangeException(nameof(saleUnit.GetGood));
+                                    var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
+                                    return new List<IMapInteractable> {dropAsIMapInteractable};
+                                case Weapon weapon:
+                                    return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                default:
+                                    throw new ArgumentOutOfRangeException(nameof(saleUnit.GetGood));
+                            }
                         }
+                     
                     }
 
                     break;
