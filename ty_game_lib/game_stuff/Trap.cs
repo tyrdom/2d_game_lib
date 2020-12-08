@@ -12,7 +12,8 @@ namespace game_stuff
         public Trap(CharacterStatus characterStatus, SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos,
             int tid,
             BodySize bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
-            uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChance)
+            uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChanceStack,
+            float damageMulti)
         {
             NotOverFlow = true;
             Owner = characterStatus;
@@ -31,37 +32,36 @@ namespace game_stuff
             TrickStack = trickStack;
             LaunchMedia = launchMedia;
 
-            FailChance = failChance;
+            FailChanceStack = failChanceStack;
+            DamageMulti = damageMulti;
             IdPointBox = null;
         }
 
         public bool NotOverFlow { get; set; }
         private CharacterStatus Owner { get; }
-
-
         private SurvivalStatus? SurvivalStatus { get; }
-
         public bool CanBeSee { get; }
         private TwoDPoint Pos { get; }
         private int Tid { get; }
-        private int? FailChance { get; set; }
+        private int? FailChanceStack { get; set; }
         private BodySize BodySize { get; }
 
-        public uint CallTrapTick { get; }
+        private uint CallTrapTick { get; }
 
-        public uint? MaxLifeTimeTick { get; }
+        private uint? MaxLifeTimeTick { get; }
 
-        public uint NowLifeTimeTick { get; set; }
-        public IHitMedia TrapMedia { get; }
+        private uint NowLifeTimeTick { get; set; }
+        private IHitMedia TrapMedia { get; }
 
-        public uint TrickDelayTick { get; }
+        private uint TrickDelayTick { get; }
 
-        public uint NowTrickDelayTick { get; set; }
-        public bool OnTrick { get; set; }
+        private uint NowTrickDelayTick { get; set; }
+        private bool OnTrick { get; set; }
 
-        public int? TrickStack { get; set; }
+        private int? TrickStack { get; set; }
 
-        public IHitMedia? LaunchMedia { get; }
+        private IHitMedia? LaunchMedia { get; }
+        private float DamageMulti { get; }
 
         public int GetTeam()
         {
@@ -79,7 +79,7 @@ namespace game_stuff
         {
             var goATickAndCheckAlive =
                 NotOverFlow &&
-                (FailChance == null || FailChance > 0) &&
+                (FailChanceStack == null || FailChanceStack > 0) &&
                 (TrickStack == null || TrickStack > 0)
                 && (SurvivalStatus == null || SurvivalStatus.GoATickAndCheckAlive())
                 && (MaxLifeTimeTick == null || NowLifeTimeTick < MaxLifeTimeTick);
@@ -154,7 +154,7 @@ namespace game_stuff
 
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            throw new NotImplementedException();
+            return new TrapTickMsg(Pos, Tid, SurvivalStatus?.GenShortStatus() ?? -1f);
         }
 
         public TwoDPoint GetAnchor()
@@ -189,7 +189,7 @@ namespace game_stuff
 
         public Damage GenDamage(float damageMulti, bool b)
         {
-            return Owner.AttackStatus.GenDamage(damageMulti, b);
+            return Owner.AttackStatus.GenDamage(damageMulti * DamageMulti, b);
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)
@@ -203,12 +203,26 @@ namespace game_stuff
 
         public void FailAtk()
         {
-            if (FailChance != null) FailChance -= 1;
+            if (FailChanceStack != null) FailChanceStack -= 1;
         }
 
         public void TakeDamage(Damage genDamage)
         {
             SurvivalStatus?.TakeDamage(genDamage);
         }
+    }
+
+    public class TrapTickMsg : ISeeTickMsg
+    {
+        public TrapTickMsg(TwoDPoint pos, int tid, float ssStatus)
+        {
+            Pos = pos;
+            Tid = tid;
+            SsStatus = ssStatus;
+        }
+
+        private TwoDPoint Pos { get; }
+        private int Tid { get; }
+        private float SsStatus { get; }
     }
 }

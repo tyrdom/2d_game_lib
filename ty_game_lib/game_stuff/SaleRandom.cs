@@ -22,7 +22,7 @@ namespace game_stuff
         }
 
         public SaleRandom(IMapInteractable? inWhichMapInteractive, GameItem cost, int stack, int weightTotal,
-            ImmutableArray<(int weightOver, ISaleStuff[] good)> randomGood, Random random)
+            ImmutableArray<(int weightOver, ISaleStuff[] good)> randomGood, Random random, GameItem[] orCosts)
         {
             InWhichMapInteractive = inWhichMapInteractive;
             Cost = cost;
@@ -30,6 +30,7 @@ namespace game_stuff
             WeightTotal = weightTotal;
             RandomGood = randomGood;
             Random = random;
+            OrCosts = orCosts;
             var firstOrDefault = randomGood.FirstOrDefault().good.FirstOrDefault();
             if (firstOrDefault != null)
             {
@@ -64,6 +65,7 @@ namespace game_stuff
         }
 
         public GameItem Cost { get; }
+        public GameItem[] OrCosts { get; }
         public Dictionary<int, int> DoneDictionary { get; }
         public int Stack { get; }
 

@@ -88,6 +88,9 @@ namespace game_stuff
 
         public Queue<Trap> Traps { get; }
 
+        public float TrapSurvivalMulti { get; set; }
+
+        public float TrapAtkMulti { get; set; }
         //InterAct CallLong status
 
         private MapInteract? NowMapInteractive { get; set; }
@@ -104,6 +107,7 @@ namespace game_stuff
         private int NowProtectValue { get; set; }
         private int MaxProtectValue { get; }
 
+        private float ProtectTickMultiAdd { get; set; }
         public int NowProtectTick { get; private set; }
 
         //Game other Status
@@ -124,6 +128,7 @@ namespace game_stuff
             BattleUnitStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
         }
 
+
         public SurvivalStatus SurvivalStatus { get; private set; }
 
         private float RecycleMulti { get; set; }
@@ -139,10 +144,13 @@ namespace game_stuff
 
         public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
         {
-            var (max, min, add, maxAmmo, recycle, baseAtkStatus, baseSurvivalStatus) = GenAttrBaseByConfig(baseAttrId);
+            var (max, min, add, maxAmmo, recycle, trapNum, trapAtkMulti, trapSurvivalMulti, baseAtkStatus,
+                baseSurvivalStatus) = GenAttrBaseByConfig(baseAttrId);
 
-
-            MaxTrap = TempConfig.StandardMaxTrap;
+            ProtectTickMultiAdd = 0;
+            TrapAtkMulti = trapAtkMulti;
+            TrapSurvivalMulti = trapSurvivalMulti;
+            MaxTrap = trapNum;
             Traps = new Queue<Trap>();
             MayBeSomeThing = new List<TwoDPoint>();
             CharacterBody = null!;
@@ -188,16 +196,17 @@ namespace game_stuff
             RecycleMulti = recycle;
         }
 
-        public static (float max, float min, float add, int maxAmmo, float recycle, AttackStatus attackStatus,
-            SurvivalStatus
-            survivalStatus)
+        public static (float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int MaxAmmo, float RecycleMulti, uint
+            MaxTrapNum, float TrapAtkMulti, float TrapSurvivalMulti, AttackStatus baseAtkStatus, SurvivalStatus
+            baseSurvivalStatus)
             GenAttrBaseByConfig(base_attr_id baseAttrId)
         {
             if (!TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var attribute))
                 throw new Exception($"no such attr {baseAttrId}");
             var (baseSurvivalStatus, baseAtkStatus) = GameTools.GenStatusByAttr(attribute);
+
             return (attribute.MoveMaxSpeed, attribute.MoveMinSpeed, attribute.MoveAddSpeed, attribute.MaxAmmo,
-                    attribute.RecycleMulti,
+                    attribute.RecycleMulti, attribute.MaxTrapNum, attribute.TrapAtkMulti, attribute.TrapSurvivalMulti,
                     baseAtkStatus, baseSurvivalStatus
                 );
         }
@@ -400,7 +409,6 @@ namespace game_stuff
             var selfEffectRegenerationBase = selfEffect.RegenerationBase;
             if (selfEffectRegenerationBase != null)
             {
-                //todo:: passive and talent
                 SurvivalStatus.GetRegen(selfEffectRegenerationBase.Value);
             }
         }
@@ -545,7 +553,7 @@ namespace game_stuff
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
             {
-                NowProtectTick = TempConfig.ProtectTick;
+                NowProtectTick = (int) (TempConfig.ProtectTick * (1 + ProtectTickMultiAdd));
                 NowProtectValue = 0;
             }
 
@@ -712,7 +720,6 @@ namespace game_stuff
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.BuyCall,
                                 CharacterBody))
                             : new CharGoTickResult();
-                        break;
                     case null:
                         break;
                     default:
@@ -919,7 +926,7 @@ namespace game_stuff
             return CharacterBody.GetRr();
         }
 
-        public void AddProtect(int protectValueAdd)
+        private void AddProtect(int protectValueAdd)
         {
             NowProtectValue += protectValueAdd;
         }
@@ -949,13 +956,12 @@ namespace game_stuff
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
             MaxMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
-
             var lossP = MaxPropStack - NowPropStack;
-
             MaxPropStack = (int) (TempConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
             NowPropStack = MaxPropStack - lossP;
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
+
 
         public bool LoadInteraction(Interaction charAct)
         {
@@ -1011,7 +1017,7 @@ namespace game_stuff
             {
                 case OtherAttrPassiveEffect _:
                     var ammoPassiveEffects =
-                        GetPassiveEffects<OtherAttrPassiveEffect>() ?? OtherAttrPassiveEffect.Zero();
+                        GetPassiveEffects<OtherAttrPassiveEffect>() ?? Vector<float>.Zero;
                     OtherStatusRefresh(ammoPassiveEffects);
                     NowVehicle?.OtherStatusRefresh(ammoPassiveEffects);
 
@@ -1019,20 +1025,50 @@ namespace game_stuff
                     break;
                 case AtkAboutPassiveEffect _:
                     var atkAboutPassiveEffects =
-                        GetPassiveEffects<AtkAboutPassiveEffect>() ?? AtkAboutPassiveEffect.Zero();
+                        GetPassiveEffects<AtkAboutPassiveEffect>() ?? Vector<float>.Zero;
                     AttackStatusRefresh(atkAboutPassiveEffects);
                     NowVehicle?.AttackStatusRefresh(atkAboutPassiveEffects);
                     break;
                 case SurvivalAboutPassiveEffect _:
                     var survivalAboutPassiveEffects =
                         GetPassiveEffects<SurvivalAboutPassiveEffect>() ??
-                        SurvivalAboutPassiveEffect.Zero();
+                        Vector<float>.Zero;
                     SurvivalStatusRefresh(survivalAboutPassiveEffects);
                     NowVehicle?.SurvivalStatusRefresh(survivalAboutPassiveEffects);
                     break;
+                case AddItem addItem:
+                    var passiveTraitEffect = addItem.GenEffect(passiveTrait.Level);
+                    var vector = passiveTraitEffect.GetVector();
+                    var itemId = (int) vector[0];
+                    var num = (uint) vector[1];
+                    var gameItem = new GameItem(itemId, num);
+                    PlayingItemBag.Gain(gameItem);
+                    break;
+                case TrapEffect _:
+                    var trapAdd = GetPassiveEffects<TrapEffect>() ??
+                                  Vector<float>.Zero;
+                    TrapAboutRefresh(trapAdd);
+                    NowVehicle?.TrapAboutRefresh(trapAdd);
+                    break;
+                case TickAddEffect _:
+                    var tickAdds = GetPassiveEffects<TickAddEffect>() ??
+                                   Vector<float>.Zero;
+                    TickAboutRefresh(tickAdds);
+                    break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void TickAboutRefresh(Vector<float> tickAdds)
+        {
+            ProtectTickMultiAdd = tickAdds[0];
+        }
+
+        private void TrapAboutRefresh(Vector<float> trapAdd)
+        {
+            BattleUnitStandard.TrapAboutRefresh(trapAdd, this);
         }
 
 
@@ -1040,7 +1076,7 @@ namespace game_stuff
         {
             if (!TempConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
-                passive.recycle_money.Select(x => new GameItem(x.item, (uint) (x.num * (1 + this.RecycleMulti))));
+                passive.recycle_money.Select(x => new GameItem(x.item, (uint) (x.num * (1 + RecycleMulti))));
             foreach (var gameItem in passiveRecycleMoney)
             {
                 PlayingItemBag.Gain(gameItem);
@@ -1053,8 +1089,6 @@ namespace game_stuff
             ResetSpeed();
             ResetSnipe();
             ResetCastAct();
-
-
             IsBeHitBySomeOne =
                 TwoDVector.TwoDVectorByPt(GetPos(), pos);
 
@@ -1083,8 +1117,15 @@ namespace game_stuff
             }
 
             var trap = Traps.Dequeue();
+            //NotOverFlow false 会在下一时刻回收
             trap.NotOverFlow = false;
             Traps.Enqueue(genATrap);
+        }
+
+        public void PassiveEffectChangeTrap(Vector<float> trapAdd,
+            (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
+        {
+            BattleUnitStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
         }
     }
 }

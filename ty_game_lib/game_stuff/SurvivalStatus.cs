@@ -20,15 +20,19 @@ namespace game_stuff
         private uint NowShield { get; set; }
         private uint MaxShield { get; set; }
 
+        private float FixEffect { get; set; }
+
         private uint NowDelayTick { get; set; }
 
         private uint ShieldDelayTick { get; }
         private uint ShieldInstability { get; set; }
         private uint ShieldRecover { get; set; }
 
+        private float ChargeEffect { get; set; }
 
         private SurvivalStatus(uint maxHp, uint nowHp, uint nowArmor, uint maxArmor, uint nowShield, uint maxShield,
-            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability, float healEffect)
+            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability, float healEffect,
+            float fixEffect, float chargeEffect)
         {
             MaxHp = maxHp;
             NowHp = nowHp;
@@ -41,11 +45,13 @@ namespace game_stuff
             ShieldRecover = shieldRecover;
             ShieldInstability = shieldInstability;
             HealEffect = healEffect;
+            FixEffect = fixEffect;
+            ChargeEffect = chargeEffect;
         }
 
         public static SurvivalStatus StartTestSurvivalStatus()
         {
-            return new SurvivalStatus(1000, 1000, 0, 0, 0, 0, 5, 1, 0, 0, 1f);
+            return new SurvivalStatus(1000, 1000, 0, 0, 0, 0, 5, 1, 0, 0, 1f, 1f, 1f);
         }
 
         public override string ToString()
@@ -169,12 +175,12 @@ namespace game_stuff
 
         private void FixArmor(float fixMulti)
         {
-            NowArmor = (uint) MathTools.Min(NowArmor + fixMulti * MaxArmor, MaxArmor);
+            NowArmor = (uint) MathTools.Min(NowArmor + fixMulti * MaxArmor * FixEffect, MaxArmor);
         }
 
         private void ChargeShield(float chargeMulti)
         {
-            var maxShield = (uint) (chargeMulti * MaxShield);
+            var maxShield = (uint) (chargeMulti * MaxShield * ChargeEffect);
             NowShield += maxShield;
         }
 
@@ -196,21 +202,25 @@ namespace game_stuff
         }
 
 
-        public static SurvivalStatus GenByConfig(base_attribute baseAttribute)
+        public static SurvivalStatus GenByConfig(base_attribute baseAttribute, float multi = 1f)
         {
-            var baseAttributeMaxHp = baseAttribute.MaxHP;
-            var baseAttributeMaxArmor = baseAttribute.MaxArmor;
+            var baseAttributeMaxHp = (uint) (baseAttribute.MaxHP * multi);
+            var baseAttributeMaxArmor = (uint) (baseAttribute.MaxArmor * multi);
             var baseAttributeArmorDefence = baseAttribute.ArmorDefence;
-            var baseAttributeMaxShield = baseAttribute.MaxShield;
+            var baseAttributeMaxShield = (uint) (baseAttribute.MaxShield * multi);
             var baseAttributeShieldRecover = TempConfig.NumSecToTick(baseAttribute.ShieldRecover);
             var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
             var baseAttributeShieldDelayTime = TempConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
 
             var baseAttributeHealEffect = baseAttribute.HealEffect;
+            var baseAttributeArmorFixEffect = baseAttribute.ArmorFixEffect;
+            var baseAttributeShieldChargeEffect = baseAttribute.ShieldChargeEffect;
+
             return new SurvivalStatus(baseAttributeMaxHp, baseAttributeMaxHp, baseAttributeMaxArmor,
                 baseAttributeMaxArmor, baseAttributeMaxShield, baseAttributeMaxShield,
                 baseAttributeShieldDelayTime, baseAttributeArmorDefence, baseAttributeShieldRecover,
-                baseAttributeShieldInstability, baseAttributeHealEffect);
+                baseAttributeShieldInstability, baseAttributeHealEffect, baseAttributeArmorFixEffect,
+                baseAttributeShieldChargeEffect);
         }
 
 

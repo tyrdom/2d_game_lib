@@ -21,7 +21,13 @@ namespace game_stuff
             return new PlayingItemBag(dictionary);
         }
 
-        public bool CanCost(GameItem gameItem)
+        public bool CanCost(ISaleUnit saleUnit)
+        {
+            var canCost = CanCost(saleUnit.Cost);
+            return canCost || saleUnit.OrCosts.Any(CanCost);
+        }
+
+        private bool CanCost(GameItem gameItem)
         {
             var gameItemItemId = gameItem.ItemId;
             if (!GameItems.TryGetValue(gameItemItemId, out var num)) return false;
@@ -29,7 +35,13 @@ namespace game_stuff
             return cost <= num;
         }
 
-        public bool Cost(GameItem gameItem)
+        public bool Cost(ISaleUnit saleUnit)
+        {
+            var cost = Cost(saleUnit.Cost);
+            return cost || saleUnit.OrCosts.Any(Cost);
+        }
+
+        private bool Cost(GameItem gameItem)
         {
             var gameItemItemId = gameItem.ItemId;
             if (!GameItems.TryGetValue(gameItemItemId, out var num)) return false;
@@ -80,8 +92,6 @@ namespace game_stuff
             throw new Exception($"not such  item id::{ItemId}");
         }
     }
-
-  
 
 
     public readonly struct KillBox

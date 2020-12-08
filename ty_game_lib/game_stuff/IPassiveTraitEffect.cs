@@ -1,4 +1,7 @@
+using System;
+using System.IO;
 using System.Numerics;
+using game_config;
 
 namespace game_stuff
 {
@@ -13,6 +16,89 @@ namespace game_stuff
 
     public static class PassiveEffectStandard
     {
+        public static IPassiveTraitEffect GenById(int id)
+        {
+            if (!TempConfig.Configs.passives.TryGetValue(id, out var passive))
+                throw new DirectoryNotFoundException($"not such passive id {id}");
+            var passiveParamValues = passive.param_values;
+            var vector = new Vector<float>(passiveParamValues);
+
+            switch (passive.passive_effect_type)
+            {
+                case passive_type.Survive:
+                    return new SurvivalAboutPassiveEffect(vector);
+                case passive_type.TickAdd:
+                    return new TickAddEffect(vector);
+
+                case passive_type.Other:
+                    return new OtherAttrPassiveEffect(vector);
+                case passive_type.Speical:
+                    return new HitPass(vector);
+                case passive_type.Attack:
+                    return new OtherAttrPassiveEffect(vector);
+                case passive_type.AddItem:
+                    return new AddItem(vector);
+                case passive_type.TrapAbout:
+                    return new TrapEffect(vector);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
+
+    public readonly struct HitPass : IPassiveTraitEffect
+    {
+        public HitPass(Vector<float> hitAddNum)
+        {
+            HitAddNum = hitAddNum;
+        }
+
+        private Vector<float> HitAddNum { get; }
+
+        // public float HpMultiAdd { get; }0
+        //
+        // public float HealMultiAdd { get; }1
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            var multiply = Vector.Multiply(level, HitAddNum);
+            return new HitPass(multiply);
+        }
+
+        public Vector<float> GetZero()
+        {
+            return Vector<float>.Zero;
+        }
+
+        public Vector<float> GetVector()
+        {
+            return HitAddNum;
+        }
+    }
+
+    public readonly struct AddItem : IPassiveTraitEffect
+    {
+        private Vector<float> TicketAdd { get; }
+
+        public AddItem(Vector<float> ticketAdd)
+        {
+            TicketAdd = ticketAdd;
+        }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new AddItem(Vector.Multiply(level, GetVector()));
+        }
+
+        public Vector<float> GetZero()
+        {
+            return Vector<float>.Zero;
+        }
+
+
+        public Vector<float> GetVector()
+        {
+            return TicketAdd;
+        }
     }
 
     public readonly struct SurvivalAboutPassiveEffect : IPassiveTraitEffect
@@ -32,7 +118,7 @@ namespace game_stuff
         //
         // public float ShieldInstabilityMultiAdd { get; }6
 
-        private SurvivalAboutPassiveEffect(Vector<float> survivalMultiAdd)
+        public SurvivalAboutPassiveEffect(Vector<float> survivalMultiAdd)
         {
             SurvivalMultiAdd = survivalMultiAdd;
         }
@@ -44,24 +130,47 @@ namespace game_stuff
 
         public Vector<float> GetZero()
         {
-            return Zero();
+            return Vector<float>.Zero;
         }
 
         public Vector<float> GetVector()
         {
             return SurvivalMultiAdd;
         }
+    }
 
-        public static Vector<float> Zero()
+    public readonly struct TrapEffect : IPassiveTraitEffect
+    {
+        public TrapEffect(Vector<float> trapAdd)
         {
-            return new Vector<float>(new[] {0f, 0f, 0f, 0f, 0f, 0f, 0f});
+            TrapAdd = trapAdd;
+        }
+
+        private Vector<float> TrapAdd { get; }
+
+        // public float TrapAtkMultiAdd { get; }0
+        //
+        // public float TrapSurvivalMultiAdd { get; }1
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            var multiply = Vector.Multiply(level, TrapAdd);
+            return new TrapEffect(multiply);
+        }
+
+        public Vector<float> GetZero()
+        {
+            return Vector<float>.Zero;
+        }
+
+        public Vector<float> GetVector()
+        {
+            return TrapAdd;
         }
     }
 
-
     public readonly struct OtherAttrPassiveEffect : IPassiveTraitEffect
     {
-        private OtherAttrPassiveEffect(Vector<float> otherAttrAdd)
+        public OtherAttrPassiveEffect(Vector<float> otherAttrAdd)
         {
             OtherAttrAdd = otherAttrAdd;
         }
@@ -84,7 +193,7 @@ namespace game_stuff
 
         Vector<float> IPassiveTraitEffect.GetZero()
         {
-            return Zero();
+            return Vector<float>.Zero;
         }
 
         public Vector<float> GetVector()
@@ -92,9 +201,35 @@ namespace game_stuff
             return OtherAttrAdd;
         }
 
-        public static Vector<float> Zero()
+        // private static Vector<float> Zero()
+        // {
+        //     return new Vector<float>(new[] {0f, 0f, 0f, 0f, 0f});
+        // }
+    }
+
+    public readonly struct TickAddEffect : IPassiveTraitEffect
+    {
+        public TickAddEffect(Vector<float> tickAddMulti)
         {
-            return new Vector<float>(new[] {0f, 0f, 0f, 0f, 0f});
+            TickAddMulti = tickAddMulti;
+        }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            var multiply = Vector.Multiply(level, TickAddMulti);
+            return new TickAddEffect(multiply);
+        }
+
+        private Vector<float> TickAddMulti { get; }
+
+        public Vector<float> GetZero()
+        {
+            return Vector<float>.Zero;
+        }
+
+        public Vector<float> GetVector()
+        {
+            return TickAddMulti;
         }
     }
 
@@ -108,10 +243,6 @@ namespace game_stuff
             AtkAttrAdd = atkAttrAdd;
         }
 
-        public static Vector<float> Zero()
-        {
-            return new Vector<float>(new[] {0f, 0f, 0f});
-        }
 
         private Vector<float> AtkAttrAdd { get; }
         // public float MainAtkMultiAdd { get; }
@@ -126,7 +257,7 @@ namespace game_stuff
 
         Vector<float> IPassiveTraitEffect.GetZero()
         {
-            return Zero();
+            return Vector<float>.Zero;
         }
 
         public Vector<float> GetVector()

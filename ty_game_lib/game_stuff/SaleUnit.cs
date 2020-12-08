@@ -6,12 +6,13 @@ namespace game_stuff
     public class SaleUnit : ISaleUnit
     {
         public SaleUnit(IMapInteractable? inWhichMapInteractive, GameItem cost, ISaleStuff[] good,
-            int stack)
+            int stack, GameItem[] orCosts)
         {
             InWhichMapInteractive = inWhichMapInteractive;
             Cost = cost;
             Good = good;
             Stack = stack;
+            OrCosts = orCosts;
             DoneDictionary = new Dictionary<int, int>();
         }
 
@@ -19,6 +20,7 @@ namespace game_stuff
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public GameItem Cost { get; }
+        public GameItem[] OrCosts { get; }
 
         public ISaleStuff[] GetGood()
         {

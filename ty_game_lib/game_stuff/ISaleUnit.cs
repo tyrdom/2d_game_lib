@@ -8,6 +8,8 @@ namespace game_stuff
     public interface ISaleUnit : ICanPutInMapInteractable
     {
         GameItem Cost { get; }
+
+        GameItem[] OrCosts { get; }
         Dictionary<int, int> DoneDictionary { get; }
 
         int Stack { get; }
@@ -49,7 +51,7 @@ namespace game_stuff
 
         public static bool CanInterActTwoBy(CharacterStatus characterStatus, ISaleUnit saleUnit)
         {
-            return IsStackOk(characterStatus, saleUnit) && characterStatus.PlayingItemBag.CanCost(saleUnit.Cost);
+            return IsStackOk(characterStatus, saleUnit) && characterStatus.PlayingItemBag.CanCost(saleUnit);
         }
 
         public static IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus,
@@ -61,7 +63,7 @@ namespace game_stuff
                 case MapInteract.ApplyCall:
                     return new List<IMapInteractable>();
                 case MapInteract.BuyCall:
-                    var cost = characterStatus.PlayingItemBag.Cost(saleUnit.Cost);
+                    var cost = characterStatus.PlayingItemBag.Cost(saleUnit);
                     var characterStatusGId = characterStatus.GId;
                     var b = saleUnit.GetRestStack(characterStatusGId) > 0;
                     if (cost && b)
@@ -86,7 +88,8 @@ namespace game_stuff
                                     return prop.ActWhichChar(characterStatus, MapInteract.PickCall);
                                 case Vehicle vehicle:
                                     vehicle.WhoDriveOrCanDrive = characterStatus;
-                                    var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ?? characterStatus.GetPos();
+                                    var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ??
+                                                    characterStatus.GetPos();
 
                                     var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
                                     return new List<IMapInteractable> {dropAsIMapInteractable};
@@ -96,7 +99,6 @@ namespace game_stuff
                                     throw new ArgumentOutOfRangeException(nameof(saleUnit.GetGood));
                             }
                         }
-                     
                     }
 
                     break;

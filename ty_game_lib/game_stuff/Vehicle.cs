@@ -11,6 +11,8 @@ namespace game_stuff
 {
     public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop
     {
+        public float TrapAtkMulti { get; set; }
+
         public static Vehicle GenById(int id)
         {
             if (TempConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
@@ -60,9 +62,12 @@ namespace game_stuff
             uint destroyTick, int weaponCarryMax,
             Skill outAct, base_attr_id baseAttrId, int vId)
         {
-            var (max, min, add, maxAmmo, _, attackStatus, survivalStatus) =
+            var (max, min, add, maxAmmo, recycleMulti, trapNum, trapAtkMulti, trapSurvivalMulti, attackStatus,
+                    survivalStatus) =
                 CharacterStatus.GenAttrBaseByConfig(baseAttrId);
-
+            MaxTrapNum = trapNum;
+            TrapAtkMulti = trapAtkMulti;
+            TrapSurvivalMulti = trapSurvivalMulti;
             Size = size;
             MaxMoveSpeed = max;
             MinMoveSpeed = min;
@@ -82,7 +87,12 @@ namespace game_stuff
             WhoDriveOrCanDrive = null;
             NowDsTick = 0;
             IsDsOn = false;
+            RecycleMulti = recycleMulti;
         }
+
+        public float TrapSurvivalMulti { get; set; }
+
+        public uint MaxTrapNum { get; set; }
 
         public int VId { get; }
         public CharacterStatus? WhoDriveOrCanDrive { get; set; }
@@ -106,6 +116,7 @@ namespace game_stuff
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
 
+        public float RecycleMulti { get; set; }
 
         public (bool isBroken, Bullet? destroyBullet) GoATickCheckSurvival()
         {
@@ -160,6 +171,13 @@ namespace game_stuff
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
             MaxMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
+            RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
+        }
+
+        public void PassiveEffectChangeTrap(Vector<float> trapAdd,
+            (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
+        {
+            BattleUnitStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
         }
 
 
@@ -224,6 +242,11 @@ namespace game_stuff
         {
             WhoDriveOrCanDrive = characterStatus;
             DestroyBullet.Sign(characterStatus);
+        }
+
+        public void TrapAboutRefresh(Vector<float> trapAdd)
+        {
+            BattleUnitStandard.TrapAboutRefresh(trapAdd, this);
         }
     }
 }

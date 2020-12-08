@@ -14,6 +14,8 @@ namespace game_stuff
         SurvivalStatus SurvivalStatus { get; }
         void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects);
         AttackStatus AttackStatus { get; }
+        float TrapAtkMulti { get; set; }
+        float TrapSurvivalMulti { get; set; }
         void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects);
         void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects);
         void AddAmmo(int ammoAdd);
@@ -21,10 +23,21 @@ namespace game_stuff
         void PassiveEffectChangeOther(Vector<float> otherAttrPassiveEffects,
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
                 RecycleMulti) otherBaseStatus);
+
+        void PassiveEffectChangeTrap(Vector<float> trapAdd, (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr);
     }
 
     public static class BattleUnitStandard
     {
+        public static void PassiveEffectChangeTrap(Vector<float> trapAdd,
+            (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr, IMoveBattleAttrModel moveBattleAttrModel
+        )
+        {
+            var (trapAtkMulti, trapSurvivalMulti) = trapBaseAttr;
+            moveBattleAttrModel.TrapAtkMulti = trapAtkMulti * (1 + trapAdd[0]);
+            moveBattleAttrModel.TrapSurvivalMulti = trapSurvivalMulti * (1 + trapAdd[1]);
+        }
+
         public static void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects,
             IMoveBattleAttrModel moveBattleAttrModel)
         {
@@ -48,6 +61,13 @@ namespace game_stuff
             var otherBaseStatus =
                 GameTools.GenOtherBaseStatusByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
             moveBattleAttrModel.PassiveEffectChangeOther(otherAttrPassiveEffects, otherBaseStatus);
+        }
+
+        public static void TrapAboutRefresh(Vector<float> trapAdd, IMoveBattleAttrModel moveBattleAttrModel)
+        {
+            var trapBaseAttr =
+                GameTools.GenTrapAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
+            moveBattleAttrModel.PassiveEffectChangeTrap(trapAdd, trapBaseAttr);
         }
     }
 }

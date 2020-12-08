@@ -24,10 +24,15 @@ namespace game_stuff
                 TempConfig.StandardPropMaxStack, baseAttribute.RecycleMulti);
         }
 
-        public static (SurvivalStatus baseSurvivalStatus, AttackStatus baseAtkStatus) GenStatusByAttr(
-            base_attribute baseAttribute)
+        public static ( float TrapAtkMulti, float TrapSurvivalMulti) GenTrapAttr(base_attribute baseAttribute)
         {
-            return (SurvivalStatus.GenByConfig(baseAttribute), AttackStatus.GenByConfig(baseAttribute));
+            return (baseAttribute.TrapAtkMulti, baseAttribute.TrapSurvivalMulti);
+        }
+
+        public static (SurvivalStatus baseSurvivalStatus, AttackStatus baseAtkStatus) GenStatusByAttr(
+            base_attribute baseAttribute, float f = 1f)
+        {
+            return (SurvivalStatus.GenByConfig(baseAttribute, f), AttackStatus.GenByConfig(baseAttribute));
         }
 
         public static CharGoTickResult BodyGoATick(IIdPointShape idPointShape, Dictionary<int, Operate> gidToOp)
@@ -43,7 +48,7 @@ namespace game_stuff
         {
             return idPointShape switch
             {
-                Trap characterBody => TrapGoATick(characterBody),
+                Trap trap => trap.GoATick(),
                 _ => throw new ArgumentOutOfRangeException(nameof(idPointShape))
             };
         }

@@ -5,12 +5,12 @@ namespace game_stuff
 {
     public class TrapSetter
     {
-        public TrapSetter(bool canBeSee, int? failChance, BodySize bodySize, uint callTrapTick,
+        public TrapSetter(bool canBeSee, int? failChanceStack, BodySize bodySize, uint callTrapTick,
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
             base_attr_id? baseAttrId)
         {
             CanBeSee = canBeSee;
-            FailChance = failChance;
+            FailChanceStack = failChanceStack;
             BodySize = bodySize;
             CallTrapTick = callTrapTick;
             MaxLifeTimeTick = maxLifeTimeTick;
@@ -26,17 +26,21 @@ namespace game_stuff
             var id = characterStatus.GetId() * TempConfig.UpMaxTrap + characterStatus.Traps.Count;
 
             var genStatusByAttr = BaseAttrId != null
-                ? GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value)).baseSurvivalStatus
-                : null;
-            var trap = new Trap(characterStatus, genStatusByAttr, CanBeSee, pos, id, BodySize, CallTrapTick,
+                ? GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value),
+                    characterStatus.TrapSurvivalMulti)
+                : (null, null);
+
+
+            var trap = new Trap(characterStatus, genStatusByAttr.baseSurvivalStatus, CanBeSee, pos, id, BodySize,
+                CallTrapTick,
                 MaxLifeTimeTick, 0,
-                TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChance);
+                TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack, characterStatus.TrapAtkMulti);
             return trap;
         }
 
         private base_attr_id? BaseAttrId { get; }
         private bool CanBeSee { get; }
-        private int? FailChance { get; }
+        private int? FailChanceStack { get; }
         private BodySize BodySize { get; }
         private uint CallTrapTick { get; }
         private uint? MaxLifeTimeTick { get; }

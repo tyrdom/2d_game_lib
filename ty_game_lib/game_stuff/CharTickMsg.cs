@@ -6,19 +6,19 @@ namespace game_stuff
 {
     public class CharTickMsg : ISeeTickMsg
     {
-        public readonly int Gid;
-        public readonly TwoDPoint Pos;
-        public readonly TwoDVector Aim;
-        public readonly float Speed;
-        public readonly SurvivalStatus SurvivalStatus;
-        public readonly bool IsPause;
-        public readonly float SightR;
-        public readonly SkillAction? SkillLaunch;
-        public readonly bool SkillAct;
-        public readonly bool IsStun;
-        public readonly TwoDVector? IsBeHit;
-        public readonly bool IsHitSome;
-        public readonly List<TwoDPoint> SomeThings;
+        public int Gid { get; }
+        public TwoDPoint Pos { get; }
+        public TwoDVector Aim { get; }
+        public float Speed { get; }
+        public SurvivalStatus SurvivalStatus { get; }
+        public bool IsPause { get; }
+        public float SightR { get; }
+        public SkillAction? SkillLaunch { get; }
+        public bool SkillAct { get; }
+        public bool IsStun { get; }
+        public TwoDVector? IsBeHit { get; }
+        public bool IsHitSome { get; }
+        public List<TwoDPoint> SomeThings { get; }
 
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
