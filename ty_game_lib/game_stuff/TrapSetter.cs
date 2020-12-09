@@ -25,16 +25,18 @@ namespace game_stuff
         {
             var id = characterStatus.GetId() * TempConfig.UpMaxTrap + characterStatus.Traps.Count;
 
-            var genStatusByAttr = BaseAttrId != null
-                ? GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value),
-                    characterStatus.TrapSurvivalMulti)
-                : (null, null);
-
-
-            var trap = new Trap(characterStatus, genStatusByAttr.baseSurvivalStatus, CanBeSee, pos, id, BodySize,
+            if (BaseAttrId == null)
+                return new Trap(characterStatus, null, CanBeSee, pos, id, BodySize,
+                    CallTrapTick,
+                    MaxLifeTimeTick, 0,
+                    TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
+                    characterStatus.TrapAtkMulti);
+            var (baseSurvivalStatus, _) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value));
+            var trap = new Trap(characterStatus, baseSurvivalStatus, CanBeSee, pos, id, BodySize,
                 CallTrapTick,
                 MaxLifeTimeTick, 0,
-                TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack, characterStatus.TrapAtkMulti);
+                TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
+                characterStatus.TrapAtkMulti);
             return trap;
         }
 

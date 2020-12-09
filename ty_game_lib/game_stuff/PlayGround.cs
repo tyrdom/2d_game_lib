@@ -7,13 +7,13 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色放置到四叉树中，方便子弹碰撞逻辑
-        private readonly SightMap SightMap; //视野地图
-        private readonly WalkMap WalkMap; //碰撞地图
+        private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; set; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
+        private SightMap SightMap { get; set; } //视野地图
+        private WalkMap WalkMap { get; set; } //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
-        private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; }
+        private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; } // 碰撞媒体缓存，以后可能会有持续多帧的子弹
 
-        private IQSpace MapInteractableThings { get; }
+        private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
         // private TempConfig TempConfig { get; }
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
@@ -29,7 +29,20 @@ namespace game_stuff
         }
 
         //初始化状态信息,包括玩家信息和地图信息
-        public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) InitPlayGround(
+        public void ChangeMap(MapInitData mapInitData, HashSet<int>? keepGid = null)
+        {
+            if (keepGid != null)
+            {
+                foreach (var key in GidToBody.Select(keyValuePair => keyValuePair.Key)
+                    .Where(key => !keepGid.Contains(key)))
+                {
+                    GidToBody.Remove(key);
+                }
+            }
+            
+        }
+
+        public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
             IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
@@ -55,6 +68,7 @@ namespace game_stuff
 
             var zone = mapInitData.GetZone();
             var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
+            var emptyRootBranch2 = SomeTools.CreateEmptyRootBranch(zone);
             var spaces = bodies.ToDictionary(p => p.Key,
                 p =>
                 {
@@ -62,7 +76,7 @@ namespace game_stuff
                     var aabbBoxShapes =
                         SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToIdBox()));
                     emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
-                    return (emptyRootBranch, emptyRootBranch);
+                    return (emptyRootBranch, emptyRootBranch2);
                 });
 #if DEBUG
             foreach (var qSpace in spaces)

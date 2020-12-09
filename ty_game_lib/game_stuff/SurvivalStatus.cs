@@ -7,12 +7,12 @@ using game_config;
 
 namespace game_stuff
 {
-    public class SurvivalStatus
+    public struct SurvivalStatus
     {
         private uint MaxHp { get; set; }
         private uint NowHp { get; set; }
 
-        private float HealEffect { get; set; }
+
         private uint NowArmor { get; set; }
         private uint MaxArmor { get; set; }
 
@@ -20,7 +20,6 @@ namespace game_stuff
         private uint NowShield { get; set; }
         private uint MaxShield { get; set; }
 
-        private float FixEffect { get; set; }
 
         private uint NowDelayTick { get; set; }
 
@@ -28,11 +27,9 @@ namespace game_stuff
         private uint ShieldInstability { get; set; }
         private uint ShieldRecover { get; set; }
 
-        private float ChargeEffect { get; set; }
 
         private SurvivalStatus(uint maxHp, uint nowHp, uint nowArmor, uint maxArmor, uint nowShield, uint maxShield,
-            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability, float healEffect,
-            float fixEffect, float chargeEffect)
+            uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability)
         {
             MaxHp = maxHp;
             NowHp = nowHp;
@@ -44,14 +41,12 @@ namespace game_stuff
             ArmorDefence = armorDefence;
             ShieldRecover = shieldRecover;
             ShieldInstability = shieldInstability;
-            HealEffect = healEffect;
-            FixEffect = fixEffect;
-            ChargeEffect = chargeEffect;
+            NowDelayTick = 0;
         }
 
         public static SurvivalStatus StartTestSurvivalStatus()
         {
-            return new SurvivalStatus(1000, 1000, 0, 0, 0, 0, 5, 1, 0, 0, 1f, 1f, 1f);
+            return new SurvivalStatus(1000, 1000, 0, 0, 0, 0, 5, 1, 0, 0);
         }
 
         public override string ToString()
@@ -161,26 +156,26 @@ namespace game_stuff
             NowHp -= (uint) rest;
         }
 
-        public void GetRegen(Regeneration regeneration)
+        public void GetRegen(Regeneration regeneration, RegenEffectStatus regenEffectStatus)
         {
-            GetHeal(regeneration.HealMulti);
-            FixArmor(regeneration.FixMulti);
-            ChargeShield(regeneration.ShieldMulti);
+            GetHeal(regeneration.HealMulti, regenEffectStatus.HealEffect);
+            FixArmor(regeneration.FixMulti, regenEffectStatus.FixEffect);
+            ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect);
         }
 
-        private void GetHeal(float healMulti)
+        private void GetHeal(float regenerationHealMulti, float healMulti)
         {
-            NowHp = (uint) MathTools.Min(NowHp + healMulti * MaxHp * HealEffect, MaxHp);
+            NowHp = (uint) MathTools.Min(NowHp + regenerationHealMulti * MaxHp * healMulti, MaxHp);
         }
 
-        private void FixArmor(float fixMulti)
+        private void FixArmor(float regenerationFixMulti, float fixMulti)
         {
-            NowArmor = (uint) MathTools.Min(NowArmor + fixMulti * MaxArmor * FixEffect, MaxArmor);
+            NowArmor = (uint) MathTools.Min(NowArmor + regenerationFixMulti * MaxArmor * fixMulti, MaxArmor);
         }
 
-        private void ChargeShield(float chargeMulti)
+        private void ChargeShield(float regenerationShieldMulti, float chargeMulti)
         {
-            var maxShield = (uint) (chargeMulti * MaxShield * ChargeEffect);
+            var maxShield = (uint) (regenerationShieldMulti * MaxShield * chargeMulti);
             NowShield += maxShield;
         }
 
@@ -188,7 +183,7 @@ namespace game_stuff
         public bool GoATickAndCheckAlive()
         {
             if (IsDead()) return false;
-            if (NowDelayTick == 0 && NowShield < MaxShield)
+            if (NowShield < MaxShield && NowDelayTick == 0)
             {
                 NowShield = Math.Min(NowShield + ShieldRecover, MaxShield);
             }
@@ -212,15 +207,10 @@ namespace game_stuff
             var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
             var baseAttributeShieldDelayTime = TempConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
 
-            var baseAttributeHealEffect = baseAttribute.HealEffect;
-            var baseAttributeArmorFixEffect = baseAttribute.ArmorFixEffect;
-            var baseAttributeShieldChargeEffect = baseAttribute.ShieldChargeEffect;
-
             return new SurvivalStatus(baseAttributeMaxHp, baseAttributeMaxHp, baseAttributeMaxArmor,
                 baseAttributeMaxArmor, baseAttributeMaxShield, baseAttributeMaxShield,
                 baseAttributeShieldDelayTime, baseAttributeArmorDefence, baseAttributeShieldRecover,
-                baseAttributeShieldInstability, baseAttributeHealEffect, baseAttributeArmorFixEffect,
-                baseAttributeShieldChargeEffect);
+                baseAttributeShieldInstability);
         }
 
 
@@ -232,14 +222,14 @@ namespace game_stuff
             MaxHp = (uint) (baseSurvivalStatus.MaxHp * (1 + v[0]));
 
             NowHp = MaxHp <= lossHp ? 1 : MaxHp - lossHp;
-            HealEffect = baseSurvivalStatus.HealEffect * (1 + v[1]);
+
             var lossAr = MaxArmor - NowArmor;
-            MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + v[2]));
+            MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + v[1]));
             NowArmor = MaxArmor < lossAr ? 0 : MaxArmor - lossAr;
-            ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + v[3]));
-            MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + v[4]));
+            ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + v[2]));
+            MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + v[3]));
+            ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[4]));
             ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));
-            ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[6]));
         }
 
         public float GenShortStatus()

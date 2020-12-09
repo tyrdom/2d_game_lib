@@ -9,7 +9,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop
+    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop ,ICanPutInMapInteractable
     {
         public float TrapAtkMulti { get; set; }
 
@@ -62,32 +62,31 @@ namespace game_stuff
             uint destroyTick, int weaponCarryMax,
             Skill outAct, base_attr_id baseAttrId, int vId)
         {
-            var (max, min, add, maxAmmo, recycleMulti, trapNum, trapAtkMulti, trapSurvivalMulti, attackStatus,
-                    survivalStatus) =
-                CharacterStatus.GenAttrBaseByConfig(baseAttrId);
-            MaxTrapNum = trapNum;
-            TrapAtkMulti = trapAtkMulti;
-            TrapSurvivalMulti = trapSurvivalMulti;
+            var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
+            SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
+            AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
+            RegenEffectStatus = RegenEffectStatus.GenBaseByAttr(genBaseAttrById);
+            MaxTrapNum = genBaseAttrById.MaxTrapNum;
+            TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
+            TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
             Size = size;
-            MaxMoveSpeed = max;
-            MinMoveSpeed = min;
-            AddMoveSpeed = add;
+            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
+            MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
+            AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             Scope = scope;
             Weapons = weapons;
             DestroyBullet = destroyBullet;
-            SurvivalStatus = survivalStatus;
             DestroyTick = destroyTick;
             WeaponCarryMax = weaponCarryMax;
             NowAmmo = 0;
-            MaxAmmo = maxAmmo;
+            MaxAmmo = genBaseAttrById.MaxAmmo;
             OutAct = outAct;
-            AttackStatus = attackStatus;
             BaseAttrId = baseAttrId;
             VId = vId;
             WhoDriveOrCanDrive = null;
             NowDsTick = 0;
             IsDsOn = false;
-            RecycleMulti = recycleMulti;
+            RecycleMulti = genBaseAttrById.RecycleMulti;
         }
 
         public float TrapSurvivalMulti { get; set; }
@@ -115,6 +114,7 @@ namespace game_stuff
         private uint NowDsTick { get; set; }
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
+        public RegenEffectStatus RegenEffectStatus { get; }
 
         public float RecycleMulti { get; set; }
 
@@ -140,24 +140,29 @@ namespace game_stuff
 
         public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
         {
-            BattleUnitStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
+            BattleUnitMoverStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
         }
 
         public AttackStatus AttackStatus { get; }
 
         public void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects)
         {
-            BattleUnitStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
+            BattleUnitMoverStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
         }
 
         public void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects)
         {
-            BattleUnitStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
+            BattleUnitMoverStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
         }
 
         public Skill OutAct { get; }
 
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
+
+        public void ReloadAmmo(float reloadMulti)
+        {
+            NowAmmo = (int) Math.Min(MaxAmmo, NowAmmo + MaxAmmo * reloadMulti * RegenEffectStatus.ReloadEffect);
+        }
 
         public void PassiveEffectChangeOther(Vector<float> otherAttrPassiveEffects,
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
@@ -177,7 +182,12 @@ namespace game_stuff
         public void PassiveEffectChangeTrap(Vector<float> trapAdd,
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
         {
-            BattleUnitStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
+            BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
+        }
+
+        public void PassiveEffectChangeRegen(Vector<float> regenAttrPassiveEffects, RegenEffectStatus regenBaseAttr)
+        {
+            throw new NotImplementedException();
         }
 
 
@@ -224,6 +234,11 @@ namespace game_stuff
             return VId;
         }
 
+        public uint GetNum()
+        {
+            return 1;
+        }
+
         private IEnumerable<IMapInteractable> KickBySomeBody(TwoDPoint pos)
         {
             var opos = InWhichMapInteractive == null ? pos : ((IAaBbBox) InWhichMapInteractive).GetAnchor().GetMid(pos);
@@ -241,12 +256,62 @@ namespace game_stuff
         public void Sign(CharacterStatus characterStatus)
         {
             WhoDriveOrCanDrive = characterStatus;
+            var characterStatusPassiveTraits = characterStatus.PassiveTraits;
+            RefreshByPass(characterStatusPassiveTraits);
+
             DestroyBullet.Sign(characterStatus);
+        }
+
+
+        private void RefreshByPass(Dictionary<int, PassiveTrait> characterStatusPassiveTraits)
+        {
+            var passiveTraits =
+                characterStatusPassiveTraits.Values.Where(x => x.PassiveTraitEffect is IPassiveTraitEffectForVehicle);
+            var groupBy = passiveTraits.GroupBy(x => x.GetType());
+            foreach (var grouping in groupBy)
+            {
+                var firstOrDefault = grouping.FirstOrDefault();
+                if (firstOrDefault == null)
+                {
+                    continue;
+                }
+
+                if (firstOrDefault.PassiveTraitEffect is IPassiveTraitEffectForVehicle passiveTraitEffect)
+                {
+                    var aggregate = grouping.Aggregate(Vector<float>.Zero,
+                        (s, x) => s + x.PassiveTraitEffect.GenEffect(x.Level).GetVector());
+                    switch (passiveTraitEffect)
+                    {
+                        case AtkAboutPassiveEffect _:
+                            AttackStatusRefresh(aggregate);
+                            break;
+                        case OtherAttrPassiveEffect _:
+                            OtherStatusRefresh(aggregate);
+                            break;
+                        case RegenPassiveEffect _:
+                            RegenStatusRefresh(aggregate);
+                            break;
+                        case SurvivalAboutPassiveEffect _:
+                            SurvivalStatusRefresh(aggregate);
+                            break;
+                        case TrapEffect _:
+                            TrapAboutRefresh(aggregate);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(passiveTraitEffect));
+                    }
+                }
+            }
         }
 
         public void TrapAboutRefresh(Vector<float> trapAdd)
         {
-            BattleUnitStandard.TrapAboutRefresh(trapAdd, this);
+            BattleUnitMoverStandard.TrapAboutRefresh(trapAdd, this);
+        }
+
+        public void RegenStatusRefresh(Vector<float> rPassiveEffects)
+        {
+            BattleUnitMoverStandard.RegenStatusRefresh(rPassiveEffects, this);
         }
     }
 }

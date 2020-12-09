@@ -9,7 +9,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ISaleStuff, ICanDrop
+    public class Weapon : ISaleStuff, ICanDrop, ICanPutInMapInteractable
     {
         public int WId { get; }
 
@@ -242,6 +242,11 @@ namespace game_stuff
         public int GetId()
         {
             return WId;
+        }
+
+        public uint GetNum()
+        {
+            return 1;
         }
     }
 }

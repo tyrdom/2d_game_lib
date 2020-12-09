@@ -12,6 +12,8 @@ namespace game_stuff
 
         base_attr_id BaseAttrId { get; }
         SurvivalStatus SurvivalStatus { get; }
+
+        RegenEffectStatus RegenEffectStatus { get; }
         void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects);
         AttackStatus AttackStatus { get; }
         float TrapAtkMulti { get; set; }
@@ -27,7 +29,7 @@ namespace game_stuff
         void PassiveEffectChangeTrap(Vector<float> trapAdd, (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr);
     }
 
-    public static class BattleUnitStandard
+    public static class BattleUnitMoverStandard
     {
         public static void PassiveEffectChangeTrap(Vector<float> trapAdd,
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr, IMoveBattleAttrModel moveBattleAttrModel
@@ -68,6 +70,14 @@ namespace game_stuff
             var trapBaseAttr =
                 GameTools.GenTrapAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
             moveBattleAttrModel.PassiveEffectChangeTrap(trapAdd, trapBaseAttr);
+        }
+
+        public static void RegenStatusRefresh(Vector<float> regenAttrPassiveEffects,
+            IMoveBattleAttrModel moveBattleAttrModel)
+        {
+            var regenBaseAttr =
+                RegenEffectStatus.GenBaseByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
+            moveBattleAttrModel.RegenEffectStatus.PassiveEffectChange(regenAttrPassiveEffects, regenBaseAttr);
         }
     }
 }

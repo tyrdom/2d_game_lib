@@ -81,7 +81,7 @@ namespace game_stuff
                 NotOverFlow &&
                 (FailChanceStack == null || FailChanceStack > 0) &&
                 (TrickStack == null || TrickStack > 0)
-                && (SurvivalStatus == null || SurvivalStatus.GoATickAndCheckAlive())
+                && (SurvivalStatus == null || SurvivalStatus.Value.GoATickAndCheckAlive())
                 && (MaxLifeTimeTick == null || NowLifeTimeTick < MaxLifeTimeTick);
 
             if (!goATickAndCheckAlive) return new TrapGoTickResult(false, null, this);

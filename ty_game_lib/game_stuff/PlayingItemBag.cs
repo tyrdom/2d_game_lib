@@ -9,12 +9,12 @@ namespace game_stuff
     {
         private Dictionary<int, uint> GameItems { get; }
 
-        public PlayingItemBag(Dictionary<int, uint> gameItems)
+        private PlayingItemBag(Dictionary<int, uint> gameItems)
         {
             GameItems = gameItems;
         }
 
-        public static PlayingItemBag GenByConfig()
+        public static PlayingItemBag InitByConfig()
         {
             var dictionary = TempConfig.Configs.items.Values.Where(x => x.IsPlayingItem)
                 .ToDictionary(x => x.id, _ => (uint) 0);
@@ -70,7 +70,7 @@ namespace game_stuff
         }
     }
 
-    public readonly struct GameItem
+    public readonly struct GameItem : ISaleStuff
     {
         public GameItem(int itemId, uint num)
         {
@@ -90,6 +90,16 @@ namespace game_stuff
             }
 
             throw new Exception($"not such  item id::{ItemId}");
+        }
+
+        public int GetId()
+        {
+            return ItemId;
+        }
+
+        public uint GetNum()
+        {
+            return Num;
         }
     }
 

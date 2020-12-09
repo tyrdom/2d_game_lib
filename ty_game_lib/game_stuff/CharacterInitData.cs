@@ -51,10 +51,11 @@ namespace game_stuff
             AddSpeed = addSpeed;
         }
 
+        
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
             var characterStatus = new CharacterStatus(Gid, TempConfig.TrickProtect, base_attr_id.standard_body,
-                PlayingItemBag.GenByConfig());
+                PlayingItemBag.InitByConfig());
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

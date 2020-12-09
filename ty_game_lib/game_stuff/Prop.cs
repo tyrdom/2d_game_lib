@@ -6,7 +6,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ISaleStuff, ICanDrop
+    public class Prop : ICharAct, ISaleStuff, ICanDrop ,ICanPutInMapInteractable
     {
         public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti,
             ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos, int pId)
@@ -128,6 +128,11 @@ namespace game_stuff
         public int GetId()
         {
             return PId;
+        }
+
+        public uint GetNum()
+        {
+            return 1;
         }
 
         public void Sign(CharacterStatus characterStatus)

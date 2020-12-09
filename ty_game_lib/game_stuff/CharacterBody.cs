@@ -28,6 +28,14 @@ namespace game_stuff
         public IdPointBox? IdPointBox { get; set; }
 
 
+        // public static CharacterBody GenByCharId(int id)
+        // {
+        // }
+        //
+        // public static CharacterBody GenByCreeperId(int id)
+        // {
+        // }
+
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
@@ -40,6 +48,12 @@ namespace game_stuff
             LastPos = lastPos;
             Sight = sight;
             Team = team;
+        }
+
+        public CharacterBody ReLocate(TwoDPoint twoDPoint)
+        {
+            NowPos = twoDPoint;
+            return this;
         }
 
         public Zone GetSightZone()

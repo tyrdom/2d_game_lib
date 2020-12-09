@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace game_stuff
 {
-    public class PassiveTrait : ISaleStuff
+    public class PassiveTrait : ISaleStuff, ICanPutInMapInteractable
     {
         public PassiveTrait(int passId, uint level, IPassiveTraitEffect passiveTraitEffect)
         {
@@ -61,6 +61,11 @@ namespace game_stuff
         public int GetId()
         {
             return PassId;
+        }
+
+        public uint GetNum()
+        {
+            return 1;
         }
     }
 }

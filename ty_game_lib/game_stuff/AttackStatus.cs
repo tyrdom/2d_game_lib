@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using game_config;
 
 namespace game_stuff
 {
-    public class AttackStatus
+    public struct AttackStatus
     {
         private float BackStabAdd { get; set; }
         private uint MainAttack { get; set; }
