@@ -254,6 +254,37 @@ namespace game_stuff
         }
     }
 
+    public readonly struct AbsorbAboutPassiveEffect : IPassiveTraitEffectForVehicle
+    {
+        public AbsorbAboutPassiveEffect(Vector<float> absorbAttrAdd)
+        {
+            AbsorbAttrAdd = absorbAttrAdd;
+        }
+
+        private Vector<float> AbsorbAttrAdd { get; }
+
+        // public float HPAbsMultiAdd { get; }
+        // public float ArmorAbsMultiAdd { get; }
+        // public float ShieldAbsMultiAdd { get; }
+        // public float AmmoAbsMultiAdd { get; }
+        // public float ProtectAbsMultiAdd { get; }
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            var multiply = Vector.Multiply(level, GetVector());
+            return new AbsorbAboutPassiveEffect(multiply);
+        }
+
+        public Vector<float> GetZero()
+        {
+            return Vector<float>.Zero;
+        }
+
+        public Vector<float> GetVector()
+        {
+            return AbsorbAttrAdd;
+        }
+    }
+
     public readonly struct AtkAboutPassiveEffect : IPassiveTraitEffectForVehicle
     {
         private AtkAboutPassiveEffect(Vector<float> atkAttrAdd)

@@ -237,5 +237,29 @@ namespace game_stuff
             var nowShield = (NowHp + NowArmor + NowShield) / (float) (MaxArmor + MaxShield + MaxHp);
             return nowShield;
         }
+
+        public void AbsorbDamage(uint damage, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage)
+        {
+            HpAbs(absorbStatus.HpAbs, damage);
+            ArmorAbs(absorbStatus.ArmorAbs, damage, hit, damageShardedDamage);
+            ShieldAbs(absorbStatus.ShieldAbs, damage, hit);
+        }
+
+        private void ShieldAbs(float absorbStatusShieldAbs, uint damage, uint hit)
+        {
+            var shieldInstability = damage + hit * ShieldInstability;
+            NowShield = (uint) (NowShield + shieldInstability * absorbStatusShieldAbs);
+        }
+
+        private void ArmorAbs(float absorbStatusArmorAbs, uint damage, uint hit, uint damageShardedDamage)
+        {
+            var shieldInstability = damage - hit * Math.Min(ArmorDefence, damageShardedDamage);
+            NowShield = (uint) (NowShield + shieldInstability * absorbStatusArmorAbs);
+        }
+
+        private void HpAbs(float absorbStatusHpAbs, uint damage)
+        {
+            NowHp = (uint) (NowShield + damage * absorbStatusHpAbs);
+        }
     }
 }

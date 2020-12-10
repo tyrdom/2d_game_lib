@@ -17,12 +17,13 @@ namespace collision_and_rigid
 
     public class TwoDVector : ITwoDTwoP
     {
+       
         public TwoDVector(float a, float b)
         {
             X = a;
             Y = b;
         }
-
+       
         public TwoDVector(TwoDPoint a, TwoDPoint b)
         {
             X = b.X - a.X;

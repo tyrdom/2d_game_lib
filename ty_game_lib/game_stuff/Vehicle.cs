@@ -9,7 +9,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop ,ICanPutInMapInteractable
+    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop, ICanPutInMapInteractable
     {
         public float TrapAtkMulti { get; set; }
 
@@ -66,6 +66,7 @@ namespace game_stuff
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
             AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
             RegenEffectStatus = RegenEffectStatus.GenBaseByAttr(genBaseAttrById);
+            AbsorbStatus = AbsorbStatus.GenBaseByAttr(genBaseAttrById);
             MaxTrapNum = genBaseAttrById.MaxTrapNum;
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
@@ -114,9 +115,10 @@ namespace game_stuff
         private uint NowDsTick { get; set; }
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
+        public AbsorbStatus AbsorbStatus { get; }
         public RegenEffectStatus RegenEffectStatus { get; }
 
-        public float RecycleMulti { get; set; }
+        public float RecycleMulti { get; private set; }
 
         public (bool isBroken, Bullet? destroyBullet) GoATickCheckSurvival()
         {
@@ -266,7 +268,8 @@ namespace game_stuff
         private void RefreshByPass(Dictionary<int, PassiveTrait> characterStatusPassiveTraits)
         {
             var passiveTraits =
-                characterStatusPassiveTraits.Values.Where(x => x.PassiveTraitEffect is IPassiveTraitEffectForVehicle);
+                characterStatusPassiveTraits.Values.Where(x => x.PassiveTraitEffect
+                    is IPassiveTraitEffectForVehicle);
             var groupBy = passiveTraits.GroupBy(x => x.GetType());
             foreach (var grouping in groupBy)
             {
@@ -282,6 +285,9 @@ namespace game_stuff
                         (s, x) => s + x.PassiveTraitEffect.GenEffect(x.Level).GetVector());
                     switch (passiveTraitEffect)
                     {
+                        case AbsorbAboutPassiveEffect _:
+                            AbsorbStatusRefresh(aggregate);
+                            break;
                         case AtkAboutPassiveEffect _:
                             AttackStatusRefresh(aggregate);
                             break;
@@ -312,6 +318,17 @@ namespace game_stuff
         public void RegenStatusRefresh(Vector<float> rPassiveEffects)
         {
             BattleUnitMoverStandard.RegenStatusRefresh(rPassiveEffects, this);
+        }
+
+
+        public void AbsorbDamage(uint genDamageShardedDamage, uint genDamageShardedNum, uint shardedDamage)
+        {
+            SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
+        }
+
+        public void AbsorbStatusRefresh(Vector<float> vector)
+        {
+            BattleUnitMoverStandard.AbsorbStatusRefresh(vector, this);
         }
     }
 }

@@ -48,7 +48,6 @@ namespace game_stuff
                 .Aggregate("", (current, logUser) => current + logUser);
         }
 
-
         private bool CanBePickUp(BodySize bodySize)
         {
             return SkillGroups.TryGetValue(bodySize, out _);

@@ -33,6 +33,7 @@ namespace game_stuff
         private int Tough { get; }
         public ObjType TargetType { get; }
 
+        private hit_type HitType { get; }
         private int RestTick { get; set; }
         private int ResId { get; }
 
@@ -100,7 +101,6 @@ namespace game_stuff
                                 var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                                     x.size == size.small || x.size == size.@default);
                                 return GenBuffByC(firstOrDefault?.buff_type, firstOrDefault?.buff_id);
-
                             case BodySize.Medium:
                                 var firstOrDefault2 = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                                     x.size == size.medium || x.size == size.@default);
@@ -133,13 +133,15 @@ namespace game_stuff
             }
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
-                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue);
+                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue,
+                bullet.HitType);
         }
 
         private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             Dictionary<BodySize, IStunBuffConfig> successStunBuffConfigToOpponent,
             Dictionary<BodySize, IStunBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
-            ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd)
+            ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
+            hit_type hitType)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -157,6 +159,7 @@ namespace game_stuff
             AmmoAddWhenSuccess = ammoAddWhenSuccess;
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
+            HitType = hitType;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
@@ -243,7 +246,7 @@ namespace game_stuff
             }
         }
 
-        private (bool atkOk, bool b4, IStunBuff? opponentCharacterStatusAntiActBuff, bool isActSkill) IsAtkPass(
+        private (HitCond hitCond, bool b4, IStunBuff? opponentCharacterStatusAntiActBuff, bool isActSkill) IsAtkPass(
             CharacterStatus targetCharacterStatus)
         {
             var nowCastSkill = targetCharacterStatus.NowCastAct;
@@ -253,15 +256,26 @@ namespace game_stuff
             var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
-            var b2 = isActSkill && objTough.GetValueOrDefault(0) < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
             var b3 = !isActSkill && Tough < TempConfig.MidTough; //如果对手不在释放技能，攻击坚韧小于中值，攻击成功
+            var tough = objTough.GetValueOrDefault(0);
+            var b2 = isActSkill && tough < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
             var atkOk = opponentIsStun || b2 || b3 || b4;
+            if (atkOk)
+            {
+                return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+            }
+
+            var b5 = isActSkill && tough == Tough;
+            if (b5)
+            {
+                return (HitCond.Draw, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+            }
 
 #if DEBUG
             Console.Out.WriteLine(
                 $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{TempConfig.MidTough}");
 #endif
-            return (atkOk, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+            return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
         }
 
 
@@ -277,7 +291,22 @@ namespace game_stuff
 
             var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.GetSize();
             //AttackOk 攻击成功
-            if (atkOk)
+            switch (atkOk)
+            {
+                case HitCond.Ok:
+                    HitOk();
+                    break;
+                case HitCond.Fail:
+                    HitFail();
+                    break;
+                case HitCond.Draw:
+                    HitDraw();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            void HitOk()
             {
                 //基本方面
                 // 释放方基本状态
@@ -346,12 +375,25 @@ namespace game_stuff
                         throw new ArgumentOutOfRangeException(nameof(opponentCharacterStatusAntiActBuff));
                 }
             }
-            else
+
+            void HitFail()
             {
                 //AttackFail 
                 switch (caster)
                 {
                     case CharacterStatus characterStatus:
+                        switch (HitType)
+                        {
+                            case hit_type.range:
+                                
+                                targetCharacterStatus.AbsorbRangeBullet(Pos,ProtectValueAdd,characterStatus,DamageMulti,back);
+                                break;
+                            case hit_type.melee:
+                                CharAtkFail(characterStatus, targetCharacterStatus, isActSkill, targetCharacterBodyBodySize);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                         CharAtkFail(characterStatus, targetCharacterStatus, isActSkill, targetCharacterBodyBodySize);
                         break;
                     case Trap trap:
@@ -361,6 +403,39 @@ namespace game_stuff
                         throw new ArgumentOutOfRangeException(nameof(caster));
                 }
             }
+
+            void HitDraw()
+            {
+                //Draw
+                switch (caster)
+                {
+                    case CharacterStatus characterStatus:
+                        CharAtkDraw(characterStatus, targetCharacterStatus);
+                        break;
+                    case Trap trap:
+                        trap.FailAtk();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(caster));
+                }
+            }
+        }
+
+        private void CharAtkDraw(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus)
+        {
+            bodyCaster.ResetSnipe();
+            bodyCaster.ResetCastAct();
+            targetCharacterStatus.ResetSnipe();
+            targetCharacterStatus.ResetCastAct();
+
+            var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
+                bodyCaster.GetPos(), Aim,
+                null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
+            bodyCaster.StunBuff = antiActBuff;
+            var antiActBuff2 = TempConfig.CommonBuffConfig.GenBuff(bodyCaster.GetPos(),
+                targetCharacterStatus.GetPos(), Aim,
+                null, 0, targetCharacterStatus.CharacterBody.GetSize(), bodyCaster);
+            targetCharacterStatus.StunBuff = antiActBuff2;
         }
 
 
@@ -404,7 +479,7 @@ namespace game_stuff
                 Console.Out.WriteLine($"Gen Common Back");
 #endif
                 var antiActBuff = TempConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
-                    bodyCaster.GetPos(), Aim,
+                    bodyCaster.GetPos(), TwoDVector.Zero(),
                     null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
                 bodyCaster.StunBuff = antiActBuff;
             }
@@ -425,5 +500,12 @@ namespace game_stuff
             return
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
+    }
+
+    enum HitCond
+    {
+        Ok,
+        Fail,
+        Draw
     }
 }

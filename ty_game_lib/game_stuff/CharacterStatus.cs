@@ -91,7 +91,7 @@ namespace game_stuff
         public float TrapSurvivalMulti { get; set; }
 
         public float TrapAtkMulti { get; set; }
-        
+
         //InterAct CallLong status
 
         private MapInteract? NowMapInteractive { get; set; }
@@ -138,6 +138,8 @@ namespace game_stuff
         public SurvivalStatus SurvivalStatus { get; private set; }
 
         public RegenEffectStatus RegenEffectStatus { get; }
+
+        public AbsorbStatus AbsorbStatus { get; }
         private float RecycleMulti { get; set; }
         public PlayingItemBag PlayingItemBag { get; }
 
@@ -155,6 +157,7 @@ namespace game_stuff
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
             AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
             RegenEffectStatus = RegenEffectStatus.GenBaseByAttr(genBaseAttrById);
+            AbsorbStatus = AbsorbStatus.GenBaseByAttr(genBaseAttrById);
             ProtectTickMultiAdd = 0;
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
@@ -1058,6 +1061,10 @@ namespace game_stuff
                     var gameItem = new GameItem(itemId, num);
                     PlayingItemBag.Gain(gameItem);
                     break;
+                case AbsorbAboutPassiveEffect _:
+                    AbsorbStatusRefresh(v);
+                    NowVehicle?.AbsorbStatusRefresh(v);
+                    break;
                 case TrapEffect _:
                     TrapAboutRefresh(v);
                     NowVehicle?.TrapAboutRefresh(v);
@@ -1068,6 +1075,11 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void AbsorbStatusRefresh(Vector<float> vector)
+        {
+            BattleUnitMoverStandard.AbsorbStatusRefresh(vector, this);
         }
 
         public void PickAPassive(PassiveTrait passiveTrait)
@@ -1122,6 +1134,37 @@ namespace game_stuff
             }
         }
 
+        public void AbsorbRangeBullet(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
+            float damageMulti, bool back)
+        {
+            IsBeHitBySomeOne =
+                TwoDVector.TwoDVectorByPt(GetPos(), pos);
+            var pa = GetProtectAbsorb();
+            var valueAdd = (int) (protectValueAdd * (1 + pa));
+            AddProtect(valueAdd);
+
+            var genDamage = bodyCaster.GenDamage(damageMulti, back);
+            var genDamageShardedDamage = genDamage.MainDamage + genDamage.ShardedDamage * genDamage.ShardedNum;
+            var genDamageShardedNum = genDamage.ShardedNum + 1;
+
+            var ammoAbsorb = GetAmmoAbsorb();
+            AddAmmo((int) (genDamageShardedDamage * ammoAbsorb));
+            if (NowVehicle != null)
+                NowVehicle.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, genDamage.ShardedDamage);
+            else
+                AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, genDamage.ShardedDamage);
+        }
+
+        private float GetAmmoAbsorb()
+        {
+            return NowVehicle?.AbsorbStatus.AmmoAbs ?? AbsorbStatus.AmmoAbs;
+        }
+
+        private void AbsorbDamage(uint genDamageShardedDamage, uint genDamageShardedNum, uint shardedDamage)
+        {
+            SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
+        }
+
         public void BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
             float damageMulti, bool back)
         {
@@ -1140,7 +1183,19 @@ namespace game_stuff
 
 
             AddProtect(protectValueAdd);
-            SurvivalStatus.TakeDamage(bodyCaster.GenDamage(damageMulti, back));
+            TakeDamage(bodyCaster.GenDamage(damageMulti, back));
+        }
+
+        private float GetProtectAbsorb()
+        {
+            var absorbStatusProtectAbs = NowVehicle?.AbsorbStatus.ProtectAbs ?? AbsorbStatus.ProtectAbs;
+            return absorbStatusProtectAbs;
+        }
+
+        private void TakeDamage(Damage genDamage)
+        {
+            if (NowVehicle == null) SurvivalStatus.TakeDamage(genDamage);
+            else NowVehicle.SurvivalStatus.TakeDamage(genDamage);
         }
 
         public bool CheckCanBeHit()
@@ -1165,6 +1220,43 @@ namespace game_stuff
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
         {
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
+        }
+    }
+
+    public struct AbsorbStatus
+    {
+        private AbsorbStatus(float hpAbs, float armorAbs, float shieldAbs, float ammoAbs, float protectAbs)
+        {
+            HpAbs = hpAbs;
+            ArmorAbs = armorAbs;
+            ShieldAbs = shieldAbs;
+            ProtectAbs = protectAbs;
+            AmmoAbs = ammoAbs;
+        }
+
+        public float HpAbs { get; set; }
+
+        public float ArmorAbs { get; set; }
+
+        public float ShieldAbs { get; set; }
+        public float AmmoAbs { get; set; }
+        public float ProtectAbs { get; set; }
+
+
+        public static AbsorbStatus GenBaseByAttr(base_attribute genBaseAttrById)
+        {
+            return new AbsorbStatus(genBaseAttrById.HPAbsorb, genBaseAttrById.ArmorAbsorb, genBaseAttrById.ShieldAbsorb,
+                genBaseAttrById.AmmoAbsorb, genBaseAttrById.ProtectAbsorb
+            );
+        }
+
+        public void PassiveEffectChange(Vector<float> vector, AbsorbStatus regenBaseAttr)
+        {
+            HpAbs = regenBaseAttr.HpAbs * (1 + vector[0]);
+            ArmorAbs = regenBaseAttr.ArmorAbs * (1 + vector[1]);
+            ShieldAbs = regenBaseAttr.ShieldAbs * (1 + vector[2]);
+            AmmoAbs = regenBaseAttr.AmmoAbs * (1 + vector[3]);
+            ProtectAbs = regenBaseAttr.ProtectAbs * (1 + vector[4]);
         }
     }
 }

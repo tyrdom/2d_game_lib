@@ -12,7 +12,7 @@ namespace game_stuff
 
         base_attr_id BaseAttrId { get; }
         SurvivalStatus SurvivalStatus { get; }
-
+        AbsorbStatus AbsorbStatus { get; }
         RegenEffectStatus RegenEffectStatus { get; }
         void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects);
         AttackStatus AttackStatus { get; }
@@ -78,6 +78,14 @@ namespace game_stuff
             var regenBaseAttr =
                 RegenEffectStatus.GenBaseByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
             moveBattleAttrModel.RegenEffectStatus.PassiveEffectChange(regenAttrPassiveEffects, regenBaseAttr);
+        }
+
+        public static void AbsorbStatusRefresh(Vector<float> vector, IMoveBattleAttrModel moveBattleAttrModel)
+        {
+            var regenBaseAttr =
+                AbsorbStatus.GenBaseByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
+            moveBattleAttrModel.AbsorbStatus.PassiveEffectChange(vector, regenBaseAttr);
+
         }
     }
 }
