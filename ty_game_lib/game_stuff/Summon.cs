@@ -1,5 +1,6 @@
 using System;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -54,6 +55,19 @@ namespace game_stuff
             Caster = characterStatus;
             TrapSetter.LaunchMedia?.Sign(characterStatus);
             TrapSetter.TrapMedia.Sign(characterStatus);
+        }
+
+        public static Summon GenById(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Summon(summon summon)
+        {
+            Pos = TwoDPoint.Zero();
+            Aim = TwoDVector.Zero();
+            Caster = null;
+            //todo
         }
     }
 }

@@ -1,25 +1,45 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
     public class RadarWave : IHitMedia
     {
-        public RadarWave(ObjType targetType, Dictionary<BodySize, BulletBox> sizeToBulletCollision, Zone rdZone,
-            TwoDPoint pos, TwoDVector aim, IBattleUnitStatus? caster)
+        public RadarWave(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
         {
-            TargetType = targetType;
+            TargetType = ObjType.OtherTeam;
             SizeToBulletCollision = sizeToBulletCollision;
-            RdZone = rdZone;
-            Pos = pos;
-            Aim = aim;
-            Caster = caster;
+            RdZone = GameTools.GenRdBox(sizeToBulletCollision);
+            Pos = TwoDPoint.Zero();
+            Aim = TwoDVector.Zero();
+            Caster = null;
+        }
+
+
+        public RadarWave GenByConfig(radar_wave radarWave)
+        {
+            var dictionary = GameTools.GenBulletShapes(radarWave.ShapeParams, radarWave.LocalRotate, radarWave.LocalPos,
+                radarWave.ShapeType);
+            return new RadarWave(dictionary);
+        }
+
+        public RadarWave GenById(string id)
+        {
+            if (TempConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
+            {
+                return GenByConfig(radarWave);
+            }
+
+            throw new DirectoryNotFoundException($"not such radar_wave id::{id}");
         }
 
         public Zone RdZone { get; }
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
+
         public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
         {
             return

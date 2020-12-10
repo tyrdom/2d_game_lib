@@ -66,6 +66,7 @@ namespace game_stuff
                 raw_shape.rectangle => new Rectangle2(bulletShapeParams[0], bulletShapeParams[1], twoDPoint,
                     rotate),
                 raw_shape.sector => new Sector(bulletShapeParams[0], bulletShapeParams[1], twoDPoint, rotate),
+                raw_shape.round => new Round(twoDPoint.ToPt(), bulletShapeParams[0]),
                 _ => throw new ArgumentOutOfRangeException()
             };
             return

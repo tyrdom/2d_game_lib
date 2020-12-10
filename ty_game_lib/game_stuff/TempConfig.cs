@@ -123,6 +123,7 @@ namespace game_stuff
 
         public static int StandardPropMaxStack { get; private set; } = 100;
 
+        public static int StandardPropRecycleStack { get; private set; } = 30;
         public static float PropR { get; private set; } = 1f;
 
         public static float WeaponR { get; private set; } = 1f;
@@ -131,7 +132,7 @@ namespace game_stuff
         public static float PassiveR { get; private set; } = 1f;
         public static float SaleBoxR { get; private set; } = 1f;
         public static uint MaxCallActTwoTick { get; private set; } = 10;
-        public static uint StandardMaxTrap { get; set; } = 2;
+
 
         public static int UpMaxTrap { get; set; } = 10;
         private static void ReLoadP(ConfigDictionaries configs)
@@ -160,13 +161,13 @@ namespace game_stuff
             TrickProtect = configsOtherConfig.trick_protect_value;
             ProtectTick = (int) GetTickByTime(configsOtherConfig.protect_time);
             StandardPropMaxStack = configsOtherConfig.standard_max_prop_stack;
-
+            StandardPropRecycleStack = configsOtherConfig.standard_recycle_prop_stack;
             PropR = configsOtherConfig.prop_R;
             WeaponR = configsOtherConfig.weapon_R;
             PassiveR = configsOtherConfig.pass_R;
             SaleBoxR = configsOtherConfig.saleBox_R;
-            StandardMaxTrap = configsOtherConfig.standard_trap_max;
-            UpMaxTrap = 10;
+
+            UpMaxTrap = configsOtherConfig.up_trap_max;
         }
 #if NETCOREAPP
         public static void LoadConfig()

@@ -2,16 +2,40 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ISaleStuff, ICanDrop ,ICanPutInMapInteractable
+    public class Prop : ICharAct, ISaleStuff, ICanDrop, ICanPutInMapInteractable
     {
-        public Prop(int recyclePropStack, int stackCost, uint totalTick, float moveMulti,
+        public Prop(prop prop)
+        {
+            var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => TempConfig.GetTickByTime(p.Key),
+                p =>
+                {
+                    return p.Value.media_type switch
+                    {
+                        effect_media_type.summon => Summon.GenById(p.Value.e_id) as IEffectMedia,
+                        effect_media_type.self => SelfEffect.GenById(p.Value.e_id) as IEffectMedia,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                });
+            PropBullets = dictionary.ToImmutableDictionary();
+            RecyclePropStack = TempConfig.StandardPropRecycleStack;
+            StackCost = prop.PropPointCost;
+            MoveMulti = prop.MoveSpeedMulti;
+            MoveMustMulti = prop.MustMoveSpeedMulti;
+            MinCos = prop.TurnLimit;
+            PId = prop.id;
+            LastMoveVector = null;
+        }
+
+        public Prop(int stackCost, uint totalTick, float moveMulti,
             ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos, int pId)
         {
-            RecyclePropStack = recyclePropStack;
+            RecyclePropStack = TempConfig.StandardPropRecycleStack;
             StackCost = stackCost;
             TotalTick = totalTick;
             MoveMulti = moveMulti;
