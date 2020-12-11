@@ -183,7 +183,7 @@ namespace game_stuff
             return antiActBuff;
         }
 
-        public void PickBySomeOne(CharacterStatus characterStatus)
+        public void PickBySomeOne(IBattleUnitStatus characterStatus)
         {
             TrickSkill.PickedBySomeOne(characterStatus);
         }

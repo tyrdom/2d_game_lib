@@ -5,7 +5,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface IHitMedia : IEffectMedia ,IPosMedia
+    public interface IHitMedia : IPosMedia
     {
         public Zone RdZone { get; }
 

@@ -28,7 +28,7 @@ namespace game_stuff
             var bodySize = TempConfig.GetBodySize(vehicle.BodyId);
             var tickByTime = TempConfig.GetTickByTime(vehicle.DestoryDelayTime);
 
-            var genByBulletId = Bullet.GenByBulletId(vehicle.DestoryBullet);
+            var genByBulletId = Bullet.GenById(vehicle.DestoryBullet);
             var genSkillById = Skill.GenSkillById(vehicle.OutActSkill);
 
             var vehicleVScope = vehicle.VScope;

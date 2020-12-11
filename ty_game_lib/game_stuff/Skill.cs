@@ -87,7 +87,7 @@ namespace game_stuff
         }
 
 
-        public void PickedBySomeOne(CharacterStatus characterStatus)
+        public void PickedBySomeOne(IBattleUnitStatus characterStatus)
         {
             LockArea?.Sign(characterStatus);
             foreach (var bullet in LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value))

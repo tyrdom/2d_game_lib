@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using collision_and_rigid;
 using game_config;
 
@@ -50,24 +51,27 @@ namespace game_stuff
             }
         }
 
-        public void Sign(CharacterStatus characterStatus)
+        public void Sign(IBattleUnitStatus characterStatus)
         {
             Caster = characterStatus;
-            TrapSetter.LaunchMedia?.Sign(characterStatus);
-            TrapSetter.TrapMedia.Sign(characterStatus);
         }
 
         public static Summon GenById(string id)
         {
-            throw new NotImplementedException();
+            if (TempConfig.Configs.summons.TryGetValue(id, out var summon))
+            {
+                return new Summon(summon);
+            }
+
+            throw new DirectoryNotFoundException($"not such id {id}");
         }
 
-        public Summon(summon summon)
+        private Summon(summon summon)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
             Caster = null;
-            //todo
+            TrapSetter = TrapSetter.GenById(summon.Setter);
         }
     }
 }

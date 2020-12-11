@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -15,10 +18,46 @@ namespace game_stuff
             CallTrapTick = callTrapTick;
             MaxLifeTimeTick = maxLifeTimeTick;
             TrapMedia = trapMedia;
+            BaseAttrId = baseAttrId;
+
+            LaunchMedia = launchMedia;
             TrickDelayTick = trickDelayTick;
             TrickStack = trickStack;
-            LaunchMedia = launchMedia;
-            BaseAttrId = baseAttrId;
+        }
+
+        public static TrapSetter GenById(string id)
+        {
+            if (TempConfig.Configs.traps.TryGetValue(id, out var trap))
+            {
+                return new TrapSetter(trap);
+            }
+
+            throw new DirectoryNotFoundException($"not such id {id}");
+        }
+
+        private TrapSetter(trap trap)
+        {
+            CanBeSee = trap.CanBeSee;
+            FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
+            BodySize = TempConfig.GetBodySize(trap.BodyId);
+            CallTrapTick = TempConfig.GetTickByTime(trap.CallTrapRoundTime);
+            TrapMedia = TempConfig.GenHitMedia(trap.TrapMedia);
+            BaseAttrId = trap.AttrId;
+            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : TempConfig.GetTickByTime(trap.MaxLifeTime);
+
+            var firstOrDefault = trap.LauchMedia.FirstOrDefault();
+            if (firstOrDefault == null)
+            {
+                LaunchMedia = null;
+                TrickStack = null;
+                TrickDelayTick = 0;
+                return;
+            }
+
+            var genHitMedia = TempConfig.GenHitMedia(firstOrDefault);
+            LaunchMedia = genHitMedia;
+            TrickStack = (int?) trap.TrickStack;
+            TrickDelayTick = TempConfig.GetTickByTime(trap.TrickDelayTime);
         }
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)

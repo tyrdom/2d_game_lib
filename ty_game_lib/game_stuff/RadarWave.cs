@@ -19,14 +19,14 @@ namespace game_stuff
         }
 
 
-        public RadarWave GenByConfig(radar_wave radarWave)
+        public static RadarWave GenByConfig(radar_wave radarWave)
         {
             var dictionary = GameTools.GenBulletShapes(radarWave.ShapeParams, radarWave.LocalRotate, radarWave.LocalPos,
                 radarWave.ShapeType);
             return new RadarWave(dictionary);
         }
 
-        public RadarWave GenById(string id)
+        public static RadarWave GenById(string id)
         {
             if (TempConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
             {
@@ -49,7 +49,7 @@ namespace game_stuff
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
-        public void Sign(CharacterStatus characterStatus)
+        public void Sign(IBattleUnitStatus characterStatus)
         {
             Caster = characterStatus;
         }
@@ -62,6 +62,7 @@ namespace game_stuff
 
 
                     if (Caster == null || !IsHit(characterBody1)) return false;
+                    if (Caster is Trap trap) trap.StartTrick();
                     Caster.GetMayBeSomeThing().Add(targetBody.GetAnchor());
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");

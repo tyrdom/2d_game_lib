@@ -42,7 +42,7 @@ namespace game_stuff
 
         public IBattleUnitStatus? Caster { get; set; }
 
-        public void Sign(CharacterStatus characterStatus)
+        public void Sign(IBattleUnitStatus characterStatus)
         {
             Caster = characterStatus;
         }

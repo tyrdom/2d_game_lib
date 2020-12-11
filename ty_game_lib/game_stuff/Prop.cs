@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -10,18 +11,21 @@ namespace game_stuff
 {
     public class Prop : ICharAct, ISaleStuff, ICanDrop, ICanPutInMapInteractable
     {
+        public static Prop GenById(int id)
+        {
+            if (TempConfig.Configs.props.TryGetValue(id, out var prop)
+            )
+            {
+                return new Prop(prop);
+            }
+
+            throw new DirectoryNotFoundException($"not such id {id}");
+        }
+
         public Prop(prop prop)
         {
             var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => TempConfig.GetTickByTime(p.Key),
-                p =>
-                {
-                    return p.Value.media_type switch
-                    {
-                        effect_media_type.summon => Summon.GenById(p.Value.e_id) as IEffectMedia,
-                        effect_media_type.self => SelfEffect.GenById(p.Value.e_id) as IEffectMedia,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                });
+                p => TempConfig.GenMedia(p.Value));
             PropBullets = dictionary.ToImmutableDictionary();
             RecyclePropStack = TempConfig.StandardPropRecycleStack;
             StackCost = prop.PropPointCost;

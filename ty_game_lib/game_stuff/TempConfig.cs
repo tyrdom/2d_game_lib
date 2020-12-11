@@ -8,6 +8,27 @@ namespace game_stuff
 {
     public static class TempConfig
     {
+        public static IHitMedia GenHitMedia(Media media)
+        {
+            var effectMedia = GenMedia(media);
+            if (effectMedia is IHitMedia hitMedia)
+                return hitMedia;
+            throw new ArgumentOutOfRangeException($"not a hit media {media.e_id}");
+        }
+
+        public static IEffectMedia GenMedia(Media media)
+        {
+            var aId = media.e_id;
+            return media.media_type switch
+            {
+                effect_media_type.summon => Summon.GenById(aId),
+                effect_media_type.self => SelfEffect.GenById(aId),
+                effect_media_type.radar_wave => RadarWave.GenById(aId),
+                effect_media_type.bullet => Bullet.GenById(aId),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
         public static float GetRBySize(BodySize bodySize)
         {
             return SizeToR[bodySize];

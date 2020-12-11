@@ -32,11 +32,13 @@ namespace game_stuff
                 passive_type.Survive => new SurvivalAboutPassiveEffect(vector),
                 passive_type.TickAdd => new TickAddEffect(vector),
                 passive_type.Other => new OtherAttrPassiveEffect(vector),
-                passive_type.Speical => new HitPass(vector),
+                passive_type.Special => new HitPass(vector),
                 passive_type.Attack => new OtherAttrPassiveEffect(vector),
                 passive_type.AddItem => new AddItem(vector),
                 passive_type.TrapAbout => new TrapEffect(vector),
                 passive_type.Regen => new RegenPassiveEffect(vector),
+                passive_type.AbsorbAdd => new AbsorbAboutPassiveEffect(vector),
+
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -51,9 +53,9 @@ namespace game_stuff
 
         private Vector<float> HitAddNum { get; }
 
-        // public float HpMultiAdd { get; }0
+        // public float AtkPass { get; }0
         //
-        // public float HealMultiAdd { get; }1
+        // public float DefencePass { get; }1
         public IPassiveTraitEffect GenEffect(uint level)
         {
             var multiply = Vector.Multiply(level, GetVector());

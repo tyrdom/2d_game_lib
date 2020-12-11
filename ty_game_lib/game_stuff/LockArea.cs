@@ -13,7 +13,7 @@ namespace game_stuff
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
-        public void Sign(CharacterStatus characterStatus)
+        public void Sign(IBattleUnitStatus characterStatus)
         {
             Caster = characterStatus;
         }

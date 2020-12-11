@@ -31,10 +31,11 @@ namespace game_stuff
             OnTrick = false;
             TrickStack = trickStack;
             LaunchMedia = launchMedia;
-
             FailChanceStack = failChanceStack;
             DamageMulti = damageMulti;
             IdPointBox = null;
+            TrapMedia.Sign(this);
+            LaunchMedia?.Sign(this);
         }
 
         public bool NotOverFlow { get; set; }
@@ -45,11 +46,8 @@ namespace game_stuff
         private int Tid { get; }
         private int? FailChanceStack { get; set; }
         private BodySize BodySize { get; }
-
         private uint CallTrapTick { get; }
-
         private uint? MaxLifeTimeTick { get; }
-
         private uint NowLifeTimeTick { get; set; }
         private IHitMedia TrapMedia { get; }
 
@@ -91,6 +89,7 @@ namespace game_stuff
             {
                 if (NowTrickDelayTick >= TrickDelayTick)
                 {
+                    NowTrickDelayTick = 0;
                     if (TrickStack != null) TrickStack -= 1;
                     hitMedia = LaunchMedia;
                     OnTrick = false;

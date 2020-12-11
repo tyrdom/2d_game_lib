@@ -39,7 +39,7 @@ namespace game_stuff
 
         private int ProtectValueAdd { get; }
 
-        public static Bullet GenByBulletId(string id)
+        public static Bullet GenById(string id)
         {
             if (TempConfig.Configs.bullets.TryGetValue(id, out var bullet))
             {
@@ -49,7 +49,7 @@ namespace game_stuff
             throw new ArgumentOutOfRangeException();
         }
 
-        public void Sign(CharacterStatus characterStatus)
+        public void Sign(IBattleUnitStatus characterStatus)
         {
             Caster = characterStatus;
 
@@ -239,6 +239,7 @@ namespace game_stuff
                     HitOne(targetCharacterStatus, characterStatusCaster);
                     break;
                 case Trap trapCaster:
+                    trapCaster.StartTrick();
                     HitOne(targetCharacterStatus, trapCaster);
                     break;
                 default:
