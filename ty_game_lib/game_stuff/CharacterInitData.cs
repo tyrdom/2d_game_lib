@@ -13,12 +13,13 @@ namespace game_stuff
         public int TeamId { get; }
         private Dictionary<int, Weapon> Weapons { get; }
         private BodySize BodySize { get; }
-        private float MaxSpeed { get; }
-        private float MinSpeed { get; }
-        private float AddSpeed { get; }
 
-        public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, float maxSpeed,
-            float minSpeed, float addSpeed)
+        private BodyMark BodyMark { get; }
+
+        private base_attr_id BaseAttrId { get; }
+
+        public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, BodyMark bodyMark,
+            base_attr_id baseAttrId)
         {
             var dictionary = new Dictionary<int, Weapon>();
             for (var i = 0; i < MathTools.Min(TempConfig.StandardWeaponNum, weapons.Length); i++)
@@ -36,25 +37,24 @@ namespace game_stuff
             };
 
 
-            return new CharacterInitData(gid, teamId, dictionary, bz, maxSpeed, minSpeed, addSpeed);
+            return new CharacterInitData(gid, teamId, dictionary, bz, bodyMark, baseAttrId);
         }
 
         private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize,
-            float maxSpeed, float minSpeed, float addSpeed)
+            BodyMark bodyMark, base_attr_id baseAttrId)
         {
             Gid = gid;
             TeamId = teamId;
             Weapons = weapons;
             BodySize = bodySize;
-            MaxSpeed = maxSpeed;
-            MinSpeed = minSpeed;
-            AddSpeed = addSpeed;
+            BodyMark = bodyMark;
+            BaseAttrId = baseAttrId;
         }
 
-        
+
         public CharacterBody GenCharacterBody(TwoDPoint startPos)
         {
-            var characterStatus = new CharacterStatus(Gid, TempConfig.TrickProtect, base_attr_id.standard_body,
+            var characterStatus = new CharacterStatus(Gid, TempConfig.TrickProtect, BaseAttrId,
                 PlayingItemBag.InitByConfig());
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
@@ -70,14 +70,13 @@ namespace game_stuff
 
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
                 AngleSight.StandardAngleSight(),
-                TeamId);
+                TeamId, BodyMark);
             return characterBody;
         }
 
         public void ReloadCharacterBody(CharacterBody characterBody)
         {
-            characterBody.CharacterStatus.ReloadInitData(SurvivalStatus.StartTestSurvivalStatus(), MaxSpeed, AddSpeed,
-                MinSpeed);
+            characterBody.CharacterStatus.ReloadInitData();
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {
 #if DEBUG

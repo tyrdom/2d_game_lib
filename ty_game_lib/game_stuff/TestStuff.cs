@@ -22,7 +22,8 @@ namespace game_stuff
             var weapons = keyValuePair.Value;
 
             var characterInitData =
-                CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+                CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small, BodyMark.Player,
+                    base_attr_id.standard_body);
 #if DEBUG
             Console.Out.WriteLine($"Test P1 ok");
 #endif
@@ -35,7 +36,8 @@ namespace game_stuff
             var weapons = keyValuePair.Value;
 
             var characterInitData =
-                CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small, 6 / 10f, 1 / 10f, 0.05f);
+                CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small, BodyMark.Player,
+                    base_attr_id.standard_body);
 #if DEBUG
             Console.Out.WriteLine($"Test P2 ok");
 #endif

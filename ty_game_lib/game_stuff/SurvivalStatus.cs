@@ -59,11 +59,12 @@ namespace game_stuff
             return NowHp <= 0;
         }
 
-        public void TakeDamage(Damage damage)
+        public bool TakeDamage(Damage damage)
         {
             NowDelayTick = ShieldDelayTick;
             TakeOneDamage(damage.MainDamage);
             TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
+            return IsDead();
         }
 
         private void TakeMultiDamage(uint damage, uint times)
@@ -260,6 +261,12 @@ namespace game_stuff
         private void HpAbs(float absorbStatusHpAbs, uint damage)
         {
             NowHp = (uint) (NowShield + damage * absorbStatusHpAbs);
+        }
+
+        public void Full()
+        {
+            NowArmor = MaxArmor;
+            NowHp = MaxHp;
         }
     }
 }

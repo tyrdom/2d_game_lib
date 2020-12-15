@@ -200,6 +200,11 @@ namespace game_stuff
             return TempConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
         }
 
+        public void AddAKillScore(CharacterBody characterBody)
+        {
+            Owner.AddAKillScore(characterBody);
+        }
+
         public void FailAtk()
         {
             if (FailChanceStack != null) FailChanceStack -= 1;

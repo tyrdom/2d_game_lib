@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using collision_and_rigid;
 
@@ -7,14 +8,17 @@ namespace game_stuff
 {
     public class PlayGround
     {
+        private string MId { get; }
+        private int ResMId { get; }
+        private IPlayRules PlayRules { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; set; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
-        private SightMap SightMap { get; set; } //视野地图
-        private WalkMap WalkMap { get; set; } //碰撞地图
+        private SightMap SightMap { get; } //视野地图
+        private WalkMap WalkMap { get; } //碰撞地图
         private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
         private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; } // 碰撞媒体缓存，以后可能会有持续多帧的子弹
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
-        // private TempConfig TempConfig { get; }
+
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
@@ -28,20 +32,8 @@ namespace game_stuff
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
-        //初始化状态信息,包括玩家信息和地图信息
-        public void ChangeMap(MapInitData mapInitData, HashSet<int>? keepGid = null)
-        {
-            if (keepGid != null)
-            {
-                foreach (var key in GidToBody.Select(keyValuePair => keyValuePair.Key)
-                    .Where(key => !keepGid.Contains(key)))
-                {
-                    GidToBody.Remove(key);
-                }
-            }
-            
-        }
 
+        //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
             IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData)
         {
@@ -562,6 +554,57 @@ namespace game_stuff
                     TeamToBodies[teamId] = (newQs, newQs2);
                 }
             }
+        }
+
+        public PveResultType CheckPve(PveWinCond pveWinCond)
+        {
+            var groupBy = GidToBody.Values.GroupBy(x => x.BodyMark);
+            var creepClear = false;
+            var bossClear = false;
+            foreach (var characterBodies in groupBy)
+            {
+                switch (characterBodies.Key)
+                {
+                    case BodyMark.Player:
+                        var all = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
+                        if (all)
+                        {
+                            return PveResultType.PveLoss;
+                        }
+
+                        break;
+                    case BodyMark.Creep:
+                        var all2 = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
+                        if (all2)
+                        {
+                            creepClear = true;
+                        }
+
+                        break;
+                    case BodyMark.Boss:
+                        var all3 = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
+                        if (all3)
+                        {
+                            bossClear = true;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return pveWinCond switch
+            {
+                PveWinCond.AllClear => bossClear && creepClear ? PveResultType.PveWin : PveResultType.NotFinish,
+                PveWinCond.BossClear => bossClear ? PveResultType.PveWin : PveResultType.NotFinish,
+                _ => throw new ArgumentOutOfRangeException(nameof(pveWinCond), pveWinCond, null)
+            };
+        }
+
+        public Dictionary<int, CharacterBody> CheckKills()
+        {
+            return GidToBody;
         }
     }
 }

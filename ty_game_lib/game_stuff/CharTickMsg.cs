@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -18,12 +19,13 @@ namespace game_stuff
         public bool IsStun { get; }
         public TwoDVector? IsBeHit { get; }
         public bool IsHitSome { get; }
-        public List<TwoDPoint> SomeThings { get; }
+        public ImmutableArray<TwoDPoint> SomeThings { get; }
+        public ImmutableArray<int> KillList { get; }
 
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, TwoDVector? isBeHit, bool isHitSome,
-            List<TwoDPoint> someThings)
+            ImmutableArray<TwoDPoint> someThings, ImmutableArray<int> killList)
         {
             Gid = gid;
             Pos = pos;
@@ -38,6 +40,7 @@ namespace game_stuff
             IsBeHit = isBeHit;
             IsHitSome = isHitSome;
             SomeThings = someThings;
+            KillList = killList;
         }
 
         public override string ToString()

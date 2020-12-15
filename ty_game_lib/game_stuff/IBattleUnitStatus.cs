@@ -15,5 +15,6 @@ namespace game_stuff
         Damage GenDamage(float damageMulti, bool back);
         void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig);
         float GetRr();
+        void AddAKillScore(CharacterBody characterBody);
     }
 }

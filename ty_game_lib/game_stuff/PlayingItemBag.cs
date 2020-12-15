@@ -104,9 +104,9 @@ namespace game_stuff
     }
 
 
-    public readonly struct KillBox
+    public readonly struct KillDrops
     {
-        public KillBox(List<GameItem> mustDropItems,
+        public KillDrops(List<GameItem> mustDropItems,
             (int sum, List<(int wegihtNum, IMapInteractable mapInteractable)> MapInteractables)
                 weightMapInteractableDrop)
         {

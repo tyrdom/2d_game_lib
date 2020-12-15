@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -8,6 +10,7 @@ namespace game_stuff
 {
     public class CharacterBody : ICanBeHit
     {
+        public BodyMark BodyMark { get; }
         private BodySize BodySize { get; }
 
         public BodySize GetSize()
@@ -38,7 +41,7 @@ namespace game_stuff
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
-            AngleSight sight, int team)
+            AngleSight sight, int team, BodyMark bodyMark)
         {
             IdPointBox = null;
             NowPos = nowPos;
@@ -48,6 +51,7 @@ namespace game_stuff
             LastPos = lastPos;
             Sight = sight;
             Team = team;
+            BodyMark = bodyMark;
         }
 
         public CharacterBody ReLocate(TwoDPoint twoDPoint)
@@ -163,7 +167,9 @@ namespace game_stuff
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
-                skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome, CharacterStatus.MayBeSomeThing);
+                skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome,
+                CharacterStatus.MayBeSomeThing.ToImmutableArray()
+                , CharacterStatus.CharRuleData.NowKills.Select(x => x.GetId()).ToImmutableArray());
         }
 
         public CharInitMsg GenInitMsg()
@@ -186,5 +192,12 @@ namespace game_stuff
         {
             characterInitData.ReloadCharacterBody(this);
         }
+    }
+
+    public enum BodyMark
+    {
+        Player,
+        Creep,
+        Boss
     }
 }

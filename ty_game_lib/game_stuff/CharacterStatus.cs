@@ -135,7 +135,7 @@ namespace game_stuff
         }
 
 
-        public SurvivalStatus SurvivalStatus { get; private set; }
+        public SurvivalStatus SurvivalStatus { get; }
 
         public RegenEffectStatus RegenEffectStatus { get; }
 
@@ -150,9 +150,11 @@ namespace game_stuff
         public bool IsHitSome { get; set; }
         public List<TwoDPoint> MayBeSomeThing { get; }
 
+        public ICharRuleData CharRuleData { get; }
 
         public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
         {
+            CharRuleData = new CharKillScoreRuleData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
             AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
@@ -233,12 +235,11 @@ namespace game_stuff
             CharacterBody.Sight.OpChangeAim(aim, GetNowScope());
         }
 
-        public void ReloadInitData(SurvivalStatus survivalStatus, float maxMoveSpeed,
-                float addMoveSpeed, float minMoveSpeed)
+        public void ReloadInitData()
             //todo use attr_id
         {
             CharacterBody = null!;
-            MaxMoveSpeed = maxMoveSpeed;
+
             PauseTick = 0;
             LockingWho = null;
             CatchingWho = null;
@@ -247,10 +248,8 @@ namespace game_stuff
             NextSkill = null;
             StunBuff = null;
             PlayingBuffs = new List<IPlayingBuff>();
-            SurvivalStatus = survivalStatus;
+            SurvivalStatus.Full();
             NowProtectTick = 0;
-            AddMoveSpeed = addMoveSpeed;
-            MinMoveSpeed = minMoveSpeed;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
@@ -564,6 +563,7 @@ namespace game_stuff
             if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
             if (IsHitSome) IsHitSome = false;
             MayBeSomeThing.Clear();
+            CharRuleData.ClearTemp();
         }
 
         public CharGoTickResult
@@ -958,6 +958,11 @@ namespace game_stuff
             return CharacterBody.GetRr();
         }
 
+        public void AddAKillScore(CharacterBody characterBody)
+        {
+            CharRuleData.AddAKill(characterBody);
+        }
+
         private void AddProtect(int protectValueAdd)
         {
             NowProtectValue += protectValueAdd;
@@ -1183,7 +1188,11 @@ namespace game_stuff
 
 
             AddProtect(protectValueAdd);
-            TakeDamage(bodyCaster.GenDamage(damageMulti, back));
+            var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
+            if (takeDamage)
+            {
+                bodyCaster.AddAKillScore(CharacterBody);
+            }
         }
 
         private float GetProtectAbsorb()
@@ -1192,10 +1201,11 @@ namespace game_stuff
             return absorbStatusProtectAbs;
         }
 
-        private void TakeDamage(Damage genDamage)
+        private bool TakeDamage(Damage genDamage)
         {
-            if (NowVehicle == null) SurvivalStatus.TakeDamage(genDamage);
-            else NowVehicle.SurvivalStatus.TakeDamage(genDamage);
+            if (NowVehicle == null) return SurvivalStatus.TakeDamage(genDamage);
+            NowVehicle.SurvivalStatus.TakeDamage(genDamage);
+            return false;
         }
 
         public bool CheckCanBeHit()
