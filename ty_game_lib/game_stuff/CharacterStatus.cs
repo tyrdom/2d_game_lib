@@ -144,6 +144,7 @@ namespace game_stuff
         public PlayingItemBag PlayingItemBag { get; }
 
         // for_tick_msg
+        public bool HaveChange { get; set; }
         public SkillAction? SkillLaunch { get; private set; }
         public bool IsPause { get; private set; }
         public TwoDVector? IsBeHitBySomeOne { get; set; }
@@ -154,6 +155,7 @@ namespace game_stuff
 
         public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
         {
+            HaveChange = false;
             CharRuleData = new CharKillScoreRuleData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
@@ -236,10 +238,8 @@ namespace game_stuff
         }
 
         public void ReloadInitData()
-            //todo use attr_id
         {
-            CharacterBody = null!;
-
+            
             PauseTick = 0;
             LockingWho = null;
             CatchingWho = null;
@@ -423,18 +423,16 @@ namespace game_stuff
             PlayingBuffs = playingBuffs;
 
             var selfEffectRegenerationBase = selfEffect.RegenerationBase;
-            if (selfEffectRegenerationBase != null)
+            if (selfEffectRegenerationBase == null) return;
+            var effectRegenerationBase = selfEffectRegenerationBase.Value;
+            if (NowVehicle == null)
             {
-                var effectRegenerationBase = selfEffectRegenerationBase.Value;
-                if (NowVehicle == null)
-                {
-                    SurvivalStatus.GetRegen(effectRegenerationBase, RegenEffectStatus);
-                }
-                else
-                {
-                    NowVehicle.SurvivalStatus.GetRegen(effectRegenerationBase, NowVehicle.RegenEffectStatus);
-                    NowVehicle.ReloadAmmo(effectRegenerationBase.ReloadMulti);
-                }
+                SurvivalStatus.GetRegen(effectRegenerationBase, RegenEffectStatus);
+            }
+            else
+            {
+                NowVehicle.SurvivalStatus.GetRegen(effectRegenerationBase, NowVehicle.RegenEffectStatus);
+                NowVehicle.ReloadAmmo(effectRegenerationBase.ReloadMulti);
             }
         }
 
@@ -566,6 +564,13 @@ namespace game_stuff
             CharRuleData.ClearTemp();
         }
 
+
+        /// <summary>
+        /// char main fuc 
+        /// </summary>
+        /// <param name="operate"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public CharGoTickResult
             CharGoTick(Operate? operate) //角色一个tick行为
         {
@@ -734,8 +739,8 @@ namespace game_stuff
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.InVehicleCall,
                                 CharacterBody))
                             : new CharGoTickResult();
-                    case MapInteract.ApplyCall:
-                        return new CharGoTickResult(mapInteractiveAbout: (MapInteract.ApplyCall,
+                    case MapInteract.GetInfoCall:
+                        return new CharGoTickResult(mapInteractiveAbout: (MapInteract.GetInfoCall,
                             CharacterBody));
                     case MapInteract.RecycleCall:
                         return CallLongTouch(MapInteract.RecycleCall)
@@ -747,9 +752,9 @@ namespace game_stuff
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.KickVehicleCall,
                                 CharacterBody))
                             : new CharGoTickResult();
-                    case MapInteract.BuyCall:
-                        return CallLongTouch(MapInteract.BuyCall)
-                            ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.BuyCall,
+                    case MapInteract.BuyOrApplyCall:
+                        return CallLongTouch(MapInteract.BuyOrApplyCall)
+                            ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.BuyOrApplyCall,
                                 CharacterBody))
                             : new CharGoTickResult();
                     case null:

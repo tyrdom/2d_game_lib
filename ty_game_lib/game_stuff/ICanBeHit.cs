@@ -4,6 +4,7 @@ namespace game_stuff
 {
     public interface ICanBeHit : IIdPointShape, ICanBeSaw
     {
+        IdPointBox InBox { get; set; }
         BodySize GetSize();
         bool CheckCanBeHit();
         public IdPointBox CovToIdBox();

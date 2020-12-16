@@ -86,8 +86,8 @@ namespace game_stuff
         PickCall,
         InVehicleCall,
         KickVehicleCall,
-        ApplyCall,
-        BuyCall
+        GetInfoCall,
+        BuyOrApplyCall
     }
 
     public enum SnipeAction

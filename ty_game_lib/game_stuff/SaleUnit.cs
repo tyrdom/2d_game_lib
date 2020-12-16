@@ -27,7 +27,7 @@ namespace game_stuff
             return Good;
         }
 
-        public int GetRestStack(int gid)
+        public int GetRestStack(int? gid)
         {
             return SaleUnitStandard.GetRestStack(gid, this);
         }

@@ -9,9 +9,8 @@ namespace game_stuff
         public SightMap SightMap;
         public WalkMap WalkMap;
         public Dictionary<int, StartPts> TeamToStartPt;
-       
-        
-        
+        public List<(TwoDPoint pos, IMapInteractable standardMapInteractable)> StandardMapInteractableList;
+
         public Zone GetZone()
         {
             return WalkMap.SizeToEdge.Values

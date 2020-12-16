@@ -132,6 +132,33 @@ namespace collision_and_rigid
             QuadFour.MoveIdPointBoxes(gidToMove, limit);
         }
 
+        public bool RemoveAIdPointBox(IdPointBox idPointBox)
+        {
+            var readRecord = idPointBox.ReadRecord();
+            switch (readRecord)
+            {
+                case Quad.One:
+                    return QuadOne.RemoveAIdPointBox(idPointBox);
+                case Quad.Two:
+                    return QuadTwo.RemoveAIdPointBox(idPointBox);
+                case Quad.Three:
+                    return QuadThree.RemoveAIdPointBox(idPointBox);
+                case Quad.Four:
+                    return QuadFour.RemoveAIdPointBox(idPointBox);
+                case null:
+                    var remove = AaBbPackBox.Remove(idPointBox);
+                    if (remove) return true;
+                    return QuadOne.RemoveAIdPointBox(idPointBox)
+                           || QuadTwo.RemoveAIdPointBox(idPointBox)
+                           || QuadThree.RemoveAIdPointBox(idPointBox)
+                           || QuadFour.RemoveAIdPointBox(idPointBox);
+
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes)
         {
             if (idPointBoxes.Count == 0)
@@ -636,7 +663,7 @@ namespace collision_and_rigid
 
         public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func, T t, Zone zone)
         {
-            return SomeTools.FilterToBoxList(this,func, t, zone);
+            return SomeTools.FilterToBoxList(this, func, t, zone);
         }
 
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,

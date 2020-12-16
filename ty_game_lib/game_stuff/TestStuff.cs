@@ -11,7 +11,7 @@ namespace game_stuff
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) TestPlayGround()
         {
             var initPlayGround = PlayGround.InitPlayGround(new[] {TestPlayer1(), TestPlayer2()},
-                TestInitData());
+                TestInitData(), "testMap", 0, new PVPKillScoreRules(3));
 
             return initPlayGround;
         }

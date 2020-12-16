@@ -5,7 +5,11 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface ISaleUnit : ICanPutInMapInteractable
+    public interface IApplyUnit : ICanPutInMapInteractable
+    {
+    }
+
+    public interface ISaleUnit : IApplyUnit
     {
         GameItem Cost { get; }
 
@@ -16,15 +20,15 @@ namespace game_stuff
 
         ISaleStuff[] GetGood();
 
-        int GetRestStack(int gid);
+        int GetRestStack(int? gid);
     }
 
 
     public static class SaleUnitStandard
     {
-        public static int GetRestStack(int gid, ISaleUnit saleUnit)
+        public static int GetRestStack(int? gid, ISaleUnit saleUnit)
         {
-            if (saleUnit.DoneDictionary.TryGetValue(gid, out var haveUsed))
+            if (gid != null && saleUnit.DoneDictionary.TryGetValue(gid.Value, out var haveUsed))
             {
                 return saleUnit.Stack - haveUsed;
             }
@@ -41,6 +45,7 @@ namespace game_stuff
             }
 
             saleUnit.DoneDictionary[characterStatus.GId] = 0;
+            
             return true;
         }
 
@@ -60,9 +65,9 @@ namespace game_stuff
         {
             switch (interactive)
             {
-                case MapInteract.ApplyCall:
+                case MapInteract.GetInfoCall:
                     return new List<IMapInteractable>();
-                case MapInteract.BuyCall:
+                case MapInteract.BuyOrApplyCall:
                     var cost = characterStatus.PlayingItemBag.Cost(saleUnit);
                     var characterStatusGId = characterStatus.GId;
                     var b = saleUnit.GetRestStack(characterStatusGId) > 0;

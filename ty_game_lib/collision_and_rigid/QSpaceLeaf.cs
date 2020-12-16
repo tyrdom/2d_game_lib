@@ -131,6 +131,11 @@ namespace collision_and_rigid
             }
         }
 
+        public bool RemoveAIdPointBox(IdPointBox idPointBox)
+        {
+            return AaBbPackBox.Remove(idPointBox);
+        }
+
         public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes)
         {
             if (idPointBoxes.Count == 0)

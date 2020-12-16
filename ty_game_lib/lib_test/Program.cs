@@ -225,7 +225,7 @@ namespace lib_test
             var range = Enumerable.Range(1, 100).ToArray();
             foreach (var i in range)
             {
-                var (_, item3) =
+                var (_, item3,_) =
                     i == 1
                         ? playGround.PlayGroundGoATick(operates)
                         : i < 30

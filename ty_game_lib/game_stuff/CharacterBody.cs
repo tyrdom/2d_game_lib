@@ -29,6 +29,7 @@ namespace game_stuff
         public AngleSight Sight { get; }
         public int Team { get; }
         public IdPointBox? IdPointBox { get; set; }
+        public IdPointBox InBox { get; set; }
 
 
         // public static CharacterBody GenByCharId(int id)
@@ -52,12 +53,12 @@ namespace game_stuff
             Sight = sight;
             Team = team;
             BodyMark = bodyMark;
+            InBox = CovToIdBox();
         }
 
-        public CharacterBody ReLocate(TwoDPoint twoDPoint)
+        public void ReLocate(TwoDPoint twoDPoint)
         {
             NowPos = twoDPoint;
-            return this;
         }
 
         public Zone GetSightZone()
@@ -188,9 +189,10 @@ namespace game_stuff
             return false;
         }
 
-        public void Renew(CharacterInitData characterInitData)
+        public void ReBorn(TwoDPoint pos)
         {
-            characterInitData.ReloadCharacterBody(this);
+            ReLocate(pos);
+            CharacterStatus.ReloadInitData();
         }
     }
 

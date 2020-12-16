@@ -43,7 +43,7 @@ namespace game_stuff
                 case CharacterStatus characterStatus:
                     var genATrap = TrapSetter.GenATrap(characterStatus, Pos);
                     characterStatus.AddTrap(genATrap);
-                    return genATrap.CovToIdBox();
+                    return genATrap.InBox;
                 case Trap _:
                     return null;
                 default:

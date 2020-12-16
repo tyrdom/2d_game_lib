@@ -8,13 +8,13 @@ namespace game_stuff
 {
     public class PlayGround
     {
-        private string MId { get; }
+        private string MgId { get; }
         private int ResMId { get; }
         private IPlayRules PlayRules { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; set; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
         private WalkMap WalkMap { get; } //碰撞地图
-        private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
+        public Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
         private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; } // 碰撞媒体缓存，以后可能会有持续多帧的子弹
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
@@ -22,20 +22,25 @@ namespace game_stuff
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
-            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings)
+            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, string mgId, IPlayRules playRules,
+            int resMId)
         {
             TeamToBodies = teamToBodies;
             SightMap = sightMap;
             WalkMap = walkMap;
             GidToBody = gidToBody;
             MapInteractableThings = mapInteractableThings;
+            MgId = mgId;
+            PlayRules = playRules;
+            ResMId = resMId;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
 
         //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
-            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData)
+            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, string genMapId, int mapResId,
+            IPlayRules playRules)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
             var characterBodies = new Dictionary<int, CharacterBody>();
@@ -66,7 +71,7 @@ namespace game_stuff
                 {
                     var hashSet = p.Value;
                     var aabbBoxShapes =
-                        SomeTools.EnumerableToHashSet(hashSet.Select(x => x.CovToIdBox()));
+                        SomeTools.EnumerableToHashSet(hashSet.Select(x => x.InBox));
                     emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
@@ -78,7 +83,7 @@ namespace game_stuff
 #endif
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                emptyRootBranch);
+                emptyRootBranch, genMapId, playRules, mapResId);
             return (playGround, playGround.GenInitMsg());
         }
 
@@ -91,9 +96,9 @@ namespace game_stuff
                     p => p.Value.GenInitMsg());
             foreach (var kv in charInitMsgs)
             {
-                if (dictionary.TryGetValue(kv.Key, out var charInitMsglist))
+                if (dictionary.TryGetValue(kv.Key, out var initMsgList))
                 {
-                    charInitMsglist.Add(kv.Value);
+                    initMsgList.Add(kv.Value);
                 }
                 else
                 {
@@ -127,7 +132,7 @@ namespace game_stuff
 
 
         public (Dictionary<int, IEnumerable<BulletMsg>> gidToBulletsMsg, Dictionary<int, IEnumerable<ISeeTickMsg>>
-            gidToCharTickMsg)
+            playerSeeMsg, IRuleTickResult groundRuleTickResult)
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
@@ -155,7 +160,9 @@ namespace game_stuff
                 .Select(x => x.GenMsg()));
             var playerSeeMsg =
                 playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg(pair.Key)));
-            var valueTuple = (gidToBulletsMsg, playerSeeMsg);
+            var groundResult = PlayRules.CheckFinish(this);
+            var valueTuple = (gidToBulletsMsg, playerSeeMsg, groundResult);
+
             return valueTuple;
         }
 
@@ -355,7 +362,7 @@ namespace game_stuff
             return whoHitGid;
         }
 
-        private static readonly Func<IAaBbBox, bool> IsS = x => x is SaleBox;
+        private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyBox;
 
 
         private static readonly Func<IAaBbBox, bool> IsC = x => x is CageCanPick;
@@ -457,10 +464,10 @@ namespace game_stuff
                                 whoPickCageCall.GetAnchor(), IsC), false),
                             MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsV), true),
-                            MapInteract.ApplyCall => (
+                            MapInteract.GetInfoCall => (
                                 MapInteractableThings.InteractiveFirstSingleBox(whoPickCageCall.GetAnchor(), IsS),
                                 false),
-                            MapInteract.BuyCall => (MapInteractableThings.InteractiveFirstSingleBox(
+                            MapInteract.BuyOrApplyCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 whoPickCageCall.GetAnchor(), IsS), true),
                             null => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg)),
                             _ => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg))
@@ -517,43 +524,23 @@ namespace game_stuff
             }
         }
 
-        public void InsertBodies(HashSet<CharacterBody> characterBodies)
+        public bool RemoveBody(CharacterBody characterBody)
         {
-            var noGoodBodies = new HashSet<CharacterBody>();
-            foreach (var characterBody in characterBodies)
+            var characterBodyTeam = characterBody.Team;
+            var id = characterBody.GetId();
+
+            if (TeamToBodies.TryGetValue(characterBodyTeam, out var valueTuple))
             {
-                var gid = characterBody.GetId();
-                if (!GidToBody.TryGetValue(gid, out _))
-                {
-                    GidToBody[gid] = characterBody;
-                }
-                else
-                {
-#if DEBUG
-                    Console.Out.WriteLine($"Gid have been used {gid}");
-#endif
-                    noGoodBodies.Add(characterBody);
-                }
+                valueTuple.playerBodies.RemoveIdPointBox(new HashSet<IdPointBox> {characterBody.InBox});
+                
             }
 
-            characterBodies.ExceptWith(noGoodBodies);
-            foreach (var grouping in characterBodies.GroupBy(x => x.Team))
-            {
-                var teamId = grouping.Key;
-                var listToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.CovToIdBox()));
-                if (TeamToBodies.TryGetValue(teamId, out var qSpace))
-                {
-                    qSpace.playerBodies.AddIdPointBoxes(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
-                }
-                else
-                {
-                    var valueZone = TeamToBodies.First().Value.playerBodies.Zone;
-                    var newQs = SomeTools.CreateEmptyRootBranch(valueZone);
-                    var newQs2 = SomeTools.CreateEmptyRootBranch(valueZone);
-                    newQs.AddIdPointBoxes(listToHashSet, TempConfig.QSpaceBodyMaxPerLevel);
-                    TeamToBodies[teamId] = (newQs, newQs2);
-                }
-            }
+            return false;
+        }
+
+        public bool AddBody(CharacterBody characterBody, TwoDPoint telePos)
+        {
+            return false;
         }
 
         public PveResultType CheckPve(PveWinCond pveWinCond)

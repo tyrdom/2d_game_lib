@@ -73,20 +73,5 @@ namespace game_stuff
                 TeamId, BodyMark);
             return characterBody;
         }
-
-        public void ReloadCharacterBody(CharacterBody characterBody)
-        {
-            characterBody.CharacterStatus.ReloadInitData();
-            foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
-            {
-#if DEBUG
-                Console.Out.WriteLine($"{weapon.LogUserString()}");
-#endif
-                weapon.PickedBySomebody(characterBody.CharacterStatus);
-#if DEBUG
-                Console.Out.WriteLine($"{weapon.LogUserString()}");
-#endif
-            }
-        }
     }
 }

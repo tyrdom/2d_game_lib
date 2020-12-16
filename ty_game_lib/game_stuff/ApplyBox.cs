@@ -6,10 +6,12 @@ using game_config;
 
 namespace game_stuff
 {
-    public class SaleBox : IMapInteractable
+    public class ApplyBox : IMapInteractable
     {
-        public SaleBox(Zone zone, Queue<Quad> locateRecord, Round canInterActiveRound,
-            CharacterBody? nowInterCharacterBody, Interaction charActOne, Interaction charActTwo)
+        public bool IsActive { get; set; }
+
+        public ApplyBox(Zone zone, Queue<Quad> locateRecord, Round canInterActiveRound,
+            CharacterBody? nowInterCharacterBody, Interaction charActOne, Interaction charActTwo, bool isActive)
         {
             Zone = zone;
             LocateRecord = locateRecord;
@@ -17,16 +19,18 @@ namespace game_stuff
             NowInterCharacterBody = nowInterCharacterBody;
             CharActOne = charActOne;
             CharActTwo = charActTwo;
+            IsActive = isActive;
         }
 
-        public SaleBox(ISaleUnit saleUnit, TwoDPoint pos)
+        public ApplyBox(IApplyUnit saleUnit, TwoDPoint pos, bool isActive)
         {
+            IsActive = isActive;
             var configsInteraction = TempConfig.Configs.interactions;
             var roundP = new Round(pos, TempConfig.SaleBoxR);
-            var interaction1 = configsInteraction[interactionAct.apply];
-            var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.InVehicleCall);
-            var interaction2 = configsInteraction[interactionAct.buy];
-            var interaction22 = CageCanPick.GenInteractionByConfig(saleUnit, interaction2, MapInteract.KickVehicleCall);
+            var interaction1 = configsInteraction[interactionAct.get_info];
+            var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.GetInfoCall);
+            var interaction2 = configsInteraction[interactionAct.apply];
+            var interaction22 = CageCanPick.GenInteractionByConfig(saleUnit, interaction2, MapInteract.BuyOrApplyCall);
             CharActOne = interaction11;
             CharActTwo = interaction22;
             CanInterActiveRound = roundP;
@@ -55,7 +59,7 @@ namespace game_stuff
 
         public bool CanInteractive(TwoDPoint pos)
         {
-            return Zone.IncludePt(pos) && CanInterActiveRound.Include(pos) && NowInterCharacterBody == null;
+            return Zone.IncludePt(pos) && CanInterActiveRound.Include(pos) && IsActive;
         }
 
         public Zone Zone { get; set; }
@@ -114,45 +118,15 @@ namespace game_stuff
             {
                 case SaleRandom saleRandom:
                     var saleRandomTitle = saleRandom.Title;
-                    return new SaleRandomTickMsg(saleRandom.Cost, saleRandomTitle);
+                    return new SaleRandomTickMsg(saleRandom.Cost, saleRandomTitle, saleRandom.GetRestStack(gid));
                 case SaleUnit saleUnit:
                     return new SaleBoxTickMsg(saleUnit.Cost,
-                        saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray());
+                        saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray(),
+                        saleUnit.GetRestStack(gid));
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-    }
-
-    public class SaleBoxTickMsg : ISeeTickMsg
-    {
-        public SaleBoxTickMsg(GameItem cost, (ContainType containType, int id)[] contains)
-        {
-            Cost = cost;
-
-            Contains = contains;
-        }
-
-        public GameItem Cost { get; }
-
-        public (ContainType containType, int id)[] Contains { get; }
-
-
-        public int StackRest { get; }
-    }
-
-    public class SaleRandomTickMsg : ISeeTickMsg
-    {
-        public SaleRandomTickMsg(GameItem cost, ContainType containType)
-        {
-            Cost = cost;
-            ContainType = containType;
-        }
-
-        public GameItem Cost { get; }
-
-        public ContainType ContainType { get; }
-
-        public int StackRest { get; }
     }
 }

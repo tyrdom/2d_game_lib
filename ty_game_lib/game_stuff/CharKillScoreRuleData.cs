@@ -5,19 +5,23 @@ namespace game_stuff
     public class CharKillScoreRuleData : ICharRuleData
     {
         public List<CharacterBody> NowKills { get; }
+        private int KillScore { get; set; }
+
+      
 
         public CharKillScoreRuleData()
         {
             NowKills = new List<CharacterBody>();
             KillScore = 0;
+           
         }
 
-        private int KillScore { get; set; }
 
         public void AddAKill(CharacterBody characterBody)
         {
             NowKills.Add(characterBody);
             KillScore++;
+           
         }
 
         public int GetScore()
@@ -28,6 +32,7 @@ namespace game_stuff
         public void ClearTemp()
         {
             NowKills.Clear();
+            
         }
     }
 }

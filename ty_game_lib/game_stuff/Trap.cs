@@ -36,6 +36,7 @@ namespace game_stuff
             IdPointBox = null;
             TrapMedia.Sign(this);
             LaunchMedia?.Sign(this);
+            InBox = CovToIdBox();
         }
 
         public bool NotOverFlow { get; set; }
@@ -132,6 +133,8 @@ namespace game_stuff
         {
             return Pos;
         }
+
+        public IdPointBox InBox { get; set; }
 
         public BodySize GetSize()
         {
