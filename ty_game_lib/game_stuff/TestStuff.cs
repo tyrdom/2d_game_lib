@@ -60,7 +60,8 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"test map init ok");
 #endif
-            return new MapInitData(testSightMap, testMap, startPaces);
+            return new MapInitData(testSightMap, testMap, startPaces,
+                new List<(TwoDPoint pos, IMapInteractable standardMapInteractable)>());
         }
 
         private static WalkMap TestMap()

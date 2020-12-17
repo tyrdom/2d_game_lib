@@ -7,6 +7,16 @@ namespace game_stuff
 {
     public class TeleportUnit : IApplyUnit
     {
+        public TeleportUnit(IMapInteractable? inWhichMapInteractive, PlayGround fromPlayGround, PlayGround toPlayGround,
+            TwoDPoint toPos, BodySize[] allowSizes)
+        {
+            InWhichMapInteractive = inWhichMapInteractive;
+            FromPlayGround = fromPlayGround;
+            ToPlayGround = toPlayGround;
+            ToPos = toPos;
+            AllowSizes = allowSizes;
+        }
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public PlayGround FromPlayGround { get; set; }
@@ -30,7 +40,20 @@ namespace game_stuff
 
         public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
-            throw new NotImplementedException();
+            switch (interactive)
+            {
+                case MapInteract.GetInfoCall:
+                    //todo get mapinfo to character
+                    return new IMapInteractable[] { };
+                case MapInteract.BuyOrApplyCall:
+                    var removeBody = FromPlayGround.RemoveBody(characterStatus.CharacterBody);
+                    if (!removeBody) throw new IndexOutOfRangeException($"remove body fail {characterStatus.GId}");
+                    ToPlayGround.AddBody(characterStatus.CharacterBody, ToPos);
+                    return new IMapInteractable[] { };
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+            }
         }
     }
 }

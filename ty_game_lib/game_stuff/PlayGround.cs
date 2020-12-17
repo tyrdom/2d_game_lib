@@ -11,6 +11,8 @@ namespace game_stuff
         private string MgId { get; }
         private int ResMId { get; }
         private IPlayRules PlayRules { get; }
+
+        private Zone MoveZone { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; set; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
         private WalkMap WalkMap { get; } //碰撞地图
@@ -23,7 +25,7 @@ namespace game_stuff
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, string mgId, IPlayRules playRules,
-            int resMId)
+            int resMId, Zone moveZone)
         {
             TeamToBodies = teamToBodies;
             SightMap = sightMap;
@@ -33,6 +35,7 @@ namespace game_stuff
             MgId = mgId;
             PlayRules = playRules;
             ResMId = resMId;
+            MoveZone = moveZone;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
@@ -83,7 +86,7 @@ namespace game_stuff
 #endif
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                emptyRootBranch, genMapId, playRules, mapResId);
+                emptyRootBranch, genMapId, playRules, mapResId, zone);
             return (playGround, playGround.GenInitMsg());
         }
 
@@ -408,7 +411,7 @@ namespace game_stuff
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
-                traps.RemoveIdPointBox(thisTeamToRemove);
+                traps.RemoveIdPointBoxes(thisTeamToRemove);
 
                 foreach (var gtb in mapToDicGidToSth)
                 {
@@ -529,18 +532,35 @@ namespace game_stuff
             var characterBodyTeam = characterBody.Team;
             var id = characterBody.GetId();
 
-            if (TeamToBodies.TryGetValue(characterBodyTeam, out var valueTuple))
+            if (TeamToBodies.TryGetValue(characterBodyTeam, out var valueTuple) &&
+                GidToBody.TryGetValue(id, out var gidCharacterBody) && characterBody == gidCharacterBody)
             {
-                valueTuple.playerBodies.RemoveIdPointBox(new HashSet<IdPointBox> {characterBody.InBox});
-                
+                return GidToBody.Remove(id) &&
+                       valueTuple.playerBodies.RemoveAIdPointBox(characterBody.InBox);
             }
 
             return false;
         }
 
-        public bool AddBody(CharacterBody characterBody, TwoDPoint telePos)
+        public void AddBody(CharacterBody characterBody, TwoDPoint telePos)
         {
-            return false;
+            var characterBodyTeam = characterBody.Team;
+            var characterBodyInBox = characterBody.InBox;
+            if (TeamToBodies.TryGetValue(characterBodyTeam, out var tuple))
+            {
+                characterBody.ReLocate(telePos);
+
+                tuple.playerBodies.AddAIdPointBox(characterBodyInBox, TempConfig.QSpaceBodyMaxPerLevel);
+            }
+            else
+            {
+                var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
+                var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
+                playerBodies.AddAIdPointBox(characterBodyInBox, TempConfig.QSpaceBodyMaxPerLevel);
+                var emptyRootBranch = (playerBodies,
+                    traps);
+                TeamToBodies[characterBodyTeam] = emptyRootBranch;
+            }
         }
 
         public PveResultType CheckPve(PveWinCond pveWinCond)
@@ -587,11 +607,6 @@ namespace game_stuff
                 PveWinCond.BossClear => bossClear ? PveResultType.PveWin : PveResultType.NotFinish,
                 _ => throw new ArgumentOutOfRangeException(nameof(pveWinCond), pveWinCond, null)
             };
-        }
-
-        public Dictionary<int, CharacterBody> CheckKills()
-        {
-            return GidToBody;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace collision_and_rigid
@@ -25,6 +26,42 @@ namespace collision_and_rigid
         public Zone Zone { get; set; }
 
         public HashSet<IAaBbBox> AaBbPackBox { get; set; }
+
+
+        public QSpaceBranch CovIdPointBranch(HashSet<IAaBbBox>? q1 = null, HashSet<IAaBbBox>? q2 = null,
+            HashSet<IAaBbBox>? q3 = null, HashSet<IAaBbBox>? q4 = null)
+        {
+            var cutTo4 = Zone.CutTo4();
+            IQSpace qsl1 = new QSpaceLeaf(Quad.One, null, cutTo4[0], q1 ?? new HashSet<IAaBbBox>());
+            IQSpace qsl2 = new QSpaceLeaf(Quad.Two, null, cutTo4[1], q2 ?? new HashSet<IAaBbBox>());
+            IQSpace qsl3 = new QSpaceLeaf(Quad.Three, null, cutTo4[2], q3 ?? new HashSet<IAaBbBox>());
+            IQSpace qsl4 = new QSpaceLeaf(Quad.Four, null, cutTo4[3], q4 ?? new HashSet<IAaBbBox>());
+            var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AaBbPackBox, qsl1, qsl2,
+                qsl3, qsl4);
+
+            if (Father == null) return qSpaceBranch;
+            switch (TheQuad)
+            {
+                case Quad.One:
+                    Father.QuadOne = qSpaceBranch;
+                    break;
+                case Quad.Two:
+                    Father.QuadTwo = qSpaceBranch;
+                    break;
+                case Quad.Three:
+                    Father.QuadThree = qSpaceBranch;
+                    break;
+                case Quad.Four:
+                    Father.QuadFour = qSpaceBranch;
+                    break;
+                case null:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return qSpaceBranch;
+        }
 
         public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false)
         {
@@ -90,27 +127,64 @@ namespace collision_and_rigid
                 var qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, AaBbPackBox, qsl1, qsl2,
                     qsl3, qsl4);
 
-                if (Father != null)
+                if (Father == null) return;
+                switch (TheQuad)
                 {
-                    switch (TheQuad)
+                    case Quad.One:
+                        Father.QuadOne = qSpaceBranch;
+                        break;
+                    case Quad.Two:
+                        Father.QuadTwo = qSpaceBranch;
+                        break;
+                    case Quad.Three:
+                        Father.QuadThree = qSpaceBranch;
+                        break;
+                    case Quad.Four:
+                        Father.QuadFour = qSpaceBranch;
+                        break;
+                    case null:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        public void AddAIdPointBox(IdPointBox idPointBox, int limit, bool needRecord = false)
+        {
+            var rawCount = AaBbPackBox.Count;
+            if (rawCount + 1 <= limit)
+            {
+                AaBbPackBox.Add(idPointBox);
+            }
+            else
+            {
+                var covIdPointBranch = CovIdPointBranch();
+                if (idPointBox.GetShape() is IIdPointShape idPointShape)
+                {
+                    var quad = idPointShape.GetAnchor().WhichQ(Zone);
+                    if (needRecord) idPointBox.AddRecord(quad);
+                    switch (quad)
                     {
                         case Quad.One:
-                            Father.QuadOne = qSpaceBranch;
+                            covIdPointBranch.QuadOne.AddAIdPointBox(idPointBox, limit, needRecord);
                             break;
                         case Quad.Two:
-                            Father.QuadTwo = qSpaceBranch;
+                            covIdPointBranch.QuadTwo.AddAIdPointBox(idPointBox, limit, needRecord);
                             break;
                         case Quad.Three:
-                            Father.QuadThree = qSpaceBranch;
+                            covIdPointBranch.QuadThree.AddAIdPointBox(idPointBox, limit, needRecord);
                             break;
                         case Quad.Four:
-                            Father.QuadFour = qSpaceBranch;
-                            break;
-                        case null:
+                            covIdPointBranch.QuadFour.AddAIdPointBox(idPointBox, limit, needRecord);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException();
                 }
             }
         }
@@ -136,7 +210,7 @@ namespace collision_and_rigid
             return AaBbPackBox.Remove(idPointBox);
         }
 
-        public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes)
+        public void RemoveIdPointBoxes(HashSet<IdPointBox> idPointBoxes)
         {
             if (idPointBoxes.Count == 0)
             {
@@ -332,6 +406,28 @@ namespace collision_and_rigid
             tryCovToBranch.QuadTwo.Father = tryCovToBranch;
             tryCovToBranch.QuadThree.Father = tryCovToBranch;
             tryCovToBranch.QuadFour.Father = tryCovToBranch;
+
+            if (Father == null) return tryCovToBranch;
+            switch (TheQuad)
+            {
+                case Quad.One:
+                    Father.QuadOne = tryCovToBranch;
+                    break;
+                case Quad.Two:
+                    Father.QuadOne = tryCovToBranch;
+                    break;
+                case Quad.Three:
+                    Father.QuadOne = tryCovToBranch;
+                    break;
+                case Quad.Four:
+                    Father.QuadOne = tryCovToBranch;
+                    break;
+                case null:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
             return tryCovToBranch;
         }
 

@@ -19,11 +19,13 @@ namespace game_stuff
                     SightMap.Lines.Zone, (current, qSpaceZone) => current.Join(qSpaceZone));
         }
 
-        public MapInitData(SightMap sightMap, WalkMap walkMap, Dictionary<int, StartPts> teamToStartPt)
+        public MapInitData(SightMap sightMap, WalkMap walkMap, Dictionary<int, StartPts> teamToStartPt,
+            List<(TwoDPoint pos, IMapInteractable standardMapInteractable)> standardMapInteractableList)
         {
             SightMap = sightMap;
             WalkMap = walkMap;
             TeamToStartPt = teamToStartPt;
+            StandardMapInteractableList = standardMapInteractableList;
         }
     }
 }

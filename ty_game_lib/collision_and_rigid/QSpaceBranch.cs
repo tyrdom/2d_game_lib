@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace collision_and_rigid
 {
@@ -38,7 +36,7 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
-        public HashSet<IAaBbBox> AaBbPackBox { get; set; }
+        public HashSet<IAaBbBox> AaBbPackBox { get; private set; }
         public IQSpace QuadTwo { get; set; }
         public IQSpace QuadOne { get; set; }
         public IQSpace QuadFour { get; set; }
@@ -112,6 +110,57 @@ namespace collision_and_rigid
             QuadFour.AddIdPointBoxes(q4, limit);
         }
 
+        public void AddAIdPointBox(IdPointBox idPointBox, int limit, bool needRecord = false)
+        {
+            var shape = idPointBox.GetShape();
+            switch (shape)
+            {
+                case IIdPointShape idPointShape:
+                    var twoDPoint = idPointShape.GetAnchor();
+
+                    if (Zone.IncludePt(twoDPoint))
+                    {
+                        if (AaBbPackBox.Count <= limit)
+                        {
+                            AaBbPackBox.Add(idPointBox);
+                        }
+                        else
+                        {
+                            var whichQ = twoDPoint.WhichQ(this);
+                            if (needRecord) idPointBox.AddRecord(whichQ);
+                            switch (whichQ)
+                            {
+                                case Quad.One:
+                                    QuadOne.AddAIdPointBox(idPointBox, limit, needRecord);
+                                    break;
+                                case Quad.Two:
+                                    QuadTwo.AddAIdPointBox(idPointBox, limit, needRecord);
+                                    break;
+                                case Quad.Three:
+                                    QuadThree.AddAIdPointBox(idPointBox, limit, needRecord);
+                                    break;
+                                case Quad.Four:
+                                    QuadFour.AddAIdPointBox(idPointBox, limit, needRecord);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                    }
+
+                    else
+                    {
+                        if (Father == null)
+                            AaBbPackBox.Add(idPointBox);
+                        else Father.AddAIdPointBox(idPointBox, limit, needRecord);
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(shape));
+            }
+        }
+
         public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
             var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
@@ -159,7 +208,7 @@ namespace collision_and_rigid
             }
         }
 
-        public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes)
+        public void RemoveIdPointBoxes(HashSet<IdPointBox> idPointBoxes)
         {
             if (idPointBoxes.Count == 0)
             {
@@ -204,15 +253,15 @@ namespace collision_and_rigid
                 }
             }
 
-            QuadOne.RemoveIdPointBox(q1);
-            QuadTwo.RemoveIdPointBox(q2);
-            QuadThree.RemoveIdPointBox(q3);
-            QuadFour.RemoveIdPointBox(q4);
+            QuadOne.RemoveIdPointBoxes(q1);
+            QuadTwo.RemoveIdPointBoxes(q2);
+            QuadThree.RemoveIdPointBoxes(q3);
+            QuadFour.RemoveIdPointBoxes(q4);
             if (idPointBoxes.Count == 0) return;
-            QuadOne.RemoveIdPointBox(idPointBoxes);
-            QuadTwo.RemoveIdPointBox(idPointBoxes);
-            QuadThree.RemoveIdPointBox(idPointBoxes);
-            QuadFour.RemoveIdPointBox(idPointBoxes);
+            QuadOne.RemoveIdPointBoxes(idPointBoxes);
+            QuadTwo.RemoveIdPointBoxes(idPointBoxes);
+            QuadThree.RemoveIdPointBoxes(idPointBoxes);
+            QuadFour.RemoveIdPointBoxes(idPointBoxes);
         }
 
 

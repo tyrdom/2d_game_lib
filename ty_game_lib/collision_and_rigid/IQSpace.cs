@@ -14,10 +14,11 @@ namespace collision_and_rigid
 
         public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false);
 
+        public void AddAIdPointBox(IdPointBox idPointBox, int limit, bool needRecord = false);
         public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
 
         public bool RemoveAIdPointBox(IdPointBox idPointBox);
-        public void RemoveIdPointBox(HashSet<IdPointBox> idPointBoxes);
+        public void RemoveIdPointBoxes(HashSet<IdPointBox> idPointBoxes);
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true);
 
