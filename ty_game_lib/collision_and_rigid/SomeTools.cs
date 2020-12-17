@@ -38,12 +38,12 @@ namespace collision_and_rigid
         }
 
 
-        public static Zone JoinAaBbZone(IAaBbBox[] aabbBoxShapes)
+        public static Zone JoinAaBbZone(IAaBbBox[] aabbBoxes)
         {
-            var foo = aabbBoxShapes[0].Zone;
+            var z = aabbBoxes[0].Zone;
 
-            return Enumerable.Range(1, aabbBoxShapes.Length - 1)
-                .Aggregate(foo, (current, i) => current.Join(aabbBoxShapes[i].Zone));
+            return Enumerable.Range(1, aabbBoxes.Length - 1)
+                .Aggregate(z, (current, i) => current.Join(aabbBoxes[i].Zone));
         }
 
         public static void LogZones(BlockBox[] aabbBoxShapes)

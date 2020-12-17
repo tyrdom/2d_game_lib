@@ -69,11 +69,7 @@ namespace game_stuff
         }
 
         public static ConfigDictionaries Configs { get; private set; }
-#if NETCOREAPP
-            = new ConfigDictionaries();
-#else
-            = new ConfigDictionaries("");
-#endif
+            = GameConfigTools.Configs;
 
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {

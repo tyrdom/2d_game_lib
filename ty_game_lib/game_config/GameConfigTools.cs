@@ -17,6 +17,12 @@ namespace game_config
 {
     public static class GameConfigTools
     {
+        public static ConfigDictionaries Configs { get; private set; }
+#if NETCOREAPP
+            = new ConfigDictionaries();
+#else
+            = new ConfigDictionaries("");
+#endif
         private static readonly char Sep = Path.DirectorySeparatorChar;
 #if UNITY_2018_1_OR_NEWER
 #else

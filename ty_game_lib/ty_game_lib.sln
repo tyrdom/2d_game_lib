@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "game_bot", "game_bot\game_b
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cov_path_navi", "cov_path_navi\cov_path_navi.csproj", "{B4DAA8A9-49DA-4112-A042-BBB3CD306463}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rogue_chapter_maker", "rogue_chapter_maker\rogue_chapter_maker.csproj", "{87536136-B93D-4125-8123-110B621E7F29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rogue_game", "rogue_game\rogue_game.csproj", "{463F1C1C-3F2D-418C-B825-9EB180B016D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +46,13 @@ Global
 		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4DAA8A9-49DA-4112-A042-BBB3CD306463}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87536136-B93D-4125-8123-110B621E7F29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87536136-B93D-4125-8123-110B621E7F29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87536136-B93D-4125-8123-110B621E7F29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87536136-B93D-4125-8123-110B621E7F29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{463F1C1C-3F2D-418C-B825-9EB180B016D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{463F1C1C-3F2D-418C-B825-9EB180B016D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{463F1C1C-3F2D-418C-B825-9EB180B016D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{463F1C1C-3F2D-418C-B825-9EB180B016D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
