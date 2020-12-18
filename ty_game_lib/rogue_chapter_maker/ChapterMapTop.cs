@@ -1,14 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace rogue_chapter_maker
 {
-    public static class MakerTools
-    {
-        public static Random Random { get; } = new Random();
-    }
-
     public class ChapterMapTop
     {
         public ChapterMapTop()
@@ -82,20 +78,40 @@ namespace rogue_chapter_maker
             var genAChapterMap = new ChapterMapTop();
             foreach (var _ in enumerable)
             {
-                var pointMap = new PointMap(MapSize.Big, 1, 1, 1, 1, nowSlot);
-                nowSlot = genAChapterMap.AddMapPointAndReturnNext(pointMap);
+                var pointMap = new PointMap(MapType.Big, 1, 1, 1, 1, nowSlot);
+                genAChapterMap.AddMapPointAndReturnNext(pointMap);
+                nowSlot = genAChapterMap.GenANewSlot();
             }
+
+            var e = new PointMap(MapType.Enter, 1, 1, 1, 1, nowSlot);
+            genAChapterMap.AddMapPointAndReturnNext(e);
+            genAChapterMap.GetFinishSlot(e);
+
 
             foreach (var _ in enumerable2)
             {
-                var pointMap = new PointMap(MapSize.Small, 1, 1, 1, 1, nowSlot);
-                nowSlot = genAChapterMap.AddMapPointAndReturnNext(pointMap);
+                var pointMap = new PointMap(MapType.Small, 1, 1, 1, 1, nowSlot);
+                genAChapterMap.AddMapPointAndReturnNext(pointMap);
+                nowSlot = genAChapterMap.GenANewSlot();
             }
 
             return genAChapterMap;
         }
 
-        private (int x, int y) AddMapPointAndReturnNext(PointMap pointMap)
+        private (int x, int y) GetFinishSlot(PointMap pointMap)
+        {
+            (int distance, PointMap? farMap) func = (0, null);
+            var (distance, farMap) = PointMaps.Aggregate(func, (a, map) =>
+            {
+                var intPtr = map.GetDistance(pointMap);
+                var (dis, fMap) = a;
+                return intPtr > dis ? (intPtr, map) : (i: dis, j: fMap);
+            });
+            var maxItem2 = farMap ?? throw new ArgumentNullException($"not big enough map {distance}");
+            return (0, 0);
+        }
+
+        private void AddMapPointAndReturnNext(PointMap pointMap)
         {
             var any = PointMaps.Any();
             var pointMapLinks = new HashSet<Link>();
@@ -103,18 +119,34 @@ namespace rogue_chapter_maker
             pointMapLinks.UnionWith(pointMap.Links);
             if (any)
             {
-                var haveLink = false;
-                foreach (var isNearAndGetLinks in PointMaps.Select(map => map.IsNearAndGetLinks(pointMap, haveLink))
-                    .Where(isNearAndGetLinks => isNearAndGetLinks != null))
+                var isNearAndGetLinksList = PointMaps.Select(map => map.IsNearAndGetLinks(pointMap))
+                    .Where(isNearAndGetLinks => isNearAndGetLinks != null).ToList();
+                isNearAndGetLinksList.Shuffle();
+                var count = isNearAndGetLinksList.Count;
+                var i = MakerTools.Random.Next(count);
+                Console.Out.WriteLine($"{i + 1} of {count}");
+                for (var i1 = 0; i1 <= i; i1++)
+                {
+                    var isNearAndGetLinks = isNearAndGetLinksList[i1];
+                    if (isNearAndGetLinks == null) continue;
+                    var (thisLink, thatLink, thisMap, thatMap) = isNearAndGetLinks.Value;
+                    PointMap.SetNearLinks(thisLink, thatLink,
+                        thisMap, thatMap);
+                }
+
+                foreach (var isNearAndGetLinks in isNearAndGetLinksList)
                 {
                     CanLinks.ExceptWith(isNearAndGetLinks?.thisLink ?? Array.Empty<Link>());
                     pointMapLinks.ExceptWith(isNearAndGetLinks?.thatLink ?? Array.Empty<Link>());
-                    haveLink = true;
                 }
             }
 
             PointMaps.Add(pointMap);
             CanLinks.UnionWith(pointMapLinks);
+        }
+
+        private (int x, int y) GenANewSlot()
+        {
             var next = MakerTools.Random.Next(CanLinks.Count);
             var canLink = CanLinks.ToList()[next];
             var (x, y) = canLink.InPointMap.Slot;

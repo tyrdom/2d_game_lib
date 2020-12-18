@@ -5,20 +5,24 @@ using System.Net.Http.Headers;
 
 namespace rogue_chapter_maker
 {
-    public enum MapSize
+    public enum MapType
     {
+        Enter,
+        Finish,
         Small,
         Big
     }
 
     public class PointMap
     {
-        private string ShortString()
+        private char ShortChar()
         {
             return MapSize switch
             {
-                MapSize.Small => "S",
-                MapSize.Big => "B",
+                MapType.Small => 'S',
+                MapType.Big => 'B',
+                MapType.Enter => 'E',
+                MapType.Finish => 'F',
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -31,9 +35,9 @@ namespace rogue_chapter_maker
             var wn = enumerable.Count(a => a.Side == Side.West);
             var sn = enumerable.Count(a => a.Side == Side.South);
 
-            var t = " " + nn + " ";
-            var c = wn + ShortString() + en;
-            var b = " " + sn + " ";
+            var t = $" {nn} ";
+            var c = $"{wn}{ShortChar()}{en}";
+            var b = $" {sn} ";
             return (t, c, b);
         }
 
@@ -43,7 +47,7 @@ namespace rogue_chapter_maker
             return $"{t}\n{c}\n{b}\n";
         }
 
-        public PointMap(MapSize mapSize, int n, int s, int e, int w, (int x, int y) slot)
+        public PointMap(MapType mapSize, int n, int s, int e, int w, (int x, int y) slot)
         {
             MapSize = mapSize;
             Slot = slot;
@@ -59,12 +63,27 @@ namespace rogue_chapter_maker
 
 
         public (int x, int y) Slot { get; }
-        public MapSize MapSize { get; }
+        public MapType MapSize { get; }
 
         public List<Link> Links { get; }
 
-        public (IEnumerable<Link> thisLink, IEnumerable<Link> thatLink)? IsNearAndGetLinks(PointMap toAnotherOne,
-            bool haveLink)
+        public static void SetNearLinks(IEnumerable<Link> thisLinks, IEnumerable<Link> thatLinks, PointMap thisMap, PointMap thatMap)
+        {
+          
+
+            foreach (var link in thisLinks)
+            {
+                link.SetLink(thatMap);
+            }
+
+            foreach (var link in thatLinks)
+            {
+                link.SetLink(thisMap);
+            }
+        }
+
+        public (IEnumerable<Link> thisLink, IEnumerable<Link> thatLink, PointMap thisMap, PointMap thatMap)?
+            IsNearAndGetLinks(PointMap toAnotherOne)
         {
             var b1 = Slot.y == toAnotherOne.Slot.y;
             var b2 = Slot.x == toAnotherOne.Slot.x;
@@ -73,65 +92,46 @@ namespace rogue_chapter_maker
             var n = -Slot.y + toAnotherOne.Slot.y == 1 && b2;
             var s = -Slot.y + toAnotherOne.Slot.y == -1 && b2;
 
-            void SetNearLinks(List<Link> thisLinks, List<Link> thatLinks, PointMap thisMap, PointMap thatMap)
-            {
-                if (haveLink)
-                {
-                    var next = MakerTools.Random.Next(2);
-                    if (next < 1) return;
-                }
-
-                foreach (var link in thisLinks)
-                {
-                    link.SetLink(thatMap);
-                }
-
-                foreach (var link in thatLinks)
-                {
-                    link.SetLink(thisMap);
-                }
-            }
 
             if (e)
             {
-                var thisLink = Links.Where(x => x.Side == Side.East).ToList();
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.West).ToList();
-                SetNearLinks(thisLink, thatLink, this, toAnotherOne);
-                return (thisLink,
-                    thatLink);
+                var thisLink = Links.Where(x => x.Side == Side.East);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.West);
+                return (thisLink, thatLink, this, toAnotherOne);
             }
 
             if (w)
             {
-                var thisLink = Links.Where(x => x.Side == Side.West).ToList();
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.East).ToList();
-                SetNearLinks(thisLink, thatLink, this, toAnotherOne);
+                var thisLink = Links.Where(x => x.Side == Side.West);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.East);
 
-                return (thisLink,
-                    thatLink);
+                return (thisLink, thatLink, this, toAnotherOne);
             }
 
             if (n)
             {
-                var thisLink = Links.Where(x => x.Side == Side.North).ToList();
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.South).ToList();
-                SetNearLinks(thisLink, thatLink, this, toAnotherOne);
-
-                return (thisLink,
-                    thatLink);
+                var thisLink = Links.Where(x => x.Side == Side.North);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.South);
+                return (thisLink, thatLink, this, toAnotherOne);
             }
 
             if (s)
             {
-                var thisLink = Links.Where(x => x.Side == Side.South).ToList();
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.North).ToList();
-                SetNearLinks(thisLink, thatLink, this, toAnotherOne);
+                var thisLink = Links.Where(x => x.Side == Side.South);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.North);
 
-                return (thisLink,
-                    thatLink);
+                return (thisLink, thatLink, this, toAnotherOne);
             }
 
             return null;
+        }
+
+        public int GetDistance(PointMap pointMap)
+        {
+            var slotX = Slot.x - pointMap.Slot.x;
+            var slotY = Slot.y - pointMap.Slot.y;
+            return slotX * slotX +
+                   slotY * slotY;
         }
     }
 }
