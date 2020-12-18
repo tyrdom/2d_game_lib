@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 
 namespace rogue_chapter_maker
@@ -12,14 +13,21 @@ namespace rogue_chapter_maker
 
     public class Link
     {
-        public Link(Side side)
+        public Link(Side side, PointMap inPointMap)
         {
             Side = side;
+            InPointMap = inPointMap;
             LinkTo = null;
         }
 
-        private Side Side { get; }
+        public PointMap InPointMap { get; }
+        public Side Side { get; }
 
-        private PointMap? LinkTo { get; set; }
+        public PointMap? LinkTo { get; private set; }
+
+        public void SetLink(PointMap pointMap)
+        {
+            LinkTo = pointMap;
+        }
     }
 }
