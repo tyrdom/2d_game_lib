@@ -22,7 +22,7 @@ namespace lib_unit_test
         [Test]
         public void Test2()
         {
-            var genAChapterMap = rogue_chapter_maker.ChapterMapTop.GenAChapterMap(7, 3);
+            var genAChapterMap = rogue_chapter_maker.ChapterMapTop.GenAChapterMap(15, 9);
 
             Assert.Pass(genAChapterMap.ToString());
         }

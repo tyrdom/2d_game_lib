@@ -79,39 +79,40 @@ namespace rogue_chapter_maker
             foreach (var _ in enumerable)
             {
                 var pointMap = new PointMap(MapType.Big, 1, 1, 1, 1, nowSlot);
-                genAChapterMap.AddMapPointAndReturnNext(pointMap);
+                genAChapterMap.AddMapPoint(pointMap);
                 nowSlot = genAChapterMap.GenANewSlot();
             }
 
-            var e = new PointMap(MapType.Enter, 1, 1, 1, 1, nowSlot);
-            genAChapterMap.AddMapPointAndReturnNext(e);
-            genAChapterMap.GetFinishSlot(e);
-
+            var e = new PointMap(MapType.In, 1, 1, 1, 1, nowSlot);
+            genAChapterMap.AddMapPoint(e);
+            nowSlot = genAChapterMap.GenANewSlot();
+            genAChapterMap.SetFinishSlot(e);
 
             foreach (var _ in enumerable2)
             {
                 var pointMap = new PointMap(MapType.Small, 1, 1, 1, 1, nowSlot);
-                genAChapterMap.AddMapPointAndReturnNext(pointMap);
+                genAChapterMap.AddMapPoint(pointMap);
                 nowSlot = genAChapterMap.GenANewSlot();
             }
 
             return genAChapterMap;
         }
 
-        private (int x, int y) GetFinishSlot(PointMap pointMap)
+        private void SetFinishSlot(PointMap pointMap)
         {
             (int distance, PointMap? farMap) func = (0, null);
             var (distance, farMap) = PointMaps.Aggregate(func, (a, map) =>
             {
                 var intPtr = map.GetDistance(pointMap);
                 var (dis, fMap) = a;
-                return intPtr > dis ? (intPtr, map) : (i: dis, j: fMap);
+                return intPtr > dis ? (intPtr, map) : (dis, fMap);
             });
-            var maxItem2 = farMap ?? throw new ArgumentNullException($"not big enough map {distance}");
-            return (0, 0);
+            if (farMap == null) throw new ArgumentNullException($"not big enough map {distance}");
+            CanLinks.ExceptWith(farMap.Links);
+            farMap.SetFinish();
         }
 
-        private void AddMapPointAndReturnNext(PointMap pointMap)
+        private void AddMapPoint(PointMap pointMap)
         {
             var any = PointMaps.Any();
             var pointMapLinks = new HashSet<Link>();

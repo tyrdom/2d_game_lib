@@ -7,8 +7,8 @@ namespace rogue_chapter_maker
 {
     public enum MapType
     {
-        Enter,
-        Finish,
+        In,
+        End,
         Small,
         Big
     }
@@ -17,12 +17,12 @@ namespace rogue_chapter_maker
     {
         private char ShortChar()
         {
-            return MapSize switch
+            return MapType switch
             {
                 MapType.Small => 'S',
                 MapType.Big => 'B',
-                MapType.Enter => 'E',
-                MapType.Finish => 'F',
+                MapType.In => 'I',
+                MapType.End => 'E',
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -47,9 +47,9 @@ namespace rogue_chapter_maker
             return $"{t}\n{c}\n{b}\n";
         }
 
-        public PointMap(MapType mapSize, int n, int s, int e, int w, (int x, int y) slot)
+        public PointMap(MapType mapType, int n, int s, int e, int w, (int x, int y) slot)
         {
-            MapSize = mapSize;
+            MapType = mapType;
             Slot = slot;
             var enumerable = Enumerable.Range(1, n).Select(x => new Link(Side.North, this)).ToList();
             var links = Enumerable.Range(1, s).Select(x => new Link(Side.South, this)).ToList();
@@ -61,16 +61,19 @@ namespace rogue_chapter_maker
             Links = enumerable;
         }
 
+        public void SetFinish()
+        {
+            MapType = MapType.End;
+        }
 
         public (int x, int y) Slot { get; }
-        public MapType MapSize { get; }
+        public MapType MapType { get; set; }
 
         public List<Link> Links { get; }
 
-        public static void SetNearLinks(IEnumerable<Link> thisLinks, IEnumerable<Link> thatLinks, PointMap thisMap, PointMap thatMap)
+        public static void SetNearLinks(IEnumerable<Link> thisLinks, IEnumerable<Link> thatLinks, PointMap thisMap,
+            PointMap thatMap)
         {
-          
-
             foreach (var link in thisLinks)
             {
                 link.SetLink(thatMap);
