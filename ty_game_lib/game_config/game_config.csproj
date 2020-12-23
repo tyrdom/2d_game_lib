@@ -61,6 +61,14 @@
       <EmbeddedResource Include="Resources\summon_s.json" />
       <None Remove="Resources\trap_s.json" />
       <EmbeddedResource Include="Resources\trap_s.json" />
+      <None Remove="Resources\character_s.json" />
+      <EmbeddedResource Include="Resources\character_s.json" />
+      <None Remove="Resources\creep_s.json" />
+      <EmbeddedResource Include="Resources\creep_s.json" />
+      <None Remove="Resources\radar_wave_s.json" />
+      <EmbeddedResource Include="Resources\radar_wave_s.json" />
+      <None Remove="Resources\self_effect_s.json" />
+      <EmbeddedResource Include="Resources\self_effect_s.json" />
     </ItemGroup>
 
 </Project>
