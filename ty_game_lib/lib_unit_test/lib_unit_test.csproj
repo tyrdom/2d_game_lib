@@ -4,9 +4,9 @@
 
         <IsPackable>false</IsPackable>
 
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-
         <Nullable>enable</Nullable>
+
+        <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>

@@ -51,9 +51,11 @@ namespace game_stuff
     }
 
 
-    public class PVPKillScoreRules : IPlayRules
+    public class PvpKillScoreRules : IPlayRules
     {
-        public PVPKillScoreRules(int scoreReach)
+        public List<(CharacterBody, int rebornTickRest)> RebornPool { get; }
+
+        public PvpKillScoreRules(int scoreReach)
         {
             ScoreReach = scoreReach;
             TeamScores = new Dictionary<int, int>();
@@ -64,6 +66,8 @@ namespace game_stuff
 
         public IRuleTickResult CheckFinish(PlayGround playGround)
         {
+            
+            
             var playGroundGidToBody = playGround.GidToBody;
             var valueTuples = playGroundGidToBody
                 .Select(x => (x.Value.Team, x.Value.CharacterStatus.CharRuleData.NowKills, x.Key))
@@ -97,7 +101,6 @@ namespace game_stuff
             }
 
             return new PvPResult(null, false, dictionary);
-            //todo push select
         }
     }
 

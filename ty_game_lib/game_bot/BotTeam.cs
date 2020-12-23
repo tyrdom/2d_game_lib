@@ -8,7 +8,7 @@ namespace game_bot
 {
     public class BotTeam
     {
-        private Dictionary<int, Bot> Bots;
+        private Dictionary<int, Bot> Bots { get; }
 
         public BotTeam(Dictionary<int, Bot> bots)
         {
@@ -54,7 +54,7 @@ namespace game_bot
             return dictionary;
         }
 
-        
+
         public void AllBroadCast() //slow tick
         {
             foreach (var keyValuePair in Bots)

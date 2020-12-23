@@ -68,13 +68,13 @@ namespace lib_unit_test
             Assert.Pass(pathTest);
         }
 
-        static HashSet<IBlockShape>? ABlock()
+        private static HashSet<IBlockShape>? ABlock()
         {
             var allIBlocks = TestWb().QSpace?.GetAllIBlocks();
             return allIBlocks;
         }
 
-        static WalkBlock TestWb()
+        private static WalkBlock TestWb()
         {
             var poly = TestStuff.TestPoly();
             var poly1 = TestStuff.TestPoly2();
@@ -92,8 +92,7 @@ namespace lib_unit_test
 
             var tuples = new List<(Poly, bool)>
             {
-                (poly, false), (poly3, true), (poly4, true)
-                // , (poly5, true)
+                (poly, false), (poly3, true), (poly4, true), (poly5, true)
             };
 
             var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 1f, 6);

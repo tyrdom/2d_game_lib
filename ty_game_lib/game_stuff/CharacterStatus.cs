@@ -239,7 +239,6 @@ namespace game_stuff
 
         public void ReloadInitData()
         {
-            
             PauseTick = 0;
             LockingWho = null;
             CatchingWho = null;

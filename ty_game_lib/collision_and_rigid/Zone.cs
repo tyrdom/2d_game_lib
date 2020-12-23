@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace collision_and_rigid
 {
-    public struct Zone
+    public readonly struct Zone
     {
-        public float Up;
-        public float Down;
-        public float Left;
-        public float Right;
+        public readonly float Up;
+        public readonly float Down;
+        public readonly float Left;
+        public readonly float Right;
 
         public Zone(float up, float down, float left, float right)
         {
@@ -101,6 +101,7 @@ namespace collision_and_rigid
                 {
                     return 3;
                 }
+
                 return 0;
             }
 
