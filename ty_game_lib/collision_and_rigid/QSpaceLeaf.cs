@@ -25,7 +25,7 @@ namespace collision_and_rigid
         public QSpaceBranch? Father { get; set; }
         public Zone Zone { get; set; }
 
-        public HashSet<IAaBbBox> AaBbPackBox { get; set; }
+        public HashSet<IAaBbBox> AaBbPackBox { get; private set; }
 
 
         public QSpaceBranch CovIdPointBranch(HashSet<IAaBbBox>? q1 = null, HashSet<IAaBbBox>? q2 = null,
@@ -354,7 +354,7 @@ namespace collision_and_rigid
         }
 
 
-        public QSpaceBranch TryCovToBranch(int limit)
+        private QSpaceBranch TryCovToBranch(int limit)
         {
             var one = new HashSet<IAaBbBox>();
             var two = new HashSet<IAaBbBox>();
@@ -414,13 +414,13 @@ namespace collision_and_rigid
                     Father.QuadOne = tryCovToBranch;
                     break;
                 case Quad.Two:
-                    Father.QuadOne = tryCovToBranch;
+                    Father.QuadTwo = tryCovToBranch;
                     break;
                 case Quad.Three:
-                    Father.QuadOne = tryCovToBranch;
+                    Father.QuadThree = tryCovToBranch;
                     break;
                 case Quad.Four:
-                    Father.QuadOne = tryCovToBranch;
+                    Father.QuadFour = tryCovToBranch;
                     break;
                 case null:
                     break;

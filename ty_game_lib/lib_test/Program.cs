@@ -63,7 +63,7 @@ namespace lib_test
                 $"\nad cross line bc{point}");
         }
 
-        static void PathTest(WalkBlock genWalkBlockByPolys)
+        private static void PathTest(WalkBlock genWalkBlockByPolys)
         {
             Console.Out.WriteLine("path test~~~~~");
 
@@ -147,7 +147,9 @@ namespace lib_test
             var poly = TestStuff.TestPoly();
             var tuples = new List<(Poly, bool)>
             {
-                (poly, false), (poly3, true), (poly4, true), (poly5, true)
+                (poly, false), (poly3, true)
+                // , (poly1, true)
+                // , (poly5, true)
             };
 
             var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 2f, 6);

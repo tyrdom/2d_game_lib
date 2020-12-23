@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace collision_and_rigid
 {
-    public class TwoDVectorLine : IShape, IBlockShape, IRawBulletShape
+    public class TwoDVectorLine : IBlockShape, IRawBulletShape
     {
         private readonly bool AOut;
         private readonly bool BOut;

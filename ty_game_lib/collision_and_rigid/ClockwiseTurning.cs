@@ -472,14 +472,14 @@ namespace collision_and_rigid
 
                 if (h > Aob.O.Y)
                 {
-                    var uZone = z.RU().GenZone(pt);
-                    var dZone = pt.GenZone(z.LD());
+                    var uZone = z.Ru().GenZone(pt);
+                    var dZone = pt.GenZone(z.Ld());
                     return (uZone, dZone);
                 }
                 else
                 {
-                    var uZone = z.LU().GenZone(pt);
-                    var dZone = pt.GenZone(z.RD());
+                    var uZone = z.Lu().GenZone(pt);
+                    var dZone = pt.GenZone(z.Rd());
                     return (uZone, dZone);
                 }
             }
@@ -490,14 +490,14 @@ namespace collision_and_rigid
 
                 if (h < Aob.O.Y)
                 {
-                    var uZone = z.RU().GenZone(pt);
-                    var dZone = pt.GenZone(z.LD());
+                    var uZone = z.Ru().GenZone(pt);
+                    var dZone = pt.GenZone(z.Ld());
                     return (uZone, dZone);
                 }
                 else
                 {
-                    var uZone = z.LU().GenZone(pt);
-                    var dZone = pt.GenZone(z.RD());
+                    var uZone = z.Lu().GenZone(pt);
+                    var dZone = pt.GenZone(z.Rd());
                     return (uZone, dZone);
                 }
             }
@@ -524,14 +524,14 @@ namespace collision_and_rigid
 
                 if (v > Aob.O.X)
                 {
-                    var rZone = z.RU().GenZone(pt);
-                    var lZone = pt.GenZone(z.LD());
+                    var rZone = z.Ru().GenZone(pt);
+                    var lZone = pt.GenZone(z.Ld());
                     return (rZone, lZone);
                 }
                 else
                 {
-                    var lZone = z.LU().GenZone(pt);
-                    var rZone = pt.GenZone(z.RD());
+                    var lZone = z.Lu().GenZone(pt);
+                    var rZone = pt.GenZone(z.Rd());
                     return (rZone, lZone);
                 }
             }
@@ -542,14 +542,14 @@ namespace collision_and_rigid
 
                 if (v < Aob.O.X)
                 {
-                    var rZone = z.RU().GenZone(pt);
-                    var lZone = pt.GenZone(z.LD());
+                    var rZone = z.Ru().GenZone(pt);
+                    var lZone = pt.GenZone(z.Ld());
                     return (lZone, rZone);
                 }
                 else
                 {
-                    var lZone = z.LU().GenZone(pt);
-                    var rZone = pt.GenZone(z.RD());
+                    var lZone = z.Lu().GenZone(pt);
+                    var rZone = pt.GenZone(z.Rd());
                     return (lZone, rZone);
                 }
             }

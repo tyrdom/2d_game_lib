@@ -27,22 +27,22 @@ namespace collision_and_rigid
             return zone;
         }
 
-        public TwoDPoint RU()
+        public TwoDPoint Ru()
         {
             return new TwoDPoint(Right, Up);
         }
 
-        public TwoDPoint RD()
+        public TwoDPoint Rd()
         {
             return new TwoDPoint(Right, Down);
         }
 
-        public TwoDPoint LU()
+        public TwoDPoint Lu()
         {
             return new TwoDPoint(Left, Up);
         }
 
-        public TwoDPoint LD()
+        public TwoDPoint Ld()
         {
             return new TwoDPoint(Left, Down);
         }
@@ -239,14 +239,14 @@ namespace collision_and_rigid
             return list;
         }
 
-        public (Zone up, Zone down) CutByH(float horizon)
+        private (Zone up, Zone down) CutByH(float horizon)
         {
             var z2 = new Zone(Up, horizon, Left, Right);
             var z3 = new Zone(horizon, Down, Left, Right);
             return (z2, z3);
         }
 
-        public (Zone left, Zone right) CutByV(float vertical)
+        private (Zone left, Zone right) CutByV(float vertical)
         {
             var z3 = new Zone(Up, Down, Left, vertical);
             var z4 = new Zone(Up, Down, vertical, Right);
@@ -338,7 +338,7 @@ namespace collision_and_rigid
 
         public Poly ToPoly()
         {
-            var twoDPoints = new[] {LD(), LU(), RU(), RD()};
+            var twoDPoints = new[] {Ld(), Lu(), Ru(), Rd()};
             var poly = new Poly(twoDPoints);
             return poly;
         }

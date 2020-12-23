@@ -313,6 +313,7 @@ namespace cov_path_navi
 
             var firstOrDefault = pathTreeNodes.FirstOrDefault();
 
+            if (firstOrDefault == null) return new List<(int, TwoDVectorLine?)>();
             var path = firstOrDefault.GetPath();
             return path;
         }
@@ -404,7 +405,7 @@ namespace cov_path_navi
                 var aggregate = lList.Aggregate("l::", (s, x) => s + x.ToString());
                 var aggregate1 = rList.Aggregate("r::", (s, x) => s + x.ToString());
                 throw new Exception(
-                    $"can not finish a block list::num {beforeCount} vs {lList.Count} from {rList.Count} ::\n::{edPt.ToString()}::\n {s1} vs {aggregate} \n from ::\n{aggregate1}");
+                    $"can not finish a block list::num {beforeCount} vs {lList.Count} from {rList.Count} ::\n::{edPt}::\n {s1} vs {aggregate} \n from ::\n{aggregate1}");
             }
 
 
@@ -430,7 +431,7 @@ namespace cov_path_navi
 
 
 #if DEBUG
-                    Console.Out.WriteLine($" finding new ed  {edPt.ToString()} vs {startPt.ToString()}");
+                    Console.Out.WriteLine($" finding new ed  {edPt} vs {startPt}");
 #endif
                     if (startPt == edPt
                     )
