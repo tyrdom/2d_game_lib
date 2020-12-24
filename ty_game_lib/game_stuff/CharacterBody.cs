@@ -59,6 +59,7 @@ namespace game_stuff
         public void ReLocate(TwoDPoint twoDPoint)
         {
             NowPos = twoDPoint;
+            LastPos = twoDPoint;
         }
 
         public Zone GetSightZone()
@@ -192,7 +193,13 @@ namespace game_stuff
         public void ReBorn(TwoDPoint pos)
         {
             ReLocate(pos);
-            CharacterStatus.ReloadInitData();
+            CharacterStatus.Reborn();
+        }
+
+        public LevelUpsData GetAutoRebornTick()
+        {
+            return CharacterStatus.GetNowLevelUpData();
+           
         }
     }
 

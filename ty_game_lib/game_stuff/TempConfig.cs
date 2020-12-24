@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -87,6 +88,10 @@ namespace game_stuff
             [BodySize.Big] = 9f
         };
 
+        public static GameItem[] RogueRebornCost { get; set; } = new GameItem[] { };
+
+        public static int RogueRebornTick { get; set; } = 1000;
+
 
         public static ImmutableDictionary<uint, IPlayingBuffConfig> BuffConfigs { get; set; } =
             ImmutableDictionary<uint, IPlayingBuffConfig>.Empty;
@@ -151,7 +156,7 @@ namespace game_stuff
         public static uint MaxCallActTwoTick { get; private set; } = 10;
 
 
-        public static int UpMaxTrap { get; set; } = 10;
+        public static int UpMaxTrap { get; private set; } = 10;
         private static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
@@ -173,7 +178,7 @@ namespace game_stuff
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
             CommonBuffConfig =
                 GameTools.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
-
+            ShardedAttackMulti = configsOtherConfig.ShardedAttackMulti;
             MaxCallActTwoTick = GetTickByTime(configsOtherConfig.interaction_act2_call_time);
             TrickProtect = configsOtherConfig.trick_protect_value;
             ProtectTick = (int) GetTickByTime(configsOtherConfig.protect_time);
@@ -183,8 +188,12 @@ namespace game_stuff
             WeaponR = configsOtherConfig.weapon_R;
             PassiveR = configsOtherConfig.pass_R;
             SaleBoxR = configsOtherConfig.saleBox_R;
-
+            TickPerSec = configsOtherConfig.tick_per_sec;
             UpMaxTrap = configsOtherConfig.up_trap_max;
+            MoveDecreaseMinMulti = configsOtherConfig.MoveDecreaseMinMulti;
+            NormalSpeedMinCos = configsOtherConfig.NormalSpeedMinCos;
+            RogueRebornCost = configsOtherConfig.rogue_reborn_cost.Select(GameItem.GenByConfigGain).ToArray();
+            DecreaseMinCos = configsOtherConfig.DecreaseMinCos;
         }
 #if NETCOREAPP
         public static void LoadConfig()

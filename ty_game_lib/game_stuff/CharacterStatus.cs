@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
+using System.Net.Security;
 using System.Numerics;
 using collision_and_rigid;
 using game_config;
@@ -11,6 +15,7 @@ namespace game_stuff
 
     public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
+        public LevelUps LevelUps { get; }
         public CharacterBody CharacterBody;
         public base_attr_id BaseAttrId { get; }
         public float MaxMoveSpeed { get; private set; }
@@ -153,10 +158,12 @@ namespace game_stuff
 
         public ICharRuleData CharRuleData { get; }
 
-        public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag)
+        public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag,
+            IPlayRuler playRuler)
         {
+            LevelUps = playRuler.GetLevelUp();
             HaveChange = false;
-            CharRuleData = new CharKillScoreRuleData();
+            CharRuleData = new CharKillTickData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
             AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
@@ -237,18 +244,17 @@ namespace game_stuff
             CharacterBody.Sight.OpChangeAim(aim, GetNowScope());
         }
 
-        public void ReloadInitData()
+        public void Reborn()
         {
             PauseTick = 0;
             LockingWho = null;
             CatchingWho = null;
-            NowWeapon = 0;
             NowCastAct = null;
             NextSkill = null;
             StunBuff = null;
             PlayingBuffs = new List<IPlayingBuff>();
             SurvivalStatus.Full();
-            NowProtectTick = 0;
+            NowProtectTick = 30;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
             IsPause = false;
@@ -1066,7 +1072,7 @@ namespace game_stuff
                     break;
                 case AddItem _:
                     var itemId = (int) v[0];
-                    var num = (uint) v[1];
+                    var num = (int) v[1];
                     var gameItem = new GameItem(itemId, num);
                     PlayingItemBag.Gain(gameItem);
                     break;
@@ -1136,7 +1142,7 @@ namespace game_stuff
         {
             if (!TempConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
-                passive.recycle_money.Select(x => new GameItem(x.item, (uint) (x.num * (1 + GetRecycleMulti()))));
+                passive.recycle_money.Select(x => new GameItem(x.item, (int) (x.num * (1 + GetRecycleMulti()))));
             foreach (var gameItem in passiveRecycleMoney)
             {
                 PlayingItemBag.Gain(gameItem);
@@ -1235,6 +1241,75 @@ namespace game_stuff
         {
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
         }
+
+        public LevelUpsData GetNowLevelUpData()
+        {
+            return LevelUps.NowLevelUpsData;
+        }
+    }
+
+    public class LevelUps
+    {
+        public LevelUps(ImmutableDictionary<int, LevelUpsData> levelUpDict)
+        {
+            LevelUpDict = levelUpDict;
+            NowLevel = 1;
+            NowExp = 0;
+            NowLevelUpsData = levelUpDict.TryGetValue(NowLevel, out var levelUpsData)
+                ? levelUpsData
+                : throw new DirectoryNotFoundException($"not level {NowLevel}");
+        }
+
+        public ImmutableDictionary<int, LevelUpsData> LevelUpDict { get; }
+        public int NowLevel { get; set; }
+
+        private int NowExp { get; set; }
+        public LevelUpsData NowLevelUpsData { get; private set; }
+
+        private IEnumerable<int> GainExp(int expValue)
+        {
+            var nextExp = NowLevelUpsData.NextExp;
+            if (nextExp == null)
+            {
+                return new int[] { };
+            }
+
+            NowExp += expValue;
+            var res = new List<int>();
+
+
+            var b = NowExp >= nextExp;
+            while (b)
+
+            {
+                NowExp -= nextExp.Value;
+                res.AddRange(NowLevelUpsData.PassAddId);
+                NowLevel++;
+                if (LevelUpDict.TryGetValue(NowLevel, out var levelUpsData))
+                {
+                    NowLevelUpsData = levelUpsData;
+                }
+            }
+
+
+            return res;
+        }
+    }
+
+    public readonly struct LevelUpsData
+    {
+        public LevelUpsData(int? nextExp, int reBornAboutTick, GameItem[] rebornCost, int[] passAddId)
+        {
+            NextExp = nextExp;
+            ReBornAboutTick = reBornAboutTick;
+            RebornCost = rebornCost;
+            PassAddId = passAddId;
+        }
+
+        public int? NextExp { get; }
+        public int ReBornAboutTick { get; }
+        public GameItem[] RebornCost { get; }
+        public int[] PassAddId { get; }
     }
 
     public struct AbsorbStatus
@@ -1248,13 +1323,11 @@ namespace game_stuff
             AmmoAbs = ammoAbs;
         }
 
-        public float HpAbs { get; set; }
-
-        public float ArmorAbs { get; set; }
-
-        public float ShieldAbs { get; set; }
-        public float AmmoAbs { get; set; }
-        public float ProtectAbs { get; set; }
+        public float HpAbs { get; private set; }
+        public float ArmorAbs { get; private set; }
+        public float ShieldAbs { get; private set; }
+        public float AmmoAbs { get; private set; }
+        public float ProtectAbs { get; private set; }
 
 
         public static AbsorbStatus GenBaseByAttr(base_attribute genBaseAttrById)

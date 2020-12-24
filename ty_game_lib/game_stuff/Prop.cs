@@ -158,7 +158,7 @@ namespace game_stuff
             return PId;
         }
 
-        public uint GetNum()
+        public int GetNum()
         {
             return 1;
         }

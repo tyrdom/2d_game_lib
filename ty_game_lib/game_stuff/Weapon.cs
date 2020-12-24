@@ -243,7 +243,7 @@ namespace game_stuff
             return WId;
         }
 
-        public uint GetNum()
+        public int GetNum()
         {
             return 1;
         }

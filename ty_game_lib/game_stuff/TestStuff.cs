@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -10,8 +11,11 @@ namespace game_stuff
     {
         public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) TestPlayGround()
         {
+            var testInitData = TestInitData();
+            var twoDPoints = testInitData.TeamToStartPt.ToDictionary(p => p.Key, p => p.Value.GenPt())
+                .ToImmutableDictionary();
             var initPlayGround = PlayGround.InitPlayGround(new[] {TestPlayer1(), TestPlayer2()},
-                TestInitData(), "testMap", 0, new PvpKillScoreRules(3));
+                testInitData, "testMap", 0, new PvpKillScoreRuler(3, twoDPoints));
 
             return initPlayGround;
         }

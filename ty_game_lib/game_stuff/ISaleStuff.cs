@@ -6,6 +6,6 @@ namespace game_stuff
     {
         int GetId();
 
-        uint GetNum();
+        int GetNum();
     }
 }

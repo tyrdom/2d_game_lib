@@ -1,13 +1,13 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace game_stuff
 {
-    public interface IPlayRules
+    public interface IPlayRuler
     {
-        IRuleTickResult CheckFinish(PlayGround playGround);
+        IRuleTickResult RulerGoTick(PlayGround playGround);
+        LevelUps GetLevelUp();
     }
 
     public readonly struct PveResult : IRuleTickResult
@@ -51,80 +51,47 @@ namespace game_stuff
     }
 
 
-    public class PvpKillScoreRules : IPlayRules
+    public class RebornUnit
     {
-        public List<(CharacterBody, int rebornTickRest)> RebornPool { get; }
-
-        public PvpKillScoreRules(int scoreReach)
+        public RebornUnit(CharacterBody characterBody, int rebornTickRest, GameItem[] fastRebornCost)
         {
-            ScoreReach = scoreReach;
-            TeamScores = new Dictionary<int, int>();
+            CharacterBody = characterBody;
+            RebornTickRest = rebornTickRest;
+            FastRebornCost = fastRebornCost;
         }
 
-        private int ScoreReach { get; }
-        private Dictionary<int, int> TeamScores { get; }
+        public GameItem[] FastRebornCost { get; }
 
-        public IRuleTickResult CheckFinish(PlayGround playGround)
+        public static int GenRebornTick(CharacterBody characterBody)
         {
-            
-            
-            var playGroundGidToBody = playGround.GidToBody;
-            var valueTuples = playGroundGidToBody
-                .Select(x => (x.Value.Team, x.Value.CharacterStatus.CharRuleData.NowKills, x.Key))
-                .Where(xx => xx.NowKills.Any());
-            var enumerable = valueTuples.ToList();
-            var dictionary = enumerable.ToDictionary(k => k.Key,
-                k => k.NowKills.Select(dd => dd.GetId()).ToList().ToImmutableHashSet());
-            foreach (var valueTuple in enumerable.GroupBy(x => x.Team))
-            {
-                var sum = valueTuple.Sum(x => x.NowKills.Count);
-                var valueTupleKey = valueTuple.Key;
-                if (TeamScores.TryGetValue(valueTupleKey, out var score))
-                {
-                    var teamScore = score + sum;
-                    if (teamScore >= ScoreReach)
-                    {
-                        return new PvPResult(valueTupleKey, true, dictionary);
-                    }
-
-                    TeamScores[valueTupleKey] = teamScore;
-                }
-                else
-                {
-                    if (sum >= ScoreReach)
-                    {
-                        return new PvPResult(valueTupleKey, true, dictionary);
-                    }
-
-                    TeamScores[valueTupleKey] = sum;
-                }
-            }
-
-            return new PvPResult(null, false, dictionary);
-        }
-    }
-
-    public class PVERules : IPlayRules
-    {
-        public PVERules(PveWinCond pveWinCond, GameItem winBonus, IMapInteractable winSpawn, int playerInTeam)
-        {
-            PveWinCond = pveWinCond;
-            WinBonus = winBonus;
-            WinSpawn = winSpawn;
-            PlayerInTeam = playerInTeam;
+            return characterBody.GetAutoRebornTick().ReBornAboutTick;
         }
 
-        public int PlayerInTeam { get; }
-        public PveWinCond PveWinCond { get; }
-
-        public GameItem WinBonus { get; }
-
-        public IMapInteractable WinSpawn { get; }
-
-        public IRuleTickResult CheckFinish(PlayGround playGround)
+        public static GameItem[] GetFastRebItems(CharacterBody characterBody)
         {
-            var pveResultType = playGround.CheckPve(PveWinCond);
-            return new PveResult(pveResultType);
+            return characterBody.GetAutoRebornTick().RebornCost;
+        }
+
+        public void SetRebornTime()
+        {
+            RebornTickRest = GenRebornTick(CharacterBody);
+        }
+
+        public CharacterBody CharacterBody { get; }
+        private int RebornTickRest { get; set; }
+
+
+        public void GoATick()
+        {
+            if (RebornTickRest <= 0) return;
+            RebornTickRest--;
+        }
+
+        public bool RebornAboutTickFinish()
+        {
+            var canReborn = RebornTickRest == 0;
+            RebornTickRest = -1;
+            return canReborn;
         }
     }
 }

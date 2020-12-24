@@ -63,7 +63,7 @@ namespace game_stuff
             return PassId;
         }
 
-        public uint GetNum()
+        public int GetNum()
         {
             return 1;
         }

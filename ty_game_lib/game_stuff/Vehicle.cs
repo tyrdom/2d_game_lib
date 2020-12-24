@@ -236,7 +236,7 @@ namespace game_stuff
             return VId;
         }
 
-        public uint GetNum()
+        public int GetNum()
         {
             return 1;
         }

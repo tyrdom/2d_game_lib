@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace game_stuff
     {
         private string MgId { get; }
         private int ResMId { get; }
-        private IPlayRules PlayRules { get; }
+        private IPlayRuler PlayRuler { get; }
 
         private Zone MoveZone { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; set; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
@@ -24,7 +25,7 @@ namespace game_stuff
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
-            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, string mgId, IPlayRules playRules,
+            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, string mgId, IPlayRuler playRuler,
             int resMId, Zone moveZone)
         {
             TeamToBodies = teamToBodies;
@@ -33,7 +34,7 @@ namespace game_stuff
             GidToBody = gidToBody;
             MapInteractableThings = mapInteractableThings;
             MgId = mgId;
-            PlayRules = playRules;
+            PlayRuler = playRuler;
             ResMId = resMId;
             MoveZone = moveZone;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
@@ -43,7 +44,7 @@ namespace game_stuff
         //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
             IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, string genMapId, int mapResId,
-            IPlayRules playRules)
+            IPlayRuler playRuler)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
             var characterBodies = new Dictionary<int, CharacterBody>();
@@ -53,7 +54,7 @@ namespace game_stuff
                 var initDataTeamId = initData.TeamId;
                 if (!mapInitData.TeamToStartPt.TryGetValue(initDataTeamId, out var startPts)) continue;
                 var twoDPoint = startPts.GenPt();
-                var genCharacterBody = initData.GenCharacterBody(twoDPoint);
+                var genCharacterBody = initData.GenCharacterBody(twoDPoint, playRuler);
                 if (bodies.TryGetValue(initDataTeamId, out var qSpace))
                 {
                     qSpace.Add(genCharacterBody);
@@ -86,7 +87,7 @@ namespace game_stuff
 #endif
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                emptyRootBranch, genMapId, playRules, mapResId, zone);
+                emptyRootBranch, genMapId, playRuler, mapResId, zone);
             return (playGround, playGround.GenInitMsg());
         }
 
@@ -156,6 +157,7 @@ namespace game_stuff
             // {
             //     qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
             // }
+            var groundResult = PlayRuler.RulerGoTick(this);
 
             BodiesQSpaceReplace();
             var playerSee = GetPlayerSee();
@@ -163,7 +165,7 @@ namespace game_stuff
                 .Select(x => x.GenMsg()));
             var playerSeeMsg =
                 playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg(pair.Key)));
-            var groundResult = PlayRules.CheckFinish(this);
+
             var valueTuple = (gidToBulletsMsg, playerSeeMsg, groundResult);
 
             return valueTuple;
@@ -563,20 +565,22 @@ namespace game_stuff
             }
         }
 
-        public PveResultType CheckPve(PveWinCond pveWinCond)
+        public (PveResultType pveResultType, IEnumerable<CharacterBody>? deadBodies) CheckPve(PveWinCond pveWinCond)
         {
             var groupBy = GidToBody.Values.GroupBy(x => x.BodyMark);
             var creepClear = false;
             var bossClear = false;
+            IEnumerable<CharacterBody>? deadBodies = null;
             foreach (var characterBodies in groupBy)
             {
                 switch (characterBodies.Key)
                 {
                     case BodyMark.Player:
+                        deadBodies = characterBodies.Where(x => x.CharacterStatus.SurvivalStatus.IsDead());
                         var all = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
                         if (all)
                         {
-                            return PveResultType.PveLoss;
+                            return (PveResultType.PveLoss, deadBodies);
                         }
 
                         break;
@@ -603,8 +607,12 @@ namespace game_stuff
 
             return pveWinCond switch
             {
-                PveWinCond.AllClear => bossClear && creepClear ? PveResultType.PveWin : PveResultType.NotFinish,
-                PveWinCond.BossClear => bossClear ? PveResultType.PveWin : PveResultType.NotFinish,
+                PveWinCond.AllClear => bossClear && creepClear
+                    ? (PveResultType.PveWin, deadBodies)
+                    : (PveResultType.NotFinish, deadBodies),
+                PveWinCond.BossClear => bossClear
+                    ? (PveResultType.PveWin, deadBodies)
+                    : (PveResultType.NotFinish, deadBodies),
                 _ => throw new ArgumentOutOfRangeException(nameof(pveWinCond), pveWinCond, null)
             };
         }

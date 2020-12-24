@@ -52,10 +52,10 @@ namespace game_stuff
         }
 
 
-        public CharacterBody GenCharacterBody(TwoDPoint startPos)
+        public CharacterBody GenCharacterBody(TwoDPoint startPos, IPlayRuler playRuler)
         {
             var characterStatus = new CharacterStatus(Gid, TempConfig.TrickProtect, BaseAttrId,
-                PlayingItemBag.InitByConfig());
+                PlayingItemBag.InitByConfig(),playRuler);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
     public class PlayingItemBag
     {
-        private Dictionary<int, uint> GameItems { get; }
+        private Dictionary<int, int> GameItems { get; }
 
-        private PlayingItemBag(Dictionary<int, uint> gameItems)
+        private PlayingItemBag(Dictionary<int, int> gameItems)
         {
             GameItems = gameItems;
         }
@@ -17,7 +18,7 @@ namespace game_stuff
         public static PlayingItemBag InitByConfig()
         {
             var dictionary = TempConfig.Configs.items.Values.Where(x => x.IsPlayingItem)
-                .ToDictionary(x => x.id, _ => (uint) 0);
+                .ToDictionary(x => x.id, _ => 0);
             return new PlayingItemBag(dictionary);
         }
 
@@ -56,7 +57,7 @@ namespace game_stuff
             var gameItemItemId = gameItem.ItemId;
             if (!GameItems.TryGetValue(gameItemItemId, out var num)) return;
             var min = Math.Min(GetMaxNum(gameItemItemId), num + gameItem.Num);
-            GameItems[gameItemItemId] = min;
+            GameItems[gameItemItemId] = (int) min;
         }
 
         private static uint GetMaxNum(int itemId)
@@ -72,14 +73,20 @@ namespace game_stuff
 
     public readonly struct GameItem : ISaleStuff
     {
-        public GameItem(int itemId, uint num)
+        public static GameItem GenByConfigGain(Gain gain)
+        {
+            return new GameItem(gain.item
+                , gain.num);
+        }
+
+        public GameItem(int itemId, int num)
         {
             ItemId = itemId;
             Num = num;
         }
 
         public int ItemId { get; }
-        public uint Num { get; }
+        public int Num { get; }
 
 
         uint GetMaxNum()
@@ -97,7 +104,7 @@ namespace game_stuff
             return ItemId;
         }
 
-        public uint GetNum()
+        public int GetNum()
         {
             return Num;
         }

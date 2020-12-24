@@ -2,18 +2,16 @@ using System.Collections.Generic;
 
 namespace game_stuff
 {
-    public class CharKillScoreRuleData : ICharRuleData
+    public class CharKillTickData : ICharRuleData
     {
         public List<CharacterBody> NowKills { get; }
         private int KillScore { get; set; }
 
-      
 
-        public CharKillScoreRuleData()
+        public CharKillTickData()
         {
             NowKills = new List<CharacterBody>();
             KillScore = 0;
-           
         }
 
 
@@ -21,7 +19,6 @@ namespace game_stuff
         {
             NowKills.Add(characterBody);
             KillScore++;
-           
         }
 
         public int GetScore()
@@ -32,7 +29,6 @@ namespace game_stuff
         public void ClearTemp()
         {
             NowKills.Clear();
-            
         }
     }
 }
