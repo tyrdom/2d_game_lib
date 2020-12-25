@@ -35,10 +35,6 @@ namespace collision_and_rigid
         public List<Quad> LocateRecord { get; }
         public IIdPointShape IdPointShape { get; }
 
-        public void WriteQuadRecord(Quad quad)
-        {
-        }
-
         public Quad? GetNextQuad()
         {
             return null;
@@ -66,7 +62,7 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
-        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             var whichQ = IdPointShape.GetAnchor().WhichQ(horizon, vertical);
             return new List<(int, IAaBbBox)> {(whichQ, this)};

@@ -27,8 +27,8 @@ namespace collision_and_rigid
         public IEnumerable<BlockBox> TouchBy(BlockBox box);
         public bool LineIsBlockSight(TwoDVectorLine line);
 
-        public IQSpace AddSingleAaBbBox(IAaBbBox aaBbBox, int limit);
-
+        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit);
+        public void AddRangeAabbBoxes(HashSet<IAaBbBox> aaBbBoxes, int limit);
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
 
         public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter = null);

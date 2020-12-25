@@ -159,9 +159,9 @@ namespace game_stuff
         public ICharRuleData CharRuleData { get; }
 
         public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag,
-            IPlayRuler playRuler)
+            LevelUps playRuler)
         {
-            LevelUps = playRuler.GetLevelUp();
+            LevelUps = playRuler;
             HaveChange = false;
             CharRuleData = new CharKillTickData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
@@ -1250,6 +1250,13 @@ namespace game_stuff
 
     public class LevelUps
     {
+        public static LevelUps NoneLevelUps()
+        {
+            var levelUpsData = new LevelUpsData(null, 0, new GameItem[] { }, new int[] { });
+            var levelUpsDatas = new Dictionary<int, LevelUpsData>() {{1, levelUpsData}};
+            return new LevelUps(levelUpsDatas.ToImmutableDictionary());
+        }
+
         public LevelUps(ImmutableDictionary<int, LevelUpsData> levelUpDict)
         {
             LevelUpDict = levelUpDict;

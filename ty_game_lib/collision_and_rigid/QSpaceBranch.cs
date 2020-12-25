@@ -341,12 +341,12 @@ namespace collision_and_rigid
             return lineIsBlockSight || isBlockSight;
         }
 
-        public IQSpace AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
+        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
         {
             if (AaBbPackBox.Count < limit)
             {
                 AaBbPackBox.Add(aaBbBox);
-                return this;
+                return;
             }
 
             var (horizon, vertical) = Zone.GetMid();
@@ -357,28 +357,66 @@ namespace collision_and_rigid
                 switch (item1)
                 {
                     case 0:
-                        AaBbPackBox.Add(aaBbBox);
+                        AaBbPackBox.Add(item2);
                         break;
                     case 1:
-                        aaBbBox.WriteQuadRecord(Quad.One);
-                        QuadOne = QuadOne.AddSingleAaBbBox(item2, limit);
+                        QuadOne.AddSingleAaBbBox(item2, limit);
                         break;
                     case 2:
-                        aaBbBox.WriteQuadRecord(Quad.Two);
-                        QuadTwo = QuadTwo.AddSingleAaBbBox(item2, limit);
+                        QuadTwo.AddSingleAaBbBox(item2, limit);
                         break;
                     case 3:
-                        aaBbBox.WriteQuadRecord(Quad.Three);
-                        QuadThree = QuadThree.AddSingleAaBbBox(item2, limit);
+                        QuadThree.AddSingleAaBbBox(item2, limit);
                         break;
                     case 4:
-                        aaBbBox.WriteQuadRecord(Quad.Four);
-                        QuadFour = QuadFour.AddSingleAaBbBox(item2, limit);
+                        QuadFour.AddSingleAaBbBox(item2, limit);
                         break;
                 }
             }
+        }
 
-            return this;
+        public void AddRangeAabbBoxes(HashSet<IAaBbBox> aaBbBoxes, int limit)
+        {
+            var intPtr = AaBbPackBox.Count + aaBbBoxes.Count;
+            if (intPtr <= limit)
+            {
+                AaBbPackBox.UnionWith(aaBbBoxes);
+                return;
+            }
+
+            var count = limit - AaBbPackBox.Count;
+
+            var bbBoxes = aaBbBoxes.Take(count).ToList();
+            AaBbPackBox.UnionWith(bbBoxes);
+            aaBbBoxes.ExceptWith(bbBoxes);
+
+            var (horizon, vertical) = Zone.GetMid();
+            var splitByQuads = aaBbBoxes.SelectMany(box => box.SplitByQuads(horizon, vertical)).GroupBy(x => x.Item1);
+
+            foreach (var splitByQuad in splitByQuads)
+            {
+                var enumerable = splitByQuad.Select(tuple => tuple.Item2);
+                var enumerableToHashSet = SomeTools.EnumerableToHashSet(enumerable);
+                switch (splitByQuad.Key)
+                {
+                    case 0:
+                        AaBbPackBox.UnionWith(enumerableToHashSet);
+                        break;
+                    case 1:
+
+                        QuadOne.AddRangeAabbBoxes(enumerableToHashSet, limit);
+                        break;
+                    case 2:
+                        QuadTwo.AddRangeAabbBoxes(enumerableToHashSet, limit);
+                        break;
+                    case 3:
+                        QuadThree.AddRangeAabbBoxes(enumerableToHashSet, limit);
+                        break;
+                    case 4:
+                        QuadFour.AddRangeAabbBoxes(enumerableToHashSet, limit);
+                        break;
+                }
+            }
         }
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)

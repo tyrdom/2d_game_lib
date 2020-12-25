@@ -52,7 +52,7 @@ namespace game_stuff
         }
 
 
-        public CharacterBody GenCharacterBody(TwoDPoint startPos, IPlayRuler playRuler)
+        public CharacterBody GenCharacterBody(TwoDPoint startPos, LevelUps playRuler)
         {
             var characterStatus = new CharacterStatus(Gid, TempConfig.TrickProtect, BaseAttrId,
                 PlayingItemBag.InitByConfig(),playRuler);

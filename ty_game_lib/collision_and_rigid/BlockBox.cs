@@ -8,10 +8,6 @@ namespace collision_and_rigid
     {
         public IBlockShape Shape { get; }
 
-        public void WriteQuadRecord(Quad quad)
-        {
-        }
-
         public Quad? GetNextQuad()
         {
             return null;
@@ -69,7 +65,7 @@ namespace collision_and_rigid
             return null;
         }
 
-        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             var z1234 = new List<(int, IAaBbBox)>();
             var z = Zone;

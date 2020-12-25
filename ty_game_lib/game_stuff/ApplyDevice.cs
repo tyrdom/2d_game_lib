@@ -6,11 +6,11 @@ using game_config;
 
 namespace game_stuff
 {
-    public class ApplyBox : IMapInteractable
+    public class ApplyDevice : IMapInteractable
     {
         public bool IsActive { get; set; }
 
-        public ApplyBox(Zone zone, Queue<Quad> locateRecord, Round canInterActiveRound,
+        public ApplyDevice(Zone zone, Queue<Quad> locateRecord, Round canInterActiveRound,
             CharacterBody? nowInterCharacterBody, Interaction charActOne, Interaction charActTwo, bool isActive)
         {
             Zone = zone;
@@ -22,7 +22,7 @@ namespace game_stuff
             IsActive = isActive;
         }
 
-        public ApplyBox(IApplyUnit saleUnit, TwoDPoint pos, bool isActive)
+        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive)
         {
             IsActive = isActive;
             var configsInteraction = TempConfig.Configs.interactions;
@@ -64,14 +64,14 @@ namespace game_stuff
 
         public Zone Zone { get; set; }
 
-        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
         }
 
-        public IAaBbBox FactAaBbBox(int qI)
+        public void RecordQuad(int qI)
         {
-            return MapInteractableDefault.FactAaBbBox(qI, this);
+            MapInteractableDefault.RecardQuad(qI, this);
         }
 
         public Queue<Quad> LocateRecord { get; }

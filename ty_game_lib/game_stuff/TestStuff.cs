@@ -15,7 +15,7 @@ namespace game_stuff
             var twoDPoints = testInitData.TeamToStartPt.ToDictionary(p => p.Key, p => p.Value.GenPt())
                 .ToImmutableDictionary();
             var initPlayGround = PlayGround.InitPlayGround(new[] {TestPlayer1(), TestPlayer2()},
-                testInitData, "testMap", 0, new PvpKillScoreRuler(3, twoDPoints));
+                testInitData, 1, 0, LevelUps.NoneLevelUps());
 
             return initPlayGround;
         }
@@ -65,7 +65,7 @@ namespace game_stuff
             Console.Out.WriteLine($"test map init ok");
 #endif
             return new MapInitData(testSightMap, testMap, startPaces,
-                new List<(TwoDPoint pos, IMapInteractable standardMapInteractable)>());
+                new List<IMapInteractable>());
         }
 
         private static WalkMap TestMap()

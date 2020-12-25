@@ -573,10 +573,8 @@ namespace collision_and_rigid
 
             var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
             var emptyRootBranch = CreateEmptyRootBranch(joinAaBbZone);
-            foreach (var aaBbBox in aaBbPackPackBox)
-            {
-                emptyRootBranch.AddSingleAaBbBox(aaBbBox, limit);
-            }
+            emptyRootBranch.AddRangeAabbBoxes(aaBbPackPackBox, limit);
+
 
 #if DEBUG
             Console.Out.WriteLine($"AaBbArea num::{aaBbPackPackBox.Count}");

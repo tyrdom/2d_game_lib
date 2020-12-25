@@ -265,17 +265,33 @@ namespace collision_and_rigid
                 select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
         }
 
-        public IQSpace AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
+        public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
         {
             if (AaBbPackBox.Count < limit)
             {
                 AaBbPackBox.Add(aaBbBox);
-                return this;
+                return;
             }
 
             var tryCovToBranch = TryCovToBranch(limit);
+
             tryCovToBranch.AddSingleAaBbBox(aaBbBox, limit);
-            return tryCovToBranch;
+        }
+
+        public void AddRangeAabbBoxes(HashSet<IAaBbBox> aaBbBoxes, int limit)
+        {
+            var intPtr = AaBbPackBox.Count + aaBbBoxes.Count;
+            if (intPtr <= limit)
+            {
+                AaBbPackBox.UnionWith(aaBbBoxes);
+                return;
+            }
+            var count = limit - AaBbPackBox.Count;
+            var bbBoxes = aaBbBoxes.Take(count).ToList();
+            AaBbPackBox.UnionWith(bbBoxes);
+            var tryCovToBranch = TryCovToBranch(limit);
+            aaBbBoxes.ExceptWith(bbBoxes);
+            tryCovToBranch.AddRangeAabbBoxes(aaBbBoxes, limit);
         }
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)

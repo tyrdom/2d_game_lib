@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using collision_and_rigid;
 
 namespace game_stuff
 {
     public class PlayGround
     {
-        private string MgId { get; }
+        private int MgId { get; }
         private int ResMId { get; }
-        private IPlayRuler PlayRuler { get; }
+
 
         private Zone MoveZone { get; }
-        private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; set; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
+        private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
         private WalkMap WalkMap { get; } //碰撞地图
         public Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
@@ -25,7 +27,7 @@ namespace game_stuff
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
-            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, string mgId, IPlayRuler playRuler,
+            Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, int mgId,
             int resMId, Zone moveZone)
         {
             TeamToBodies = teamToBodies;
@@ -34,7 +36,6 @@ namespace game_stuff
             GidToBody = gidToBody;
             MapInteractableThings = mapInteractableThings;
             MgId = mgId;
-            PlayRuler = playRuler;
             ResMId = resMId;
             MoveZone = moveZone;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
@@ -43,8 +44,8 @@ namespace game_stuff
 
         //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
-            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, string genMapId, int mapResId,
-            IPlayRuler playRuler)
+            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, int genMapId, int mapResId,
+            LevelUps levelUps)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
             var characterBodies = new Dictionary<int, CharacterBody>();
@@ -52,12 +53,16 @@ namespace game_stuff
             foreach (var initData in playerInitData)
             {
                 var initDataTeamId = initData.TeamId;
-                if (!mapInitData.TeamToStartPt.TryGetValue(initDataTeamId, out var startPts)) continue;
-                var twoDPoint = startPts.GenPt();
-                var genCharacterBody = initData.GenCharacterBody(twoDPoint, playRuler);
-                if (bodies.TryGetValue(initDataTeamId, out var qSpace))
+                if (!mapInitData.TeamToStartPt.TryGetValue(initDataTeamId, out var startPts))
                 {
-                    qSpace.Add(genCharacterBody);
+                    throw new DirectoryNotFoundException($"not have such team start{initDataTeamId}");
+                }
+
+                var twoDPoint = startPts.GenPt();
+                var genCharacterBody = initData.GenCharacterBody(twoDPoint, levelUps);
+                if (bodies.TryGetValue(initDataTeamId, out var playersToAdd))
+                {
+                    playersToAdd.Add(genCharacterBody);
                 }
                 else
                 {
@@ -68,6 +73,7 @@ namespace game_stuff
             }
 
             var zone = mapInitData.GetZone();
+
             var emptyRootBranch = SomeTools.CreateEmptyRootBranch(zone);
             var emptyRootBranch2 = SomeTools.CreateEmptyRootBranch(zone);
             var spaces = bodies.ToDictionary(p => p.Key,
@@ -79,6 +85,8 @@ namespace game_stuff
                     emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
+            var emptyRootBranch3 = SomeTools.CreateEmptyRootBranch(zone);
+
 #if DEBUG
             foreach (var qSpace in spaces)
             {
@@ -87,7 +95,7 @@ namespace game_stuff
 #endif
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                emptyRootBranch, genMapId, playRuler, mapResId, zone);
+                emptyRootBranch3, genMapId, mapResId, zone);
             return (playGround, playGround.GenInitMsg());
         }
 
@@ -136,7 +144,7 @@ namespace game_stuff
 
 
         public (Dictionary<int, IEnumerable<BulletMsg>> gidToBulletsMsg, Dictionary<int, IEnumerable<ISeeTickMsg>>
-            playerSeeMsg, IRuleTickResult groundRuleTickResult)
+            playerSeeMsg)
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
@@ -157,7 +165,7 @@ namespace game_stuff
             // {
             //     qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
             // }
-            var groundResult = PlayRuler.RulerGoTick(this);
+
 
             BodiesQSpaceReplace();
             var playerSee = GetPlayerSee();
@@ -166,7 +174,7 @@ namespace game_stuff
             var playerSeeMsg =
                 playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg(pair.Key)));
 
-            var valueTuple = (gidToBulletsMsg, playerSeeMsg, groundResult);
+            var valueTuple = (gidToBulletsMsg, playerSeeMsg);
 
             return valueTuple;
         }
@@ -367,7 +375,7 @@ namespace game_stuff
             return whoHitGid;
         }
 
-        private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyBox;
+        private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyDevice;
 
 
         private static readonly Func<IAaBbBox, bool> IsC = x => x is CageCanPick;
@@ -456,24 +464,24 @@ namespace game_stuff
                         MapInteractableThings.AddSingleAaBbBox(aInteractable, TempConfig.QSpaceBodyMaxPerLevel);
                     }
 
-                    var whoPickCageCall = aCharGoTickMsg.WhoInteractCall;
-                    if (whoPickCageCall != null)
+                    var interactCaller = aCharGoTickMsg.WhoInteractCall;
+                    if (interactCaller != null)
                     {
                         (IAaBbBox? singleBox, bool needContinueCall) = aCharGoTickMsg.MapInteractive switch
                         {
                             MapInteract.RecycleCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                whoPickCageCall.GetAnchor(), IsC), true),
+                                interactCaller.GetAnchor(), IsC), true),
                             MapInteract.InVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                whoPickCageCall.GetAnchor(), IsV), false),
+                                interactCaller.GetAnchor(), IsV), false),
                             MapInteract.PickCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                whoPickCageCall.GetAnchor(), IsC), false),
+                                interactCaller.GetAnchor(), IsC), false),
                             MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                whoPickCageCall.GetAnchor(), IsV), true),
+                                interactCaller.GetAnchor(), IsV), true),
                             MapInteract.GetInfoCall => (
-                                MapInteractableThings.InteractiveFirstSingleBox(whoPickCageCall.GetAnchor(), IsS),
+                                MapInteractableThings.InteractiveFirstSingleBox(interactCaller.GetAnchor(), IsS),
                                 false),
                             MapInteract.BuyOrApplyCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                whoPickCageCall.GetAnchor(), IsS), true),
+                                interactCaller.GetAnchor(), IsS), true),
                             null => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg)),
                             _ => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg))
                         };
@@ -483,8 +491,8 @@ namespace game_stuff
                             case null:
                                 break;
                             case IMapInteractable mapInteractable:
-                                if (needContinueCall) mapInteractable.StartActTwoBySomeBody(whoPickCageCall);
-                                else mapInteractable.StartActOneBySomeBody(whoPickCageCall);
+                                if (needContinueCall) mapInteractable.StartActTwoBySomeBody(interactCaller);
+                                else mapInteractable.StartActOneBySomeBody(interactCaller);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException(nameof(singleBox));
@@ -563,58 +571,6 @@ namespace game_stuff
                     traps);
                 TeamToBodies[characterBodyTeam] = emptyRootBranch;
             }
-        }
-
-        public (PveResultType pveResultType, IEnumerable<CharacterBody>? deadBodies) CheckPve(PveWinCond pveWinCond)
-        {
-            var groupBy = GidToBody.Values.GroupBy(x => x.BodyMark);
-            var creepClear = false;
-            var bossClear = false;
-            IEnumerable<CharacterBody>? deadBodies = null;
-            foreach (var characterBodies in groupBy)
-            {
-                switch (characterBodies.Key)
-                {
-                    case BodyMark.Player:
-                        deadBodies = characterBodies.Where(x => x.CharacterStatus.SurvivalStatus.IsDead());
-                        var all = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
-                        if (all)
-                        {
-                            return (PveResultType.PveLoss, deadBodies);
-                        }
-
-                        break;
-                    case BodyMark.Creep:
-                        var all2 = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
-                        if (all2)
-                        {
-                            creepClear = true;
-                        }
-
-                        break;
-                    case BodyMark.Boss:
-                        var all3 = characterBodies.All(x => x.CharacterStatus.SurvivalStatus.IsDead());
-                        if (all3)
-                        {
-                            bossClear = true;
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return pveWinCond switch
-            {
-                PveWinCond.AllClear => bossClear && creepClear
-                    ? (PveResultType.PveWin, deadBodies)
-                    : (PveResultType.NotFinish, deadBodies),
-                PveWinCond.BossClear => bossClear
-                    ? (PveResultType.PveWin, deadBodies)
-                    : (PveResultType.NotFinish, deadBodies),
-                _ => throw new ArgumentOutOfRangeException(nameof(pveWinCond), pveWinCond, null)
-            };
         }
     }
 }

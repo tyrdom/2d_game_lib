@@ -6,7 +6,7 @@ namespace game_stuff
 {
     public interface IMapInteractable : IAaBbBox ,ICanBeSaw
     {
-        public IAaBbBox FactAaBbBox(int qI);
+        public void RecordQuad(int qI);
 
         public Queue<Quad> LocateRecord { get; }
         public Interaction? GetActOne(CharacterStatus characterStatus);

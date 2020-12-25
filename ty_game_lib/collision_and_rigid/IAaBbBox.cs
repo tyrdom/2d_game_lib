@@ -5,11 +5,10 @@ namespace collision_and_rigid
 {
     public interface IAaBbBox : IHaveAnchor
     {
-        public void WriteQuadRecord(Quad quad);
         public Quad? GetNextQuad();
         public IShape GetShape();
         public bool CanInteractive(TwoDPoint pos);
         public Zone Zone { get; set; }
-        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical);
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical);
     }
 }

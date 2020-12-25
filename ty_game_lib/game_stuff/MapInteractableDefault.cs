@@ -7,7 +7,7 @@ namespace game_stuff
 {
     public static class MapInteractableDefault
     {
-        public static IAaBbBox FactAaBbBox(int qI, IMapInteractable mapInteractable)
+        public static IAaBbBox RecardQuad(int qI, IMapInteractable mapInteractable)
         {
             switch (qI)
             {
@@ -31,14 +31,15 @@ namespace game_stuff
             }
         }
 
-        public static List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical,
+        public static IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical,
             IMapInteractable mapInteractable)
         {
             var splitByQuads = mapInteractable.Zone.InWhichQ(horizon, vertical);
+            mapInteractable.RecordQuad(splitByQuads);
             return new List<(int, IAaBbBox)>()
             {
                 (splitByQuads,
-                    mapInteractable.FactAaBbBox(splitByQuads))
+                    mapInteractable)
             };
         }
 

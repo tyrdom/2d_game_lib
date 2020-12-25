@@ -45,7 +45,7 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
-        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             return Zone.SplitByQuads(horizon, vertical)
                 .Select(x => (x.Item1, new AreaBox(x.Item2, SimpleBlocks, PolyId) as IAaBbBox)).ToList();

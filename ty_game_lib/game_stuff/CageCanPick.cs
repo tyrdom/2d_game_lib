@@ -79,9 +79,9 @@ namespace game_stuff
         public Interaction CharActOne { get; }
         public Interaction CharActTwo { get; }
 
-        public IAaBbBox FactAaBbBox(int qI)
+        public void RecordQuad(int qI)
         {
-            return MapInteractableDefault.FactAaBbBox(qI, this);
+             MapInteractableDefault.RecardQuad(qI, this);
         }
 
         public bool IsCage()
@@ -137,7 +137,7 @@ namespace game_stuff
 
         public Zone Zone { get; set; }
 
-        public List<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
         }
