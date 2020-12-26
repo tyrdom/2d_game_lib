@@ -42,9 +42,9 @@ namespace game_stuff
 
         public VehicleCanIn(Vehicle vehicle, TwoDPoint pos)
         {
-            var configsInteraction = TempConfig.Configs.interactions;
+            var configsInteraction = LocalConfig.Configs.interactions;
 
-            var roundP = new Round(pos, TempConfig.GetRBySize(vehicle.Size));
+            var roundP = new Round(pos, LocalConfig.GetRBySize(vehicle.Size));
             var interaction1 = configsInteraction[interactionAct.get_in_vehicle];
             var interaction11
                 =
@@ -67,7 +67,7 @@ namespace game_stuff
             MapInteract interact, TwoDPoint twoDPoint)
         {
             return new Interaction(interaction1.BaseTough,
-                TempConfig.GetTickByTime(interaction1.TotalTime),
+                CommonConfig.GetTickByTime(interaction1.TotalTime),
                 vehicle, twoDPoint, interact);
         }
 

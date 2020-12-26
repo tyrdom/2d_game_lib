@@ -67,7 +67,7 @@ namespace game_stuff
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
-            RestTick = RestTick + 1 + (uint) (sqNorm * TempConfig.HitWallTickParam);
+            RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
             return sqNorm;
         }
     }
@@ -105,7 +105,7 @@ namespace game_stuff
 
             if (nowHeight <= 0)
             {
-                var decreasePerTick = PushVector.GetUnit().Multi(TempConfig.Friction);
+                var decreasePerTick = PushVector.GetUnit().Multi(LocalConfig.Friction);
 #if DEBUG
                 Console.Out.WriteLine(
                     $"{PushVector}~~~~~air gen_earth buff~~~~~~{decreasePerTick}");
@@ -116,7 +116,7 @@ namespace game_stuff
                 return (PushVector, pushOnEarth);
             }
 
-            var nowUpSpeed = UpSpeed - TempConfig.G;
+            var nowUpSpeed = UpSpeed - LocalConfig.G;
             Height = nowHeight;
             UpSpeed = nowUpSpeed;
             return (PushVector, this);
@@ -126,7 +126,7 @@ namespace game_stuff
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
-            RestTick = RestTick + 1 + (uint) (sqNorm * TempConfig.HitWallTickParam);
+            RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
             return sqNorm;
         }
     }
@@ -178,8 +178,8 @@ namespace game_stuff
 
         public float HitWall()
         {
-            RestTick += TempConfig.HitWallCatchTickParam;
-            return TempConfig.HitWallCatchDmgParam;
+            RestTick += LocalConfig.HitWallCatchTickParam;
+            return LocalConfig.HitWallCatchDmgParam;
         }
     }
 }

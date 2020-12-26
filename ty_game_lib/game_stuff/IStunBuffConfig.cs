@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -12,6 +15,97 @@ namespace game_stuff
             BodySize bodySize, IBattleUnitStatus whoDid);
     }
 
+    public static class StunBuffStandard
+    {
+        public static IStunBuffConfig GenBuffByConfig(push_buff pushBuff)
+        {
+            var pushType = pushBuff.PushType switch
+            {
+                game_config.PushType.Vector => PushType.Vector,
+                game_config.PushType.Center => PushType.Center,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            var pushAboutVector = pushBuff.FixVector.Any()
+                ? GameTools.GenVectorByConfig(pushBuff.FixVector.First())
+                : null;
+
+            if (pushBuff.UpForce > 0)
+            {
+                return new PushAirStunBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
+                    CommonConfig.GetTickByTime(pushBuff.LastTime));
+            }
+
+            return new PushEarthStunBuffConfig(pushBuff.PushForce, pushType, pushAboutVector,
+                CommonConfig.GetTickByTime(pushBuff.LastTime));
+        }
+
+        private static IStunBuffConfig GenBuffByConfig(caught_buff caughtBuff)
+        {
+            var twoDVectors = caughtBuff.CatchKeyPoints
+                .ToDictionary(
+                    x =>
+                    {
+                        Console.Out.WriteLine($"time is {CommonConfig.GetTickByTime(x.key_time)}");
+                        return CommonConfig.GetTickByTime(x.key_time);
+                    },
+                    x => GameTools.GenVectorByConfig(x.key_point))
+                .Select(pair => (pair.Key, pair.Value))
+                .ToList();
+            twoDVectors.Sort((x, y) => x.Key.CompareTo(y.Key));
+
+            var vectors = new List<TwoDVector>();
+
+            var (key, value) = twoDVectors.FirstOrDefault();
+            if (key != 0 || value == null) throw new Exception($"no good key vectors at caught_buff {caughtBuff.id}");
+            vectors.Add(value);
+            var nk = key;
+            var nowVector = value;
+            if (twoDVectors.Count <= 1)
+                return new CatchStunBuffConfig(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
+                    Skill.GenSkillById(caughtBuff.TrickSkill));
+            for (var index = 1; index < twoDVectors.Count; index++)
+            {
+                var (k1, v1) = twoDVectors[index];
+                if (v1 != null)
+                {
+                    var genLinearListToAnother = nowVector.GenLinearListToAnother(v1, (int) (k1 - nk));
+                    vectors.AddRange(genLinearListToAnother);
+                }
+                else
+                {
+                    throw new Exception($"no good config at caught_buff {caughtBuff.id} ");
+                }
+            }
+
+            return new CatchStunBuffConfig(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
+                Skill.GenSkillById(caughtBuff.TrickSkill));
+        }
+
+        public static IStunBuffConfig GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent)
+        {
+            switch (buffConfigToOpponentType)
+            {
+                case buff_type.push_buff:
+                    if (LocalConfig.Configs.push_buffs.TryGetValue(configToOpponent, out var value))
+                    {
+                        return GenBuffByConfig(value);
+                    }
+
+                    throw new DirectoryNotFoundException($"not such p buff {configToOpponent}");
+
+                case buff_type.caught_buff:
+                    if (LocalConfig.Configs.caught_buffs.TryGetValue(configToOpponent, out var value2))
+                    {
+                        return GenBuffByConfig(value2);
+                    }
+
+                    throw new DirectoryNotFoundException($"not such c buff {configToOpponent}");
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
 
     public class PushEarthStunBuffConfig : IStunBuffConfig
     {
@@ -53,14 +147,14 @@ namespace game_stuff
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             BodySize bodySize, IBattleUnitStatus whoDid)
         {
-            var mass = TempConfig.SizeToMass[bodySize];
+            var mass = LocalConfig.SizeToMass[bodySize];
             switch (PushType)
             {
                 case PushType.Center:
                     var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector) : pos;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit =
-                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, TempConfig.Friction);
+                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, LocalConfig.Friction);
                     return genBuffFromUnit;
 
 
@@ -68,7 +162,7 @@ namespace game_stuff
                     var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
-                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, TempConfig.Friction);
+                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, LocalConfig.Friction);
                     return genBuffFromUnit1;
 
                 default:
@@ -105,7 +199,7 @@ namespace game_stuff
         public IStunBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
             , float upSpeed, BodySize bodySize, IBattleUnitStatus whoDid)
         {
-            var mass = TempConfig.SizeToMass[bodySize];
+            var mass = LocalConfig.SizeToMass[bodySize];
             switch (PushType)
             {
                 case PushType.Center:

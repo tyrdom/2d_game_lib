@@ -49,6 +49,11 @@ namespace game_stuff
         private int MaxAmmo { get; set; }
         public IBattleUnitStatus? LockingWho { get; set; }
 
+        public CharacterBody GetFinalCaster()
+        {
+            return CharacterBody;
+        }
+
         public List<TwoDPoint> GetMayBeSomeThing()
         {
             return MayBeSomeThing;
@@ -163,7 +168,7 @@ namespace game_stuff
         {
             LevelUps = playRuler;
             HaveChange = false;
-            CharRuleData = new CharKillTickData();
+            CharRuleData = new CharKillData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
             AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
@@ -207,14 +212,14 @@ namespace game_stuff
             NowSnipeStep = 0;
             Prop = null;
             NowPropStack = 0;
-            MaxPropStack = TempConfig.StandardPropMaxStack;
+            MaxPropStack = LocalConfig.StandardPropMaxStack;
             NowVehicle = null;
             NowAmmo = 0;
             MaxAmmo = genBaseAttrById.MaxAmmo;
-            MaxCallLongStack = TempConfig.MaxCallActTwoTick;
+            MaxCallLongStack = LocalConfig.MaxCallActTwoTick;
             NowCallLongStack = 0;
             NowMapInteractive = null;
-            MaxWeaponSlot = TempConfig.StandardWeaponNum;
+            MaxWeaponSlot = LocalConfig.StandardWeaponNum;
             RecycleMulti = genBaseAttrById.RecycleMulti;
             StartPassiveInitRefresh();
         }
@@ -595,7 +600,7 @@ namespace game_stuff
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
             {
-                NowProtectTick = (int) (TempConfig.ProtectTick * (1 + ProtectTickMultiAdd));
+                NowProtectTick = (int) (LocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
                 NowProtectValue = 0;
             }
 
@@ -902,10 +907,10 @@ namespace game_stuff
         {
             var dot = move.Dot(CharacterBody.Sight.Aim);
             var normalSpeedMinCos = MathTools.Max(0f, MathTools.Min(1f,
-                (dot + TempConfig.DecreaseMinCos) / (TempConfig.DecreaseMinCos + TempConfig.NormalSpeedMinCos)
+                (dot + LocalConfig.DecreaseMinCos) / (LocalConfig.DecreaseMinCos + LocalConfig.NormalSpeedMinCos)
             ));
-            var moveDecreaseMinMulti = TempConfig.MoveDecreaseMinMulti +
-                                       (1f - TempConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
+            var moveDecreaseMinMulti = LocalConfig.MoveDecreaseMinMulti +
+                                       (1f - LocalConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
             var maxMoveSpeed = GetMaxMoveSpeed() * moveDecreaseMinMulti;
             var nowMoveSpeed = MathTools.Max(GetMinMoveSpeed(), MathTools.Min(maxMoveSpeed,
                 NowMoveSpeed + GetAddMoveSpeed()));
@@ -970,7 +975,7 @@ namespace game_stuff
 
         public void AddAKillScore(CharacterBody characterBody)
         {
-            CharRuleData.AddAKill(characterBody);
+            CharRuleData.AddAKill();
         }
 
         private void AddProtect(int protectValueAdd)
@@ -1004,7 +1009,7 @@ namespace game_stuff
             var add = otherAttrPassiveEffects[2];
             MaxMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
             var lossP = MaxPropStack - NowPropStack;
-            MaxPropStack = (int) (TempConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
+            MaxPropStack = (int) (LocalConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
             NowPropStack = MaxPropStack - lossP;
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
@@ -1140,7 +1145,7 @@ namespace game_stuff
 
         public void RecyclePassive(PassiveTrait passiveTrait)
         {
-            if (!TempConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
+            if (!LocalConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
                 passive.recycle_money.Select(x => new GameItem(x.item, (int) (x.num * (1 + GetRecycleMulti()))));
             foreach (var gameItem in passiveRecycleMoney)
@@ -1180,7 +1185,7 @@ namespace game_stuff
             SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
         }
 
-        public void BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
+        public bool BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
             float damageMulti, bool back)
         {
             ResetSpeed();
@@ -1192,17 +1197,20 @@ namespace game_stuff
 
             if (CatchingWho != null)
             {
-                CatchingWho.StunBuff = TempConfig.OutCaught;
+                CatchingWho.StunBuff = LocalConfig.OutCaught;
                 CatchingWho = null;
             }
 
 
             AddProtect(protectValueAdd);
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
-            if (takeDamage)
+            var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
+            if (takeDamage & b)
             {
                 bodyCaster.AddAKillScore(CharacterBody);
             }
+
+            return takeDamage;
         }
 
         private float GetProtectAbsorb()

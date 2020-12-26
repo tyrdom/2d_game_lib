@@ -44,6 +44,12 @@ namespace collision_and_rigid
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t);
 
+        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+            T t, Zone zone);
+
+        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+            T t, Zone zone);
+
         public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func,
             T t, Zone zone);
 

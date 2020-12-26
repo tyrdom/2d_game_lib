@@ -10,7 +10,7 @@ namespace game_stuff
     {
         public static base_attribute GenBaseAttrById(base_attr_id baseAttrId)
         {
-            if (!TempConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
+            if (!LocalConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
                 throw new ArgumentException($"not such attr{baseAttrId}");
             return baseAttribute;
         }
@@ -21,7 +21,7 @@ namespace game_stuff
         {
             return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed, baseAttribute.MoveMinSpeed,
                 baseAttribute.MoveAddSpeed,
-                TempConfig.StandardPropMaxStack, baseAttribute.RecycleMulti);
+                LocalConfig.StandardPropMaxStack, baseAttribute.RecycleMulti);
         }
 
         public static ( float TrapAtkMulti, float TrapSurvivalMulti) GenTrapAttr(base_attribute baseAttribute)
@@ -73,23 +73,23 @@ namespace game_stuff
                 GenDicBulletBox(rawBulletShape);
         }
 
-        public static bool IsHit(IHitMedia hitMedia, ICanBeHit characterBody)
+        public static bool IsHit(IHitMedia hitMedia, ICanBeHit canBeHit)
         {
-            var checkAlive = characterBody.CheckCanBeHit();
-            var characterBodyBodySize = characterBody.GetSize();
+            var checkAlive = canBeHit.CheckCanBeHit();
+            var characterBodyBodySize = canBeHit.GetSize();
             return checkAlive && hitMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
-                   bulletBox.IsHit(characterBody.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
+                   bulletBox.IsHit(canBeHit.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
         }
 
         public static float GetMaxUpSpeed(float? height)
         {
             if (height == null)
             {
-                return TempConfig.MaxUpSpeed;
+                return LocalConfig.MaxUpSpeed;
             }
 
-            var maxHeight = TempConfig.MaxHeight - height.Value;
-            var f = 2f * TempConfig.G * maxHeight;
+            var maxHeight = LocalConfig.MaxHeight - height.Value;
+            var f = 2f * LocalConfig.G * maxHeight;
             return MathTools.Sqrt(f);
         }
 
@@ -107,7 +107,7 @@ namespace game_stuff
         private static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
         {
             return
-                TempConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
+                LocalConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
                     new BulletBox(rawBulletShape.GenBulletZone(pair.Value),
                         rawBulletShape.GenBulletShape(pair.Value)));
         }
@@ -118,25 +118,7 @@ namespace game_stuff
         }
 
 
-        public static IStunBuffConfig GenBuffByConfig(push_buff pushBuff)
-        {
-            var pushType = pushBuff.PushType switch
-            {
-                game_config.PushType.Vector => PushType.Vector,
-                game_config.PushType.Center => PushType.Center,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            var pushAboutVector = pushBuff.FixVector.Any() ? GenVectorByConfig(pushBuff.FixVector.First()) : null;
-
-            if (pushBuff.UpForce > 0)
-            {
-                return new PushAirStunBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
-                    TempConfig.GetTickByTime(pushBuff.LastTime));
-            }
-
-            return new PushEarthStunBuffConfig(pushBuff.PushForce, pushType, pushAboutVector,
-                TempConfig.GetTickByTime(pushBuff.LastTime));
-        }
+       
 
         public static List<IMapInteractable> DropWeapon(Dictionary<int, Weapon> weapons, BodySize bodySize,
             TwoDPoint pos)
@@ -153,46 +135,6 @@ namespace game_stuff
             return mapInteractable;
         }
 
-        public static IStunBuffConfig GenBuffByConfig(caught_buff caughtBuff)
-        {
-            var twoDVectors = caughtBuff.CatchKeyPoints
-                .ToDictionary(
-                    x =>
-                    {
-                        Console.Out.WriteLine($"time is {TempConfig.GetTickByTime(x.key_time)}");
-                        return TempConfig.GetTickByTime(x.key_time);
-                    },
-                    x => GenVectorByConfig(x.key_point))
-                .Select(pair => (pair.Key, pair.Value))
-                .ToList();
-            twoDVectors.Sort((x, y) => x.Key.CompareTo(y.Key));
-
-            var vectors = new List<TwoDVector>();
-
-            var (key, value) = twoDVectors.FirstOrDefault();
-            if (key != 0 || value == null) throw new Exception($"no good key vectors at caught_buff {caughtBuff.id}");
-            vectors.Add(value);
-            var nk = key;
-            var nowVector = value;
-            if (twoDVectors.Count <= 1)
-                return new CatchStunBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
-                    Skill.GenSkillById(caughtBuff.TrickSkill));
-            for (var index = 1; index < twoDVectors.Count; index++)
-            {
-                var (k1, v1) = twoDVectors[index];
-                if (v1 != null)
-                {
-                    var genLinearListToAnother = nowVector.GenLinearListToAnother(v1, (int) (k1 - nk));
-                    vectors.AddRange(genLinearListToAnother);
-                }
-                else
-                {
-                    throw new Exception($"no good config at caught_buff {caughtBuff.id} ");
-                }
-            }
-
-            return new CatchStunBuffConfig(vectors.ToArray(), TempConfig.GetTickByTime(caughtBuff.LastTime),
-                Skill.GenSkillById(caughtBuff.TrickSkill));
-        }
+    
     }
 }

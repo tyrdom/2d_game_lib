@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public static class TempConfig
+    public static class LocalConfig
     {
         public static IHitMedia GenHitMedia(Media media)
         {
@@ -49,28 +49,9 @@ namespace game_stuff
             };
         }
 
-        public static uint GetTickByTime(float time)
-        {
-            return (uint) (time * TickPerSec);
-        }
-
-        public static float NumSecToTick(float numPerSec)
-        {
-            return numPerSec / TickPerSec;
-        }
-
-        public static uint NumSecToTick(uint numPerSec)
-        {
-            return (uint) (numPerSec / TickPerSec);
-        }
-
-        public static int NumSecToTick(int numPerSec)
-        {
-            return numPerSec / TickPerSec;
-        }
 
         public static ConfigDictionaries Configs { get; private set; }
-            = GameConfigTools.Configs;
+            = CommonConfig.Configs;
 
         public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
         {
@@ -87,11 +68,6 @@ namespace game_stuff
             [BodySize.Medium] = 4f,
             [BodySize.Big] = 9f
         };
-
-        public static GameItem[] RogueRebornCost { get; set; } = new GameItem[] { };
-
-        public static int RogueRebornTick { get; set; } = 1000;
-
 
         public static ImmutableDictionary<uint, IPlayingBuffConfig> BuffConfigs { get; set; } =
             ImmutableDictionary<uint, IPlayingBuffConfig>.Empty;
@@ -135,12 +111,11 @@ namespace game_stuff
 
         public static int TrickProtect { get; private set; } = 100;
         public static int ProtectTick { get; private set; } = 10;
-        private static int TickPerSec { get; set; } = 10;
-        public static float MoveDecreaseMinMulti { get; set; } = 0.4f;
+        public static float MoveDecreaseMinMulti { get; private set; } = 0.4f;
 
-        public static float NormalSpeedMinCos { get; set; } = 0.7f;
+        public static float NormalSpeedMinCos { get; private set; } = 0.7f;
 
-        public static float DecreaseMinCos { get; set; } = -0.3f;
+        public static float DecreaseMinCos { get; private set; } = -0.3f;
 
 
         public static int StandardPropMaxStack { get; private set; } = 100;
@@ -157,10 +132,11 @@ namespace game_stuff
 
 
         public static int UpMaxTrap { get; private set; } = 10;
-        private static void ReLoadP(ConfigDictionaries configs)
+        public static void ReLoadP(ConfigDictionaries configs)
         {
-            Configs = configs;
-            var configsOtherConfig = configs.other_configs[1];
+            CommonConfig.ReLoadP(configs);
+            Configs = CommonConfig.Configs;
+            var configsOtherConfig = Configs.other_configs[1];
             G = configsOtherConfig.g_acc;
             MaxHeight = configsOtherConfig.max_hegiht;
             MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
@@ -177,22 +153,20 @@ namespace game_stuff
             StandardSightVector =
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
             CommonBuffConfig =
-                GameTools.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
+                StunBuffStandard.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
             ShardedAttackMulti = configsOtherConfig.ShardedAttackMulti;
-            MaxCallActTwoTick = GetTickByTime(configsOtherConfig.interaction_act2_call_time);
+            MaxCallActTwoTick = CommonConfig.GetTickByTime(configsOtherConfig.interaction_act2_call_time);
             TrickProtect = configsOtherConfig.trick_protect_value;
-            ProtectTick = (int) GetTickByTime(configsOtherConfig.protect_time);
+            ProtectTick = (int) CommonConfig.GetTickByTime(configsOtherConfig.protect_time);
             StandardPropMaxStack = configsOtherConfig.standard_max_prop_stack;
             StandardPropRecycleStack = configsOtherConfig.standard_recycle_prop_stack;
             PropR = configsOtherConfig.prop_R;
             WeaponR = configsOtherConfig.weapon_R;
             PassiveR = configsOtherConfig.pass_R;
             SaleBoxR = configsOtherConfig.saleBox_R;
-            TickPerSec = configsOtherConfig.tick_per_sec;
             UpMaxTrap = configsOtherConfig.up_trap_max;
             MoveDecreaseMinMulti = configsOtherConfig.MoveDecreaseMinMulti;
             NormalSpeedMinCos = configsOtherConfig.NormalSpeedMinCos;
-            RogueRebornCost = configsOtherConfig.rogue_reborn_cost.Select(GameItem.GenByConfigGain).ToArray();
             DecreaseMinCos = configsOtherConfig.DecreaseMinCos;
         }
 #if NETCOREAPP

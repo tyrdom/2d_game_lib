@@ -107,9 +107,34 @@ namespace collision_and_rigid
             return hs;
         }
 
+        public static IEnumerable<TU> MapToIEnumSthTool<TU, T>(IQSpace qSpaceBranch,
+            Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
+            T t, Zone? zone = null)
+        {
+            var dicIntToTu = new HashSet<TU>();
+
+            void Act(IIdPointShape id, T tt)
+            {
+                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
+                if (withIIdPtsShape == null) return;
+                dicIntToTu.Add(withIIdPtsShape);
+            }
+
+            if (zone == null)
+            {
+                qSpaceBranch.ForeachDoWithOutMove(Act, t);
+            }
+            else
+            {
+                qSpaceBranch.ForeachDoWithOutMove(Act, t, zone.Value);
+            }
+
+            return dicIntToTu;
+        }
+
         public static Dictionary<int, TU> MapToDicGidToSthTool<TU, T>(IQSpace qSpaceBranch,
             Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
-            T t)
+            T t, Zone? zone = null)
         {
             var dicIntToTu = new Dictionary<int, TU>();
 
@@ -122,7 +147,15 @@ namespace collision_and_rigid
                 dicIntToTu[i] = withIIdPtsShape;
             }
 
-            qSpaceBranch.ForeachDoWithOutMove(Act, t);
+            if (zone == null)
+            {
+                qSpaceBranch.ForeachDoWithOutMove(Act, t);
+            }
+            else
+            {
+                qSpaceBranch.ForeachDoWithOutMove(Act, t, zone.Value);
+            }
+
             return dicIntToTu;
         }
 

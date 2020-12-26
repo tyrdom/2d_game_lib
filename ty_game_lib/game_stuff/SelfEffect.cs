@@ -9,7 +9,7 @@ namespace game_stuff
     {
         public static SelfEffect GenById(string id)
         {
-            if (TempConfig.Configs.self_effects.TryGetValue(id, out var selfEffect))
+            if (LocalConfig.Configs.self_effects.TryGetValue(id, out var selfEffect))
             {
                 return new SelfEffect(selfEffect);
             }

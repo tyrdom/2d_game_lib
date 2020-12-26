@@ -61,10 +61,11 @@ namespace game_stuff
 
         public bool TakeDamage(Damage damage)
         {
+            var beforeIsDead = IsDead();
             NowDelayTick = ShieldDelayTick;
             TakeOneDamage(damage.MainDamage);
             TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
-            return IsDead();
+            return beforeIsDead && IsDead();
         }
 
         private void TakeMultiDamage(uint damage, uint times)
@@ -204,9 +205,9 @@ namespace game_stuff
             var baseAttributeMaxArmor = (uint) (baseAttribute.MaxArmor * multi);
             var baseAttributeArmorDefence = baseAttribute.ArmorDefence;
             var baseAttributeMaxShield = (uint) (baseAttribute.MaxShield * multi);
-            var baseAttributeShieldRecover = TempConfig.NumSecToTick(baseAttribute.ShieldRecover);
+            var baseAttributeShieldRecover = CommonConfig.NumPerSecToTickPerSec(baseAttribute.ShieldRecover);
             var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
-            var baseAttributeShieldDelayTime = TempConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
+            var baseAttributeShieldDelayTime = CommonConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
 
             return new SurvivalStatus(baseAttributeMaxHp, baseAttributeMaxHp, baseAttributeMaxArmor,
                 baseAttributeMaxArmor, baseAttributeMaxShield, baseAttributeMaxShield,

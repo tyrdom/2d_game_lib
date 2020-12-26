@@ -49,21 +49,22 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public bool IsHitBody(IIdPointShape targetBody)
+        public HitResult? IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
                 case CharacterBody characterBody1:
                     var isHit = IsHit(characterBody1);
-                    if (isHit && Caster != null && Caster is CharacterStatus characterStatus)
-                    {
-                        characterStatus.LockingWho =
-                            characterBody1.CharacterStatus;
-                    }
+                    if (!isHit || !(Caster is CharacterStatus characterStatus)) return null;
+                    characterStatus.LockingWho =
+                        characterBody1.CharacterStatus;
 
-                    return isHit;
+                    return new HitResult(characterBody1, false, Caster.GetFinalCaster(), this);
+
                 case Trap trap:
-                    return IsHit(trap);
+                    if (Caster != null)
+                        return IsHit(trap) ? new HitResult(trap, false, Caster.GetFinalCaster(), this) : null;
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
@@ -75,7 +76,7 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public HashSet<int> HitTeam(IQSpace qSpace)
+        public IEnumerable<HitResult> HitTeam(IQSpace qSpace)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this);
         }

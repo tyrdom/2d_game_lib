@@ -27,7 +27,7 @@ namespace game_stuff
 
         public static TrapSetter GenById(string id)
         {
-            if (TempConfig.Configs.traps.TryGetValue(id, out var trap))
+            if (LocalConfig.Configs.traps.TryGetValue(id, out var trap))
             {
                 return new TrapSetter(trap);
             }
@@ -39,11 +39,11 @@ namespace game_stuff
         {
             CanBeSee = trap.CanBeSee;
             FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
-            BodySize = TempConfig.GetBodySize(trap.BodyId);
-            CallTrapTick = TempConfig.GetTickByTime(trap.CallTrapRoundTime);
-            TrapMedia = TempConfig.GenHitMedia(trap.TrapMedia);
+            BodySize = LocalConfig.GetBodySize(trap.BodyId);
+            CallTrapTick = CommonConfig.GetTickByTime(trap.CallTrapRoundTime);
+            TrapMedia = LocalConfig.GenHitMedia(trap.TrapMedia);
             BaseAttrId = trap.AttrId;
-            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : TempConfig.GetTickByTime(trap.MaxLifeTime);
+            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : CommonConfig.GetTickByTime(trap.MaxLifeTime);
 
             var firstOrDefault = trap.LauchMedia.FirstOrDefault();
             if (firstOrDefault == null)
@@ -54,15 +54,15 @@ namespace game_stuff
                 return;
             }
 
-            var genHitMedia = TempConfig.GenHitMedia(firstOrDefault);
+            var genHitMedia = LocalConfig.GenHitMedia(firstOrDefault);
             LaunchMedia = genHitMedia;
             TrickStack = (int?) trap.TrickStack;
-            TrickDelayTick = TempConfig.GetTickByTime(trap.TrickDelayTime);
+            TrickDelayTick = CommonConfig.GetTickByTime(trap.TrickDelayTime);
         }
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)
         {
-            var id = characterStatus.GetId() * TempConfig.UpMaxTrap + characterStatus.Traps.Count;
+            var id = characterStatus.GetId() * LocalConfig.UpMaxTrap + characterStatus.Traps.Count;
 
             if (BaseAttrId == null)
                 return new Trap(characterStatus, null, CanBeSee, pos, id, BodySize,

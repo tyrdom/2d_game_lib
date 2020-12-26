@@ -26,19 +26,19 @@ namespace game_stuff
             MapInteract mapInteract)
         {
             return new Interaction(interaction.BaseTough,
-                TempConfig.GetTickByTime(interaction.TotalTime),
+                CommonConfig.GetTickByTime(interaction.TotalTime),
                 canPutInMapInteractable, null, mapInteract);
         }
 
         public CageCanPick(ICanPutInMapInteractable canPutInMapInteractable, TwoDPoint pos)
         {
-            var configsInteraction = TempConfig.Configs.interactions;
+            var configsInteraction = LocalConfig.Configs.interactions;
 
             var roundP = canPutInMapInteractable switch
             {
-                Prop _ => new Round(pos, TempConfig.PropR),
-                Weapon _ => new Round(pos, TempConfig.WeaponR),
-                PassiveTrait _ => new Round(pos, TempConfig.PassiveR),
+                Prop _ => new Round(pos, LocalConfig.PropR),
+                Weapon _ => new Round(pos, LocalConfig.WeaponR),
+                PassiveTrait _ => new Round(pos, LocalConfig.PassiveR),
                 _ => throw new ArgumentOutOfRangeException(nameof(canPutInMapInteractable))
             };
             var interaction1 = configsInteraction[interactionAct.pick_up_cage];

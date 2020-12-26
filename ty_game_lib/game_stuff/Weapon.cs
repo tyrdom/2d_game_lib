@@ -120,7 +120,7 @@ namespace game_stuff
 
         public static Weapon GenById(int id)
         {
-            if (TempConfig.Configs.weapons.TryGetValue(id, out var weapon))
+            if (LocalConfig.Configs.weapons.TryGetValue(id, out var weapon))
             {
                 return GenByConfig(weapon);
             }
@@ -134,7 +134,7 @@ namespace game_stuff
                 x =>
                 {
                     var argSkillGroup = x.skill_group;
-                    if (TempConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
+                    if (LocalConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
                     {
                         return GenASkillGroup(skillGroup);
                     }
@@ -158,7 +158,7 @@ namespace game_stuff
 
             static Snipe? GetSnipeById(int id, ImmutableDictionary<BodySize, float> ff)
             {
-                return TempConfig.Configs.snipes.TryGetValue(id, out var snipe)
+                return LocalConfig.Configs.snipes.TryGetValue(id, out var snipe)
                     ? new Snipe(snipe, ff)
                     : null;
             }

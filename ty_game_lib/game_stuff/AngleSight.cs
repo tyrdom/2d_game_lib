@@ -12,7 +12,7 @@ namespace game_stuff
 
         public static AngleSight StandardAngleSight()
         {
-            return new AngleSight(TempConfig.StandardSightVector);
+            return new AngleSight(LocalConfig.StandardSightVector);
         }
 
         public AngleSight(TwoDVector upLeft)
@@ -70,10 +70,10 @@ namespace game_stuff
 
             var nowRSquare = NowR * NowR;
             var snowR = nowRSquare * t;
-            var twoSr = TempConfig.TwoSToSeePerTick - snowR;
+            var twoSr = LocalConfig.TwoSToSeePerTick - snowR;
             if (twoSr <= 0)
             {
-                var sqrt = MathTools.Sqrt(TempConfig.TwoSToSeePerTick / t);
+                var sqrt = MathTools.Sqrt(LocalConfig.TwoSToSeePerTick / t);
                 NowR = MathTools.Min(useScope.MaxR, sqrt);
             }
             else

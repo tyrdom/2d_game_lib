@@ -14,7 +14,7 @@ namespace game_stuff
 
         public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp)
         {
-            var sizeToR = TempConfig.SizeToR;
+            var sizeToR = LocalConfig.SizeToR;
             var walkBlocks = new Dictionary<BodySize, WalkBlock>();
             foreach (var keyValuePair in sizeToR)
             {

@@ -17,7 +17,7 @@ namespace game_stuff
 
         public static PlayingItemBag InitByConfig()
         {
-            var dictionary = TempConfig.Configs.items.Values.Where(x => x.IsPlayingItem)
+            var dictionary = LocalConfig.Configs.items.Values.Where(x => x.IsPlayingItem)
                 .ToDictionary(x => x.id, _ => 0);
             return new PlayingItemBag(dictionary);
         }
@@ -62,7 +62,7 @@ namespace game_stuff
 
         private static uint GetMaxNum(int itemId)
         {
-            if (TempConfig.Configs.items.TryGetValue(itemId, out var item))
+            if (LocalConfig.Configs.items.TryGetValue(itemId, out var item))
             {
                 return item.MaxStack;
             }
@@ -91,7 +91,7 @@ namespace game_stuff
 
         uint GetMaxNum()
         {
-            if (TempConfig.Configs.items.TryGetValue(ItemId, out var item))
+            if (LocalConfig.Configs.items.TryGetValue(ItemId, out var item))
             {
                 return item.MaxStack;
             }

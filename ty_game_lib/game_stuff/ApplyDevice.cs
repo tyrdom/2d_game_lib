@@ -25,8 +25,8 @@ namespace game_stuff
         public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive)
         {
             IsActive = isActive;
-            var configsInteraction = TempConfig.Configs.interactions;
-            var roundP = new Round(pos, TempConfig.SaleBoxR);
+            var configsInteraction = LocalConfig.Configs.interactions;
+            var roundP = new Round(pos, LocalConfig.SaleBoxR);
             var interaction1 = configsInteraction[interactionAct.get_info];
             var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.GetInfoCall);
             var interaction2 = configsInteraction[interactionAct.apply];

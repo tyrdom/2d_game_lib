@@ -748,6 +748,17 @@ namespace collision_and_rigid
             return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t);
         }
 
+        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t,
+            Zone zone)
+        {
+            return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t, zone);
+        }
+
+        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t, Zone zone)
+        {
+            return SomeTools.MapToIEnumSthTool(this, funcWithIIdPtsShape, t, zone);
+        }
+
         public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func, T t, Zone zone)
         {
             return SomeTools.FilterToBoxList(this, func, t, zone);

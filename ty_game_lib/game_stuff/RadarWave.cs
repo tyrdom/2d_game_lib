@@ -28,7 +28,7 @@ namespace game_stuff
 
         public static RadarWave GenById(string id)
         {
-            if (TempConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
+            if (LocalConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
             {
                 return GenByConfig(radarWave);
             }
@@ -54,20 +54,20 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public bool IsHitBody(IIdPointShape targetBody)
+        public HitResult? IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
                 case ICanBeHit characterBody1:
 
 
-                    if (Caster == null || !IsHit(characterBody1)) return false;
+                    if (Caster == null || !IsHit(characterBody1)) return null;
                     if (Caster is Trap trap) trap.StartTrick();
                     Caster.GetMayBeSomeThing().Add(targetBody.GetAnchor());
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif
-                    return true;
+                    return new HitResult(characterBody1, false, Caster.GetFinalCaster(), this);
 
 
                 default:
@@ -75,7 +75,7 @@ namespace game_stuff
             }
         }
 
-        public HashSet<int> HitTeam(IQSpace qSpace)
+        public IEnumerable<HitResult> HitTeam(IQSpace qSpace)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this);
         }

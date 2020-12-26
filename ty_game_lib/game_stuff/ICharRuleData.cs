@@ -4,9 +4,8 @@ namespace game_stuff
 {
     public interface ICharRuleData
     {
-        public List<CharacterBody> NowKills { get; }
         void ClearTemp();
-        void AddAKill(CharacterBody characterBody);
+        void AddAKill();
         int GetScore();
     }
 }

@@ -84,7 +84,7 @@ namespace game_stuff
 
         public float GetRr()
         {
-            return TempConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
+            return LocalConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
         }
 
         public int GetId()
@@ -157,7 +157,7 @@ namespace game_stuff
             }
 
             var hitWall = characterStatusAntiActBuff.HitWall();
-            var hitWallDmgParam = 1 + (uint) (TempConfig.HitWallDmgParam * hitWall);
+            var hitWallDmgParam = 1 + (uint) (LocalConfig.HitWallDmgParam * hitWall);
             CharacterStatus.SurvivalStatus.TakeOneDamage(hitWallDmgParam);
         }
 
@@ -171,7 +171,7 @@ namespace game_stuff
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome,
                 CharacterStatus.MayBeSomeThing.ToImmutableArray()
-                , CharacterStatus.CharRuleData.NowKills.Select(x => x.GetId()).ToImmutableArray());
+                );
         }
 
         public CharInitMsg GenInitMsg()

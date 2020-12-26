@@ -22,7 +22,7 @@ namespace game_stuff
 
         private static CharacterInitData TestPlayer1()
         {
-            var keyValuePair = TempConfig.Configs.weapons.First();
+            var keyValuePair = LocalConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
 
             var characterInitData =
@@ -36,7 +36,7 @@ namespace game_stuff
 
         private static CharacterInitData TestPlayer2()
         {
-            var keyValuePair = TempConfig.Configs.weapons.First();
+            var keyValuePair = LocalConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
 
             var characterInitData =

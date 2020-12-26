@@ -20,12 +20,11 @@ namespace game_stuff
         public TwoDVector? IsBeHit { get; }
         public bool IsHitSome { get; }
         public ImmutableArray<TwoDPoint> SomeThings { get; }
-        public ImmutableArray<int> KillList { get; }
 
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, bool skillAct, TwoDVector? isBeHit, bool isHitSome,
-            ImmutableArray<TwoDPoint> someThings, ImmutableArray<int> killList)
+            ImmutableArray<TwoDPoint> someThings)
         {
             Gid = gid;
             Pos = pos;
@@ -40,7 +39,6 @@ namespace game_stuff
             IsBeHit = isBeHit;
             IsHitSome = isHitSome;
             SomeThings = someThings;
-            KillList = killList;
         }
 
         public override string ToString()

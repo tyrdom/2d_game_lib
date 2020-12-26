@@ -15,7 +15,7 @@ namespace game_stuff
 
         public static Vehicle GenById(int id)
         {
-            if (TempConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
+            if (LocalConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
             {
                 return GenByConfig(vehicle);
             }
@@ -25,8 +25,8 @@ namespace game_stuff
 
         private static Vehicle GenByConfig(vehicle vehicle)
         {
-            var bodySize = TempConfig.GetBodySize(vehicle.BodyId);
-            var tickByTime = TempConfig.GetTickByTime(vehicle.DestoryDelayTime);
+            var bodySize = LocalConfig.GetBodySize(vehicle.BodyId);
+            var tickByTime = CommonConfig.GetTickByTime(vehicle.DestoryDelayTime);
 
             var genByBulletId = Bullet.GenById(vehicle.DestoryBullet);
             var genSkillById = Skill.GenSkillById(vehicle.OutActSkill);

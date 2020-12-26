@@ -19,7 +19,7 @@ namespace game_stuff
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
         private WalkMap WalkMap { get; } //碰撞地图
-        public Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
+        private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
         private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; } // 碰撞媒体缓存，以后可能会有持续多帧的子弹
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
@@ -82,7 +82,7 @@ namespace game_stuff
                     var hashSet = p.Value;
                     var aabbBoxShapes =
                         SomeTools.EnumerableToHashSet(hashSet.Select(x => x.InBox));
-                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, TempConfig.QSpaceBodyMaxPerLevel);
+                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, LocalConfig.QSpaceBodyMaxPerLevel);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
             var emptyRootBranch3 = SomeTools.CreateEmptyRootBranch(zone);
@@ -143,8 +143,8 @@ namespace game_stuff
         }
 
 
-        public (Dictionary<int, IEnumerable<BulletMsg>> gidToBulletsMsg, Dictionary<int, IEnumerable<ISeeTickMsg>>
-            playerSeeMsg)
+        public ((Dictionary<int, HashSet<HitResult>> playerBehit, Dictionary<int, HashSet<HitResult>> trapBehit)
+            gidToWhichBulletHit, Dictionary<int, IEnumerable<ISeeTickMsg>> playerSeeMsg)
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
@@ -166,15 +166,12 @@ namespace game_stuff
             //     qSpace.MoveIdPoint(everyBodyGoATick, TempConfig.QSpaceBodyMaxPerLevel);
             // }
 
-
             BodiesQSpaceReplace();
             var playerSee = GetPlayerSee();
-            var gidToBulletsMsg = gidToWhichBulletHit.ToDictionary(pair => pair.Key, pair => pair.Value.OfType<Bullet>()
-                .Select(x => x.GenMsg()));
             var playerSeeMsg =
                 playerSee.ToDictionary(pair => pair.Key, pair => pair.Value.Select(x => x.GenTickMsg(pair.Key)));
 
-            var valueTuple = (gidToBulletsMsg, playerSeeMsg);
+            var valueTuple = (gidToWhichBulletHit, playerSeeMsg);
 
             return valueTuple;
         }
@@ -299,14 +296,49 @@ namespace game_stuff
                     }, WalkMap);
 
 
-                playerBodies.MoveIdPointBoxes(mapToDicGidToSth, TempConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.MoveIdPointBoxes(mapToDicGidToSth, LocalConfig.QSpaceBodyMaxPerLevel);
             }
         }
 
-
-        private Dictionary<int, HashSet<IHitMedia>> HitMediasDo()
+        static void RecordHitResult(HitResult hitResult,
+            Dictionary<int, HashSet<HitResult>> gidD, Dictionary<int, HashSet<HitResult>> tidD)
         {
-            var whoHitGid = new Dictionary<int, HashSet<IHitMedia>>();
+            switch (hitResult.HitBody)
+            {
+                case CharacterBody characterBody:
+                    var key = characterBody.GetId();
+                    if (gidD.TryGetValue(key, out var hBullets))
+                    {
+                        hBullets.Add(hitResult);
+                    }
+                    else
+                    {
+                        gidD[key] = new HashSet<HitResult> {hitResult};
+                    }
+
+                    break;
+                case Trap trap:
+                    var key2 = trap.GetId();
+                    if (tidD.TryGetValue(key2, out var hBullets2))
+                    {
+                        hBullets2.Add(hitResult);
+                    }
+                    else
+                    {
+                        tidD[key2] = new HashSet<HitResult> {hitResult};
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private (Dictionary<int, HashSet<HitResult>>playerBehit, Dictionary<int, HashSet<HitResult>>trapBehit)
+            HitMediasDo()
+        {
+            var gidHitBy = new Dictionary<int, HashSet<HitResult>>();
+            var tidHitBy = new Dictionary<int, HashSet<HitResult>>();
             foreach (var ii in TeamToHitMedia)
             {
                 var team = ii.Key;
@@ -317,49 +349,35 @@ namespace game_stuff
                     {
                         case ObjType.OtherTeam:
 
-                            foreach (var i in TeamToBodies.Select(kvv => new {kvv, bodyTeam = kvv.Key})
-                                .Select(t => new {t, value = t.kvv.Value})
-                                .Where(tt => team != tt.t.bodyTeam)
-                                .Select(ttt => (bullet.HitTeam(ttt.value.playerBodies),
-                                    bullet.HitTeam(ttt.value.Traps)))
-                                .SelectMany(x => x.Item1)
-                            )
-                            {
-                                if (whoHitGid.TryGetValue(i, out var hBullets))
-                                {
-                                    hBullets.Add(bullet);
-                                }
-                                else
-                                {
-                                    whoHitGid[i] = new HashSet<IHitMedia> {bullet};
-                                }
-                            }
+                            var selectMany = TeamToBodies.Where(pair => pair.Key != team)
+                                .SelectMany(x => bullets.SelectMany(aHitM => aHitM.HitTeam(x.Value.playerBodies)
+                                    .Union(aHitM.HitTeam(x.Value.Traps))));
 
+                            foreach (var hr in selectMany)
+                            {
+                                RecordHitResult(hr, gidHitBy, tidHitBy);
+                            }
 
                             break;
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
-                                bullet.HitTeam(qSpace.playerBodies);
-                                bullet.HitTeam(qSpace.Traps);
+                                var enumerable = bullet.HitTeam(qSpace.playerBodies)
+                                    .Union(bullet.HitTeam(qSpace.Traps));
+                                foreach (var hitResult in enumerable)
+                                {
+                                    RecordHitResult(hitResult, gidHitBy, tidHitBy);
+                                }
                             }
 
                             break;
                         case ObjType.AllTeam:
-                            foreach (var i in from IQSpace value in TeamToBodies
-                                select bullet.HitTeam(value)
-                                into hitTeam
-                                from i in hitTeam
-                                select i)
+                            var results = TeamToBodies.Values.SelectMany(x =>
+                                bullets.SelectMany(bb => bb.HitTeam(x.playerBodies).Union(bb.HitTeam(x.Traps))));
+
+                            foreach (var hitResult in results)
                             {
-                                if (whoHitGid.TryGetValue(i, out var hBullets))
-                                {
-                                    hBullets.Add(bullet);
-                                }
-                                else
-                                {
-                                    whoHitGid[i] = new HashSet<IHitMedia> {bullet};
-                                }
+                                RecordHitResult(hitResult, gidHitBy, tidHitBy);
                             }
 
                             break;
@@ -372,7 +390,7 @@ namespace game_stuff
                 bullets.RemoveAll(x => !x.CanGoNextTick());
             }
 
-            return whoHitGid;
+            return (gidHitBy, tidHitBy);
         }
 
         private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyDevice;
@@ -461,7 +479,7 @@ namespace game_stuff
                     var mapInteractive = aCharGoTickMsg.DropThing;
                     foreach (var aInteractable in mapInteractive)
                     {
-                        MapInteractableThings.AddSingleAaBbBox(aInteractable, TempConfig.QSpaceBodyMaxPerLevel);
+                        MapInteractableThings.AddSingleAaBbBox(aInteractable, LocalConfig.QSpaceBodyMaxPerLevel);
                     }
 
                     var interactCaller = aCharGoTickMsg.WhoInteractCall;
@@ -505,7 +523,7 @@ namespace game_stuff
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
-                traps.AddIdPointBoxes(idPointBoxesToAdd, TempConfig.QSpaceBodyMaxPerLevel, true);
+                traps.AddIdPointBoxes(idPointBoxesToAdd, LocalConfig.QSpaceBodyMaxPerLevel, true);
             }
 
             return twoDTwoPs;
@@ -560,13 +578,13 @@ namespace game_stuff
             {
                 characterBody.ReLocate(telePos);
 
-                tuple.playerBodies.AddAIdPointBox(characterBodyInBox, TempConfig.QSpaceBodyMaxPerLevel);
+                tuple.playerBodies.AddAIdPointBox(characterBodyInBox, LocalConfig.QSpaceBodyMaxPerLevel);
             }
             else
             {
                 var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                 var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                playerBodies.AddAIdPointBox(characterBodyInBox, TempConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.AddAIdPointBox(characterBodyInBox, LocalConfig.QSpaceBodyMaxPerLevel);
                 var emptyRootBranch = (playerBodies,
                     traps);
                 TeamToBodies[characterBodyTeam] = emptyRootBranch;

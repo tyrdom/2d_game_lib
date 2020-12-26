@@ -69,7 +69,7 @@ namespace game_stuff
 
         public void StartTrick()
         {
-            if (LaunchMedia == null) return;
+            if (LaunchMedia == null && OnTrick) return;
             OnTrick = true;
             NowTrickDelayTick = 0;
         }
@@ -177,6 +177,11 @@ namespace game_stuff
         public IdPointBox? IdPointBox { get; set; }
 
 
+        public CharacterBody GetFinalCaster()
+        {
+            return Owner.CharacterBody;
+        }
+
         public List<TwoDPoint> GetMayBeSomeThing()
         {
             return Owner.MayBeSomeThing;
@@ -200,7 +205,7 @@ namespace game_stuff
 
         public float GetRr()
         {
-            return TempConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
+            return LocalConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
         }
 
         public void AddAKillScore(CharacterBody characterBody)

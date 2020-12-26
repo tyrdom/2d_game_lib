@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using collision_and_rigid;
 
-namespace rogue_game
-{
+
+// namespace rogue_game
+// {
     // public class PvpKillScoreRuler : IPlayRuler
     // {   
     //     private Dictionary<int, RebornUnit> GidToRebornPool { get; }
@@ -129,4 +124,4 @@ namespace rogue_game
     //         return new LevelUps(GetLevelUpData());
     //     }
     // }
-}
+// }

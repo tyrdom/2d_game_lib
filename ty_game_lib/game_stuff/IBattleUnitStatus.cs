@@ -5,6 +5,7 @@ namespace game_stuff
 {
     public interface IBattleUnitStatus
     {
+        CharacterBody GetFinalCaster();
         List<TwoDPoint> GetMayBeSomeThing();
         CharacterStatus? CatchingWho { get; set; }
         TwoDPoint GetPos();

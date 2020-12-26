@@ -10,19 +10,19 @@ namespace game_stuff
         public Zone RdZone { get; }
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        bool IsHitBody(IIdPointShape targetBody);
-        public HashSet<int> HitTeam(IQSpace qSpace);
+        HitResult? IsHitBody(IIdPointShape targetBody);
+        public IEnumerable<HitResult> HitTeam(IQSpace qSpace);
         public ObjType TargetType { get; }
         public bool IsHit(ICanBeHit characterBody);
     }
 
     public static class HitAbleMediaStandard
     {
-        public static HashSet<int> HitTeam(IQSpace qSpace, IHitMedia hitMedia)
+        public static IEnumerable<HitResult> HitTeam(IQSpace qSpace, IHitMedia hitMedia)
         {
-            var mapToGidList = qSpace.FilterToGIdPsList((body, aHitMedia) => aHitMedia.IsHitBody(body),
+            var mapToGidList = qSpace.MapToIEnumNotNullSth((body, aHitMedia) => aHitMedia.IsHitBody(body),
                 hitMedia, hitMedia.RdZone.MoveToAnchor(hitMedia.Pos));
-            return SomeTools.EnumerableToHashSet(mapToGidList.Select(x => x.GetId()));
+            return mapToGidList!;
         }
     }
 }

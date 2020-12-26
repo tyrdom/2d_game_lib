@@ -13,7 +13,7 @@ namespace game_stuff
     {
         public static Prop GenById(int id)
         {
-            if (TempConfig.Configs.props.TryGetValue(id, out var prop)
+            if (LocalConfig.Configs.props.TryGetValue(id, out var prop)
             )
             {
                 return new Prop(prop);
@@ -24,10 +24,10 @@ namespace game_stuff
 
         public Prop(prop prop)
         {
-            var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => TempConfig.GetTickByTime(p.Key),
-                p => TempConfig.GenMedia(p.Value));
+            var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => CommonConfig.GetTickByTime(p.Key),
+                p => LocalConfig.GenMedia(p.Value));
             PropBullets = dictionary.ToImmutableDictionary();
-            RecyclePropStack = TempConfig.StandardPropRecycleStack;
+            RecyclePropStack = LocalConfig.StandardPropRecycleStack;
             StackCost = prop.PropPointCost;
             MoveMulti = prop.MoveSpeedMulti;
             MoveMustMulti = prop.MustMoveSpeedMulti;
@@ -39,7 +39,7 @@ namespace game_stuff
         public Prop(int stackCost, uint totalTick, float moveMulti,
             ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos, int pId)
         {
-            RecyclePropStack = TempConfig.StandardPropRecycleStack;
+            RecyclePropStack = LocalConfig.StandardPropRecycleStack;
             StackCost = stackCost;
             TotalTick = totalTick;
             MoveMulti = moveMulti;

@@ -6,7 +6,7 @@ namespace game_stuff
     {
         public static Scope StandardScope()
         {
-            return new Scope(TempConfig.StandardSightVector);
+            return new Scope(LocalConfig.StandardSightVector);
         }
 
 

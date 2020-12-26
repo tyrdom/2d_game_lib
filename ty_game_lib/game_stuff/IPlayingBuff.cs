@@ -107,7 +107,7 @@ namespace game_stuff
             var buffs = new List<IPlayingBuff>();
             foreach (var grouping in groupBy)
             {
-                if (TempConfig.BuffConfigs.TryGetValue(grouping.Key, out var playingBuffConfig))
+                if (LocalConfig.BuffConfigs.TryGetValue(grouping.Key, out var playingBuffConfig))
                 {
                     var valueStackMode = playingBuffConfig.StackMode;
                     switch (valueStackMode)

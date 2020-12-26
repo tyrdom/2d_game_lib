@@ -27,7 +27,7 @@ namespace game_stuff
 
         private AttackStatus(uint baseAttack, uint bsn, float backStabAdd)
         {
-            ShardedAttack = (uint) (baseAttack * TempConfig.ShardedAttackMulti);
+            ShardedAttack = (uint) (baseAttack * LocalConfig.ShardedAttackMulti);
             ShardedNum = bsn;
             BackStabAdd = backStabAdd;
             MainAttack = baseAttack;

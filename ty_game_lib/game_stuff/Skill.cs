@@ -98,7 +98,7 @@ namespace game_stuff
 
         public static Skill GenSkillById(string id)
         {
-            if (TempConfig.Configs.skills.TryGetValue(id, out var configsSkill))
+            if (LocalConfig.Configs.skills.TryGetValue(id, out var configsSkill))
             {
                 return GenSkillByConfig(configsSkill);
             }
@@ -110,25 +110,25 @@ namespace game_stuff
         {
             var twoDVectors = skill.Moves.Select(GameTools.GenVectorByConfig).ToArray();
 
-            var dictionary = skill.LaunchTimeToBullet.ToDictionary(pair => TempConfig.GetTickByTime(pair.Key),
+            var dictionary = skill.LaunchTimeToBullet.ToDictionary(pair => CommonConfig.GetTickByTime(pair.Key),
                 pair =>
                 {
                     var pairValue = pair.Value;
-                    var immutableDictionary = TempConfig.Configs.bullets;
+                    var immutableDictionary = LocalConfig.Configs.bullets;
                     var bullet = immutableDictionary[pairValue];
-                    var genByConfig = Bullet.GenByConfig(bullet, TempConfig.GetTickByTime(pair.Key));
+                    var genByConfig = Bullet.GenByConfig(bullet, CommonConfig.GetTickByTime(pair.Key));
                     return genByConfig;
                 });
 
-            var configsLockAreas = TempConfig.Configs.lock_areas;
+            var configsLockAreas = LocalConfig.Configs.lock_areas;
 
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;
-            return new Skill(dictionary, twoDVectors, TempConfig.GetTickByTime(skill.MoveStartTime),
-                TempConfig.GetTickByTime(skill.SkillMustTime), TempConfig.GetTickByTime(skill.SkillMaxTime),
-                skill.BaseTough, TempConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
-                TempConfig.GetTickByTime(skill.BreakSnipeTime),
+            return new Skill(dictionary, twoDVectors, CommonConfig.GetTickByTime(skill.MoveStartTime),
+                CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
+                skill.BaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
+                CommonConfig.GetTickByTime(skill.BreakSnipeTime),
                 skill.SnipeStepNeed, skill.AmmoCost, skill.CanInputMove);
         }
 
@@ -199,7 +199,7 @@ namespace game_stuff
             var snipeOff = NowOnTick > 0 && NowOnTick == SnipeBreakTick;
 
             //GONext
-            NowTough += TempConfig.ToughGrowPerTick;
+            NowTough += LocalConfig.ToughGrowPerTick;
             NowOnTick++;
             return (move, bullet, snipeOff, null, MapInteract.PickCall);
         }

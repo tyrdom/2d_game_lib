@@ -22,7 +22,7 @@ namespace game_stuff
             base_attr_id baseAttrId)
         {
             var dictionary = new Dictionary<int, Weapon>();
-            for (var i = 0; i < MathTools.Min(TempConfig.StandardWeaponNum, weapons.Length); i++)
+            for (var i = 0; i < MathTools.Min(LocalConfig.StandardWeaponNum, weapons.Length); i++)
             {
                 dictionary[i] = Weapon.GenByConfig(weapons[i]);
             }
@@ -54,7 +54,7 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos, LevelUps playRuler)
         {
-            var characterStatus = new CharacterStatus(Gid, TempConfig.TrickProtect, BaseAttrId,
+            var characterStatus = new CharacterStatus(Gid, LocalConfig.TrickProtect, BaseAttrId,
                 PlayingItemBag.InitByConfig(),playRuler);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
