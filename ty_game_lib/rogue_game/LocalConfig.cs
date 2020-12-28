@@ -10,6 +10,7 @@ namespace rogue_game
         public static ConfigDictionaries Configs { get; private set; }
             = CommonConfig.Configs;
 
+        public static int GameRuleCheckTick { get; private set; } = 10;
         public static GameItem[] RogueRebornCost { get; private set; } = { };
         public static int RogueRebornTick { get; private set; } = 1000;
         private static void ReLoadP(ConfigDictionaries configs)

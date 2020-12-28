@@ -9,7 +9,7 @@ namespace game_stuff
         public SightMap SightMap;
         public WalkMap WalkMap;
         public Dictionary<int, StartPts> TeamToStartPt;
-        public List<IMapInteractable> StandardMapInteractableList;
+        public HashSet<ApplyDevice> StandardMapInteractableList;
 
         public Zone GetZone()
         {
@@ -20,7 +20,7 @@ namespace game_stuff
         }
 
         public MapInitData(SightMap sightMap, WalkMap walkMap, Dictionary<int, StartPts> teamToStartPt,
-            List<IMapInteractable> standardMapInteractableList)
+            HashSet<ApplyDevice > standardMapInteractableList)
         {
             SightMap = sightMap;
             WalkMap = walkMap;

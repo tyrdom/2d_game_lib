@@ -10,7 +10,7 @@ namespace game_stuff
         private TwoDVector Aim;
 
         private SurvivalStatus SurvivalStatus;
-        public Dictionary<int, Weapon> WeaponConfigs { get; private set; }
+        public Dictionary<int, Weapon> WeaponConfigs { get; }
 
         public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             Dictionary<int, Weapon> weaponConfigs)

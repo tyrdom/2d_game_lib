@@ -4,11 +4,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public enum GameCall
-    {
-        Reborn,
-        AcceptTransport
-    }
+
 
     public class Operate
     {

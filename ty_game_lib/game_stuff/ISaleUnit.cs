@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using collision_and_rigid;
 
@@ -45,7 +46,7 @@ namespace game_stuff
             }
 
             saleUnit.DoneDictionary[characterStatus.GId] = 0;
-            
+
             return true;
         }
 

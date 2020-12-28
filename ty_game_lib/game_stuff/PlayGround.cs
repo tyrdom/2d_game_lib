@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -13,8 +14,6 @@ namespace game_stuff
     {
         private int MgId { get; }
         private int ResMId { get; }
-
-
         private Zone MoveZone { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
@@ -96,6 +95,16 @@ namespace game_stuff
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
                 emptyRootBranch3, genMapId, mapResId, zone);
+
+            foreach (var applyDevice in mapInitData.StandardMapInteractableList)
+            {
+                applyDevice.SetInPlayGround(playGround);
+            }
+
+            var aaBbBoxes = SomeTools.EnumerableToHashSet(mapInitData.StandardMapInteractableList.Cast<IAaBbBox>());
+            playGround.MapInteractableThings.AddRangeAabbBoxes(aaBbBoxes,
+                LocalConfig.QSpaceBodyMaxPerLevel);
+
             return (playGround, playGround.GenInitMsg());
         }
 
@@ -570,14 +579,44 @@ namespace game_stuff
             return false;
         }
 
+        public void AddBodies(IEnumerable<(CharacterBody characterBody, TwoDPoint pos)> characterBodies)
+        {
+            var groupBy = characterBodies.GroupBy(c => c.characterBody.Team);
+
+            foreach (var valueTuples in groupBy)
+            {
+                var team = valueTuples.Key;
+                foreach (var valueTuple in valueTuples)
+                {
+                    valueTuple.characterBody.ReLocate(valueTuple.pos);
+                }
+
+                var enumerableToHashSet = SomeTools.EnumerableToHashSet(valueTuples.Select(x => x.characterBody.InBox));
+                if (TeamToBodies.TryGetValue(team, out var qTuple))
+                {
+                    qTuple.playerBodies.AddIdPointBoxes(
+                        enumerableToHashSet,
+                        LocalConfig.QSpaceBodyMaxPerLevel);
+                }
+                else
+                {
+                    var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
+                    var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
+                    playerBodies.AddIdPointBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
+                    var emptyRootBranch = (playerBodies,
+                        traps);
+                    TeamToBodies[team] = emptyRootBranch;
+                }
+            }
+        }
+
         public void AddBody(CharacterBody characterBody, TwoDPoint telePos)
         {
             var characterBodyTeam = characterBody.Team;
             var characterBodyInBox = characterBody.InBox;
+            characterBody.ReLocate(telePos);
             if (TeamToBodies.TryGetValue(characterBodyTeam, out var tuple))
             {
-                characterBody.ReLocate(telePos);
-
                 tuple.playerBodies.AddAIdPointBox(characterBodyInBox, LocalConfig.QSpaceBodyMaxPerLevel);
             }
             else
@@ -589,6 +628,17 @@ namespace game_stuff
                     traps);
                 TeamToBodies[characterBodyTeam] = emptyRootBranch;
             }
+        }
+
+        public void ActiveApplyDevice()
+
+        {
+            static void Active(ApplyDevice applyDevice, bool op)
+            {
+                applyDevice.IsActive = true;
+            }
+
+            MapInteractableThings.ForeachBoxDoWithOutMove<bool, ApplyDevice>(Active, true);
         }
     }
 }

@@ -7,19 +7,25 @@ namespace game_stuff
 {
     public class TeleportUnit : IApplyUnit
     {
-        public TeleportUnit(IMapInteractable? inWhichMapInteractive, PlayGround fromPlayGround, PlayGround toPlayGround,
+        public TeleportUnit(IMapInteractable? inWhichMapInteractive,
+            PlayGround toPlayGround,
             TwoDPoint toPos, BodySize[] allowSizes)
         {
             InWhichMapInteractive = inWhichMapInteractive;
-            FromPlayGround = fromPlayGround;
+            FromPlayGround = null;
             ToPlayGround = toPlayGround;
             ToPos = toPos;
             AllowSizes = allowSizes;
         }
 
+        public void PutInPlayGround(PlayGround fromPlayGround)
+        {
+            FromPlayGround = fromPlayGround;
+        }
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
-        public PlayGround FromPlayGround { get; set; }
+        public PlayGround? FromPlayGround { get; set; }
         public PlayGround ToPlayGround { get; set; }
 
         public TwoDPoint ToPos { get; set; }
@@ -46,8 +52,9 @@ namespace game_stuff
                     //todo get mapinfo to character
                     return new IMapInteractable[] { };
                 case MapInteract.BuyOrApplyCall:
-                    var removeBody = FromPlayGround.RemoveBody(characterStatus.CharacterBody);
-                    if (!removeBody) throw new IndexOutOfRangeException($"remove body fail {characterStatus.GId}");
+                    var removeBody = FromPlayGround?.RemoveBody(characterStatus.CharacterBody);
+                    if (removeBody == null || !removeBody.Value)
+                        throw new IndexOutOfRangeException($"remove body fail {characterStatus.GId}");
                     ToPlayGround.AddBody(characterStatus.CharacterBody, ToPos);
                     return new IMapInteractable[] { };
 

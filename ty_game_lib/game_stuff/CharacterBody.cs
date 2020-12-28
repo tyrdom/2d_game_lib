@@ -10,7 +10,6 @@ namespace game_stuff
 {
     public class CharacterBody : ICanBeHit
     {
-        public BodyMark BodyMark { get; }
         private BodySize BodySize { get; }
 
         public BodySize GetSize()
@@ -52,7 +51,7 @@ namespace game_stuff
             LastPos = lastPos;
             Sight = sight;
             Team = team;
-            BodyMark = bodyMark;
+
             InBox = CovToIdBox();
         }
 
@@ -171,7 +170,7 @@ namespace game_stuff
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome,
                 CharacterStatus.MayBeSomeThing.ToImmutableArray()
-                );
+            );
         }
 
         public CharInitMsg GenInitMsg()
@@ -199,7 +198,6 @@ namespace game_stuff
         public LevelUpsData GetAutoRebornTick()
         {
             return CharacterStatus.GetNowLevelUpData();
-           
         }
     }
 

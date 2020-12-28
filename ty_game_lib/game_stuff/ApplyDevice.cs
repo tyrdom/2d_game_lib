@@ -8,6 +8,11 @@ namespace game_stuff
 {
     public class ApplyDevice : IMapInteractable
     {
+        public void SetActive()
+        {
+            IsActive = true;
+        }
+
         public bool IsActive { get; set; }
 
         public ApplyDevice(Zone zone, Queue<Quad> locateRecord, Round canInterActiveRound,
@@ -54,6 +59,13 @@ namespace game_stuff
         public IShape GetShape()
         {
             return CanInterActiveRound;
+        }
+
+
+        public void SetInPlayGround(PlayGround playGround)
+        {
+            if (CharActTwo.InMapInteractable is TeleportUnit teleportUnit)
+                teleportUnit.PutInPlayGround(playGround);
         }
 
 
