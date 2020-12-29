@@ -60,14 +60,14 @@ namespace game_stuff
             return IsStackOk(characterStatus, saleUnit) && characterStatus.PlayingItemBag.CanCost(saleUnit);
         }
 
-        public static IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus,
+        public static IActResult? ActWhichChar(CharacterStatus characterStatus,
             MapInteract interactive, ISaleUnit saleUnit
         )
         {
             switch (interactive)
             {
                 case MapInteract.GetInfoCall:
-                    return new List<IMapInteractable>();
+                    return null;
                 case MapInteract.BuyOrApplyCall:
                     var cost = characterStatus.PlayingItemBag.Cost(saleUnit);
                     var characterStatusGId = characterStatus.GId;
@@ -98,7 +98,7 @@ namespace game_stuff
                                                     characterStatus.GetPos();
 
                                     var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
-                                    return new List<IMapInteractable> {dropAsIMapInteractable};
+                                    return new DropThings(new List<IMapInteractable> {dropAsIMapInteractable});
                                 case Weapon weapon:
                                     return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
                                 default:
@@ -112,7 +112,7 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
             }
 
-            return new List<IMapInteractable>();
+            return null;
         }
     }
 }

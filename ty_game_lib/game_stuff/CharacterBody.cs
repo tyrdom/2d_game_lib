@@ -41,7 +41,7 @@ namespace game_stuff
 
         public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
-            AngleSight sight, int team, BodyMark bodyMark)
+            AngleSight sight, int team)
         {
             IdPointBox = null;
             NowPos = nowPos;
@@ -55,7 +55,7 @@ namespace game_stuff
             InBox = CovToIdBox();
         }
 
-        public void ReLocate(TwoDPoint twoDPoint)
+        public void Teleport(TwoDPoint twoDPoint)
         {
             NowPos = twoDPoint;
             LastPos = twoDPoint;
@@ -191,7 +191,7 @@ namespace game_stuff
 
         public void ReBorn(TwoDPoint pos)
         {
-            ReLocate(pos);
+            Teleport(pos);
             CharacterStatus.Reborn();
         }
 

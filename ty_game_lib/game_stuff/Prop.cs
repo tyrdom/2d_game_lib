@@ -138,16 +138,18 @@ namespace game_stuff
             return true;
         }
 
-        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
                     characterStatus.RecycleAProp(this);
-                    return new List<IMapInteractable>();
+                    return null;
                 case MapInteract.PickCall:
                     var pickAProp = characterStatus.PickAProp(this);
-                    return pickAProp == null ? new List<IMapInteractable>() : new List<IMapInteractable> {pickAProp};
+                    return pickAProp == null
+                        ? (IActResult?) null
+                        : new DropThings(new List<IMapInteractable> {pickAProp});
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
             }

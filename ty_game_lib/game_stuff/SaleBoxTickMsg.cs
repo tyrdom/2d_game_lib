@@ -14,7 +14,6 @@ namespace game_stuff
 
         public (ContainType containType, int id)[] Contains { get; }
 
-
         public int StackRest { get; }
     }
 }

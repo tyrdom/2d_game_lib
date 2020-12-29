@@ -5,6 +5,31 @@ using game_config;
 
 namespace game_stuff
 {
+    public readonly struct DropThings : IActResult
+    {
+        public IEnumerable<IMapInteractable> DropSet { get; }
+
+        public DropThings(IEnumerable<IMapInteractable> dropThings)
+        {
+            DropSet = dropThings;
+        }
+    }
+
+    public readonly struct TelePort : IActResult
+    {
+        public TelePort(int mgId)
+        {
+            GMid = mgId;
+        }
+
+        public int GMid { get; }
+    }
+
+
+    public interface IActResult
+    {
+    }
+
     public interface ICanDrop
     {
         public IMapInteractable DropAsIMapInteractable(TwoDPoint pos);
@@ -18,7 +43,7 @@ namespace game_stuff
         bool CanInterActOneBy(CharacterStatus characterStatus);
 
         bool CanInterActTwoBy(CharacterStatus characterStatus);
-        IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive);
+        IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive);
     }
 
     public static class CanPutInMapInteractableStandard

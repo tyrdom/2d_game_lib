@@ -119,6 +119,7 @@ namespace game_stuff
             return false;
         }
 
+      
         public int GetId()
         {
             return Tid;

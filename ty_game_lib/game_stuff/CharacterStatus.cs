@@ -494,11 +494,27 @@ namespace game_stuff
             }
 
             var dropThings = getThing.ActWhichChar(this, interactive);
+            
+            List<IMapInteractable>? dropThings1DropSet = null;
+            int? t = null;
+            switch (dropThings)
+            {
+                case null:
+                    break;
+                case DropThings dropThings1:
+                    dropThings1DropSet = dropThings1.DropSet.ToList();
+                    break;
+                case TelePort telePort:
+                    t = telePort.GMid;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(dropThings));
+            }
 
 
             return new CharGoTickResult(move: move, launchBullet: selfEffectFilter,
-                dropThing: dropThings.ToList(),
-                getThing: getThing.InWhichMapInteractive);
+                dropThing: dropThings1DropSet,
+                getThing: getThing.InWhichMapInteractive, teleTo: t);
         }
 
 

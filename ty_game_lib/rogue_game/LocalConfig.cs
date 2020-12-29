@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using game_config;
 using game_stuff;
@@ -9,6 +10,17 @@ namespace rogue_game
     {
         public static ConfigDictionaries Configs { get; private set; }
             = CommonConfig.Configs;
+
+
+        public static bool CanEndRest(int itemId)
+        {
+            if (Configs.items.TryGetValue(itemId, out var item))
+            {
+                return !item.IsEndClear;
+            }
+
+            throw new DirectoryNotFoundException($"not such item id{itemId}");
+        }
 
         public static int GameRuleCheckTick { get; private set; } = 10;
         public static GameItem[] RogueRebornCost { get; private set; } = { };

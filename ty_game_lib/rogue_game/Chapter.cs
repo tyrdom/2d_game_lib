@@ -6,6 +6,8 @@ using game_stuff;
 
 namespace rogue_game
 {
+  
+
     public class PveMap
     {
         public PveMap(PlayGround playGround, HashSet<CharacterBody> bosses, HashSet<CharacterBody> creeps,
@@ -41,8 +43,7 @@ namespace rogue_game
             };
         }
 
-        public ((Dictionary<int, HashSet<HitResult>> playerBehit, Dictionary<int, HashSet<HitResult>> trapBehit)
-            gidToWhichBulletHit, Dictionary<int, IEnumerable<ISeeTickMsg>> playerSeeMsg) PlayGroundGoATick(
+        public PlayGroundGoTickResult PlayGroundGoATick(
                 Dictionary<int, Operate> valuePairs)
         {
             return PlayGround.PlayGroundGoATick(valuePairs);
@@ -53,7 +54,7 @@ namespace rogue_game
             var valueTuples = new List<(CharacterBody, TwoDPoint)>();
             for (var i = 0; i < characterBodies.Length; i++)
             {
-                var twoDPoint = this.EnterPoints[i % EnterPoints.Length];
+                var twoDPoint = EnterPoints[i % EnterPoints.Length];
                 valueTuples.Add((characterBodies[i], twoDPoint));
             }
 
@@ -72,11 +73,6 @@ namespace rogue_game
             MGidToMap = mGidToMap;
             Entrance = entrance;
             Finish = finish;
-        }
-
-        public void GetStart(CharacterBody[] characterBodies)
-        {
-            Entrance.AddPlayers(characterBodies);
         }
 
         public bool IsPass()

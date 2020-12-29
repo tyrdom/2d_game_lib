@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using collision_and_rigid;
@@ -227,7 +228,7 @@ namespace lib_test
             var range = Enumerable.Range(1, 100).ToArray();
             foreach (var i in range)
             {
-                var (_, item3) =
+                var (_, _, item3,_) =
                     i == 1
                         ? playGround.PlayGroundGoATick(operates)
                         : i < 30
@@ -244,7 +245,7 @@ namespace lib_test
             }
         }
 
-        public static void LogCPos(Dictionary<int, IEnumerable<ISeeTickMsg>> item2)
+        public static void LogCPos(ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> item2)
         {
             foreach (var keyValuePair in item2)
             {

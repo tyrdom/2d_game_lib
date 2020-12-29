@@ -48,7 +48,7 @@ namespace game_stuff
             return SaleUnitStandard.CanInterActTwoBy(characterStatus, this);
         }
 
-        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             return SaleUnitStandard.ActWhichChar(characterStatus, interactive, this);
         }

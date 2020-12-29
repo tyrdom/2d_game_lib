@@ -42,7 +42,22 @@ namespace game_stuff
             return cost || saleUnit.OrCosts.Any(Cost);
         }
 
-        private bool Cost(GameItem gameItem)
+        public bool CanCost(IEnumerable<GameItem> gameItem)
+        {
+            var gameItems = GameItem.SumSame(gameItem);
+            return gameItems.All(CanCost);
+        }
+
+        public bool Cost(IEnumerable<GameItem> gameItems)
+        {
+            var gameItem = gameItems as GameItem[] ?? gameItems.ToArray();
+            if (!CanCost(gameItem)) return false;
+            var all = gameItem.All(Cost);
+            return all;
+
+        }
+
+        public bool Cost(GameItem gameItem)
         {
             var gameItemItemId = gameItem.ItemId;
             if (!GameItems.TryGetValue(gameItemItemId, out var num)) return false;
@@ -73,6 +88,12 @@ namespace game_stuff
 
     public readonly struct GameItem : ISaleStuff
     {
+        public static IEnumerable<GameItem> SumSame(IEnumerable<GameItem> gameItems)
+        {
+            var gameItem = gameItems.GroupBy(a => a.ItemId).Select(x => new GameItem(x.Key, x.Sum(item => item.Num)));
+            return gameItem;
+        }
+
         public static GameItem GenByConfigGain(Gain gain)
         {
             return new GameItem(gain.item

@@ -221,12 +221,12 @@ namespace game_stuff
             return WhoDriveOrCanDrive == null || WhoDriveOrCanDrive == characterStatus;
         }
 
-        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             return interactive switch
             {
-                MapInteract.InVehicleCall => characterStatus.GetInAVehicle(this),
-                MapInteract.KickVehicleCall => KickBySomeBody(characterStatus.GetPos()),
+                MapInteract.InVehicleCall => new DropThings(characterStatus.GetInAVehicle(this)),
+                MapInteract.KickVehicleCall => new DropThings(KickBySomeBody(characterStatus.GetPos())),
                 _ => throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null)
             };
         }

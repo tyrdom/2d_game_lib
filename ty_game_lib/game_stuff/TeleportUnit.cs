@@ -44,19 +44,20 @@ namespace game_stuff
             return contains;
         }
 
-        public IEnumerable<IMapInteractable> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             switch (interactive)
             {
                 case MapInteract.GetInfoCall:
                     //todo get mapinfo to character
-                    return new IMapInteractable[] { };
+                    return null;
                 case MapInteract.BuyOrApplyCall:
                     var removeBody = FromPlayGround?.RemoveBody(characterStatus.CharacterBody);
                     if (removeBody == null || !removeBody.Value)
                         throw new IndexOutOfRangeException($"remove body fail {characterStatus.GId}");
                     ToPlayGround.AddBody(characterStatus.CharacterBody, ToPos);
-                    return new IMapInteractable[] { };
+                    
+                    return new TelePort(ToPlayGround.MgId);
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);

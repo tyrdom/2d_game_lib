@@ -7,7 +7,6 @@ namespace game_stuff
         public HitResult(ICanBeHit hitBody, bool killBullet, CharacterBody casterOrOwner, IHitMedia hitMedia)
         {
             HitBody = hitBody;
-
             KillBullet = killBullet;
             CasterOrOwner = casterOrOwner;
             HitMedia = hitMedia;

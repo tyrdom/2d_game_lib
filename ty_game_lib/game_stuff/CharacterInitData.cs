@@ -70,7 +70,7 @@ namespace game_stuff
 
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
                 AngleSight.StandardAngleSight(),
-                TeamId, BodyMark);
+                TeamId);
             return characterBody;
         }
     }

@@ -6,6 +6,19 @@ using game_config;
 
 namespace game_stuff
 {
+    public class RadarSeeMsg : ISeeTickMsg
+    {
+        public RadarSeeMsg(TwoDPoint someThingPos, BodySize size)
+        {
+            SomeThingPos = someThingPos;
+            Size = size;
+        }
+
+        public TwoDPoint SomeThingPos { get; }
+
+        public BodySize Size { get; }
+    }
+
     public class RadarWave : IHitMedia
     {
         public RadarWave(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
