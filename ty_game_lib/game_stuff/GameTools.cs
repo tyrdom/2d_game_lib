@@ -8,7 +8,7 @@ namespace game_stuff
 {
     public static class GameTools
     {
-        public static base_attribute GenBaseAttrById(base_attr_id baseAttrId)
+        public static base_attribute GenBaseAttrById(int baseAttrId)
         {
             if (!LocalConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
                 throw new ArgumentException($"not such attr{baseAttrId}");

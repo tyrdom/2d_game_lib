@@ -71,6 +71,8 @@
       <EmbeddedResource Include="Resources\self_effect_s.json" />
       <None Remove="Resources\standard_level_up_s.json" />
       <EmbeddedResource Include="Resources\standard_level_up_s.json" />
+      <None Remove="Resources\rogue_game_chapter_s.json" />
+      <EmbeddedResource Include="Resources\rogue_game_chapter_s.json" />
     </ItemGroup>
 
 </Project>

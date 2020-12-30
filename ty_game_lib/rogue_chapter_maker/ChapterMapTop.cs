@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using game_config;
 
 namespace rogue_chapter_maker
 {
@@ -70,11 +72,12 @@ namespace rogue_chapter_maker
             };
         }
 
-        public static ChapterMapTop GenAChapterMap(int big, int small)
+        public static ChapterMapTop GenAChapterMap(int big, int small, int vendor, int hangar, bool startB,
+            bool finishB, int vStart, int vRangeCount, int hStart, int hRangeCount)
         {
-            var enumerable = Enumerable.Range(1, big);
+            var enumerable = Enumerable.Range(1, big + hangar);
             var nowSlot = (0, 0);
-            var enumerable2 = Enumerable.Range(1, small);
+            var enumerable2 = Enumerable.Range(1, small + vendor);
             var genAChapterMap = new ChapterMapTop();
             foreach (var _ in enumerable)
             {
@@ -83,10 +86,14 @@ namespace rogue_chapter_maker
                 nowSlot = genAChapterMap.GenANewSlot();
             }
 
-            var e = new PointMap(MapType.In, 1, 1, 1, 1, nowSlot);
-            genAChapterMap.AddMapPoint(e);
-            nowSlot = genAChapterMap.GenANewSlot();
-            genAChapterMap.SetFinishSlot(e);
+            PointMap? startP = null;
+            if (startB)
+            {
+                startP = new PointMap(MapType.BigStart, 1, 1, 1, 1, nowSlot);
+                genAChapterMap.AddMapPoint(startP);
+                nowSlot = genAChapterMap.GenANewSlot();
+            }
+
 
             foreach (var _ in enumerable2)
             {
@@ -95,21 +102,95 @@ namespace rogue_chapter_maker
                 nowSlot = genAChapterMap.GenANewSlot();
             }
 
+            if (!startB)
+            {
+                startP = new PointMap(MapType.SmallStart, 1, 1, 1, 1, nowSlot);
+                genAChapterMap.AddMapPoint(startP);
+            }
+
+            if (startP == null)
+            {
+                throw new Exception("have not set a start!");
+            }
+
+            genAChapterMap.SetFinishSlot(startP, finishB ? MapType.Big : MapType.Small);
+            if (hangar > 0)
+            {
+                genAChapterMap.SetHangars(startP, hStart, hRangeCount, hangar);
+            }
+
+            if (vendor > 0)
+            {
+                genAChapterMap.SetVendors(startP, vStart, vRangeCount, vendor);
+            }
+
             return genAChapterMap;
         }
 
-        private void SetFinishSlot(PointMap pointMap)
+        private void SetVendors(PointMap start, int rate, int rangeCount, int num)
         {
+            var findFarMap = FindFarMaps(start, MapType.Small, rate, rangeCount, num);
+
+
+            foreach (var pointMap in findFarMap)
+            {
+                pointMap.SetVendor();
+            }
+        }
+
+        private void SetHangars(PointMap start, int rate, int rangeCount, int num)
+        {
+            var findFarMap = FindFarMaps(start, MapType.Big, rate, rangeCount, num);
+
+            foreach (var pointMap in findFarMap)
+            {
+                pointMap.SetHangar();
+            }
+        }
+
+        private List<PointMap> FindFarMaps(PointMap pointMap, MapType needType, int startIndex, int countRange, int num)
+        {
+            var valueTuples = PointMaps.Where(m => m.MapType == needType)
+                .Select(map => (map.GetDistance(pointMap), map))
+                .ToList();
+            valueTuples.Sort((tuple, valueTuple) => tuple.Item1.CompareTo(valueTuple.Item1));
+            var tuples = valueTuples.GetRange(startIndex - 1, countRange);
+            var pointMaps = tuples.Select(x => x.map).ToList();
+            pointMaps.Shuffle();
+            if (pointMaps.Count < num)
+            {
+                throw new Exception("not big enough map to set shop");
+            }
+
+            var range = pointMaps.GetRange(0, num);
+
+            return range;
+        }
+
+        private PointMap? FindFarMap(PointMap pointMap, MapType needType)
+        {
+            var valueTuples = PointMaps.Where(m => m.MapType == needType).Select(x => (x.GetDistance(pointMap), x))
+                .ToList();
+            valueTuples.Sort((tuple, valueTuple) => -tuple.Item1.CompareTo(valueTuple.Item1));
+            var (_, pointMap1) = valueTuples.FirstOrDefault();
+            return pointMap == pointMap1 ? null : pointMap1;
             (int distance, PointMap? farMap) func = (0, null);
-            var (distance, farMap) = PointMaps.Aggregate(func, (a, map) =>
+            var (_, farMap) = PointMaps.Aggregate(func, (a, map) =>
             {
                 var intPtr = map.GetDistance(pointMap);
+                var b = map.MapType == needType;
                 var (dis, fMap) = a;
-                return intPtr > dis ? (intPtr, map) : (dis, fMap);
+                return intPtr > dis && b ? (intPtr, map) : (dis, fMap);
             });
-            if (farMap == null) throw new ArgumentNullException($"not big enough map {distance}");
-            CanLinks.ExceptWith(farMap.Links);
-            farMap.SetFinish();
+            return farMap;
+        }
+
+        private void SetFinishSlot(PointMap pointMap, MapType needType)
+        {
+            var findFarMap = FindFarMap(pointMap, needType);
+            if (findFarMap == null) throw new ArgumentNullException($"not big enough map ");
+            CanLinks.ExceptWith(findFarMap.Links);
+            findFarMap.SetFinish();
         }
 
         private void AddMapPoint(PointMap pointMap)

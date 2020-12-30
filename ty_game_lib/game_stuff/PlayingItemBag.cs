@@ -8,7 +8,7 @@ namespace game_stuff
 {
     public class PlayingItemBag
     {
-        private Dictionary<int, int> GameItems { get; }
+        public Dictionary<int, int> GameItems { get; }
 
         private PlayingItemBag(Dictionary<int, int> gameItems)
         {

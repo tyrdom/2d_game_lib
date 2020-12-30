@@ -10,7 +10,7 @@ namespace game_stuff
     {
         public TrapSetter(bool canBeSee, int? failChanceStack, BodySize bodySize, uint callTrapTick,
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
-            base_attr_id? baseAttrId)
+            int? baseAttrId)
         {
             CanBeSee = canBeSee;
             FailChanceStack = failChanceStack;
@@ -79,7 +79,7 @@ namespace game_stuff
             return trap;
         }
 
-        private base_attr_id? BaseAttrId { get; }
+        private int? BaseAttrId { get; }
         private bool CanBeSee { get; }
         private int? FailChanceStack { get; }
         private BodySize BodySize { get; }

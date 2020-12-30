@@ -10,10 +10,10 @@ namespace game_stuff
     public struct SurvivalStatus
     {
         private uint MaxHp { get; set; }
-        private uint NowHp { get; set; }
+        public uint NowHp { get; private set; }
 
 
-        private uint NowArmor { get; set; }
+        public uint NowArmor { get; private set; }
         private uint MaxArmor { get; set; }
 
         private uint ArmorDefence { get; set; }

@@ -27,7 +27,7 @@ namespace game_stuff
 
             var characterInitData =
                 CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small, BodyMark.Player,
-                    base_attr_id.standard_body);
+                    1);
 #if DEBUG
             Console.Out.WriteLine($"Test P1 ok");
 #endif
@@ -41,7 +41,7 @@ namespace game_stuff
 
             var characterInitData =
                 CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small, BodyMark.Player,
-                    base_attr_id.standard_body);
+                    1);
 #if DEBUG
             Console.Out.WriteLine($"Test P2 ok");
 #endif

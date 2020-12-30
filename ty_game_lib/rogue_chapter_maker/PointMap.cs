@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
 
 namespace rogue_chapter_maker
 {
     public enum MapType
     {
-        In,
-        End,
+        BigStart,
+        BigEnd,
         Small,
-        Big
+        Big,
+        SmallStart,
+        SmallEnd,
+        Vendor,
+        Hangar
     }
 
     public class PointMap
@@ -19,10 +22,14 @@ namespace rogue_chapter_maker
         {
             return MapType switch
             {
-                MapType.Small => 'S',
-                MapType.Big => 'B',
-                MapType.In => 'I',
-                MapType.End => 'E',
+                MapType.Small => 'x',
+                MapType.Big => 'X',
+                MapType.BigStart => 'S',
+                MapType.BigEnd => 'E',
+                MapType.SmallStart => 's',
+                MapType.SmallEnd => 'e',
+                MapType.Vendor => 'v',
+                MapType.Hangar => 'H',
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -63,11 +70,19 @@ namespace rogue_chapter_maker
 
         public void SetFinish()
         {
-            MapType = MapType.End;
+            if (MapType == MapType.Big)
+            {
+                MapType = MapType.BigEnd;
+            }
+
+            if (MapType == MapType.Small)
+            {
+                MapType = MapType.SmallEnd;
+            }
         }
 
         public (int x, int y) Slot { get; }
-        public MapType MapType { get; set; }
+        public MapType MapType { get; private set; }
 
         public List<Link> Links { get; }
 
@@ -133,8 +148,18 @@ namespace rogue_chapter_maker
         {
             var slotX = Slot.x - pointMap.Slot.x;
             var slotY = Slot.y - pointMap.Slot.y;
-            return slotX * slotX +
-                   slotY * slotY;
+            return Math.Abs(slotX) +
+                   Math.Abs(slotY);
+        }
+
+        public void SetHangar()
+        {
+            MapType = MapType.Hangar;
+        }
+
+        public void SetVendor()
+        {
+            MapType = MapType.Vendor;
         }
     }
 }

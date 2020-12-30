@@ -17,7 +17,7 @@ namespace game_stuff
     {
         public LevelUps LevelUps { get; }
         public CharacterBody CharacterBody;
-        public base_attr_id BaseAttrId { get; }
+        public int BaseAttrId { get; }
         public float MaxMoveSpeed { get; private set; }
 
         public float MinMoveSpeed { get; private set; }
@@ -39,7 +39,7 @@ namespace game_stuff
 
         private int NowSnipeStep { get; set; }
 
-        private int NowAmmo { get; set; }
+        public int NowAmmo { get; set; }
 
         private int GetAmmo()
         {
@@ -70,7 +70,7 @@ namespace game_stuff
             return NowVehicle?.WeaponCarryMax ?? MaxWeaponSlot;
         }
 
-        private Dictionary<int, Weapon> Weapons { get; }
+        public Dictionary<int, Weapon> Weapons { get; }
 
         public Dictionary<int, Weapon> GetWeapons()
         {
@@ -83,7 +83,7 @@ namespace game_stuff
         private (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
         //Prop
-        private Prop? Prop { get; set; }
+        public Prop? Prop { get; set; }
 
         private int NowPropStack { get; set; }
 
@@ -163,7 +163,7 @@ namespace game_stuff
 
         public ICharRuleData CharRuleData { get; }
 
-        public CharacterStatus(int gId, int maxProtectValue, base_attr_id baseAttrId, PlayingItemBag playingItemBag,
+        public CharacterStatus(int gId, int maxProtectValue, int baseAttrId, PlayingItemBag playingItemBag,
             LevelUps playRuler)
         {
             LevelUps = playRuler;
@@ -494,7 +494,7 @@ namespace game_stuff
             }
 
             var dropThings = getThing.ActWhichChar(this, interactive);
-            
+
             List<IMapInteractable>? dropThings1DropSet = null;
             int? t = null;
             switch (dropThings)

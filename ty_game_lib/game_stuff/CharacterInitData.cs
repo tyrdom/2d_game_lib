@@ -16,10 +16,10 @@ namespace game_stuff
 
         private BodyMark BodyMark { get; }
 
-        private base_attr_id BaseAttrId { get; }
+        private int BaseAttrId { get; }
 
         public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, BodyMark bodyMark,
-            base_attr_id baseAttrId)
+            int baseAttrId)
         {
             var dictionary = new Dictionary<int, Weapon>();
             for (var i = 0; i < MathTools.Min(LocalConfig.StandardWeaponNum, weapons.Length); i++)
@@ -41,7 +41,7 @@ namespace game_stuff
         }
 
         private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize,
-            BodyMark bodyMark, base_attr_id baseAttrId)
+            BodyMark bodyMark, int baseAttrId)
         {
             Gid = gid;
             TeamId = teamId;

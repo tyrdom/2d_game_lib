@@ -60,7 +60,7 @@ namespace game_stuff
 
         private Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             uint destroyTick, int weaponCarryMax,
-            Skill outAct, base_attr_id baseAttrId, int vId)
+            Skill outAct, int baseAttrId, int vId)
         {
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
@@ -101,7 +101,7 @@ namespace game_stuff
         public float MaxMoveSpeed { get; set; }
         public float MinMoveSpeed { get; }
         public float AddMoveSpeed { get; }
-        public base_attr_id BaseAttrId { get; }
+        public int BaseAttrId { get; }
         public Scope Scope { get; }
         public Dictionary<int, Weapon> Weapons { get; }
 
@@ -185,11 +185,6 @@ namespace game_stuff
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
         {
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
-        }
-
-        public void PassiveEffectChangeRegen(Vector<float> regenAttrPassiveEffects, RegenEffectStatus regenBaseAttr)
-        {
-            throw new NotImplementedException();
         }
 
 

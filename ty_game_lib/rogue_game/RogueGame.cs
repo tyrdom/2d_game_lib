@@ -13,80 +13,26 @@ namespace rogue_game
 
     public readonly struct KickPlayer : IGameRequest
     {
+        public KickPlayer(int seat)
+        {
+            Seat = seat;
+        }
+
         public int Seat { get; }
     }
 
     public readonly struct RebornPlayer : IGameRequest
     {
+        public RebornPlayer(int seat)
+        {
+            Seat = seat;
+        }
+
         public int Seat { get; }
     }
 
     public interface IGameRequest
     {
-    }
-
-    public struct RogueGamePlayer
-    {
-        public RogueGamePlayer(CharacterBody player, PveMap inPlayPveMap)
-        {
-            Player = player;
-            InPlayGround = inPlayPveMap;
-            FinalBill = new Deal();
-        }
-
-        public CharacterBody Player { get; }
-        public PveMap InPlayGround { get; set; }
-
-        public void SetPveMap(PveMap pveMap)
-        {
-            InPlayGround = pveMap;
-        }
-
-        public Deal FinalBill { get; }
-    }
-
-    public class Deal
-    {
-        public Dictionary<int, int> Cost { get; }
-        public Dictionary<int, int> Gain { get; }
-
-        public Deal()
-        {
-            Cost = new Dictionary<int, int>();
-            Gain = new Dictionary<int, int>();
-        }
-
-        private static void Add(IEnumerable<GameItem> gameItems, IDictionary<int, int> add)
-        {
-            {
-                var sumSame = GameItem.SumSame(gameItems);
-                var enumerable = sumSame.Where(x => LocalConfig.CanEndRest(x.ItemId));
-                foreach (var gameItem in enumerable)
-                {
-                    var gameItemItemId = gameItem.ItemId;
-                    var itemNum = gameItem.Num;
-                    if (add.TryGetValue(gameItemItemId, out var num))
-                    {
-                        var gameItemNum = num + itemNum;
-                        add[gameItemItemId] = gameItemNum;
-                    }
-                    else
-                    {
-                        add[gameItemItemId] = itemNum;
-                    }
-                }
-            }
-        }
-
-        public void AddCost(IEnumerable<GameItem> gameItems)
-        {
-            Add(gameItems, Cost);
-        }
-
-        public void AddGain(IEnumerable<GameItem> gameItems)
-        {
-            Add(gameItems, Gain);
-        }
     }
 
     public class RogueGame
@@ -227,12 +173,12 @@ namespace rogue_game
             var playGroundGoTickResult = PlayGroundGoTickResult.Sum(playGroundGoTickResults);
             var (_, _, _, teleportTo)
                 = playGroundGoTickResult;
-            foreach (var keyValuePair in teleportTo)
+            foreach (var kv in teleportTo)
             {
-                if (NowGamePlayers.TryGetValue(keyValuePair.Key, out var gamePlayer) &&
-                    NowChapter.MGidToMap.TryGetValue(keyValuePair.Value, out var pveMap))
+                if (NowGamePlayers.TryGetValue(kv.Key, out var gamePlayer) &&
+                    NowChapter.MGidToMap.TryGetValue(kv.Value, out var pveMap))
                 {
-                    gamePlayer.InPlayGround = pveMap;
+                    gamePlayer.Teleport(pveMap);
                 }
 
                 throw new DirectoryNotFoundException();

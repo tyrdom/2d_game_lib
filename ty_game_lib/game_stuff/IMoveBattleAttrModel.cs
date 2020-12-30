@@ -10,7 +10,7 @@ namespace game_stuff
         float MinMoveSpeed { get; }
         float AddMoveSpeed { get; }
 
-        base_attr_id BaseAttrId { get; }
+        int BaseAttrId { get; }
         SurvivalStatus SurvivalStatus { get; }
         AbsorbStatus AbsorbStatus { get; }
         RegenEffectStatus RegenEffectStatus { get; }

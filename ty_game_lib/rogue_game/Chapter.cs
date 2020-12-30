@@ -6,8 +6,6 @@ using game_stuff;
 
 namespace rogue_game
 {
-  
-
     public class PveMap
     {
         public PveMap(PlayGround playGround, HashSet<CharacterBody> bosses, HashSet<CharacterBody> creeps,
@@ -44,7 +42,7 @@ namespace rogue_game
         }
 
         public PlayGroundGoTickResult PlayGroundGoATick(
-                Dictionary<int, Operate> valuePairs)
+            Dictionary<int, Operate> valuePairs)
         {
             return PlayGround.PlayGroundGoATick(valuePairs);
         }
@@ -59,6 +57,11 @@ namespace rogue_game
             }
 
             PlayGround.AddBodies(valueTuples);
+        }
+
+        public int GetMId()
+        {
+            return PlayGround.MgId;
         }
     }
 
