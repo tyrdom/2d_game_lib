@@ -3,7 +3,7 @@ using game_stuff;
 
 namespace rogue_game
 {
-    public class PlayerSave
+    public readonly struct PlayerSave
     {
         public int[] WeaponIds { get; }
 
@@ -70,7 +70,7 @@ namespace rogue_game
             var vNowAmmo = characterStatusNowVehicle?.NowAmmo ?? -1;
             var vWeaponIds = characterStatusNowVehicle?.Weapons.Keys.ToArray();
             var bagData = characterStatus.PlayingItemBag.GameItems.Select(p => new GameItem(p.Key, p.Value)).ToArray();
-            
+
             return new PlayerSave(weaponIds, baseAttrId, vehicleId, vWeaponIds, bagData, passiveData, propId, nowHp,
                 nowArmor,
                 nowAmmo, vNowHp, vNowArmor, vNowAmmo);

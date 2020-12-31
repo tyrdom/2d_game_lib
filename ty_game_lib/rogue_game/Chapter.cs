@@ -9,15 +9,17 @@ namespace rogue_game
     public class PveMap
     {
         public PveMap(PlayGround playGround, HashSet<CharacterBody> bosses, HashSet<CharacterBody> creeps,
-            PveWinCond pveWinCond, TwoDPoint[] enterPoints)
+            PveWinCond pveWinCond, TwoDPoint[] enterPoints, int resMap)
         {
             PlayGround = playGround;
             Bosses = bosses;
             Creeps = creeps;
             PveWinCond = pveWinCond;
             EnterPoints = enterPoints;
+            ResMap = resMap;
         }
 
+        public int ResMap { get; }
         private PlayGround PlayGround { get; }
         public HashSet<CharacterBody> Bosses { get; }
         public HashSet<CharacterBody> Creeps { get; }

@@ -54,6 +54,13 @@ namespace rogue_chapter_maker
             return $"{t}\n{c}\n{b}\n";
         }
 
+        public PointMap((int x, int y) slot, MapType mapType, List<Link> links)
+        {
+            Slot = slot;
+            MapType = mapType;
+            Links = links;
+        }
+
         public PointMap(MapType mapType, int n, int s, int e, int w, (int x, int y) slot)
         {
             MapType = mapType;
