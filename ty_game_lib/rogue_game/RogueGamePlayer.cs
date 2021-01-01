@@ -4,12 +4,12 @@ namespace rogue_game
 {
     public class RogueGamePlayer
     {
-        public RogueGamePlayer(CharacterBody player, PveMap inPlayPveMap, int lastTravelId, PlayerSave playerSave)
+        public RogueGamePlayer(CharacterBody player, PveMap inPlayPveMap, int lastTravelId)
         {
             Player = player;
             InPlayGround = inPlayPveMap;
             LastTravelId = lastTravelId;
-            PlayerSave = playerSave;
+            PlayerSave = PlayerSave.GenPlayerSave(player.CharacterStatus, inPlayPveMap.GetMId());
             FinalBill = new FinalDeal();
         }
 
@@ -27,7 +27,7 @@ namespace rogue_game
 
         public void Teleport(PveMap pveMap)
         {
-            var lastTravelId = InPlayGround.IsClear();
+            var lastTravelId = InPlayGround.IsClearAndSave();
             if (lastTravelId)
             {
                 var mId = InPlayGround.GetMId();
@@ -35,6 +35,12 @@ namespace rogue_game
             }
 
             InPlayGround = pveMap;
+        }
+
+        public void PlayerGoSave()
+        {
+            var playerCharacterStatus = Player.CharacterStatus;
+            PlayerSave.Save(playerCharacterStatus, InPlayGround.GetMId());
         }
     }
 }

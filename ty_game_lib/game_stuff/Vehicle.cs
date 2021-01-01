@@ -111,7 +111,7 @@ namespace game_stuff
         public int WeaponCarryMax { get; }
         private uint DestroyTick { get; }
 
-        public bool IsDsOn { get; set; }
+        public bool IsDsOn { get; private set; }
         private uint NowDsTick { get; set; }
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
@@ -161,6 +161,7 @@ namespace game_stuff
 
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
 
+        public void SetAmmo(int ammo) => NowAmmo = ammo;
         public void ReloadAmmo(float reloadMulti)
         {
             NowAmmo = (int) Math.Min(MaxAmmo, NowAmmo + MaxAmmo * reloadMulti * RegenEffectStatus.ReloadEffect);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using collision_and_rigid;
 using game_stuff;
 
 namespace rogue_game
@@ -131,7 +132,7 @@ namespace rogue_game
             return false;
         }
 
-        public LevelUps GetLevelUp()
+        public static LevelUps GetLevelUp()
         {
             return new LevelUps(RogueLevelData());
         }
@@ -141,7 +142,7 @@ namespace rogue_game
             return gameRequest switch
             {
                 KickPlayer kickPlayer => callSeat == PlayerLeaderSeat && LeaveGame(kickPlayer.Seat),
-                Leave leave => LeaveGame(callSeat),
+                Leave _ => LeaveGame(callSeat),
                 RebornPlayer rebornPlayer => Reborn(callSeat, rebornPlayer.Seat),
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
             };
@@ -160,6 +161,10 @@ namespace rogue_game
             IsFail();
         }
 
+        public void GoATick()
+        {
+        }
+
         public PlayGroundGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
         {
             var groupBy = NowGamePlayers.Values.GroupBy(x => x.InPlayGround);
@@ -168,6 +173,12 @@ namespace rogue_game
             {
                 var valuePairs = opDic.Where(x => rp.Select(r => r.Player.GetId()).Contains(x.Key))
                     .ToDictionary(p => p.Key, p => p.Value);
+                if (!rp.Key.IsClearAndSave()) return rp.Key.PlayGroundGoATick(valuePairs);
+                foreach (var rogueGamePlayer in rp)
+                {
+                    rogueGamePlayer.PlayerGoSave();
+                }
+
                 return rp.Key.PlayGroundGoATick(valuePairs);
             });
             var playGroundGoTickResult = PlayGroundGoTickResult.Sum(playGroundGoTickResults);

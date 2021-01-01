@@ -83,7 +83,7 @@ namespace game_stuff
         private (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
         //Prop
-        public Prop? Prop { get; set; }
+        public Prop? Prop { get; private set; }
 
         private int NowPropStack { get; set; }
 
@@ -163,8 +163,8 @@ namespace game_stuff
 
         public ICharRuleData CharRuleData { get; }
 
-        public CharacterStatus(int gId, int maxProtectValue, int baseAttrId, PlayingItemBag playingItemBag,
-            LevelUps playRuler)
+        public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
+            LevelUps playRuler,Dictionary<int,PassiveTrait>? passiveTraits = null)
         {
             LevelUps = playRuler;
             HaveChange = false;
@@ -196,8 +196,8 @@ namespace game_stuff
             NowProtectTick = 0;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
-            MaxProtectValue = maxProtectValue;
-            PassiveTraits = new Dictionary<int, PassiveTrait>();
+            MaxProtectValue = LocalConfig.ProtectTick;
+            PassiveTraits =passiveTraits?? new Dictionary<int, PassiveTrait>();
 
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
@@ -224,6 +224,10 @@ namespace game_stuff
             StartPassiveInitRefresh();
         }
 
+        public void StartPassiveInit(Dictionary<int, PassiveTrait> passiveTraits)
+        {
+           
+        }
         private void StartPassiveInitRefresh()
         {
             var groupBy = PassiveTraits.Values.GroupBy(x => x.GetType());

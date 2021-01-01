@@ -10,7 +10,7 @@ namespace game_stuff
     {
         public Dictionary<int, int> GameItems { get; }
 
-        private PlayingItemBag(Dictionary<int, int> gameItems)
+        public PlayingItemBag(Dictionary<int, int> gameItems)
         {
             GameItems = gameItems;
         }

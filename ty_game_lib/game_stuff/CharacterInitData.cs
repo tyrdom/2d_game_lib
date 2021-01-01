@@ -54,7 +54,7 @@ namespace game_stuff
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos, LevelUps playRuler)
         {
-            var characterStatus = new CharacterStatus(Gid, LocalConfig.TrickProtect, BaseAttrId,
+            var characterStatus = new CharacterStatus(Gid, BaseAttrId,
                 PlayingItemBag.InitByConfig(),playRuler);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
