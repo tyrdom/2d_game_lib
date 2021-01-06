@@ -18,7 +18,7 @@ namespace lib_unit_test
         [Test]
         public void Test1()
         {
-            var genAChapterMap = rogue_chapter_maker.ChapterMapTop.GenAChapterMap(7, 3, 2, 3, false, true, 2, 1, 3, 2);
+            var genAChapterMap = rogue_chapter_maker.ChapterMapTop.GenAChapterMap(7, 3, 1, 1, false, true, 2, 1, 3, 2);
             var selectMany = genAChapterMap.PointMaps.SelectMany(x => x.ToString());
             var s = new string(selectMany.ToArray());
             Assert.Pass(s);
@@ -28,7 +28,7 @@ namespace lib_unit_test
         public void Test2()
         {
             var genAChapterMap =
-                rogue_chapter_maker.ChapterMapTop.GenAChapterMap(15, 9, 1, 2, false, false, 4, 3, 8, 5);
+                rogue_chapter_maker.ChapterMapTop.GenAChapterMap(7, 3, 1, 1, false, false, 2, 1, 4, 2);
 
             Assert.Pass(genAChapterMap.ToString());
         }
