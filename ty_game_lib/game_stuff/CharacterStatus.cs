@@ -80,6 +80,12 @@ namespace game_stuff
 
         public ICharAct? NowCastAct { get; private set; }
 
+        private void SetAct(ICharAct charAct)
+        {
+            NowProtectValue = 0;
+            NowCastAct = charAct;
+        }
+
         private (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
 
         //Prop
@@ -164,7 +170,7 @@ namespace game_stuff
         public ICharRuleData CharRuleData { get; }
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
-            LevelUps playRuler,Dictionary<int,PassiveTrait>? passiveTraits = null)
+            LevelUps playRuler, Dictionary<int, PassiveTrait>? passiveTraits = null)
         {
             LevelUps = playRuler;
             HaveChange = false;
@@ -197,7 +203,7 @@ namespace game_stuff
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             MaxProtectValue = LocalConfig.ProtectTick;
-            PassiveTraits =passiveTraits?? new Dictionary<int, PassiveTrait>();
+            PassiveTraits = passiveTraits ?? new Dictionary<int, PassiveTrait>();
 
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
@@ -226,8 +232,8 @@ namespace game_stuff
 
         public void StartPassiveInit(Dictionary<int, PassiveTrait> passiveTraits)
         {
-           
         }
+
         private void StartPassiveInitRefresh()
         {
             var groupBy = PassiveTraits.Values.GroupBy(x => x.GetType());
@@ -282,6 +288,7 @@ namespace game_stuff
             return weaponZoomStepScope;
         }
 
+
         private void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
         {
             //装载技能时，重置速度和锁定角色
@@ -294,7 +301,7 @@ namespace game_stuff
 
             if (!skill.Launch(NowSnipeStep, GetAmmo())) return;
             SkillLaunch = skillAction;
-            NowCastAct = skill;
+            SetAct(skill);
         }
 
         private void ResetSpeed()
@@ -850,7 +857,7 @@ namespace game_stuff
                         if (Prop.Launch(NowPropStack))
                         {
                             NowPropStack -= Prop.StackCost;
-                            NowCastAct = Prop;
+                            SetAct(Prop);
                         }
 
                         break;
@@ -891,7 +898,7 @@ namespace game_stuff
             if (NowVehicle == null) return new CharGoTickResult();
             {
                 NowVehicle.OutAct.Launch(0, 0);
-                NowCastAct = NowVehicle.OutAct;
+                SetAct(NowVehicle.OutAct);
                 NowVehicle.WhoDriveOrCanDrive = null;
 
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
@@ -1040,7 +1047,7 @@ namespace game_stuff
             var b = NowCastAct == null;
             if (!b) return b;
             charAct.Launch();
-            NowCastAct = charAct;
+            SetAct(charAct);
             return b;
         }
 

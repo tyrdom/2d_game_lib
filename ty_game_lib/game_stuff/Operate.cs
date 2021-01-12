@@ -70,7 +70,7 @@ namespace game_stuff
         //Skill
         Op1,
         Op2,
-        Op3,
+        Op3,//备用
         Switch,
         CatchTrick //CantOperateInput
     }
@@ -96,7 +96,7 @@ namespace game_stuff
     {
         SnipeOn1,
         SnipeOn2,
-        SnipeOn3,
+        SnipeOn3,//备用
         SnipeOff
     }
 }
