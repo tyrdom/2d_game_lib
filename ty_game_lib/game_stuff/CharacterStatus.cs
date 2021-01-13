@@ -356,8 +356,21 @@ namespace game_stuff
                     SnipeCallStack = 1;
                 }
 
+
                 if (!GetWeapons().TryGetValue(NowWeapon, out var weapon) ||
-                    !weapon.Snipes.TryGetValue(snipeAction, out var snipe) || snipe.TrickTick >= SnipeCallStack) return;
+                    !weapon.Snipes.TryGetValue(snipeAction, out var snipe))
+                {
+                    if (NowTempSnipe == null) return;
+                    NowOnSnipeAct = SnipeAction.SnipeOff;
+                    OffSnipe(NowTempSnipe);
+                    return;
+                }
+
+                if (snipe.TrickTick >= SnipeCallStack)
+                {
+                    return;
+                }
+
 
                 NowOnSnipeAct = snipeAction;
                 SnipeCallStack = 0;
