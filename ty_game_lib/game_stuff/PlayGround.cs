@@ -54,7 +54,8 @@ namespace game_stuff
 
         public void Deconstruct(out ImmutableDictionary<int, ImmutableHashSet<HitResult>> playerBeHit,
             out ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> trapBeHit,
-            out ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> playerSee,out ImmutableDictionary<int, int> playerTeleportTo )
+            out ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> playerSee,
+            out ImmutableDictionary<int, int> playerTeleportTo)
         {
             playerSee = PlayerSee;
             trapBeHit = TrapBeHit;
@@ -251,27 +252,38 @@ namespace game_stuff
 
             var vehicleCanIns = new List<VehicleCanIn>();
 
+            var tuples = new List<(TwoDPoint pos, Weapon[] weapons)>();
 
             static void Act(VehicleCanIn vehicleCanIn,
-                (List<IHitMedia> bullets, List<VehicleCanIn>vehicleCanIns) valueTuple)
+                (List<IHitMedia> bullets, List<VehicleCanIn>vehicleCanIns, List<(TwoDPoint pos, Weapon[] weapons)>
+                    weaponsDrop) valueTuple)
             {
-                var goATick = vehicleCanIn.GoATick();
+                var (bullet, weapons) = vehicleCanIn.GoATick();
 
-                if (goATick == null) return;
-                var (bullets, vehicleCanIns) = valueTuple;
-                bullets.Add(goATick);
+                if (bullet == null) return;
+                var (bullets, vehicleCanIns, weaponsDrop) = valueTuple;
+                bullets.Add(bullet);
                 vehicleCanIns.Add(vehicleCanIn);
+                var twoDPoint = vehicleCanIn.GetAnchor();
+                weaponsDrop.Add((twoDPoint, weapons));
             }
 
             MapInteractableThings
-                .ForeachBoxDoWithOutMove<(List<IHitMedia> bullets, List<VehicleCanIn>vehicleCanIns), VehicleCanIn>(Act,
-                    (mapInteractables, vehicleCanIns));
+                .ForeachBoxDoWithOutMove<(List<IHitMedia> bullets,
+                    List<VehicleCanIn> vehicleCanIns,
+                    List<(TwoDPoint pos, Weapon[] weapons)> weaponsDrop
+                    ), VehicleCanIn>(Act,
+                    (mapInteractables, vehicleCanIns, tuples));
             TeamToHitMedia[-1] = mapInteractables;
 
             foreach (var vehicleCanIn in vehicleCanIns)
             {
                 MapInteractableThings.RemoveSingleAaBbBox(vehicleCanIn);
             }
+
+            var selectMany = tuples.SelectMany(x => x.weapons.Select(w => (IAaBbBox) w.DropAsIMapInteractable(x.pos)));
+            var enumerableToHashSet = SomeTools.EnumerableToHashSet(selectMany);
+            MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
         }
 
 
@@ -691,9 +703,9 @@ namespace game_stuff
             foreach (var valueTuples in groupBy)
             {
                 var team = valueTuples.Key;
-                foreach (var valueTuple in valueTuples)
+                foreach (var (characterBody, pos) in valueTuples)
                 {
-                    valueTuple.characterBody.Teleport(valueTuple.pos);
+                    characterBody.Teleport(pos);
                 }
 
                 var enumerableToHashSet = SomeTools.EnumerableToHashSet(valueTuples.Select(x => x.characterBody.InBox));

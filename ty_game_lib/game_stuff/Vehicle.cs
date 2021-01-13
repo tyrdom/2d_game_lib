@@ -96,7 +96,7 @@ namespace game_stuff
         public CharacterStatus? WhoDriveOrCanDrive { get; set; }
         public BodySize Size { get; }
 
-        public float MaxMoveSpeed { get; set; }
+        public float MaxMoveSpeed { get; private set; }
         public float MinMoveSpeed { get; }
         public float AddMoveSpeed { get; }
         public int BaseAttrId { get; }
@@ -118,14 +118,14 @@ namespace game_stuff
 
         public float RecycleMulti { get; private set; }
 
-        public (bool isBroken, Bullet? destroyBullet) GoATickCheckSurvival()
+        public (bool isBroken, Bullet? destroyBullet, Weapon[] weapons) GoATickCheckSurvival()
         {
             if (IsDsOn)
             {
                 NowDsTick++;
                 if (NowDsTick > DestroyTick)
                 {
-                    return (IsDsOn, DestroyBullet);
+                    return (IsDsOn, DestroyBullet, Weapons.Values.ToArray());
                 }
             }
 
@@ -135,7 +135,7 @@ namespace game_stuff
                 IsDsOn = true;
             }
 
-            return (IsDsOn, null);
+            return (IsDsOn, null, new Weapon[] { });
         }
 
         public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
@@ -160,6 +160,7 @@ namespace game_stuff
         public void AddAmmo(int ammoAdd) => NowAmmo = Math.Min(MaxAmmo, NowAmmo + ammoAdd);
 
         public void SetAmmo(int ammo) => NowAmmo = ammo;
+
         public void ReloadAmmo(float reloadMulti)
         {
             NowAmmo = (int) Math.Min(MaxAmmo, NowAmmo + MaxAmmo * reloadMulti * RegenEffectStatus.ReloadEffect);
@@ -237,7 +238,7 @@ namespace game_stuff
 
         private IEnumerable<IMapInteractable> KickBySomeBody(TwoDPoint pos)
         {
-            var opos = InWhichMapInteractive == null ? pos : ((IAaBbBox) InWhichMapInteractive).GetAnchor().GetMid(pos);
+            var opos = InWhichMapInteractive == null ? pos : InWhichMapInteractive.GetAnchor().GetMid(pos);
 
             var mapIntractable = Weapons.Select(x => x.Value.DropAsIMapInteractable(opos));
             Weapons.Clear();

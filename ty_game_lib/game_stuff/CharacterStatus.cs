@@ -547,14 +547,14 @@ namespace game_stuff
 
             var dropThings = getThing.ActWhichChar(this, interactive);
 
-            List<IMapInteractable>? dropThings1DropSet = null;
+            HashSet<IAaBbBox>? dropThings1DropSet = null;
             int? t = null;
             switch (dropThings)
             {
                 case null:
                     break;
                 case DropThings dropThings1:
-                    dropThings1DropSet = dropThings1.DropSet.ToList();
+                    dropThings1DropSet = SomeTools.EnumerableToHashSet(dropThings1.DropSet.Cast<IAaBbBox>());
                     break;
                 case TelePort telePort:
                     t = telePort.GMid;
@@ -693,7 +693,7 @@ namespace game_stuff
 //
             if (NowVehicle != null)
             {
-                var (isBroken, destroyBullet) = NowVehicle.GoATickCheckSurvival();
+                var (isBroken, destroyBullet, weapons) = NowVehicle.GoATickCheckSurvival();
                 if (isBroken)
                 {
                     if (operate?.SpecialAction == SpecialAction.OutVehicle)
@@ -706,7 +706,11 @@ namespace game_stuff
 
 
                     NowVehicle = null;
-                    return new CharGoTickResult(launchBullet: destroyBullet);
+                    NowProtectTick = 0;
+
+                    var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
+                    return new CharGoTickResult(launchBullet: destroyBullet,
+                        dropThing: SomeTools.EnumerableToHashSet(mapInteractables.Cast<IAaBbBox>()));
                 }
             }
 
@@ -948,7 +952,7 @@ namespace game_stuff
 
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                 NowVehicle = null;
-                return new CharGoTickResult(dropThing: new List<IMapInteractable> {genIMapInteractable});
+                return new CharGoTickResult(dropThing: new HashSet<IAaBbBox> {genIMapInteractable});
             }
         }
 

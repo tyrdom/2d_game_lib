@@ -8,7 +8,7 @@ namespace game_stuff
     {
         public CharGoTickResult(bool stillActive = true, ITwoDTwoP? move = null,
             IPosMedia? launchBullet = null,
-            List<IMapInteractable>? dropThing = null,
+            HashSet<IAaBbBox>? dropThing = null,
             IMapInteractable? getThing = null, ValueTuple<MapInteract, CharacterBody>? mapInteractiveAbout = null,
             int? teleTo = null)
         {
@@ -16,7 +16,7 @@ namespace game_stuff
             StillActive = stillActive;
             Move = move;
             LaunchBullet = launchBullet;
-            DropThing = dropThing ?? new List<IMapInteractable>();
+            DropThing = dropThing ?? new HashSet<IAaBbBox>();
             GetThing = getThing;
             WhoInteractCall = mapInteractiveAbout?.Item2;
             TeleportToMapId = teleTo;
@@ -26,7 +26,7 @@ namespace game_stuff
         public bool StillActive { get; }
         public ITwoDTwoP? Move { get; }
         public IPosMedia? LaunchBullet { get; }
-        public List<IMapInteractable> DropThing { get; }
+        public HashSet<IAaBbBox> DropThing { get; }
         public IMapInteractable? GetThing { get; }
         public MapInteract? MapInteractive { get; }
         public CharacterBody? WhoInteractCall { get; }
