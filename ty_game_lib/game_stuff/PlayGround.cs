@@ -156,7 +156,7 @@ namespace game_stuff
                 applyDevice.SetInPlayGround(playGround);
             }
 
-            var aaBbBoxes = SomeTools.EnumerableToHashSet(mapInitData.StandardMapInteractableList.Cast<IAaBbBox>());
+            var aaBbBoxes = SomeTools.EnumerableToHashSet(mapInitData.StandardMapInteractableList.OfType<IAaBbBox>());
             playGround.MapInteractableThings.AddRangeAabbBoxes(aaBbBoxes,
                 LocalConfig.QSpaceBodyMaxPerLevel);
 
