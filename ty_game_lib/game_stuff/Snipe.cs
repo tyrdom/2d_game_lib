@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -22,17 +23,15 @@ namespace game_stuff
             return value;
         }
 
-      
-        public Snipe(ImmutableDictionary<BodySize, float> moveSpeedMulti, int trickTick)
-        {
-            MoveSpeedMulti = moveSpeedMulti;
-            TrickTick = trickTick;
-        }
 
-        public Snipe(snipe snipe, ImmutableDictionary<BodySize, float> snipeMulti)
+        public Snipe(snipe snipe, ImmutableDictionary<BodySize, float> snipeMulti,int maxStep)
         {
+            if (snipe.TotalStep>maxStep)
+            {
+                throw new IndexOutOfRangeException($"not enough step for this snipe {snipe.id}");
+            }
             TrickTick = snipe.TrickTick;
-            MaxStep = snipe.TotalStep;
+            MaxStep = snipe.TotalStep-1;
             MoveSpeedMulti = snipeMulti.ToDictionary(pair => pair.Key, pair => pair.Value * snipe.MoveMulti)
                 .ToImmutableDictionary();
             AddStepPerTick = snipe.OnTickSpeed;

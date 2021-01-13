@@ -156,29 +156,31 @@ namespace game_stuff
 
             var snipes = new Dictionary<SnipeAction, Snipe>();
 
-            static Snipe? GetSnipeById(int id, ImmutableDictionary<BodySize, float> ff)
+            var weaponChangeRangeStep = weapon.ChangeRangeStep;
+
+            static Snipe? GetSnipeById(int id, ImmutableDictionary<BodySize, float> ff, int aWeaponChangeRangeStep)
             {
                 return LocalConfig.Configs.snipes.TryGetValue(id, out var snipe)
-                    ? new Snipe(snipe, ff)
+                    ? new Snipe(snipe, ff, aWeaponChangeRangeStep)
                     : null;
             }
 
             var floats = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => GetSize(x.body),
                 x => x.snipe_speed_fix
             ).ToImmutableDictionary() ?? throw new Exception($"weapon can not be picked by any one {weapon.id}");
-            var snipeById1 = GetSnipeById(weapon.Snipe1, floats);
+            var snipeById1 = GetSnipeById(weapon.Snipe1, floats, weaponChangeRangeStep);
             if (snipeById1 != null)
             {
                 snipes[SnipeAction.SnipeOn1] = snipeById1;
             }
 
-            var snipeById2 = GetSnipeById(weapon.Snipe2, floats);
+            var snipeById2 = GetSnipeById(weapon.Snipe2, floats, weaponChangeRangeStep);
             if (snipeById2 != null)
             {
                 snipes[SnipeAction.SnipeOn2] = snipeById2;
             }
 
-            var snipeById3 = GetSnipeById(weapon.Snipe3, floats);
+            var snipeById3 = GetSnipeById(weapon.Snipe3, floats, weaponChangeRangeStep);
             if (snipeById3 != null)
             {
                 snipes[SnipeAction.SnipeOn3] = snipeById3;
@@ -193,8 +195,8 @@ namespace game_stuff
             var immutableList = valueTuples.ToImmutableArray();
 
             var weaponMaxRangeMultiAdd = weapon.MaxRangeMulti - 1;
-            var enumerable = Enumerable.Range(1, weapon.ChangeRangeStep)
-                .Select(x => 1 + x * weaponMaxRangeMultiAdd / weapon.ChangeRangeStep).ToArray();
+            var enumerable = Enumerable.Range(1, weaponChangeRangeStep)
+                .Select(x => 1 + x * weaponMaxRangeMultiAdd / weaponChangeRangeStep).ToArray();
 
             var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
 
