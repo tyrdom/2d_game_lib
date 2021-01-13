@@ -32,9 +32,7 @@ namespace game_stuff
             var genSkillById = Skill.GenSkillById(vehicle.OutActSkill);
 
             var vehicleVScope = vehicle.VScope;
-            var vScope = vehicleVScope == null
-                ? Scope.StandardScope()
-                : new Scope(new TwoDVector(vehicleVScope.x, vehicleVScope.y));
+            var vScope = new Scope(new TwoDVector(vehicleVScope.x, vehicleVScope.y));
 
 
             var dictionary = new Dictionary<int, Weapon>();

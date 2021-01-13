@@ -63,7 +63,7 @@ namespace game_stuff
                 skill.PickedBySomeOne(characterStatus);
             }
 
-            ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.CharacterBody.Sight.StandardScope.GenNewScope(x))
+            ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.GetStandardScope().GenNewScope(x))
                 .ToArray();
             characterStatus.ResetSnipe();
             var weapons = characterStatus.GetWeapons();

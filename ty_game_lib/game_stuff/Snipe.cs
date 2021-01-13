@@ -15,6 +15,14 @@ namespace game_stuff
         public int OffStepPerTick { get; }
         public int TrickTick { get; }
 
+
+        public float? GetSpeedMulti(BodySize bodySize)
+        {
+            var value = MoveSpeedMulti.TryGetValue(bodySize, out var f) ? f : (float?) null;
+            return value;
+        }
+
+      
         public Snipe(ImmutableDictionary<BodySize, float> moveSpeedMulti, int trickTick)
         {
             MoveSpeedMulti = moveSpeedMulti;

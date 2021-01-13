@@ -15,7 +15,7 @@ namespace game_stuff
             return new AngleSight(LocalConfig.StandardSightVector);
         }
 
-        public AngleSight(TwoDVector upLeft)
+        private AngleSight(TwoDVector upLeft)
         {
             var nowR = upLeft.Norm();
 

@@ -35,10 +35,16 @@ namespace game_stuff
 
         private int SnipeCallStack { get; set; }
 
-        private SnipeAction? NowInSnipeAct { get; set; }
+        private SnipeAction? NowOnSnipeAct { get; set; }
 
         private int NowSnipeStep { get; set; }
 
+        public Scope GetStandardScope()
+        {
+            return NowVehicle?.Scope ?? CharacterBody.Sight.StandardScope;
+        }
+
+        //Ammo
         public int NowAmmo { get; set; }
 
         private int GetAmmo()
@@ -212,10 +218,7 @@ namespace game_stuff
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
-            SnipeOnCallAct = null;
-            SnipeCallStack = 0;
-            NowInSnipeAct = null;
-            NowSnipeStep = 0;
+            ResetSnipe();
             Prop = null;
             NowPropStack = 0;
             MaxPropStack = LocalConfig.StandardPropMaxStack;
@@ -282,7 +285,7 @@ namespace game_stuff
 
         public Scope? GetNowScope()
         {
-            if (NowInSnipeAct == null || NowSnipeStep <= 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
+            if (NowOnSnipeAct == null || NowSnipeStep <= 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
                 return NowVehicle?.Scope ?? null;
             var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep - 1];
             return weaponZoomStepScope;
@@ -336,10 +339,7 @@ namespace game_stuff
 
         private Snipe? GetNowSnipe()
         {
-            return NowInSnipeAct != null && GetWeapons().TryGetValue(NowWeapon, out var weapon) &&
-                   weapon.Snipes.TryGetValue(NowInSnipeAct.Value, out var snipe)
-                ? snipe
-                : null;
+            return NowTempSnipe;
         }
 
         private void CallSnipe(SnipeAction snipeAction)
@@ -359,13 +359,47 @@ namespace game_stuff
                 if (!GetWeapons().TryGetValue(NowWeapon, out var weapon) ||
                     !weapon.Snipes.TryGetValue(snipeAction, out var snipe) || snipe.TrickTick >= SnipeCallStack) return;
 
-                NowInSnipeAct = snipeAction;
+                NowOnSnipeAct = snipeAction;
                 SnipeCallStack = 0;
-                OnSnipe(snipe);
+                NowTempSnipe = snipe;
+                OnSnipe(NowTempSnipe);
             }
             else
             {
-                OffSnipe();
+                if (NowTempSnipe != null)
+                {
+                    NowOnSnipeAct = snipeAction;
+                    OffSnipe(NowTempSnipe);
+                }
+                else ResetSnipe();
+            }
+        }
+
+        private Snipe? NowTempSnipe { get; set; }
+
+        private void GoSnipe()
+        {
+            if (NowTempSnipe == null) return;
+            switch (NowOnSnipeAct)
+            {
+                case SnipeAction.SnipeOn1:
+                    OnSnipe(NowTempSnipe);
+                    break;
+
+                case SnipeAction.SnipeOn2:
+                    OnSnipe(NowTempSnipe);
+                    break;
+
+                case SnipeAction.SnipeOff:
+                    OffSnipe(NowTempSnipe);
+                    break;
+                case SnipeAction.SnipeOn3:
+                    OnSnipe(NowTempSnipe);
+                    break;
+                case null:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -378,21 +412,15 @@ namespace game_stuff
         }
 
         //关镜
-        private void OffSnipe()
+        private void OffSnipe(Snipe snipe)
         {
-            if (NowInSnipeAct != null && GetWeapons().TryGetValue(NowWeapon, out var weapon) &&
-                weapon.Snipes.TryGetValue(NowInSnipeAct.Value, out var snipe))
+            var snipeOffStepPerTick = NowSnipeStep - snipe.OffStepPerTick;
+            if (snipeOffStepPerTick <= 0)
             {
-                NowSnipeStep = Math.Max(0, NowSnipeStep - snipe.OffStepPerTick);
-                if (NowSnipeStep == 0)
-                {
-                    NowInSnipeAct = null;
-                }
+                ResetSnipe();
             }
-            else
-            {
-                NowSnipeStep = 0;
-            }
+
+            NowSnipeStep = snipeOffStepPerTick;
         }
 
         //重置
@@ -401,8 +429,8 @@ namespace game_stuff
             SnipeOnCallAct = null;
 
             SnipeCallStack = 0;
-
-            NowInSnipeAct = null;
+            NowTempSnipe = null;
+            NowOnSnipeAct = null;
 
             NowSnipeStep = 0;
         }
@@ -472,7 +500,7 @@ namespace game_stuff
                         .MaxFixX(0), //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
                 _ => throw new ArgumentOutOfRangeException(nameof(charAct))
             };
-            var f = GetNowSnipe()?.MoveSpeedMulti[CharacterBody.GetSize()];
+            var f = GetNowSnipe()?.GetSpeedMulti(CharacterBody.GetSize());
             var fixMove = charAct switch
             {
                 Interaction _ => null,
@@ -494,7 +522,7 @@ namespace game_stuff
                 .GoATick(GetPos(), GetAim(), fixMove, limitV);
             if (snipeOff)
             {
-                OffSnipe();
+                CallSnipe(SnipeAction.SnipeOff);
             }
 
             var selfEffectFilter = SelfEffectFilter(bullet);
@@ -721,6 +749,7 @@ namespace game_stuff
                 {
                     status = 0;
                     toUse = (toUse + 1) % GetWeapons().Count;
+                    CallSnipe(SnipeAction.SnipeOff);
                 }
 
                 var nowWeapon = GetWeapons().TryGetValue(toUse, out var weapon)
@@ -742,6 +771,7 @@ namespace game_stuff
                         break;
                     case SkillPeriod.End:
                         NowWeapon = toUse;
+
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -803,7 +833,7 @@ namespace game_stuff
 
             ResetLongInterAct();
 
-            // 有瞄准请求
+            // 瞄准请求
             var snipeAction = operate.GetSnipe();
             if (snipeAction != null)
             {
@@ -811,7 +841,7 @@ namespace game_stuff
             }
             else
             {
-                SnipeCallStack = 0;
+                GoSnipe();
             }
 
             // 转换视野方向
@@ -831,7 +861,9 @@ namespace game_stuff
                 if (opAction == SkillAction.Switch)
                 {
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
+
                     SkillLaunch = SkillAction.Switch;
+                    CallSnipe(SnipeAction.SnipeOff);
                 }
                 // 发动当前武器技能组的起始技能0
                 else
@@ -887,7 +919,7 @@ namespace game_stuff
 
             NowMoveSpeed = GetStandardSpeed(twoDVector);
             var nowSnipe = GetNowSnipe();
-            var multiSpeed = NowMoveSpeed * nowSnipe?.MoveSpeedMulti[CharacterBody.GetSize()] ?? NowMoveSpeed;
+            var multiSpeed = NowMoveSpeed * nowSnipe?.GetSpeedMulti(CharacterBody.GetSize()) ?? NowMoveSpeed;
             var dVector = twoDVector.Multi(multiSpeed);
 
             return new CharGoTickResult(move: dVector);
@@ -1318,10 +1350,7 @@ namespace game_stuff
 
             NowExp += expValue;
             var res = new List<int>();
-
-
-            var b = NowExp >= nextExp;
-            while (b)
+            while (NowExp >= nextExp)
 
             {
                 NowExp -= nextExp.Value;
@@ -1332,7 +1361,6 @@ namespace game_stuff
                     NowLevelUpsData = levelUpsData;
                 }
             }
-
 
             return res;
         }
