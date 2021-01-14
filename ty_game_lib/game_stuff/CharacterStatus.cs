@@ -285,9 +285,9 @@ namespace game_stuff
 
         public Scope? GetNowScope()
         {
-            if (NowOnSnipeAct == null || NowSnipeStep <= 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
+            if (NowOnSnipeAct == null || NowSnipeStep < 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
                 return NowVehicle?.Scope ?? null;
-            var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep - 1];
+            var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep];
             return weaponZoomStepScope;
         }
 
@@ -428,7 +428,7 @@ namespace game_stuff
         private void OffSnipe(Snipe snipe)
         {
             var snipeOffStepPerTick = NowSnipeStep - snipe.OffStepPerTick;
-            if (snipeOffStepPerTick <= 0)
+            if (snipeOffStepPerTick < 0)
             {
                 ResetSnipe();
             }
@@ -445,7 +445,7 @@ namespace game_stuff
             NowTempSnipe = null;
             NowOnSnipeAct = null;
 
-            NowSnipeStep = 0;
+            NowSnipeStep = -1;
         }
 
         private CharGoTickResult ActNowActATick(
@@ -1083,7 +1083,7 @@ namespace game_stuff
             var max = otherAttrPassiveEffects[1];
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
-            MaxMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
+            AddMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
             var lossP = MaxPropStack - NowPropStack;
             MaxPropStack = (int) (LocalConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
             NowPropStack = MaxPropStack - lossP;

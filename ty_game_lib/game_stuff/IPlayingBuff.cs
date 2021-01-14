@@ -74,7 +74,13 @@ namespace game_stuff
             return PlayBuffStandard.IsFinish(this);
         }
 
-        public float AddDamageMulti { get; }
+        public static float StackDamage(IEnumerable<AddDamageBuff> damageBuffs)
+        {
+            var sum = damageBuffs.Sum(x => x.AddDamageMulti);
+            return sum;
+        }
+
+        private float AddDamageMulti { get; }
     }
 
     public static class PlayBuffStandard
@@ -90,12 +96,6 @@ namespace game_stuff
             return playingBuff.RestTick <= 0;
         }
 
-
-        public static float StackDamage(IEnumerable<AddDamageBuff> damageBuffs)
-        {
-            var sum = damageBuffs.Sum(x => x.AddDamageMulti);
-            return sum;
-        }
 
         public static List<IPlayingBuff> AddBuffs(List<IPlayingBuff> playingBuffs1,
             IEnumerable<IPlayingBuff> playingBuffs2
@@ -120,6 +120,8 @@ namespace game_stuff
                             var sum = grouping.Sum(x => x.Stack);
                             var stack = grouping.First();
                             stack.Stack = (uint) sum;
+                            var max = grouping.Max(x => x.RestTick);
+                            stack.RestTick = max;
                             buffs.Add(stack);
                             break;
                         case StackMode.Time:

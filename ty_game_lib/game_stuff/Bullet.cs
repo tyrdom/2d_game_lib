@@ -387,8 +387,6 @@ namespace game_stuff
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
-
-                        CharAtkFail(characterStatus, targetCharacterStatus, isActSkill, targetCharacterBodyBodySize);
                         break;
                     case Trap trap:
                         trap.FailAtk();
@@ -451,14 +449,10 @@ namespace game_stuff
                 var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
 
                 //如果为抓取技能，会马上装载抓取buff附带的触发技能
-                switch (failAntiBuff)
+                if (failAntiBuff is CatchStunBuffConfig catchAntiActBuffConfig)
                 {
-                    case CatchStunBuffConfig catchAntiActBuffConfig:
-                        targetCharacterStatus.CatchingWho = bodyCaster;
-                        targetCharacterStatus.LoadCatchTrickSkill(aim, catchAntiActBuffConfig);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(FailActBuffConfigToSelf));
+                    targetCharacterStatus.CatchingWho = bodyCaster;
+                    targetCharacterStatus.LoadCatchTrickSkill(aim, catchAntiActBuffConfig);
                 }
 
                 var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), bodyCaster.GetPos(),

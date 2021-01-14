@@ -131,7 +131,7 @@ namespace game_stuff
         }
     }
 
-    class Caught : IStunBuff
+    internal class Caught : IStunBuff
     {
         public List<TwoDPoint> MovesOnPoints { get; }
         public IBattleUnitStatus WhoCatchMe { get; }
