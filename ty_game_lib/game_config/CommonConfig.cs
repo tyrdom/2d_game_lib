@@ -15,6 +15,11 @@ namespace game_config
             return (uint) (time * TickPerSec);
         }
 
+        public static int GetIntTickByTime(float time)
+        {
+            return (int) (time * TickPerSec);
+        }
+
         public static float NumPerSecToTickPerSec(float numPerSec)
         {
             return numPerSec / TickPerSec;

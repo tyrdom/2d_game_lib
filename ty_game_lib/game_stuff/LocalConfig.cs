@@ -69,8 +69,6 @@ namespace game_stuff
             [BodySize.Big] = 9f
         };
 
-        public static ImmutableDictionary<uint, IPlayingBuffConfig> BuffConfigs { get; set; } =
-            ImmutableDictionary<uint, IPlayingBuffConfig>.Empty;
 
         public static float G { get; private set; } = 1;
 
@@ -132,6 +130,9 @@ namespace game_stuff
 
 
         public static int UpMaxTrap { get; private set; } = 10;
+        public static int AtkPassBuffId { get; set; } = 0;
+        public static int DefPassBuffId { get; set; } = 0;
+
         public static void ReLoadP(ConfigDictionaries configs)
         {
             CommonConfig.ReLoadP(configs);
@@ -168,6 +169,8 @@ namespace game_stuff
             MoveDecreaseMinMulti = configsOtherConfig.MoveDecreaseMinMulti;
             NormalSpeedMinCos = configsOtherConfig.NormalSpeedMinCos;
             DecreaseMinCos = configsOtherConfig.DecreaseMinCos;
+            AtkPassBuffId = configsOtherConfig.atkPassBuffId;
+            DefPassBuffId = configsOtherConfig.defPassBuffId;
         }
 #if NETCOREAPP
         public static void LoadConfig()

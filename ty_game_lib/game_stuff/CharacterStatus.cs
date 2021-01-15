@@ -133,12 +133,16 @@ namespace game_stuff
         private float ProtectTickMultiAdd { get; set; }
         public int NowProtectTick { get; private set; }
 
-        //Game other Status
+        //Passive
 
         public Dictionary<int, PassiveTrait> PassiveTraits { get; }
-        private List<IPlayingBuff> PlayingBuffs { get; set; }
 
+        //playBuff
+        
 
+        private Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>> PlayingBuffs { get; set; }
+
+        // Status
         public AttackStatus AttackStatus { get; }
 
         public void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects)
@@ -165,6 +169,8 @@ namespace game_stuff
         private float RecycleMulti { get; set; }
         public PlayingItemBag PlayingItemBag { get; }
 
+        public ICharRuleData CharRuleData { get; }
+
         // for_tick_msg
         public bool HaveChange { get; set; }
         public SkillAction? SkillLaunch { get; private set; }
@@ -173,7 +179,6 @@ namespace game_stuff
         public bool IsHitSome { get; set; }
         public List<TwoDPoint> MayBeSomeThing { get; }
 
-        public ICharRuleData CharRuleData { get; }
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
             LevelUps playRuler, Dictionary<int, PassiveTrait>? passiveTraits = null)
@@ -203,7 +208,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             StunBuff = null;
-            PlayingBuffs = new List<IPlayingBuff>();
+            PlayingBuffs = new Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>>();
 
             NowProtectTick = 0;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
@@ -233,8 +238,17 @@ namespace game_stuff
             StartPassiveInitRefresh();
         }
 
-        public void StartPassiveInit(Dictionary<int, PassiveTrait> passiveTraits)
+        private void BuffsGoATick()
         {
+            foreach (Dictionary<int, IPlayingBuff> dictionary in PlayingBuffs.Values)
+            foreach (IPlayingBuff playingBuff in dictionary.Values)
+            {
+                playingBuff.GoATick();
+                if (playingBuff.IsFinish())
+                {
+                    dictionary.Remove(playingBuff.BuffId);
+                }
+            }
         }
 
         private void StartPassiveInitRefresh()
@@ -270,7 +284,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             StunBuff = null;
-            PlayingBuffs = new List<IPlayingBuff>();
+            PlayingBuffs = new Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>>();
             SurvivalStatus.Full();
             NowProtectTick = 30;
             NowMoveSpeed = 0f;
@@ -481,8 +495,8 @@ namespace game_stuff
 
         private void HitBySelfEffect(SelfEffect selfEffect)
         {
-            List<IPlayingBuff> playingBuffs = PlayBuffStandard.AddBuffs(PlayingBuffs, selfEffect.PlayingBuffToAdd);
-            PlayingBuffs = playingBuffs;
+            PlayBuffStandard.AddBuffs(PlayingBuffs, selfEffect.PlayingBuffToAdd);
+
 
             var selfEffectRegenerationBase = selfEffect.RegenerationBase;
             if (selfEffectRegenerationBase == null) return;
@@ -639,7 +653,6 @@ namespace game_stuff
             if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
             if (IsHitSome) IsHitSome = false;
             MayBeSomeThing.Clear();
-            CharRuleData.ClearTemp();
         }
 
 
@@ -654,7 +667,8 @@ namespace game_stuff
         {
             //清理消息缓存
             TempMsgClear();
-
+            //  
+            BuffsGoATick();
             // 命中停帧 输入无效
             var b1 = PauseTick > 0;
             IsPause = b1;
@@ -1110,9 +1124,12 @@ namespace game_stuff
         {
             PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffs);
         }
+        public void AddAPlayingBuff(IPlayingBuff playingBuff)
+        {
+            PlayBuffStandard.AddABuff(PlayingBuffs, playingBuff);
+        }
 
-
-        private Vector<float> GetPassiveEffects<T>() where T : IPassiveTraitEffect
+        public Vector<float> GetPassiveEffects<T>() where T : IPassiveTraitEffect
         {
             var passiveTraits = PassiveTraits.Values.Where(x => x.PassiveTraitEffect is T);
             var passiveTraitEffects = passiveTraits.Select(x => x.PassiveTraitEffect.GenEffect(x.Level));
