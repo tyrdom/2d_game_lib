@@ -13,14 +13,14 @@ namespace game_stuff
         int BuffId { get; }
         int RestTick { get; set; }
         bool IsFinish();
-        uint Stack { get; set; }
+        int Stack { get; set; }
         void GoATick();
     }
 
 
     public class MakeDamageBuff : IPlayingBuff
     {
-        public MakeDamageBuff(int buffId, int restTick, float addDamageMulti, uint stack)
+        public MakeDamageBuff(int buffId, int restTick, float addDamageMulti, int stack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -30,7 +30,7 @@ namespace game_stuff
 
         public int BuffId { get; }
         public int RestTick { get; set; }
-        public uint Stack { get; set; }
+        public int Stack { get; set; }
 
         public void GoATick()
         {
@@ -74,27 +74,17 @@ namespace game_stuff
         {
             var playBuff = GetBuffConfig(id);
             var intTickByTime = CommonConfig.GetIntTickByTime(playBuff.LastTime);
-            switch (playBuff.EffectType)
+            return playBuff.EffectType switch
             {
-                case play_buff_effect_type.TakeDamageAdd:
-                    return new TakeDamageBuff(id, intTickByTime, playBuff.EffectValue, 1);
-                    break;
-                case play_buff_effect_type.Break:
-                    return new BreakBuff(id, intTickByTime, 1);
-                    break;
-                case play_buff_effect_type.MakeDamageAdd:
-                    return new MakeDamageBuff(id, intTickByTime,
-                        playBuff.EffectValue, 1);
-                    break;
-                case play_buff_effect_type.Tough:
-                    return new ToughBuff();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                play_buff_effect_type.TakeDamageAdd => new TakeDamageBuff(id, intTickByTime, playBuff.EffectValue, 1),
+                play_buff_effect_type.Break => new BreakBuff(id, intTickByTime, 1),
+                play_buff_effect_type.MakeDamageAdd => new MakeDamageBuff(id, intTickByTime, playBuff.EffectValue, 1),
+                play_buff_effect_type.Tough => new ToughBuff(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
-        public static play_buff GetBuffConfig(int id)
+        private static play_buff GetBuffConfig(int id)
         {
             return LocalConfig.Configs.play_buffs.TryGetValue(id, out var playBuff)
                 ? playBuff
@@ -164,7 +154,7 @@ namespace game_stuff
             return PlayBuffStandard.IsFinish(this);
         }
 
-        public uint Stack { get; set; }
+        public int Stack { get; set; }
 
         public void GoATick()
         {
@@ -174,7 +164,7 @@ namespace game_stuff
 
     public class TakeDamageBuff : IPlayingBuff
     {
-        public TakeDamageBuff(int buffId, int restTick, float takeDamageAdd, uint stack)
+        public TakeDamageBuff(int buffId, int restTick, float takeDamageAdd, int stack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -192,7 +182,7 @@ namespace game_stuff
             return PlayBuffStandard.IsFinish(this);
         }
 
-        public uint Stack { get; set; }
+        public int Stack { get; set; }
 
         public void GoATick()
         {
@@ -202,7 +192,7 @@ namespace game_stuff
 
     public class BreakBuff : IPlayingBuff
     {
-        public BreakBuff(int buffId, int restTick, uint stack)
+        public BreakBuff(int buffId, int restTick, int stack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -217,7 +207,7 @@ namespace game_stuff
             return PlayBuffStandard.IsFinish(this);
         }
 
-        public uint Stack { get; set; }
+        public int Stack { get; set; }
 
         public void GoATick()
         {

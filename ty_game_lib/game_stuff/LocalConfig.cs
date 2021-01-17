@@ -69,7 +69,6 @@ namespace game_stuff
             [BodySize.Big] = 9f
         };
 
-
         public static float G { get; private set; } = 1;
 
         public static float MaxHeight { get; private set; } = 2;

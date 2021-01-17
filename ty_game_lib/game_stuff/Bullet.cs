@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
+using Force.DeepCloner;
 using game_config;
 
 namespace game_stuff
@@ -249,23 +250,40 @@ namespace game_stuff
             var tough = objTough.GetValueOrDefault(0);
 
             var b2 = isActSkill && tough < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
+            var checkBuff = targetCharacterStatus.CheckBuff(
+                play_buff_effect_type.Tough);
 
-            var passiveEffects = Caster is CharacterStatus characterStatus
-                ? characterStatus.GetPassiveEffects<HitPass>()
-                : (Vector<float>?) null;
-
-
-            var atkOk = opponentIsStun || b2 || b3 || b4;
+            var atkOk = opponentIsStun || b4 || b3 || b2;
             if (atkOk)
             {
-                if (!(Caster is CharacterStatus character) || passiveEffects == null)
+                if (!(Caster is CharacterStatus character) ||
+                    !character.BuffTrick.TryGetValue(TrickCond.MyAtkOk, out var hashSet))
                     return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
-                var passiveEffect = (uint) passiveEffects.Value[0];
-                var genById = PlayBuffStandard.GenById(LocalConfig.AtkPassBuffId);
-                genById.Stack = passiveEffect;
-                character.AddAPlayingBuff(genById);
+
+
+                var playingBuffs = hashSet.Select(x => x.DeepClone());
+                character.AddPlayingBuff(playingBuffs);
 
                 return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+            }
+
+
+            var canUseBuff = isActSkill && !b4 && !opponentIsStun;
+            if (canUseBuff)
+            {
+                if (Caster is CharacterStatus caster && caster.CheckBuff(play_buff_effect_type.Break))
+                {
+                    if (!checkBuff)
+                    {
+                        caster.UseBuff(LocalConfig.AtkPassBuffId);
+                        return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                    }
+                }
+                else if (checkBuff)
+                {
+                    targetCharacterStatus.UseBuff(LocalConfig.DefPassBuffId);
+                    return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                }
             }
 
             var b5 = isActSkill && tough == Tough;
@@ -278,14 +296,12 @@ namespace game_stuff
             Console.Out.WriteLine(
                 $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{LocalConfig.MidTough}");
 #endif
-            if (passiveEffects == null) return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
-            {
-                var passiveEffect = (uint) passiveEffects.Value[1];
-                var genById = PlayBuffStandard.GenById(LocalConfig.DefPassBuffId);
-                genById.Stack = passiveEffect;
-                targetCharacterStatus.AddAPlayingBuff(genById);
-            }
 
+            if (targetCharacterStatus.BuffTrick.TryGetValue(TrickCond.OpponentAtkFail, out var value)
+            )
+            {
+                targetCharacterStatus.AddPlayingBuff(value.Select(x => x.DeepClone()));
+            }
 
             return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
         }

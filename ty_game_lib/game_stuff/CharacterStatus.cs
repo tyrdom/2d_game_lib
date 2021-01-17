@@ -138,7 +138,8 @@ namespace game_stuff
         public Dictionary<int, PassiveTrait> PassiveTraits { get; }
 
         //playBuff
-        
+
+        public Dictionary<TrickCond, HashSet<IPlayingBuff>> BuffTrick { get; }
 
         private Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>> PlayingBuffs { get; set; }
 
@@ -150,7 +151,7 @@ namespace game_stuff
             BattleUnitMoverStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
         }
 
-        public void RegenStatusRefresh(Vector<float> regenAttrPassiveEffects)
+        private void RegenStatusRefresh(Vector<float> regenAttrPassiveEffects)
         {
             BattleUnitMoverStandard.RegenStatusRefresh(regenAttrPassiveEffects, this);
         }
@@ -172,7 +173,7 @@ namespace game_stuff
         public ICharRuleData CharRuleData { get; }
 
         // for_tick_msg
-        public bool HaveChange { get; set; }
+        public bool HaveChange { get; set; } //todo to change an use
         public SkillAction? SkillLaunch { get; private set; }
         public bool IsPause { get; private set; }
         public TwoDVector? IsBeHitBySomeOne { get; set; }
@@ -199,6 +200,7 @@ namespace game_stuff
             MayBeSomeThing = new List<TwoDPoint>();
             CharacterBody = null!;
             MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
+            BuffTrick = new Dictionary<TrickCond, HashSet<IPlayingBuff>>();
             GId = gId;
             PauseTick = 0;
             LockingWho = null;
@@ -284,7 +286,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             StunBuff = null;
-            PlayingBuffs = new Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>>();
+            PlayingBuffs.Clear();
             SurvivalStatus.Full();
             NowProtectTick = 30;
             NowMoveSpeed = 0f;
@@ -1124,6 +1126,7 @@ namespace game_stuff
         {
             PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffs);
         }
+
         public void AddAPlayingBuff(IPlayingBuff playingBuff)
         {
             PlayBuffStandard.AddABuff(PlayingBuffs, playingBuff);
@@ -1164,6 +1167,9 @@ namespace game_stuff
                     AttackStatusRefresh(v);
                     NowVehicle?.AttackStatusRefresh(v);
                     break;
+                case HitPass _:
+                    HitBuffTrickRefresh(v);
+                    break;
                 case SurvivalAboutPassiveEffect _:
                     SurvivalStatusRefresh(v);
                     NowVehicle?.SurvivalStatusRefresh(v);
@@ -1188,6 +1194,22 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+
+        private void HitBuffTrickRefresh(Vector<float> vector)
+        {
+            var passiveEffect = (int) vector[0];
+            var genById = PlayBuffStandard.GenById(LocalConfig.AtkPassBuffId);
+            genById.Stack = passiveEffect;
+            BuffTrick[TrickCond.MyAtkOk] = new HashSet<IPlayingBuff> {genById};
+
+
+            var passiveEffect2 = (int) vector[1];
+            var genById2 = PlayBuffStandard.GenById(LocalConfig.DefPassBuffId);
+            genById2.Stack = passiveEffect2;
+
+            BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> {genById};
         }
 
         private void AbsorbStatusRefresh(Vector<float> vector)
@@ -1347,6 +1369,34 @@ namespace game_stuff
         {
             return LevelUps.NowLevelUpsData;
         }
+
+        public bool CheckBuff(play_buff_effect_type playBuffEffectType)
+        {
+            if (!PlayingBuffs.TryGetValue(playBuffEffectType, out var playingBuffs)) return false;
+            var any = playingBuffs.Any();
+            return any;
+        }
+
+        public void UseBuff(int atkPassBuffId)
+        {
+            if (LocalConfig.Configs.play_buffs.TryGetValue(atkPassBuffId, out var buff)
+            )
+            {
+                var playBuffEffectType = buff.EffectType;
+                if (PlayingBuffs.TryGetValue(playBuffEffectType, out var dictionary) &&
+                    dictionary.TryGetValue(atkPassBuffId, out var playingBuff)
+                )
+                {
+                    playingBuff.Stack = playingBuff.Stack - 1;
+                }
+            }
+        }
+    }
+
+    public enum TrickCond
+    {
+        MyAtkOk,
+        OpponentAtkFail
     }
 
     public class LevelUps
