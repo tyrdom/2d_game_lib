@@ -83,8 +83,9 @@ namespace game_stuff
 
         public static int StandardWeaponNum { get; private set; } = 2;
 
-        public static float TwoSToSeePerTick { get; private set; } = 20f;
+        public static float TwoSToSeePerTick { get; private set; } = 50f;
 
+        public static float TwoSToSeePerTick_InMidV { get; private set; } = 70f;
         public static PushOnAir OutCaught { get; } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
 
         public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
@@ -129,8 +130,8 @@ namespace game_stuff
 
 
         public static int UpMaxTrap { get; private set; } = 10;
-        public static int AtkPassBuffId { get; set; } = 0;
-        public static int DefPassBuffId { get; set; } = 0;
+        public static int AtkPassBuffId { get; private set; } = 0;
+        public static int DefPassBuffId { get; private set; } = 0;
 
         public static void ReLoadP(ConfigDictionaries configs)
         {
@@ -170,6 +171,7 @@ namespace game_stuff
             DecreaseMinCos = configsOtherConfig.DecreaseMinCos;
             AtkPassBuffId = configsOtherConfig.atkPassBuffId;
             DefPassBuffId = configsOtherConfig.defPassBuffId;
+            TwoSToSeePerTick_InMidV = configsOtherConfig.two_s_to_see_pertick_medium_vehicle;
         }
 #if NETCOREAPP
         public static void LoadConfig()

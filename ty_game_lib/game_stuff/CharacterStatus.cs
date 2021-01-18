@@ -181,6 +181,9 @@ namespace game_stuff
         public List<TwoDPoint> MayBeSomeThing { get; }
 
 
+        // drops_bonus
+        
+
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
             LevelUps playRuler, Dictionary<int, PassiveTrait>? passiveTraits = null)
         {
@@ -275,7 +278,10 @@ namespace game_stuff
 
         private void OpChangeAim(TwoDVector? aim)
         {
-            CharacterBody.Sight.OpChangeAim(aim, GetNowScope());
+            var twoSToSeePerTick =
+                NowVehicle == null ? LocalConfig.TwoSToSeePerTick : LocalConfig.TwoSToSeePerTick_InMidV;
+
+            CharacterBody.Sight.OpChangeAim(aim, GetNowScope(), twoSToSeePerTick);
         }
 
         public void Reborn()

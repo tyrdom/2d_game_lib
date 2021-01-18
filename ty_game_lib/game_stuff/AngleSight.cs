@@ -55,7 +55,7 @@ namespace game_stuff
         }
 
 
-        public void OpChangeAim(TwoDVector? newAim, Scope? scope)
+        public void OpChangeAim(TwoDVector? newAim, Scope? scope,float twoSToSeePerTick)
         {
             var useScope = scope ?? StandardScope;
 
@@ -70,10 +70,10 @@ namespace game_stuff
 
             var nowRSquare = NowR * NowR;
             var snowR = nowRSquare * t;
-            var twoSr = LocalConfig.TwoSToSeePerTick - snowR;
+            var twoSr = twoSToSeePerTick - snowR;
             if (twoSr <= 0)
             {
-                var sqrt = MathTools.Sqrt(LocalConfig.TwoSToSeePerTick / t);
+                var sqrt = MathTools.Sqrt(twoSToSeePerTick / t);
                 NowR = MathTools.Min(useScope.MaxR, sqrt);
             }
             else
@@ -82,12 +82,6 @@ namespace game_stuff
                 var sqrt = MathTools.Sqrt(rSquare);
                 NowR = MathTools.Min(useScope.MaxR, sqrt);
             }
-        }
-
-        public void OpChangeAim(TwoDVector? newAim)
-        {
-            OpChangeAim(newAim, StandardScope);
-         
         }
 
         public Zone GenZone(TwoDPoint getAnchor)
