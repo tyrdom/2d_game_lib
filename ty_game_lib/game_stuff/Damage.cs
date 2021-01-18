@@ -1,10 +1,10 @@
 namespace game_stuff
 {
-    public readonly struct Damage
+    public struct Damage
     {
-        public uint MainDamage { get; }
+        public uint MainDamage { get; private set; }
         public uint ShardedDamage { get; }
-        public uint ShardedNum { get; }
+        public uint ShardedNum { get; private set; }
 
         public Damage(uint shardedNum, uint mainDamage, uint shardedDamage)
         {
@@ -13,11 +13,10 @@ namespace game_stuff
             ShardedDamage = shardedDamage;
         }
 
-        public Damage GetAtkBuff(float damageMulti)
+        public void GetBuffMulti(float damageMulti)
         {
-            var damageBuffDamageMultiM = (uint) (damageMulti * MainDamage);
-            var damageBuffDamageMultiS = (uint) (damageMulti * ShardedDamage);
-            return new Damage(ShardedNum, damageBuffDamageMultiM, damageBuffDamageMultiS);
+            MainDamage = (uint) (damageMulti * MainDamage);
+            ShardedNum = (uint) (damageMulti * ShardedNum);
         }
 
         public static Damage Zero()

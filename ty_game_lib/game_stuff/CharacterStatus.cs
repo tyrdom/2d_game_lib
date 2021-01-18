@@ -41,7 +41,7 @@ namespace game_stuff
 
         public Scope GetStandardScope()
         {
-            return NowVehicle?.Scope ?? CharacterBody.Sight.StandardScope;
+            return NowVehicle?.StandardScope ?? CharacterBody.Sight.StandardScope;
         }
 
         //Ammo
@@ -141,7 +141,7 @@ namespace game_stuff
 
         public Dictionary<TrickCond, HashSet<IPlayingBuff>> BuffTrick { get; }
 
-        private Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>> PlayingBuffs { get; set; }
+        private Dictionary<int, IPlayingBuff> PlayingBuffs { get; set; }
 
         // Status
         public AttackStatus AttackStatus { get; }
@@ -210,7 +210,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             StunBuff = null;
-            PlayingBuffs = new Dictionary<play_buff_effect_type, Dictionary<int, IPlayingBuff>>();
+            PlayingBuffs = new Dictionary<int, IPlayingBuff>();
 
             NowProtectTick = 0;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
@@ -242,13 +242,13 @@ namespace game_stuff
 
         private void BuffsGoATick()
         {
-            foreach (Dictionary<int, IPlayingBuff> dictionary in PlayingBuffs.Values)
-            foreach (IPlayingBuff playingBuff in dictionary.Values)
+            var playingBuffsValues = PlayingBuffs.Values.ToArray();
+            foreach (IPlayingBuff playingBuff in playingBuffsValues)
             {
                 playingBuff.GoATick();
                 if (playingBuff.IsFinish())
                 {
-                    dictionary.Remove(playingBuff.BuffId);
+                    PlayingBuffs.Remove(playingBuff.BuffId);
                 }
             }
         }
@@ -302,7 +302,7 @@ namespace game_stuff
         public Scope? GetNowScope()
         {
             if (NowOnSnipeAct == null || NowSnipeStep < 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
-                return NowVehicle?.Scope ?? null;
+                return NowVehicle?.StandardScope ?? null;
             var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep];
             return weaponZoomStepScope;
         }
@@ -1050,8 +1050,9 @@ namespace game_stuff
 
         public Damage GenDamage(float damageMulti, bool b4)
         {
-            var nowVehicleAttackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
-            return nowVehicleAttackStatus.GenDamage(damageMulti, b4);
+            var multi = GetBuffs<MakeDamageBuff>().GetDamageMulti();
+            var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
+            return attackStatus.GenDamage(damageMulti, b4, multi);
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)
@@ -1334,8 +1335,10 @@ namespace game_stuff
             return absorbStatusProtectAbs;
         }
 
-        private bool TakeDamage(Damage genDamage)
+        public bool TakeDamage(Damage genDamage)
         {
+            var damageMulti = GetBuffs<TakeDamageBuff>().GetDamageMulti();
+            genDamage.GetBuffMulti(damageMulti);
             if (NowVehicle == null) return SurvivalStatus.TakeDamage(genDamage);
             NowVehicle.SurvivalStatus.TakeDamage(genDamage);
             return false;
@@ -1370,25 +1373,31 @@ namespace game_stuff
             return LevelUps.NowLevelUpsData;
         }
 
-        public bool CheckBuff(play_buff_effect_type playBuffEffectType)
+        public bool CheckBuff(int id)
         {
-            if (!PlayingBuffs.TryGetValue(playBuffEffectType, out var playingBuffs)) return false;
-            var any = playingBuffs.Any();
-            return any;
+            return PlayingBuffs.TryGetValue(id, out var playingBuff) && playingBuff.Stack > 0;
+        }
+
+        public IEnumerable<T> GetBuffs<T>() where T : IPlayingBuff
+        {
+            var ofType = PlayingBuffs.Values.OfType<T>().ToArray();
+            foreach (var playingBuff in ofType)
+            {
+                playingBuff.UseBuff();
+                if (playingBuff.Stack <= 0)
+                {
+                    PlayingBuffs.Remove(playingBuff.BuffId);
+                }
+            }
+
+            return ofType;
         }
 
         public void UseBuff(int atkPassBuffId)
         {
-            if (LocalConfig.Configs.play_buffs.TryGetValue(atkPassBuffId, out var buff)
-            )
+            if (PlayingBuffs.TryGetValue(atkPassBuffId, out var playingBuff))
             {
-                var playBuffEffectType = buff.EffectType;
-                if (PlayingBuffs.TryGetValue(playBuffEffectType, out var dictionary) &&
-                    dictionary.TryGetValue(atkPassBuffId, out var playingBuff)
-                )
-                {
-                    playingBuff.Stack = playingBuff.Stack - 1;
-                }
+                playingBuff.Stack -= 1;
             }
         }
     }

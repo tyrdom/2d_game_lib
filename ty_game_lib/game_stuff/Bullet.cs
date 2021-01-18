@@ -248,11 +248,7 @@ namespace game_stuff
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var b3 = !isActSkill && Tough < LocalConfig.MidTough; //如果对手不在释放技能，攻击坚韧小于中值，攻击成功
             var tough = objTough.GetValueOrDefault(0);
-
             var b2 = isActSkill && tough < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
-            var checkBuff = targetCharacterStatus.CheckBuff(
-                play_buff_effect_type.Tough);
-
             var atkOk = opponentIsStun || b4 || b3 || b2;
             if (atkOk)
             {
@@ -266,17 +262,24 @@ namespace game_stuff
 
                 return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
             }
-
-
-            var canUseBuff = isActSkill && !b4 && !opponentIsStun;
-            if (canUseBuff)
+            
+            if (isActSkill)
             {
-                if (Caster is CharacterStatus caster && caster.CheckBuff(play_buff_effect_type.Break))
+                var toughBuffs = targetCharacterStatus.GetBuffs<ToughBuff>().ToArray();
+                var checkBuff = toughBuffs.Any();
+                if (Caster is CharacterStatus caster)
                 {
-                    if (!checkBuff)
+                    var breakBuffs = caster.GetBuffs<BreakBuff>().ToArray();
+                    if (breakBuffs.Any())
                     {
-                        caster.UseBuff(LocalConfig.AtkPassBuffId);
-                        return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                        if (!checkBuff)
+                        {
+                            return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                        }
+                    }
+                    else if (checkBuff)
+                    {
+                        return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
                     }
                 }
                 else if (checkBuff)
@@ -297,8 +300,7 @@ namespace game_stuff
                 $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{LocalConfig.MidTough}");
 #endif
 
-            if (targetCharacterStatus.BuffTrick.TryGetValue(TrickCond.OpponentAtkFail, out var value)
-            )
+            if (targetCharacterStatus.BuffTrick.TryGetValue(TrickCond.OpponentAtkFail, out var value))
             {
                 targetCharacterStatus.AddPlayingBuff(value.Select(x => x.DeepClone()));
             }

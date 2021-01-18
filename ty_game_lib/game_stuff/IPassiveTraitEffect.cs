@@ -32,7 +32,7 @@ namespace game_stuff
                 passive_type.Survive => new SurvivalAboutPassiveEffect(vector),
                 passive_type.TickAdd => new TickAddEffect(vector),
                 passive_type.Other => new OtherAttrPassiveEffect(vector),
-                passive_type.Special => new HitPass(vector),
+                passive_type.HitWinBuff => new HitPass(vector),
                 passive_type.Attack => new OtherAttrPassiveEffect(vector),
                 passive_type.AddItem => new AddItem(vector),
                 passive_type.TrapAbout => new TrapEffect(vector),

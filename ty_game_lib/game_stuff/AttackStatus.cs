@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Security.Authentication.ExtendedProtection;
 using game_config;
 
 namespace game_stuff
@@ -10,17 +11,12 @@ namespace game_stuff
         private uint ShardedAttack { get; }
         private uint ShardedNum { get; set; }
 
-        public Damage GenDamage(float damageMulti, bool isBackStab)
+        public Damage GenDamage(float damageMulti, bool isBackStab, float buffMulti = 1f)
         {
-            var dm = damageMulti;
-            if (isBackStab)
-            {
-                dm *= 1 + BackStabAdd;
-            }
-
-            var mainDamage = (uint) (MainAttack * dm);
-            var shardedDamage = (uint) (ShardedAttack * dm);
-            var damage = new Damage(ShardedNum, mainDamage, shardedDamage);
+            var bk = isBackStab ? 1f + BackStabAdd : 1f;
+            var mainDamage = (uint) (MainAttack * damageMulti * bk * buffMulti);
+            var shardedAttack = (uint) (ShardedAttack * damageMulti);
+            var damage = new Damage((uint) (ShardedNum * buffMulti * bk), mainDamage, shardedAttack);
             return damage;
         }
 

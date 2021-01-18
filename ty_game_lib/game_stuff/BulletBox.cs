@@ -6,7 +6,7 @@ namespace game_stuff
 
     {
         public Zone Zone;
-        private IBulletShape BulletShape;
+        private IBulletShape BulletShape { get; }
 
         public BulletBox(Zone zone, IBulletShape bulletShape)
         {
@@ -14,14 +14,12 @@ namespace game_stuff
             BulletShape = bulletShape;
         }
 
-
         public bool IsHit(TwoDPoint objPos, TwoDPoint bPos, TwoDVector bAim)
         {
             var genPosInLocal = objPos.GenPosInLocal(bPos, bAim);
             if (!Zone.IncludePt(genPosInLocal)) return false;
             var ptInShape = BulletShape.PtRealInShape(genPosInLocal);
             return ptInShape;
-
         }
     }
 }

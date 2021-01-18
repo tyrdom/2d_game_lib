@@ -56,7 +56,7 @@ namespace game_stuff
                 vehicle.MaxWeaponSlot, genSkillById, vehicle.AttrId, vehicle.id);
         }
 
-        private Vehicle(BodySize size, Scope scope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
+        private Vehicle(BodySize size, Scope standardScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             uint destroyTick, int weaponCarryMax,
             Skill outAct, int baseAttrId, int vId)
         {
@@ -72,7 +72,7 @@ namespace game_stuff
             MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
-            Scope = scope;
+            StandardScope = standardScope;
             Weapons = weapons;
             DestroyBullet = destroyBullet;
             DestroyTick = destroyTick;
@@ -100,7 +100,7 @@ namespace game_stuff
         public float MinMoveSpeed { get; }
         public float AddMoveSpeed { get; }
         public int BaseAttrId { get; }
-        public Scope Scope { get; }
+        public Scope StandardScope { get; }
         public Dictionary<int, Weapon> Weapons { get; }
 
         public int NowAmmo { get; private set; }

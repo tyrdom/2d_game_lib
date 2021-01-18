@@ -119,7 +119,7 @@ namespace game_stuff
             return false;
         }
 
-      
+
         public int GetId()
         {
             return Tid;
@@ -219,9 +219,9 @@ namespace game_stuff
             if (FailChanceStack != null) FailChanceStack -= 1;
         }
 
-        public void TakeDamage(Damage genDamage)
+        public bool TakeDamage(Damage genDamage)
         {
-            SurvivalStatus?.TakeDamage(genDamage);
+            return SurvivalStatus?.TakeDamage(genDamage) ?? false;
         }
     }
 
