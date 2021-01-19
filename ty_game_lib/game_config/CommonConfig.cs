@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace game_config
 {
     public static class CommonConfig
     {
+        public static int BattleExpId { get; private set; } = 1;
         public static ConfigDictionaries Configs { get; private set; }
 #if NETCOREAPP
             = new ConfigDictionaries();
@@ -42,6 +44,7 @@ namespace game_config
             Configs = configs;
             var configsOtherConfig = configs.other_configs[1];
             TickPerSec = configsOtherConfig.tick_per_sec;
+            BattleExpId = configs.items.Values.First(x => x.ItemType == ItemType.battle_exp).id;
         }
 #if NETCOREAPP
         public static void LoadConfig()

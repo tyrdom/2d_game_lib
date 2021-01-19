@@ -54,7 +54,6 @@ namespace game_stuff
             if (!CanCost(gameItem)) return false;
             var all = gameItem.All(Cost);
             return all;
-
         }
 
         public bool Cost(GameItem gameItem)
@@ -86,6 +85,7 @@ namespace game_stuff
         }
     }
 
+
     public readonly struct GameItem : ISaleStuff
     {
         public static IEnumerable<GameItem> SumSame(IEnumerable<GameItem> gameItems)
@@ -110,7 +110,7 @@ namespace game_stuff
         public int Num { get; }
 
 
-        uint GetMaxNum()
+        private uint GetMaxNum()
         {
             if (LocalConfig.Configs.items.TryGetValue(ItemId, out var item))
             {
@@ -129,6 +129,11 @@ namespace game_stuff
         {
             return Num;
         }
+    }
+
+
+    public interface IItem
+    {
     }
 
 

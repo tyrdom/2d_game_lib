@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace game_stuff
 {
-    public interface ICharRuleData
+    public interface IScoreData
     {
-        void AddAKill();
+        void AddScore();
         int GetScore();
     }
 }

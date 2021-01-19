@@ -381,9 +381,9 @@ namespace game_stuff
             }
         }
 
-        static void RecordHitResult(HitResult hitResult,
-            Dictionary<int, HashSet<HitResult>> gidD, Dictionary<int, Dictionary<int, HashSet<HitResult>>> tidD,
-            Dictionary<int, HashSet<ISeeTickMsg>> idRadarSee)
+        private static void RecordHitResult(HitResult hitResult,
+            IDictionary<int, HashSet<HitResult>> gidD, IDictionary<int, Dictionary<int, HashSet<HitResult>>> tidD,
+            IDictionary<int, HashSet<ISeeTickMsg>> idRadarSee)
         {
             if (hitResult.HitMedia is RadarWave)
             {

@@ -20,7 +20,7 @@ namespace game_stuff
         public int BaseAttrId { get; }
         public float MaxMoveSpeed { get; private set; }
 
-        public float MinMoveSpeed { get; private set; }
+        public float MinMoveSpeed { get; }
 
         public float AddMoveSpeed { get; private set; }
 
@@ -167,10 +167,14 @@ namespace game_stuff
         public RegenEffectStatus RegenEffectStatus { get; }
 
         public AbsorbStatus AbsorbStatus { get; }
+
+        //wealth about
         private float RecycleMulti { get; set; }
         public PlayingItemBag PlayingItemBag { get; }
 
-        public ICharRuleData CharRuleData { get; }
+        public IScoreData ScoreData { get; }
+
+        public WantedBonus WantedBonus { get; }
 
         // for_tick_msg
         public bool HaveChange { get; set; } //todo to change an use
@@ -185,11 +189,12 @@ namespace game_stuff
 
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
-            LevelUps playRuler, Dictionary<int, PassiveTrait>? passiveTraits = null)
+            LevelUps playRuler, WantedBonus? wantedBonus = null, Dictionary<int, PassiveTrait>? passiveTraits = null)
         {
             LevelUps = playRuler;
+            WantedBonus = wantedBonus ?? new WantedBonus();
             HaveChange = false;
-            CharRuleData = new CharKillData();
+            ScoreData = new CharKillData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
             AttackStatus = AttackStatus.GenByConfig(genBaseAttrById);
@@ -1079,7 +1084,7 @@ namespace game_stuff
 
         public void AddAKillScore(CharacterBody characterBody)
         {
-            CharRuleData.AddAKill();
+            ScoreData.AddScore();
         }
 
         private void AddProtect(int protectValueAdd)
@@ -1190,7 +1195,7 @@ namespace game_stuff
                     var itemId = (int) v[0];
                     var num = (int) v[1];
                     var gameItem = new GameItem(itemId, num);
-                    PlayingItemBag.Gain(gameItem);
+                    PickGameItem(gameItem);
                     break;
                 case AbsorbAboutPassiveEffect _:
                     AbsorbStatusRefresh(v);
@@ -1276,6 +1281,23 @@ namespace game_stuff
             var passiveRecycleMoney =
                 passive.recycle_money.Select(x => new GameItem(x.item, (int) (x.num * (1 + GetRecycleMulti()))));
             foreach (var gameItem in passiveRecycleMoney)
+            {
+                PickGameItem(gameItem);
+            }
+        }
+
+        private void PickGameItem(GameItem gameItem)
+        {
+            if (gameItem.ItemId == CommonConfig.BattleExpId)
+            {
+                var gainExp = LevelUps.GainExp(gameItem.Num);
+
+                foreach (var i in gainExp)
+                {
+                    PickAPassive(new PassiveTrait(i, 1, PassiveEffectStandard.GenById(i)));
+                }
+            }
+            else
             {
                 PlayingItemBag.Gain(gameItem);
             }
@@ -1413,6 +1435,24 @@ namespace game_stuff
         }
     }
 
+    public class WantedBonus
+    {
+        public GameItem[] TeamBonus { get; set; }
+        public GameItem[] KillBonus { get; set; }
+
+        public WantedBonus()
+        {
+            TeamBonus = new GameItem[] { };
+            KillBonus = new GameItem[] { };
+        }
+
+        public WantedBonus(GameItem[] teamBonus, GameItem[] killBonus)
+        {
+            TeamBonus = teamBonus;
+            KillBonus = killBonus;
+        }
+    }
+
     public enum TrickCond
     {
         MyAtkOk,
@@ -1444,7 +1484,7 @@ namespace game_stuff
         private int NowExp { get; set; }
         public LevelUpsData NowLevelUpsData { get; private set; }
 
-        private IEnumerable<int> GainExp(int expValue)
+        public IEnumerable<int> GainExp(int expValue)
         {
             var nextExp = NowLevelUpsData.NextExp;
             if (nextExp == null)
