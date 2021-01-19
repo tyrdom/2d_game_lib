@@ -22,6 +22,7 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
+        public bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
@@ -118,24 +119,27 @@ namespace game_stuff
             var objType = bullet.TargetType switch
             {
                 target_type.other_team => ObjType.OtherTeam,
+                target_type.all_team => ObjType.AllTeam,
                 _ => throw new ArgumentOutOfRangeException()
             };
             var tough = bullet.Tough;
+            var bulletIsHAtk = bullet.IsHAtk;
             if (bullet.Tough == -1)
             {
-                tough = (int) (pairKey * LocalConfig.ToughGrowPerTick);
+                tough = (int) (pairKey * (1 + LocalConfig.ToughGrowPerTick));
             }
+
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue,
-                bullet.HitType);
+                bullet.HitType, bulletIsHAtk);
         }
 
         private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
             Dictionary<BodySize, IStunBuffConfig> successStunBuffConfigToOpponent,
             Dictionary<BodySize, IStunBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType)
+            hit_type hitType, bool isHAtk)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -154,6 +158,7 @@ namespace game_stuff
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
             HitType = hitType;
+            IsFAtk = !isHAtk;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
@@ -246,9 +251,12 @@ namespace game_stuff
             var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
-            var b3 = !isActSkill && Tough < LocalConfig.MidTough; //如果对手不在释放技能，攻击坚韧小于中值，攻击成功
+            var b3 = !isActSkill && IsFAtk; //如果对手不在释放技能，并且是快攻击子弹
             var tough = objTough.GetValueOrDefault(0);
+
             var b2 = isActSkill && tough < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
+
+
             var atkOk = opponentIsStun || b4 || b3 || b2;
             if (atkOk)
             {
@@ -262,7 +270,8 @@ namespace game_stuff
 
                 return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
             }
-            
+
+
             if (isActSkill)
             {
                 var toughBuffs = targetCharacterStatus.GetBuffs<ToughBuff>().ToArray();

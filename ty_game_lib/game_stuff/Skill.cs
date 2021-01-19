@@ -125,9 +125,12 @@ namespace game_stuff
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)
                 : null;
+            var skillBaseTough = skill.BaseTough == 0
+                ? (int) dictionary.Keys.Min()
+                : skill.BaseTough;
             return new Skill(dictionary, twoDVectors, CommonConfig.GetTickByTime(skill.MoveStartTime),
                 CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
-                skill.BaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
+                skillBaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
                 CommonConfig.GetTickByTime(skill.BreakSnipeTime),
                 skill.SnipeStepNeed, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
         }
