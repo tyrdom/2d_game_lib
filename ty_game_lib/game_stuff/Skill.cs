@@ -25,7 +25,7 @@ namespace game_stuff
 
         private int BaseTough { get; }
 
-        public bool CanInputMove { get; }
+        public int CanInputMove { get; }
         private Dictionary<uint, Bullet> LaunchTickToBullet { get; }
         private TwoDVector[] Moves { get; }
 
@@ -53,7 +53,7 @@ namespace game_stuff
         private Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, bool canInputMove)
+            LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -129,7 +129,7 @@ namespace game_stuff
                 CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
                 skill.BaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
                 CommonConfig.GetTickByTime(skill.BreakSnipeTime),
-                skill.SnipeStepNeed, skill.AmmoCost, skill.CanInputMove);
+                skill.SnipeStepNeed, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
         }
 
 
@@ -157,31 +157,30 @@ namespace game_stuff
                 TwoDVector casterAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
+            NowOnTick++;
             // 生成攻击运动
             TwoDVector? move = null;
-            if (NowOnTick >= MoveStartTick)
+            if (NowOnTick < CanInputMove)
             {
-                if (CanInputMove)
-                {
-                    move = rawMoveVector;
-                }
-                else if (NowOnTick < MoveStartTick + Moves.Length)
-                {
-                    var moveOnTick = NowOnTick - MoveStartTick;
-
-                    move = Moves[moveOnTick];
-                    if (limitV != null)
-                    {
-                        var movesLengthRest = (float) Moves.Length - moveOnTick;
-                        var min = MathTools.Min(limitV.X, move.X);
-                        var max = MathTools.Max(limitV.Y, move.Y) / movesLengthRest;
-
-                        move = new TwoDVector(min, max);
-                    }
-
-                    move = move.AntiClockwiseTurn(casterAim);
-                }
+                move = rawMoveVector;
             }
+            else if (NowOnTick >= MoveStartTick && NowOnTick < MoveStartTick + Moves.Length)
+            {
+                var moveOnTick = NowOnTick - MoveStartTick;
+
+                move = Moves[moveOnTick];
+                if (limitV != null)
+                {
+                    var movesLengthRest = (float) Moves.Length - moveOnTick;
+                    var min = MathTools.Min(limitV.X, move.X);
+                    var max = MathTools.Max(limitV.Y, move.Y) / movesLengthRest;
+
+                    move = new TwoDVector(min, max);
+                }
+
+                move = move.AntiClockwiseTurn(casterAim);
+            }
+
 
             // GenBullet 生成子弹
             IPosMedia? bullet = null;
@@ -189,6 +188,8 @@ namespace game_stuff
             {
                 bullet = LockArea.Active(casterPos, casterAim);
             }
+
+            NowTough += LocalConfig.ToughGrowPerTick;
 
             if (LaunchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {
@@ -199,9 +200,13 @@ namespace game_stuff
             var snipeOff = NowOnTick > 0 && NowOnTick == SnipeBreakTick;
 
             //GONext
-            NowTough += LocalConfig.ToughGrowPerTick;
-            NowOnTick++;
+
             return (move, bullet, snipeOff, null, MapInteract.PickCall);
+        }
+
+        public (IPosMedia? posMedia, bool canInputMove) GetSkillStart(TwoDPoint casterPos, TwoDVector casterAim)
+        {
+            return (LockArea?.Active(casterPos, casterAim), NowOnTick < CanInputMove);
         }
 
         public bool Launch(int nowSnipeStep, int nowAmmo)

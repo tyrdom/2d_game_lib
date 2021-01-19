@@ -85,7 +85,7 @@ namespace game_stuff
 
         public static float TwoSToSeePerTick { get; private set; } = 50f;
 
-        public static float TwoSToSeePerTick_InMidV { get; private set; } = 70f;
+        public static float TwoSToSeePerTickInMidV { get; private set; } = 70f;
         public static PushOnAir OutCaught { get; } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
 
         public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
@@ -171,7 +171,7 @@ namespace game_stuff
             DecreaseMinCos = configsOtherConfig.DecreaseMinCos;
             AtkPassBuffId = configsOtherConfig.atkPassBuffId;
             DefPassBuffId = configsOtherConfig.defPassBuffId;
-            TwoSToSeePerTick_InMidV = configsOtherConfig.two_s_to_see_pertick_medium_vehicle;
+            TwoSToSeePerTickInMidV = configsOtherConfig.two_s_to_see_pertick_medium_vehicle;
         }
 #if NETCOREAPP
         public static void LoadConfig()

@@ -182,7 +182,7 @@ namespace game_stuff
 
 
         // drops_bonus
-        
+
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
             LevelUps playRuler, Dictionary<int, PassiveTrait>? passiveTraits = null)
@@ -279,7 +279,7 @@ namespace game_stuff
         private void OpChangeAim(TwoDVector? aim)
         {
             var twoSToSeePerTick =
-                NowVehicle == null ? LocalConfig.TwoSToSeePerTick : LocalConfig.TwoSToSeePerTick_InMidV;
+                NowVehicle == null ? LocalConfig.TwoSToSeePerTick : LocalConfig.TwoSToSeePerTickInMidV;
 
             CharacterBody.Sight.OpChangeAim(aim, GetNowScope(), twoSToSeePerTick);
         }
@@ -314,7 +314,7 @@ namespace game_stuff
         }
 
 
-        private void LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction)
+        private CharGoTickResult LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction, TwoDVector? moveOp)
         {
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
@@ -324,9 +324,24 @@ namespace game_stuff
                 OpChangeAim(aim);
             }
 
-            if (!skill.Launch(NowSnipeStep, GetAmmo())) return;
+            if (!skill.Launch(NowSnipeStep, GetAmmo())) return new CharGoTickResult();
             SkillLaunch = skillAction;
             SetAct(skill);
+
+            var (posMedia, canInputMove) = skill.GetSkillStart(GetPos(), GetAim());
+            if (!canInputMove || moveOp == null)
+            {
+                return new CharGoTickResult(launchBullet: posMedia);
+            }
+
+            var f = GetNowSnipe()?.GetSpeedMulti(CharacterBody.GetSize());
+            var fixMove
+                = f == null
+                    ? moveOp.Multi(GetStandardSpeed(moveOp))
+                    : moveOp.Multi(GetStandardSpeed(moveOp))
+                        .Multi(f.Value);
+
+            return new CharGoTickResult(launchBullet: posMedia, move: fixMove);
         }
 
         private void ResetSpeed()
@@ -473,16 +488,7 @@ namespace game_stuff
         private CharGoTickResult ActNowActATick(
             TwoDVector? moveOp)
         {
-            var actNowActATick = NowCastAct switch
-            {
-                null => new CharGoTickResult(),
-                Prop prop => GoNowActATick(prop, moveOp),
-                Skill skill => GoNowActATick(skill, moveOp),
-                _ => throw new ArgumentOutOfRangeException(nameof(NowCastAct))
-            };
-
-
-            return actNowActATick;
+            return NowCastAct == null ? new CharGoTickResult() : GoNowActATick(NowCastAct, moveOp);
         }
 
         private IPosMedia? SelfEffectFilter(IEffectMedia? effectMedia)
@@ -632,16 +638,16 @@ namespace game_stuff
             return null;
         }
 
-        private void ComboByNext(TwoDVector? operateAim)
+        private bool NowCanComboNext()
         {
-            if (NextSkill == null || NowCastAct == null ||
-                NowCastAct.InWhichPeriod() != SkillPeriod.CanCombo)
-            {
-                OpChangeAim(null);
-                return;
-            }
+            return NextSkill != null && NowCastAct != null &&
+                   NowCastAct.InWhichPeriod() == SkillPeriod.CanCombo;
+        }
+
+        private CharGoTickResult DoComboByNext(TwoDVector? operateAim, TwoDVector? moveOp)
+        {
 #if DEBUG
-            Console.Out.WriteLine($"{GId} ::skill next start {NextSkill.Value.skill.NowOnTick}");
+            Console.Out.WriteLine($"{GId} ::skill next start {NextSkill!.Value.skill.NowOnTick}");
 #endif
             if (NextSkill.Value.opAction == SkillAction.Switch)
             {
@@ -650,9 +656,10 @@ namespace game_stuff
 
             var aim = operateAim ?? NextSkill.Value.Aim;
 
-            LoadSkill(aim, NextSkill.Value.skill, NextSkill.Value.opAction);
+            var charGoTickResult = LoadSkill(aim, NextSkill.Value.skill, NextSkill.Value.opAction, moveOp);
 
             NextSkill = null;
+            return charGoTickResult;
         }
 
         private void TempMsgClear()
@@ -756,8 +763,9 @@ namespace game_stuff
             if (NowCastAct != null)
             {
                 // 当前动作进行一个tick
-
-                var actNowActATick = ActNowActATick(operate?.Move);
+                var skillAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
+                var skillMove = operate?.Move;
+                var actNowActATick = NowCanComboNext() ? ActNowActATick(skillMove) : DoComboByNext(skillAim, skillMove);
 
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
@@ -768,8 +776,6 @@ namespace game_stuff
                         $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim}||{launchBullet.Pos}");
 #endif
 
-                var skillAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
-                ComboByNext(skillAim);
 
                 //没有更多Act操作，则返回
                 if (opAction == null) return actNowActATick;
@@ -805,7 +811,7 @@ namespace game_stuff
                         NextSkill ??= (skillAim, skill, opAction.Value);
                         break;
                     case SkillPeriod.CanCombo:
-                        LoadSkill(skillAim, skill, opAction.Value);
+                        actNowActATick = LoadSkill(skillAim, skill, opAction.Value, skillMove);
                         NowWeapon = toUse;
                         break;
                     case SkillPeriod.End:
@@ -911,9 +917,8 @@ namespace game_stuff
                         !weapon.SkillGroups.TryGetValue(CharacterBody.GetSize(), out var value1) ||
                         !value1.TryGetValue(opAction.Value, out var value) ||
                         !value.TryGetValue(0, out var skill)) return new CharGoTickResult();
-                    LoadSkill(null, skill, opAction.Value);
-                    var actNowSkillATick = ActNowActATick(operate.Move);
-                    return actNowSkillATick;
+
+                    return LoadSkill(null, skill, opAction.Value, operate.Move);
                 }
             }
 
@@ -1063,7 +1068,7 @@ namespace game_stuff
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)
         {
-            LoadSkill(aim, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick);
+            LoadSkill(aim, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick, null);
             NextSkill = null;
         }
 

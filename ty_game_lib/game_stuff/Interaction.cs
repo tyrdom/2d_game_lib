@@ -28,7 +28,7 @@ namespace game_stuff
             return (twd, null, b, inCage, Interact);
         }
 
-        public MapInteract Interact { get;  }
+        private MapInteract Interact { get;  }
 
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }
