@@ -29,7 +29,7 @@ namespace game_config
             return immutableDictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        public static ImmutableDictionary<TK, TV> CovertDictToIDict<TK, TV>(Dictionary<TK, TV> immutableDictionary)
+        private static ImmutableDictionary<TK, TV> CovertDictToIDict<TK, TV>(Dictionary<TK, TV> immutableDictionary)
         {
             return immutableDictionary.ToImmutableDictionary(pair => pair.Key, pair => pair.Value);
         }

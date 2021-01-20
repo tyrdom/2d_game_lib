@@ -215,7 +215,7 @@ namespace game_stuff
 
             MapInteractableGoATick();
 
-            var (playerBeHit, trapBeHit, radarSee) = HitMediasDo();
+            var (playerBeHit, trapBeHit, teamRadarSee) = HitMediasDo();
 
             foreach (var twoDTwoP in everyBodyGoATick)
             {
@@ -231,11 +231,12 @@ namespace game_stuff
                 playerSee.ToImmutableDictionary(pair => pair.Key,
                     pair =>
                     {
-                        var seeTickMsgs = pair.Value.Select(x => x.GenTickMsg(pair.Key));
-                        var tickMsgs = radarSee.TryGetValue(pair.Key, out var sees)
-                            ? seeTickMsgs.Union(sees)
-                            : seeTickMsgs;
-                        return tickMsgs
+                        var gid = pair.Key;
+                        var seeTickMsgs = pair.Value.Select(x => x.GenTickMsg(gid));
+                        if (GidToBody.TryGetValue(gid, out var cb) &&
+                            teamRadarSee.TryGetValue(cb.Team, out var sees))
+                            return seeTickMsgs.Union(sees).ToImmutableHashSet();
+                        return seeTickMsgs
                             .ToImmutableHashSet();
                     });
 
@@ -382,22 +383,22 @@ namespace game_stuff
 
         private static void RecordHitResult(HitResult hitResult,
             IDictionary<int, HashSet<HitResult>> gidD, IDictionary<int, Dictionary<int, HashSet<HitResult>>> tidD,
-            IDictionary<int, HashSet<ISeeTickMsg>> idRadarSee)
+            IDictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
         {
             if (hitResult.HitMedia is RadarWave)
             {
-                var id = hitResult.CasterOrOwner.GetId();
+                var id = hitResult.CasterOrOwner.Team;
                 var twoDPoint = hitResult.HitBody.GetAnchor();
                 var bodySize = hitResult.HitBody.GetSize();
 
                 var radarSeeMsg = new RadarSeeMsg(twoDPoint, bodySize);
-                if (idRadarSee.TryGetValue(id, out var seeTickMsgs))
+                if (teamRadarSee.TryGetValue(id, out var seeTickMsgs))
                 {
                     seeTickMsgs.Add(radarSeeMsg);
                 }
                 else
                 {
-                    idRadarSee[id] = new HashSet<ISeeTickMsg> {radarSeeMsg};
+                    teamRadarSee[id] = new HashSet<ISeeTickMsg> {radarSeeMsg};
                 }
 
                 return;
@@ -448,12 +449,12 @@ namespace game_stuff
 
         private (ImmutableDictionary<int, ImmutableHashSet<HitResult>> gidBeHit,
             ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> gidTrapBeHit,
-            Dictionary<int, HashSet<ISeeTickMsg>> idRadarSee)
+            Dictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
             HitMediasDo()
         {
             var gidHitBy = new Dictionary<int, HashSet<HitResult>>();
             var tidHitBy = new Dictionary<int, Dictionary<int, HashSet<HitResult>>>();
-            var idRadarSee = new Dictionary<int, HashSet<ISeeTickMsg>>();
+            var teamRadarSee = new Dictionary<int, HashSet<ISeeTickMsg>>();
             foreach (var ii in TeamToHitMedia)
             {
                 var team = ii.Key;
@@ -470,7 +471,7 @@ namespace game_stuff
 
                             foreach (var hr in selectMany)
                             {
-                                RecordHitResult(hr, gidHitBy, tidHitBy, idRadarSee);
+                                RecordHitResult(hr, gidHitBy, tidHitBy, teamRadarSee);
                             }
 
                             break;
@@ -481,7 +482,7 @@ namespace game_stuff
                                     .Union(bullet.HitTeam(qSpace.Traps));
                                 foreach (var hitResult in enumerable)
                                 {
-                                    RecordHitResult(hitResult, gidHitBy, tidHitBy, idRadarSee);
+                                    RecordHitResult(hitResult, gidHitBy, tidHitBy, teamRadarSee);
                                 }
                             }
 
@@ -492,7 +493,7 @@ namespace game_stuff
 
                             foreach (var hitResult in results)
                             {
-                                RecordHitResult(hitResult, gidHitBy, tidHitBy, idRadarSee);
+                                RecordHitResult(hitResult, gidHitBy, tidHitBy, teamRadarSee);
                             }
 
                             break;
@@ -509,7 +510,7 @@ namespace game_stuff
             var gidTrapBeHit = tidHitBy.ToImmutableDictionary(pa => pa.Key,
                 pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
                     pp => pp.Value.ToImmutableHashSet()));
-            return (gidBeHit, gidTrapBeHit, idRadarSee);
+            return (gidBeHit, gidTrapBeHit, teamRadarSee);
         }
 
         private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyDevice;
