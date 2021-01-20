@@ -98,8 +98,7 @@ namespace game_stuff
 
         //初始化状态信息,包括玩家信息和地图信息
         public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
-            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, int genMapId, int mapResId,
-            LevelUps levelUps)
+            IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, int genMapId, int mapResId)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
             var characterBodies = new Dictionary<int, CharacterBody>();
@@ -113,7 +112,7 @@ namespace game_stuff
                 }
 
                 var twoDPoint = startPts.GenPt();
-                var genCharacterBody = initData.GenCharacterBody(twoDPoint, levelUps);
+                var genCharacterBody = initData.GenCharacterBody(twoDPoint);
                 if (bodies.TryGetValue(initDataTeamId, out var playersToAdd))
                 {
                     playersToAdd.Add(genCharacterBody);

@@ -15,7 +15,6 @@ namespace game_stuff
 
     public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
-        public LevelUps LevelUps { get; }
         public CharacterBody CharacterBody;
         public int BaseAttrId { get; }
         public float MaxMoveSpeed { get; private set; }
@@ -174,7 +173,6 @@ namespace game_stuff
 
         public IScoreData ScoreData { get; }
 
-        public WantedBonus WantedBonus { get; }
 
         // for_tick_msg
         public bool HaveChange { get; set; } //todo to change an use
@@ -189,10 +187,8 @@ namespace game_stuff
 
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
-            LevelUps playRuler, WantedBonus? wantedBonus = null, Dictionary<int, PassiveTrait>? passiveTraits = null)
+            Dictionary<int, PassiveTrait>? passiveTraits = null)
         {
-            LevelUps = playRuler;
-            WantedBonus = wantedBonus ?? new WantedBonus();
             HaveChange = false;
             ScoreData = new CharKillData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
@@ -1288,19 +1284,7 @@ namespace game_stuff
 
         private void PickGameItem(GameItem gameItem)
         {
-            if (gameItem.ItemId == CommonConfig.BattleExpId)
-            {
-                var gainExp = LevelUps.GainExp(gameItem.Num);
-
-                foreach (var i in gainExp)
-                {
-                    PickAPassive(new PassiveTrait(i, 1, PassiveEffectStandard.GenById(i)));
-                }
-            }
-            else
-            {
-                PlayingItemBag.Gain(gameItem);
-            }
+            PlayingItemBag.Gain(gameItem);
         }
 
         public void AbsorbRangeBullet(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
@@ -1401,10 +1385,6 @@ namespace game_stuff
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
         }
 
-        public LevelUpsData GetNowLevelUpData()
-        {
-            return LevelUps.NowLevelUpsData;
-        }
 
         public bool CheckBuff(int id)
         {
@@ -1435,96 +1415,12 @@ namespace game_stuff
         }
     }
 
-    public class WantedBonus
-    {
-        public GameItem[] TeamBonus { get; set; }
-        public GameItem[] KillBonus { get; set; }
-
-        public WantedBonus()
-        {
-            TeamBonus = new GameItem[] { };
-            KillBonus = new GameItem[] { };
-        }
-
-        public WantedBonus(GameItem[] teamBonus, GameItem[] killBonus)
-        {
-            TeamBonus = teamBonus;
-            KillBonus = killBonus;
-        }
-    }
-
     public enum TrickCond
     {
         MyAtkOk,
         OpponentAtkFail
     }
 
-    public class LevelUps
-    {
-        public static LevelUps NoneLevelUps()
-        {
-            var levelUpsData = new LevelUpsData(null, 0, new GameItem[] { }, new int[] { });
-            var levelUpsDatas = new Dictionary<int, LevelUpsData>() {{1, levelUpsData}};
-            return new LevelUps(levelUpsDatas.ToImmutableDictionary());
-        }
-
-        public LevelUps(ImmutableDictionary<int, LevelUpsData> levelUpDict)
-        {
-            LevelUpDict = levelUpDict;
-            NowLevel = 1;
-            NowExp = 0;
-            NowLevelUpsData = levelUpDict.TryGetValue(NowLevel, out var levelUpsData)
-                ? levelUpsData
-                : throw new DirectoryNotFoundException($"not level {NowLevel}");
-        }
-
-        public ImmutableDictionary<int, LevelUpsData> LevelUpDict { get; }
-        public int NowLevel { get; set; }
-
-        private int NowExp { get; set; }
-        public LevelUpsData NowLevelUpsData { get; private set; }
-
-        public IEnumerable<int> GainExp(int expValue)
-        {
-            var nextExp = NowLevelUpsData.NextExp;
-            if (nextExp == null)
-            {
-                return new int[] { };
-            }
-
-            NowExp += expValue;
-            var res = new List<int>();
-            while (NowExp >= nextExp)
-
-            {
-                NowExp -= nextExp.Value;
-                res.AddRange(NowLevelUpsData.PassAddId);
-                NowLevel++;
-                if (LevelUpDict.TryGetValue(NowLevel, out var levelUpsData))
-                {
-                    NowLevelUpsData = levelUpsData;
-                }
-            }
-
-            return res;
-        }
-    }
-
-    public readonly struct LevelUpsData
-    {
-        public LevelUpsData(int? nextExp, int reBornAboutTick, GameItem[] rebornCost, int[] passAddId)
-        {
-            NextExp = nextExp;
-            ReBornAboutTick = reBornAboutTick;
-            RebornCost = rebornCost;
-            PassAddId = passAddId;
-        }
-
-        public int? NextExp { get; }
-        public int ReBornAboutTick { get; }
-        public GameItem[] RebornCost { get; }
-        public int[] PassAddId { get; }
-    }
 
     public struct AbsorbStatus
     {

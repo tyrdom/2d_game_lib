@@ -15,7 +15,7 @@ namespace game_stuff
             var twoDPoints = testInitData.TeamToStartPt.ToDictionary(p => p.Key, p => p.Value.GenPt())
                 .ToImmutableDictionary();
             var initPlayGround = PlayGround.InitPlayGround(new[] {TestPlayer1(), TestPlayer2()},
-                testInitData, 1, 0, LevelUps.NoneLevelUps());
+                testInitData, 1, 0);
 
             return initPlayGround;
         }

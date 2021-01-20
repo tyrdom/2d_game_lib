@@ -87,7 +87,7 @@ namespace rogue_game
             var passiveTraits = PassiveData.ToDictionary(x => x[0], x => new PassiveTrait(
                 x[0], (uint) x[1], PassiveEffectStandard.GenById(x[0])));
             var characterStatus =
-                new CharacterStatus(gid, BaseAttrId, playingItemBag, RogueGame.GetLevelUp(),null, passiveTraits);
+                new CharacterStatus(gid, BaseAttrId, playingItemBag, passiveTraits);
             var enumerable = WeaponIds.Select(Weapon.GenById);
             foreach (var weapon in enumerable)
             {

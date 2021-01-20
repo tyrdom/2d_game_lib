@@ -98,14 +98,6 @@ namespace rogue_game
             return true;
         }
 
-        private static ImmutableDictionary<int, LevelUpsData> RogueLevelData()
-        {
-            var levelUpsData = new LevelUpsData(null, LocalConfig.RogueRebornTick, LocalConfig.RogueRebornCost,
-                new int[] { });
-            var levelUpsDates = new Dictionary<int, LevelUpsData> {{1, levelUpsData}};
-            return levelUpsDates.ToImmutableDictionary();
-        }
-
 
         private bool IsPlayerAllDead()
         {
@@ -130,11 +122,6 @@ namespace rogue_game
 
             RebornCountDownTick = LocalConfig.RogueRebornTick;
             return false;
-        }
-
-        public static LevelUps GetLevelUp()
-        {
-            return new LevelUps(RogueLevelData());
         }
 
         public bool DoGameRequest(int callSeat, IGameRequest gameRequest)

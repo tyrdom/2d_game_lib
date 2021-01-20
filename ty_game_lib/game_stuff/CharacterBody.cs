@@ -194,11 +194,6 @@ namespace game_stuff
             Teleport(pos);
             CharacterStatus.Reborn();
         }
-
-        public LevelUpsData GetAutoRebornTick()
-        {
-            return CharacterStatus.GetNowLevelUpData();
-        }
     }
 
     public enum BodyMark
