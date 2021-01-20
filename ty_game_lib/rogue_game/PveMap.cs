@@ -8,7 +8,7 @@ namespace rogue_game
 {
     public class PveMap
     {
-        public PveMap(PlayGround playGround, HashSet<CharacterBody> bosses, HashSet<CharacterBody> creeps,
+        public PveMap(PlayGround playGround, HashSet<Creep> bosses, HashSet<Creep> creeps,
             PveWinCond pveWinCond, TwoDPoint[] enterPoints, bool isClear)
         {
             PlayGround = playGround;
@@ -18,11 +18,11 @@ namespace rogue_game
             EnterPoints = enterPoints;
             IsClear = isClear;
         }
-        
+
         public bool IsClear { get; set; }
         private PlayGround PlayGround { get; }
-        public HashSet<CharacterBody> Bosses { get; }
-        public HashSet<CharacterBody> Creeps { get; }
+        public HashSet<Creep> Bosses { get; }
+        public HashSet<Creep> Creeps { get; }
         public PveWinCond PveWinCond { get; }
 
         public TwoDPoint[] EnterPoints { get; }
@@ -41,9 +41,9 @@ namespace rogue_game
 
             var b = PveWinCond switch
             {
-                PveWinCond.AllClear => Bosses.All(x => x.CharacterStatus.SurvivalStatus.IsDead()) &&
-                                       Creeps.All(x => x.CharacterStatus.SurvivalStatus.IsDead()),
-                PveWinCond.BossClear => Bosses.All(x => x.CharacterStatus.SurvivalStatus.IsDead()),
+                PveWinCond.AllClear => Bosses.All(x => x.CharacterBody.CharacterStatus.SurvivalStatus.IsDead()) &&
+                                       Creeps.All(x => x.CharacterBody.CharacterStatus.SurvivalStatus.IsDead()),
+                PveWinCond.BossClear => Bosses.All(x => x.CharacterBody.CharacterStatus.SurvivalStatus.IsDead()),
                 _ => throw new ArgumentOutOfRangeException()
             };
             if (!b) return false;
@@ -73,5 +73,15 @@ namespace rogue_game
         {
             return PlayGround.MgId;
         }
+    }
+
+    public class Creep
+    {
+        public CharacterBody CharacterBody { get; }
+        public WantedBonus WantedBonus { get; }
+    }
+
+    public class WantedBonus
+    {
     }
 }

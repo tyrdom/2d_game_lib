@@ -57,7 +57,7 @@ namespace rogue_game
             PlayerLeaderSeat = playerLeader;
         }
 
-        public bool Reborn(int seat, int toSeat)
+        private bool Reborn(int seat, int toSeat)
         {
             if (!NowGamePlayers.TryGetValue(seat, out var player)) return false;
             var costOk = player.Player.CharacterStatus.PlayingItemBag.Cost(RebornCost);
@@ -72,7 +72,7 @@ namespace rogue_game
             return true;
         }
 
-        public bool LeaveGame(int seat)
+        private bool LeaveGame(int seat)
         {
             var leaveGame = NowGamePlayers.Remove(seat);
             if (leaveGame && seat == PlayerLeaderSeat && NowGamePlayers.Any())
