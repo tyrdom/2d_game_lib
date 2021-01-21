@@ -7,11 +7,12 @@ namespace game_stuff
 {
     public class VehicleCanInTickMsg : ISeeTickMsg
     {
-        public VehicleCanInTickMsg(int vId, bool isBroken, float sStatus)
+        public VehicleCanInTickMsg(int vId, bool isBroken, float sStatus, TwoDPoint pos)
         {
             VId = vId;
             IsBroken = isBroken;
             SStatus = sStatus;
+            Pos = pos;
         }
 
         public int VId { get; }
@@ -19,6 +20,8 @@ namespace game_stuff
         public bool IsBroken { get; }
 
         public float SStatus { get; }
+
+        public TwoDPoint Pos { get; }
 
         public override string ToString()
         {
@@ -144,7 +147,7 @@ namespace game_stuff
             var vehicleIsDsOn = vehicle.IsDsOn;
             var vehicleVId = vehicle.VId;
             var genShortStatus = vehicle.SurvivalStatus.GenShortStatus();
-            return new VehicleCanInTickMsg(vehicleVId, vehicleIsDsOn, genShortStatus);
+            return new VehicleCanInTickMsg(vehicleVId, vehicleIsDsOn, genShortStatus, GetAnchor());
         }
 
         public TwoDPoint GetAnchor()

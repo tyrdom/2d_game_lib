@@ -27,7 +27,7 @@ namespace game_stuff
             IsActive = isActive;
         }
 
-        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive)
+        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive,int aid)
         {
             IsActive = isActive;
             var configsInteraction = LocalConfig.Configs.interactions;
@@ -134,11 +134,19 @@ namespace game_stuff
                 case SaleUnit saleUnit:
                     return new SaleBoxTickMsg(saleUnit.Cost,
                         saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray(),
-                        saleUnit.GetRestStack(gid));
+                        saleUnit.GetRestStack(gid),GetAnchor());
+                case TeleportUnit teleportUnit:
+                    return new TelePortTickMsg();
+                    break;
 
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
+    }
+
+    public class TelePortTickMsg : ISeeTickMsg
+    {
+        public TwoDPoint Pos { get; }
     }
 }

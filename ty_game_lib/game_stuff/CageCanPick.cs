@@ -81,7 +81,7 @@ namespace game_stuff
 
         public void RecordQuad(int qI)
         {
-             MapInteractableDefault.RecardQuad(qI, this);
+            MapInteractableDefault.RecardQuad(qI, this);
         }
 
         public bool IsCage()
@@ -151,9 +151,9 @@ namespace game_stuff
         {
             return CharActOne.InMapInteractable switch
             {
-                PassiveTrait passiveTrait => new CageTickMsg(ContainType.PassiveC, passiveTrait.PassId),
-                Prop prop => new CageTickMsg(ContainType.PropC, prop.PId),
-                Weapon weapon => new CageTickMsg(ContainType.WeaponC, weapon.WId),
+                PassiveTrait passiveTrait => new CageTickMsg(ContainType.PassiveC, passiveTrait.PassId, GetAnchor()),
+                Prop prop => new CageTickMsg(ContainType.PropC, prop.PId, GetAnchor()),
+                Weapon weapon => new CageTickMsg(ContainType.WeaponC, weapon.WId, GetAnchor()),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -170,12 +170,14 @@ namespace game_stuff
 
     public class CageTickMsg : ISeeTickMsg
     {
-        public CageTickMsg(ContainType containType, int id)
+        public CageTickMsg(ContainType containType, int id, TwoDPoint pos)
         {
             ContainType = containType;
             Id = id;
+            Pos = pos;
         }
 
+        public TwoDPoint Pos { get; }
         public ContainType ContainType { get; }
 
         public int Id { get; }

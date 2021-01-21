@@ -234,8 +234,8 @@ namespace game_stuff
             SsStatus = ssStatus;
         }
 
-        private TwoDPoint Pos { get; }
-        private int Tid { get; }
-        private float SsStatus { get; }
+        public TwoDPoint Pos { get; }
+        public int Tid { get; }
+        public float SsStatus { get; }
     }
 }

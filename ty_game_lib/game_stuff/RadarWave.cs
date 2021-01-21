@@ -8,13 +8,13 @@ namespace game_stuff
 {
     public class RadarSeeMsg : ISeeTickMsg
     {
-        public RadarSeeMsg(TwoDPoint someThingPos, BodySize size)
+        public RadarSeeMsg(TwoDPoint pos, BodySize size)
         {
-            SomeThingPos = someThingPos;
+            Pos = pos;
             Size = size;
         }
 
-        public TwoDPoint SomeThingPos { get; }
+        public TwoDPoint Pos { get; }
 
         public BodySize Size { get; }
     }

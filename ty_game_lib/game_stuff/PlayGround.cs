@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -215,7 +212,8 @@ namespace game_stuff
 
             MapInteractableGoATick();
 
-            var (playerBeHit, trapBeHit, teamRadarSee) = HitMediasDo();
+            var (playerBeHit, trapBeHit, teamRadarSee)
+                = HitMediasDo();
 
             foreach (var twoDTwoP in everyBodyGoATick)
             {

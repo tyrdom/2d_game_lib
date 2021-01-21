@@ -21,6 +21,17 @@ namespace game_stuff
         string ToString();
     }
 
+    public interface ISeeActive
+    {
+        int AId { get; }
+        bool IsActive { get; }
+    }
+
+    public interface ISeePosChange
+    {
+        TwoDPoint Pos { get; }
+    }
+
     public static class CanBeHitStandard
     {
     }
