@@ -38,11 +38,11 @@ namespace game_stuff
             var (hit1, trap1, see2, dic) =
                 playGroundGoTickResults.Aggregate((hit, trap, see, ints), (s, x) =>
                 {
-                    var (dictionary, dictionary1, see1, ints) = s;
+                    var (dictionary, dictionary1, see1, ins) = s;
                     var keyValuePairs = dictionary1.Union(x.TrapBeHit);
                     var valuePairs = dictionary.Union(x.PlayerBeHit);
                     var enumerable = see1.Union(x.PlayerSee);
-                    var union = ints.Union(x.PlayerTeleportTo);
+                    var union = ins.Union(x.PlayerTeleportTo);
                     return ((Dictionary<int, ImmutableHashSet<HitResult>> hit,
                         Dictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> trap,
                         Dictionary<int, ImmutableHashSet<ISeeTickMsg>> see, Dictionary<int, int> ints)) (valuePairs,

@@ -7,7 +7,7 @@ namespace rogue_game
 {
     public class GameSave
     {
-        private Dictionary<int, PlayerSave> PlayerSaves { get; }
+        private Dictionary<int, PlayerStatusSave> PlayerSaves { get; }
 
         private MapSave MapSave { get; }
 

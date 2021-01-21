@@ -38,23 +38,27 @@ namespace rogue_game
 
     public class RogueGame
     {
-        private Queue<Chapter> Chapters { get; }
+        private int ChapterId { get; set; }
         private Chapter NowChapter { get; set; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
         public int RebornCountDownTick { get; set; }
 
         public GameItem[] RebornCost { get; }
-        public int PlayerLeaderSeat { get; set; }
+        public int PlayerLeaderGid { get; set; }
+
+        public PveMap NowPlayMap { get; set; }
 
         public RogueGame(Queue<Chapter> chapters, Dictionary<int, RogueGamePlayer> nowGamePlayers,
-            int rebornCountDownTick, int playerLeader)
+            int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, int chapterId)
         {
             RebornCost = LocalConfig.RogueRebornCost;
-            Chapters = chapters;
+
             NowChapter = chapters.Dequeue();
             NowGamePlayers = nowGamePlayers;
             RebornCountDownTick = rebornCountDownTick;
-            PlayerLeaderSeat = playerLeader;
+            PlayerLeaderGid = playerLeader;
+            NowPlayMap = nowPlayMap;
+            ChapterId = chapterId;
         }
 
         private bool Reborn(int seat, int toSeat)
@@ -75,33 +79,27 @@ namespace rogue_game
         private bool LeaveGame(int seat)
         {
             var leaveGame = NowGamePlayers.Remove(seat);
-            if (leaveGame && seat == PlayerLeaderSeat && NowGamePlayers.Any())
+            if (leaveGame && seat == PlayerLeaderGid && NowGamePlayers.Any())
             {
-                PlayerLeaderSeat = NowGamePlayers.First().Key;
+                PlayerLeaderGid = NowGamePlayers.First().Key;
             }
 
             return leaveGame;
         }
 
-        public bool GoNextChapter()
+        private void GoNextChapter()
         {
-            if (!Chapters.Any()) return false;
-            var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
-            NowChapter = Chapters.Dequeue();
+            ChapterId++;
+            NowChapter = Chapter.GenById(ChapterId);
             var nowChapterEntrance = NowChapter.Entrance;
+            var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddPlayers(characterBodies);
-            foreach (var gamePlayer in NowGamePlayers.Select(rogueGamePlayer => rogueGamePlayer.Value))
-            {
-                gamePlayer.SetPveMap(nowChapterEntrance);
-            }
-
-            return true;
         }
 
 
         private bool IsPlayerAllDead()
         {
-            var all = NowGamePlayers.Values.All(x => x.Player.CharacterStatus.SurvivalStatus.IsDead());
+            var all = NowGamePlayers.Values.All(x => x.IsDead);
             return all;
         }
 
@@ -124,65 +122,106 @@ namespace rogue_game
             return false;
         }
 
-        public bool DoGameRequest(int callSeat, IGameRequest gameRequest)
+        private bool DoGameRequest(int callSeat, IGameRequest gameRequest)
         {
             return gameRequest switch
             {
-                KickPlayer kickPlayer => callSeat == PlayerLeaderSeat && LeaveGame(kickPlayer.Seat),
+                KickPlayer kickPlayer => callSeat == PlayerLeaderGid && LeaveGame(kickPlayer.Seat),
                 Leave _ => LeaveGame(callSeat),
                 RebornPlayer rebornPlayer => Reborn(callSeat, rebornPlayer.Seat),
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
             };
         }
 
-        public void GameRuleCheckGoATick(Dictionary<int, IGameRequest> gameRequests)
+        // rogue游戏控制台包含核心玩法外的规则，应该与玩法异步运行
+        public HashSet<IGameResp> GameConsoleGoATick(Dictionary<int, IGameRequest> gameRequests)
         {
-            var enumerable = gameRequests.Select(x => DoGameRequest(x.Key, x.Value));
-
+            var gameRespSet = new HashSet<IGameResp>();
+            var enumerable = gameRequests.ToImmutableDictionary(x => x.Key, x => DoGameRequest(x.Key, x.Value));
+            if (enumerable != null && enumerable.Any())
+            {
+                gameRespSet.Add(new RequestResult(enumerable));
+            }
 
             if (NowChapter.IsPass())
             {
-                var goNextChapterOk = GoNextChapter();
+                GoNextChapter();
+                gameRespSet.Add(new ChapterPass());
             }
 
-            IsFail();
+            if (NowPlayMap.IsClear)
+            {
+                NowPlayMap.ActiveApplyDevice();
+                gameRespSet.Add(new MapClear());
+            }
+
+            if (IsFail())
+            {
+                gameRespSet.Add(new GameFail());
+            }
+
+            return gameRespSet;
         }
 
-        public void GoATick()
+        public void Start()
         {
         }
 
+        // roguelike接入核心玩法，
         public PlayGroundGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
         {
-            var groupBy = NowGamePlayers.Values.GroupBy(x => x.InPlayGround);
+            var playGroundGoTickResult = NowPlayMap.PlayGroundGoATick(opDic);
+            var playerBeHit = playGroundGoTickResult.PlayerBeHit;
 
-            var playGroundGoTickResults = groupBy.Select(rp =>
+
+            if (playerBeHit.Any())
             {
-                var valuePairs = opDic.Where(x => rp.Select(r => r.Player.GetId()).Contains(x.Key))
-                    .ToDictionary(p => p.Key, p => p.Value);
-                if (!rp.Key.IsClearAndSave()) return rp.Key.PlayGroundGoATick(valuePairs);
-                foreach (var rogueGamePlayer in rp)
-                {
-                    rogueGamePlayer.PlayerGoSave();
-                }
+                NowPlayMap.KillCreep(playerBeHit);
 
-                return rp.Key.PlayGroundGoATick(valuePairs);
-            });
-            var playGroundGoTickResult = PlayGroundGoTickResult.Sum(playGroundGoTickResults);
-            var (_, _, _, teleportTo)
-                = playGroundGoTickResult;
-            foreach (var kv in teleportTo)
+                foreach (var rogueGamePlayer in NowGamePlayers.Values.Where(rogueGamePlayer => !rogueGamePlayer.IsDead)
+                )
+                {
+                    rogueGamePlayer.CheckDead();
+                }
+            }
+
+            var playerTeleportTo = playGroundGoTickResult.PlayerTeleportTo;
+            if (playerTeleportTo.Any())
             {
-                if (NowGamePlayers.TryGetValue(kv.Key, out var gamePlayer) &&
-                    NowChapter.MGidToMap.TryGetValue(kv.Value, out var pveMap))
-                {
-                    gamePlayer.Teleport(pveMap);
-                }
+                var keyValuePair = playerTeleportTo.Values.First();
 
-                throw new DirectoryNotFoundException();
+
+                NowPlayMap = NowChapter.MGidToMap[keyValuePair];
+                NowPlayMap.AddPlayers(NowGamePlayers.Values.Select(x => x.Player).ToArray());
             }
 
             return playGroundGoTickResult;
+        }
+    }
+
+    public interface IGameResp
+    {
+    }
+
+    public class GameFail : IGameResp
+    {
+    }
+
+    public class MapClear : IGameResp
+    {
+    }
+
+    public class ChapterPass : IGameResp
+    {
+    }
+
+    public class RequestResult : IGameResp
+    {
+        public ImmutableDictionary<int, bool> GidToOk { get; }
+
+        public RequestResult(ImmutableDictionary<int, bool> gidToOk)
+        {
+            GidToOk = gidToOk;
         }
     }
 }

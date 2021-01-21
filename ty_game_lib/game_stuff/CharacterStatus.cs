@@ -12,7 +12,7 @@ using game_config;
 namespace game_stuff
 {
     //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
-
+ 
     public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
         public CharacterBody CharacterBody;
@@ -599,7 +599,7 @@ namespace game_stuff
         }
 
 
-        public void RecycleAProp(Prop prop)
+        internal void RecycleAProp(Prop prop)
         {
             NowPropStack = Math.Min(MaxPropStack,
                 (int) (NowPropStack + prop.RecyclePropStack * (1 + GetRecycleMulti())));
@@ -678,7 +678,7 @@ namespace game_stuff
         /// <param name="operate"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public CharGoTickResult
+        internal CharGoTickResult
             CharGoTick(Operate? operate) //角色一个tick行为
         {
             //清理消息缓存
@@ -691,7 +691,6 @@ namespace game_stuff
             if (b1)
             {
                 PauseTick -= 1;
-
                 return new CharGoTickResult();
             }
 

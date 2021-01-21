@@ -4,7 +4,7 @@ using game_stuff;
 
 namespace rogue_game
 {
-    public struct PlayerSave
+    public struct PlayerStatusSave
     {
         public int[] WeaponIds { get; set; }
 
@@ -54,7 +54,7 @@ namespace rogue_game
             MapGid = mapGid;
         }
 
-        private PlayerSave(int[] weaponIds, int baseAttrId, int vehicleId, int[] vWeaponIds, GameItem[] bagData,
+        private PlayerStatusSave(int[] weaponIds, int baseAttrId, int vehicleId, int[] vWeaponIds, GameItem[] bagData,
             int[][] passiveData, int propId, int nowHp, int nowArmor, int nowAmmo, int vNowHp, int vNowArmor,
             int vNowAmmo, int mapGid)
         {
@@ -78,6 +78,7 @@ namespace rogue_game
         {
             return MapGid;
         }
+
         public CharacterStatus LoadSaveStatus(int gid)
         {
             var dictionary = BagData.ToDictionary(item => item.ItemId, i => i.Num);
@@ -122,7 +123,8 @@ namespace rogue_game
         public void Save(CharacterStatus characterStatus, int mapGid)
         {
             var weaponIds = characterStatus.Weapons.Keys.ToArray();
-            var keyValuePairs = characterStatus.PassiveTraits.ToDictionary(p => p.Key, pair => (int) pair.Value.Level)
+            var keyValuePairs = characterStatus.PassiveTraits
+                .ToDictionary(p => p.Key, pair => (int) pair.Value.Level)
                 .Select(x => new[] {x.Key, x.Value}).ToArray();
             var passiveData = keyValuePairs;
             var baseAttrId = characterStatus.BaseAttrId;
@@ -145,7 +147,7 @@ namespace rogue_game
                 nowAmmo, vNowHp, vNowArmor, vNowAmmo, mapGid);
         }
 
-        public static PlayerSave GenPlayerSave(CharacterStatus characterStatus, int mapGid)
+        public static PlayerStatusSave GenPlayerSave(CharacterStatus characterStatus, int mapGid)
         {
             var weaponIds = characterStatus.Weapons.Keys.ToArray();
             var keyValuePairs = characterStatus.PassiveTraits.ToDictionary(p => p.Key, pair => (int) pair.Value.Level)
@@ -166,7 +168,8 @@ namespace rogue_game
             var vWeaponIds = characterStatusNowVehicle?.Weapons.Keys.ToArray() ?? new int[] { };
             var bagData = characterStatus.PlayingItemBag.GameItems.Select(p => new GameItem(p.Key, p.Value)).ToArray();
 
-            return new PlayerSave(weaponIds, baseAttrId, vehicleId, vWeaponIds, bagData, passiveData, propId, nowHp,
+            return new PlayerStatusSave(weaponIds, baseAttrId, vehicleId, vWeaponIds, bagData, passiveData, propId,
+                nowHp,
                 nowArmor,
                 nowAmmo, vNowHp, vNowArmor, vNowAmmo, mapGid);
         }

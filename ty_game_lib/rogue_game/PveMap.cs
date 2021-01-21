@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_stuff;
@@ -19,7 +20,7 @@ namespace rogue_game
             IsClear = isClear;
         }
 
-        public bool IsClear { get; set; }
+        public bool IsClear { get; private set; }
         private PlayGround PlayGround { get; }
         public HashSet<Creep> Bosses { get; }
         public HashSet<Creep> Creeps { get; }
@@ -32,29 +33,46 @@ namespace rogue_game
             PlayGround.ActiveApplyDevice();
         }
 
-        public bool IsClearAndSave()
+        public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<HitResult>> playerBeHit)
         {
-            if (IsClear)
+            bool Predicate(Creep creep)
             {
-                return true;
+                return playerBeHit.ContainsKey(creep.CharacterBody.GetId()) &&
+                       creep.CharacterBody.CharacterStatus.SurvivalStatus.IsDead();
             }
 
-            var b = PveWinCond switch
+            switch (PveWinCond)
             {
-                PveWinCond.AllClear => Bosses.All(x => x.CharacterBody.CharacterStatus.SurvivalStatus.IsDead()) &&
-                                       Creeps.All(x => x.CharacterBody.CharacterStatus.SurvivalStatus.IsDead()),
-                PveWinCond.BossClear => Bosses.All(x => x.CharacterBody.CharacterStatus.SurvivalStatus.IsDead()),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            if (!b) return false;
-            IsClear = b;
-            return true;
+                case PveWinCond.AllClear:
+                    var removeWhere = Bosses.RemoveWhere(Predicate);
+                    var i = Creeps.RemoveWhere(Predicate);
+                    if (removeWhere > 0 || i > 0)
+                    {
+                        IsClear = !(Bosses.Any() || Creeps.Any());
+                    }
+
+
+                    return;
+                case PveWinCond.BossClear:
+                    var ii = Bosses.RemoveWhere(Predicate);
+                    if (ii > 0)
+                    {
+                        IsClear = !Bosses.Any();
+                    }
+
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public PlayGroundGoTickResult PlayGroundGoATick(
             Dictionary<int, Operate> valuePairs)
         {
-            return PlayGround.PlayGroundGoATick(valuePairs);
+            var playGroundGoTickResult = PlayGround.PlayGroundGoATick(valuePairs);
+
+
+            return playGroundGoTickResult;
         }
 
         public void AddPlayers(CharacterBody[] characterBodies)

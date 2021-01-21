@@ -17,7 +17,12 @@ namespace rogue_game
 
         public bool IsPass()
         {
-            return Finish.IsClearAndSave();
+            return Finish.IsClear;
+        }
+
+        public static Chapter GenById(int chapterId)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -4,43 +4,34 @@ namespace rogue_game
 {
     public class RogueGamePlayer
     {
-        public RogueGamePlayer(CharacterBody player, PveMap inPlayPveMap, int lastTravelId)
+        public RogueGamePlayer(CharacterBody player)
         {
             Player = player;
-            InPlayGround = inPlayPveMap;
-            LastTravelId = lastTravelId;
-            PlayerSave = PlayerSave.GenPlayerSave(player.CharacterStatus, inPlayPveMap.GetMId());
             FinalBill = new FinalDeal();
+            IsDead = false;
         }
 
-        public PlayerSave PlayerSave { get; set; }
-        public int LastTravelId { get; set; }
+        public bool IsDead { get; set; }
+
         public CharacterBody Player { get; }
-        public PveMap InPlayGround { get; private set; }
 
-        public void SetPveMap(PveMap pveMap)
-        {
-            InPlayGround = pveMap;
-        }
 
         public FinalDeal FinalBill { get; }
 
         public void Teleport(PveMap pveMap)
         {
-            var lastTravelId = InPlayGround.IsClearAndSave();
-            if (lastTravelId)
-            {
-                var mId = InPlayGround.GetMId();
-                LastTravelId = mId;
-            }
-
-            InPlayGround = pveMap;
         }
 
-        public void PlayerGoSave()
+        public PlayerStatusSave PlayerSave(int mid)
         {
             var playerCharacterStatus = Player.CharacterStatus;
-            PlayerSave.Save(playerCharacterStatus, InPlayGround.GetMId());
+            var playerStatusSave = PlayerStatusSave.GenPlayerSave(playerCharacterStatus, mid);
+            return playerStatusSave;
+        }
+
+        public void CheckDead()
+        {
+            IsDead = Player.CharacterStatus.SurvivalStatus.IsDead();
         }
     }
 }
