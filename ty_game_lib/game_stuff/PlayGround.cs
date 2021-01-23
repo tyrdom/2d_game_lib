@@ -628,38 +628,40 @@ namespace game_stuff
             }
         }
 
-        // public IEnumerable<int> RemoveBodies(HashSet<int> ints)
-        // {
-        //     ints.Select(x =>
-        //     {
-        //         if (GidToBody.TryGetValue(x, out var characterBody))
-        //             return characterBody;
-        //
-        //     })
-        // }
-
-        public IEnumerable<CharacterBody> RemoveBodies(HashSet<CharacterBody> characterBodies)
+        public IEnumerable<int> RemoveBodies(HashSet<int> ints)
         {
-            foreach (var characterBody in characterBodies)
-            {
-                GidToBody.Remove(characterBody.GetId());
-            }
+            var enumerable = ints.Where(x => GidToBody.ContainsKey(x)).ToArray();
 
-            if (!characterBodies.Any()) return characterBodies;
+            var except = ints.Except(enumerable);
+            var characterBodies = enumerable.Select(x => GidToBody[x]);
+            var removeInQSpace = RemoveInQSpace(characterBodies);
+            var ints1 = removeInQSpace.Select(x => x.GetId());
+            var union = ints1.Union(except);
+            return union;
+        }
+
+        private IEnumerable<IdPointBox> RemoveInQSpace(IEnumerable<CharacterBody> characterBodies)
+        {
             var groupBy = characterBodies.GroupBy(x => x.Team);
-
             var selectMany = groupBy.SelectMany(bodies =>
             {
                 if (!TeamToBodies.TryGetValue(bodies.Key, out var q)) return Enumerable.Empty<IdPointBox>();
                 var idPointBoxes = bodies.Select(x => x.InBox);
                 return q.playerBodies.RemoveIdPointBoxes(idPointBoxes);
             });
+            return selectMany;
+        }
 
-
+        public IEnumerable<CharacterBody> RemoveBodies(HashSet<CharacterBody> characterBodies)
+        {
+            if (!characterBodies.Any()) return characterBodies;
+            IEnumerable<CharacterBody>? enumerable = characterBodies.Where(x => GidToBody.Remove(x.GetId())).ToArray();
+            var except = characterBodies.Except(enumerable);
+            var selectMany = RemoveInQSpace(enumerable);
             var removeBodies = selectMany.Select(box => box.IdPointShape).OfType<CharacterBody>();
 
-
-            return removeBodies;
+            var union = removeBodies.Union(except);
+            return union;
         }
 
         public bool RemoveBody(int gid)
