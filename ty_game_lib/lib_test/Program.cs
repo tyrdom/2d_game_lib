@@ -157,7 +157,7 @@ namespace lib_test
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
 
             PathTest(genWalkBlockByPolys);
-            return;
+           
             var ptt = new TwoDPoint(2f, -1.717f);
 
             Console.Out.WriteLine("config test~~~~~");

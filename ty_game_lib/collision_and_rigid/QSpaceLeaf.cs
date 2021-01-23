@@ -210,17 +210,13 @@ namespace collision_and_rigid
             return AaBbPackBox.Remove(idPointBox);
         }
 
-        public void RemoveIdPointBoxes(HashSet<IdPointBox> idPointBoxes)
+        public IEnumerable<IdPointBox> RemoveIdPointBoxes(IEnumerable<IdPointBox> idPointBoxes)
         {
-            if (idPointBoxes.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var idPointBox in idPointBoxes)
-            {
-                AaBbPackBox.Remove(idPointBox);
-            }
+            var removeIdPointBoxes = idPointBoxes as IdPointBox[] ?? idPointBoxes.ToArray();
+            if (!removeIdPointBoxes.Any()) return removeIdPointBoxes;
+            var aaBbBoxes = removeIdPointBoxes.Where(AaBbPackBox.Contains).ToArray();
+            AaBbPackBox.ExceptWith(aaBbBoxes);
+            return removeIdPointBoxes.Except(aaBbBoxes);
         }
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)
@@ -228,18 +224,7 @@ namespace collision_and_rigid
             var notCross = Zone.RealNotCross(line.GenZone());
 
 
-            TwoDPoint? slideTwoDPoint;
-            if (notCross)
-            {
-// #if DEBUG
-//
-//                 Console.Out.WriteLine($"not cross Leaf Zone {notCross}::: {AabbPackBoxShapes.Count}");
-// #endif
-                slideTwoDPoint = null;
-            }
-            else
-
-                slideTwoDPoint = SomeTools.SlideTwoDPoint(AaBbPackBox, line, safe);
+            var slideTwoDPoint = notCross ? null : SomeTools.SlideTwoDPoint(AaBbPackBox, line, safe);
 
             return slideTwoDPoint;
         }
@@ -492,7 +477,8 @@ namespace collision_and_rigid
             return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t, zone);
         }
 
-        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t, Zone zone)
+        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t,
+            Zone zone)
         {
             return SomeTools.MapToIEnumSthTool(this, funcWithIIdPtsShape, t, zone);
         }

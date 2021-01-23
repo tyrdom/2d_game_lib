@@ -93,7 +93,7 @@ namespace rogue_game
             NowChapter = Chapter.GenById(ChapterId);
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
-            nowChapterEntrance.AddPlayers(characterBodies);
+            nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
         }
 
 
@@ -186,14 +186,13 @@ namespace rogue_game
             }
 
             var playerTeleportTo = playGroundGoTickResult.PlayerTeleportTo;
-            if (playerTeleportTo.Any())
-            {
-                var keyValuePair = playerTeleportTo.Values.First();
+            if (!playerTeleportTo.Any()) return playGroundGoTickResult;
+
+            var (map, toPos) = playerTeleportTo.Values.First();
 
 
-                NowPlayMap = NowChapter.MGidToMap[keyValuePair];
-                NowPlayMap.AddPlayers(NowGamePlayers.Values.Select(x => x.Player).ToArray());
-            }
+            NowPlayMap = NowChapter.MGidToMap[map];
+            NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
 
             return playGroundGoTickResult;
         }

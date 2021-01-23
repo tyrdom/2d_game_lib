@@ -26,11 +26,17 @@ namespace game_stuff
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public PlayGround? FromPlayGround { get; set; }
-        public PlayGround ToPlayGround { get; set; }
+        public PlayGround ToPlayGround { get; }
 
-        public TwoDPoint ToPos { get; set; }
+
+        public TwoDPoint ToPos { get; }
 
         public BodySize[] AllowSizes { get; }
+
+        public TwoDPoint? GetThisPos()
+        {
+            return InWhichMapInteractive?.GetAnchor();
+        }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
@@ -49,15 +55,10 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.GetInfoCall:
-                    //todo get mapinfo to character
                     return null;
                 case MapInteract.BuyOrApplyCall:
-                    var removeBody = FromPlayGround?.RemoveBody(characterStatus.CharacterBody);
-                    if (removeBody == null || !removeBody.Value)
-                        throw new IndexOutOfRangeException($"remove body fail {characterStatus.GId}");
-                    ToPlayGround.AddBody(characterStatus.CharacterBody, ToPos);
-                    
-                    return new TelePort(ToPlayGround.MgId);
+
+                    return new TelePortMsg(ToPlayGround.MgId, ToPos);
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);

@@ -184,6 +184,7 @@ namespace collision_and_rigid
         public bool RemoveAIdPointBox(IdPointBox idPointBox)
         {
             var readRecord = idPointBox.ReadRecord();
+
             switch (readRecord)
             {
                 case Quad.One:
@@ -208,60 +209,32 @@ namespace collision_and_rigid
             }
         }
 
-        public void RemoveIdPointBoxes(HashSet<IdPointBox> idPointBoxes)
+        public IEnumerable<IdPointBox> RemoveIdPointBoxes(IEnumerable<IdPointBox> idPointBoxes)
         {
-            if (idPointBoxes.Count == 0)
+            var removeIdPointBoxes = idPointBoxes as IdPointBox[] ?? idPointBoxes.ToArray();
+            if (!removeIdPointBoxes.Any())
             {
-                return;
+                return removeIdPointBoxes;
             }
 
-            var q1 = new HashSet<IdPointBox>();
-            var q2 = new HashSet<IdPointBox>();
-            var q3 = new HashSet<IdPointBox>();
-            var q4 = new HashSet<IdPointBox>();
-            foreach (var idPointBox in idPointBoxes)
+            var aaBbBoxes = removeIdPointBoxes.Where(AaBbPackBox.Contains).ToArray();
+            var i = aaBbBoxes.Length;
+            AaBbPackBox.ExceptWith(aaBbBoxes);
+            var except = removeIdPointBoxes.Except(aaBbBoxes);
+
+            var groupBy = except.GroupBy(x => x.GetAnchor().WhichQ(this));
+
+            return groupBy.SelectMany(gg =>
             {
-                var readRecord = idPointBox.ReadRecord();
-                switch (readRecord)
+                return gg.Key switch
                 {
-                    case Quad.One:
-                        q1.Add(idPointBox);
-                        idPointBoxes.Remove(idPointBox);
-                        break;
-                    case Quad.Two:
-                        q2.Add(idPointBox);
-                        idPointBoxes.Remove(idPointBox);
-                        break;
-                    case Quad.Three:
-                        q3.Add(idPointBox);
-                        idPointBoxes.Remove(idPointBox);
-                        break;
-                    case Quad.Four:
-                        q4.Add(idPointBox);
-                        idPointBoxes.Remove(idPointBox);
-                        break;
-                    case null:
-                        var remove = AaBbPackBox.Remove(idPointBox);
-                        if (remove)
-                        {
-                            idPointBoxes.Remove(idPointBox);
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            QuadOne.RemoveIdPointBoxes(q1);
-            QuadTwo.RemoveIdPointBoxes(q2);
-            QuadThree.RemoveIdPointBoxes(q3);
-            QuadFour.RemoveIdPointBoxes(q4);
-            if (idPointBoxes.Count == 0) return;
-            QuadOne.RemoveIdPointBoxes(idPointBoxes);
-            QuadTwo.RemoveIdPointBoxes(idPointBoxes);
-            QuadThree.RemoveIdPointBoxes(idPointBoxes);
-            QuadFour.RemoveIdPointBoxes(idPointBoxes);
+                    Quad.One => QuadOne.RemoveIdPointBoxes(gg),
+                    Quad.Two => QuadTwo.RemoveIdPointBoxes(gg),
+                    Quad.Three => QuadThree.RemoveIdPointBoxes(gg),
+                    Quad.Four => QuadFour.RemoveIdPointBoxes(gg),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            });
         }
 
 
@@ -754,7 +727,8 @@ namespace collision_and_rigid
             return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t, zone);
         }
 
-        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t, Zone zone)
+        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t,
+            Zone zone)
         {
             return SomeTools.MapToIEnumSthTool(this, funcWithIIdPtsShape, t, zone);
         }

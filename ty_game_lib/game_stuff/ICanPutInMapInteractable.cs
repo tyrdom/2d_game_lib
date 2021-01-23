@@ -15,14 +15,22 @@ namespace game_stuff
         }
     }
 
-    public readonly struct TelePort : IActResult
+    public readonly struct TelePortMsg : IActResult
     {
-        public TelePort(int mgId)
+        public TelePortMsg(int mgId, TwoDPoint toPos)
         {
             GMid = mgId;
+            ToPos = toPos;
         }
 
         public int GMid { get; }
+        public TwoDPoint ToPos { get; }
+
+        public void Deconstruct(out int gMid, out TwoDPoint toPos)
+        {
+            gMid = GMid;
+            toPos = ToPos;
+        }
     }
 
 

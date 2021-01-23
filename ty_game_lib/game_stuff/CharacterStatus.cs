@@ -12,7 +12,7 @@ using game_config;
 namespace game_stuff
 {
     //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
- 
+
     public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
         public CharacterBody CharacterBody;
@@ -574,22 +574,22 @@ namespace game_stuff
                 return new CharGoTickResult(move: move, launchBullet: selfEffectFilter);
             }
 
-            var dropThings = getThing.ActWhichChar(this, interactive);
+            var actResult = getThing.ActWhichChar(this, interactive);
 
             HashSet<IAaBbBox>? dropThings1DropSet = null;
-            int? t = null;
-            switch (dropThings)
+            TelePortMsg? t = null;
+            switch (actResult)
             {
                 case null:
                     break;
                 case DropThings dropThings1:
                     dropThings1DropSet = SomeTools.EnumerableToHashSet(dropThings1.DropSet.OfType<IAaBbBox>());
                     break;
-                case TelePort telePort:
-                    t = telePort.GMid;
+                case TelePortMsg telePort:
+                    t = telePort;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(dropThings));
+                    throw new ArgumentOutOfRangeException(nameof(actResult));
             }
 
 

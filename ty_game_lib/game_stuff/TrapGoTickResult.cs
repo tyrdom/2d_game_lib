@@ -2,7 +2,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public readonly struct TrapGoTickResult : IGameUnitTickResult
+    public readonly struct TrapGoTickResult
     {
         public TrapGoTickResult(bool stillAlive = true, IPosMedia? launchBullet = null,
             Trap? self = null)

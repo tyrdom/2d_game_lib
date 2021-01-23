@@ -111,6 +111,7 @@ namespace collision_and_rigid
             return new Zone(Y, Y, X, X);
         }
 
+       
 
         public TwoDPoint GenPosInLocal(TwoDPoint zero, TwoDVector xAim)
         {

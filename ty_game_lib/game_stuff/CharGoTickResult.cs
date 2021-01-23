@@ -4,13 +4,13 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public readonly struct CharGoTickResult : IGameUnitTickResult
+    public readonly struct CharGoTickResult
     {
         public CharGoTickResult(bool stillActive = true, ITwoDTwoP? move = null,
             IPosMedia? launchBullet = null,
             HashSet<IAaBbBox>? dropThing = null,
             IMapInteractable? getThing = null, ValueTuple<MapInteract, CharacterBody>? mapInteractiveAbout = null,
-            int? teleTo = null)
+            TelePortMsg? teleTo = null)
         {
             MapInteractive = mapInteractiveAbout?.Item1;
             StillActive = stillActive;
@@ -19,7 +19,7 @@ namespace game_stuff
             DropThing = dropThing ?? new HashSet<IAaBbBox>();
             GetThing = getThing;
             WhoInteractCall = mapInteractiveAbout?.Item2;
-            TeleportToMapId = teleTo;
+            TeleportTo = teleTo;
         }
 
 
@@ -31,10 +31,6 @@ namespace game_stuff
         public MapInteract? MapInteractive { get; }
         public CharacterBody? WhoInteractCall { get; }
 
-        public int? TeleportToMapId { get; }
-    }
-
-    public interface IGameUnitTickResult
-    {
+        public TelePortMsg? TeleportTo { get; }
     }
 }

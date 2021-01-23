@@ -10,13 +10,12 @@ namespace rogue_game
     public class PveMap
     {
         public PveMap(PlayGround playGround, HashSet<Creep> bosses, HashSet<Creep> creeps,
-            PveWinCond pveWinCond, TwoDPoint[] enterPoints, bool isClear)
+            PveWinCond pveWinCond, bool isClear)
         {
             PlayGround = playGround;
             Bosses = bosses;
             Creeps = creeps;
             PveWinCond = pveWinCond;
-            EnterPoints = enterPoints;
             IsClear = isClear;
         }
 
@@ -26,7 +25,6 @@ namespace rogue_game
         public HashSet<Creep> Creeps { get; }
         public PveWinCond PveWinCond { get; }
 
-        public TwoDPoint[] EnterPoints { get; }
 
         public void ActiveApplyDevice()
         {
@@ -75,16 +73,14 @@ namespace rogue_game
             return playGroundGoTickResult;
         }
 
-        public void AddPlayers(CharacterBody[] characterBodies)
+        public void AddCharacterBodiesToStart(IEnumerable<CharacterBody> characterBodies)
         {
-            var valueTuples = new List<(CharacterBody, TwoDPoint)>();
-            for (var i = 0; i < characterBodies.Length; i++)
-            {
-                var twoDPoint = EnterPoints[i % EnterPoints.Length];
-                valueTuples.Add((characterBodies[i], twoDPoint));
-            }
+            PlayGround.AddBodiesAtStartPts(characterBodies);
+        }
 
-            PlayGround.AddBodies(valueTuples);
+        public void TeleportToThisMap(IEnumerable<(CharacterBody, TwoDPoint)> characterBodiesToPt)
+        {
+            PlayGround.TeleportBodiesToPts(characterBodiesToPt);
         }
 
         public int GetMId()

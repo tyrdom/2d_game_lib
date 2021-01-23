@@ -4,64 +4,10 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
-    public readonly struct PlayGroundGoTickResult
-    {
-        public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<HitResult>> playerBeHit,
-            ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> trapBeHit,
-            ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> playerSee,
-            ImmutableDictionary<int, int> playerTeleportTo)
-        {
-            PlayerBeHit = playerBeHit;
-            TrapBeHit = trapBeHit;
-            PlayerSee = playerSee;
-            PlayerTeleportTo = playerTeleportTo;
-        }
-
-        public ImmutableDictionary<int, int> PlayerTeleportTo { get; }
-        public ImmutableDictionary<int, ImmutableHashSet<HitResult>> PlayerBeHit { get; }
-        public ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> TrapBeHit { get; }
-        public ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> PlayerSee { get; }
-
-
-        public static PlayGroundGoTickResult Sum(IEnumerable<PlayGroundGoTickResult> playGroundGoTickResults)
-        {
-            var hit = new Dictionary<int, ImmutableHashSet<HitResult>>();
-            var trap = new Dictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>>();
-            var see = new Dictionary<int, ImmutableHashSet<ISeeTickMsg>>();
-            var ints = new Dictionary<int, int>();
-            var (hit1, trap1, see2, dic) =
-                playGroundGoTickResults.Aggregate((hit, trap, see, ints), (s, x) =>
-                {
-                    var (dictionary, dictionary1, see1, ins) = s;
-                    var keyValuePairs = dictionary1.Union(x.TrapBeHit);
-                    var valuePairs = dictionary.Union(x.PlayerBeHit);
-                    var enumerable = see1.Union(x.PlayerSee);
-                    var union = ins.Union(x.PlayerTeleportTo);
-                    return ((Dictionary<int, ImmutableHashSet<HitResult>> hit,
-                        Dictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> trap,
-                        Dictionary<int, ImmutableHashSet<ISeeTickMsg>> see, Dictionary<int, int> ints)) (valuePairs,
-                        keyValuePairs, enumerable, union);
-                });
-            return new PlayGroundGoTickResult(hit1.ToImmutableDictionary(), trap1.ToImmutableDictionary(),
-                see2.ToImmutableDictionary(), dic.ToImmutableDictionary());
-        }
-
-        public void Deconstruct(out ImmutableDictionary<int, ImmutableHashSet<HitResult>> playerBeHit,
-            out ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> trapBeHit,
-            out ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> playerSee,
-            out ImmutableDictionary<int, int> playerTeleportTo)
-        {
-            playerSee = PlayerSee;
-            trapBeHit = TrapBeHit;
-            playerBeHit = PlayerBeHit;
-            playerTeleportTo = PlayerTeleportTo;
-        }
-    }
-
-
     public class PlayGround
     {
         public int MgId { get; }
@@ -70,6 +16,8 @@ namespace game_stuff
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
         private WalkMap WalkMap { get; } //碰撞地图
+
+        private Dictionary<int, StartPts> Entrance { get; }
         private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
         private Dictionary<int, List<IHitMedia>> TeamToHitMedia { get; } // 碰撞媒体缓存，以后可能会有持续多帧的子弹
 
@@ -79,7 +27,7 @@ namespace game_stuff
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, int mgId,
-            int resMId, Zone moveZone)
+            int resMId, Zone moveZone, Dictionary<int, StartPts> entrance)
         {
             TeamToBodies = teamToBodies;
             SightMap = sightMap;
@@ -89,6 +37,7 @@ namespace game_stuff
             MgId = mgId;
             ResMId = resMId;
             MoveZone = moveZone;
+            Entrance = entrance;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
@@ -145,7 +94,7 @@ namespace game_stuff
 #endif
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                emptyRootBranch3, genMapId, mapResId, zone);
+                emptyRootBranch3, genMapId, mapResId, zone, mapInitData.TeamToStartPt);
 
             foreach (var applyDevice in mapInitData.StandardMapInteractableList)
             {
@@ -207,7 +156,7 @@ namespace game_stuff
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
-            var teleports = new Dictionary<int, int>();
+            var teleports = new Dictionary<int, TelePortMsg>();
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
 
             MapInteractableGoATick();
@@ -520,7 +469,7 @@ namespace game_stuff
         private static readonly Func<IAaBbBox, bool> IsV = x => x is VehicleCanIn;
 
         private Dictionary<int, ITwoDTwoP> EveryTeamGoATick(Dictionary<int, Operate> gidToOperates,
-            Dictionary<int, int> dictionary)
+            IDictionary<int, TelePortMsg> dictionary)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
 
@@ -568,16 +517,16 @@ namespace game_stuff
                     var aCharGoTickMsg = gtb.Value;
                     var twoDTwoP = aCharGoTickMsg.Move;
                     var stillAlive = aCharGoTickMsg.StillActive;
-                    var teleportToMapId = aCharGoTickMsg.TeleportToMapId;
+                    var teleportTo = aCharGoTickMsg.TeleportTo;
 
                     if (!stillAlive)
                     {
                         continue;
                     }
 
-                    if (teleportToMapId != null)
+                    if (teleportTo != null)
                     {
-                        dictionary[gid] = teleportToMapId.Value;
+                        dictionary[gid] = teleportTo.Value;
                     }
 
                     if (twoDTwoP != null)
@@ -679,6 +628,53 @@ namespace game_stuff
             }
         }
 
+        // public IEnumerable<int> RemoveBodies(HashSet<int> ints)
+        // {
+        //     ints.Select(x =>
+        //     {
+        //         if (GidToBody.TryGetValue(x, out var characterBody))
+        //             return characterBody;
+        //
+        //     })
+        // }
+
+        public IEnumerable<CharacterBody> RemoveBodies(HashSet<CharacterBody> characterBodies)
+        {
+            foreach (var characterBody in characterBodies)
+            {
+                GidToBody.Remove(characterBody.GetId());
+            }
+
+            if (!characterBodies.Any()) return characterBodies;
+            var groupBy = characterBodies.GroupBy(x => x.Team);
+
+            var selectMany = groupBy.SelectMany(bodies =>
+            {
+                if (!TeamToBodies.TryGetValue(bodies.Key, out var q)) return Enumerable.Empty<IdPointBox>();
+                var idPointBoxes = bodies.Select(x => x.InBox);
+                return q.playerBodies.RemoveIdPointBoxes(idPointBoxes);
+            });
+
+
+            var removeBodies = selectMany.Select(box => box.IdPointShape).OfType<CharacterBody>();
+
+
+            return removeBodies;
+        }
+
+        public bool RemoveBody(int gid)
+        {
+            if (GidToBody.TryGetValue(gid, out var gidCharacterBody) && TeamToBodies.TryGetValue(gidCharacterBody.Team,
+                out var valueTuple)
+            )
+            {
+                return GidToBody.Remove(gid) &&
+                       valueTuple.playerBodies.RemoveAIdPointBox(gidCharacterBody.InBox);
+            }
+
+            return false;
+        }
+
         public bool RemoveBody(CharacterBody characterBody)
         {
             var characterBodyTeam = characterBody.Team;
@@ -694,10 +690,58 @@ namespace game_stuff
             return false;
         }
 
-        public void AddBodies(IEnumerable<(CharacterBody characterBody, TwoDPoint pos)> characterBodies)
+        public void AddBodiesAtStartPts(IEnumerable<CharacterBody> characterBodies)
         {
-            var groupBy = characterBodies.GroupBy(c => c.characterBody.Team);
+            var groupBy = characterBodies.GroupBy(x => x.Team);
 
+            foreach (var grouping in groupBy)
+            {
+                var team = grouping.Key;
+                if (Entrance.TryGetValue(team, out var startPts))
+                {
+                    var count = grouping.Count();
+                    var twoDPoints = startPts.GenPt(count);
+                    var valueTuples = grouping.Zip(twoDPoints, (body, point) => (body, point));
+                    foreach (var tuple in valueTuples)
+                    {
+                        var (body, point) = tuple;
+                        body.Teleport(point);
+                    }
+
+                    var enumerableToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.InBox));
+                    AddTeamBodies(team, enumerableToHashSet);
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"not Such Team Entrance {team}");
+                }
+            }
+        }
+
+        private void AddTeamBodies(int team, HashSet<IdPointBox> enumerableToHashSet)
+        {
+            if (TeamToBodies.TryGetValue(team, out var qTuple))
+            {
+                qTuple.playerBodies.AddIdPointBoxes(
+                    enumerableToHashSet,
+                    LocalConfig.QSpaceBodyMaxPerLevel);
+            }
+            else
+            {
+                var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
+                var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
+                playerBodies.AddIdPointBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
+                var emptyRootBranch = (playerBodies,
+                    traps);
+                TeamToBodies[team] = emptyRootBranch;
+            }
+        }
+
+
+        public void TeleportBodiesToPts(IEnumerable<(CharacterBody characterBody, TwoDPoint pos)> characterBodies)
+        {
+            var groupBy =
+                characterBodies.GroupBy(c => c.characterBody.Team);
             foreach (var valueTuples in groupBy)
             {
                 var team = valueTuples.Key;
@@ -725,7 +769,7 @@ namespace game_stuff
             }
         }
 
-        public void AddBody(CharacterBody characterBody, TwoDPoint telePos)
+        public void AddBodyToPt(CharacterBody characterBody, TwoDPoint telePos)
         {
             var characterBodyTeam = characterBody.Team;
             var characterBodyInBox = characterBody.InBox;
