@@ -5,7 +5,7 @@ namespace game_stuff
 {
     public interface IBattleUnitStatus
     {
-        public bool TakeDamage(Damage genDamage);
+        public DmgShow? TakeDamage(Damage genDamage);
         CharacterBody GetFinalCaster();
         List<TwoDPoint> GetMayBeSomeThing();
         CharacterStatus? CatchingWho { get; set; }

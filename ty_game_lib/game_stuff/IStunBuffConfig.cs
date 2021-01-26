@@ -123,7 +123,8 @@ namespace game_stuff
             TickLast = lastTick;
         }
 
-        private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction)
+        private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction,
+            IBattleUnitStatus battleUnitStatus)
         {
             var dVector1 = unit.Multi(speed);
 
@@ -134,12 +135,12 @@ namespace game_stuff
 #endif
             if (height == null)
             {
-                var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast);
+                var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast, battleUnitStatus);
                 return pushOnEarth;
             }
 
             {
-                var pushOnAir = new PushOnAir(dVector1, height.Value, upSpeed, TickLast);
+                var pushOnAir = new PushOnAir(dVector1, height.Value, upSpeed, TickLast, battleUnitStatus);
                 return pushOnAir;
             }
         }
@@ -154,7 +155,7 @@ namespace game_stuff
                     var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector) : pos;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit =
-                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, LocalConfig.Friction);
+                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, LocalConfig.Friction, whoDid);
                     return genBuffFromUnit;
 
 
@@ -162,7 +163,7 @@ namespace game_stuff
                     var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
-                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, LocalConfig.Friction);
+                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, LocalConfig.Friction, whoDid);
                     return genBuffFromUnit1;
 
                 default:
@@ -205,14 +206,14 @@ namespace game_stuff
                 case PushType.Center:
                     var twoDPoint = PushFixVector != null ? anchor.Move(PushFixVector) : anchor;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
-                    var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, mass);
+                    var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, mass, whoDid);
                     return genBuffFromUnit;
 
 
                 case PushType.Vector:
                     var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
-                    var genBuffFromUnit1 = GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, mass);
+                    var genBuffFromUnit1 = GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, mass, whoDid);
                     return genBuffFromUnit1;
 
                 default:
@@ -220,10 +221,12 @@ namespace game_stuff
             }
         }
 
-        private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f)
+        private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f,
+            IBattleUnitStatus battleUnitStatus)
         {
             var max = MathTools.Max(GenUp(height, f), upSpeed);
-            var pushOnAir = new PushOnAir(unit.Multi(speed), height.GetValueOrDefault(0), max, TickLast);
+            var pushOnAir = new PushOnAir(unit.Multi(speed), height.GetValueOrDefault(0), max, TickLast,
+                battleUnitStatus);
             return pushOnAir;
         }
     }

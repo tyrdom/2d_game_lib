@@ -49,7 +49,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public HitResult? IsHitBody(IIdPointShape targetBody)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -59,11 +59,11 @@ namespace game_stuff
                     characterStatus.LockingWho =
                         characterBody1.CharacterStatus;
 
-                    return new HitResult(characterBody1, false, Caster.GetFinalCaster(), this);
+                    return new LockHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
 
                 case Trap trap:
                     if (Caster != null)
-                        return IsHit(trap) ? new HitResult(trap, false, Caster.GetFinalCaster(), this) : null;
+                        return IsHit(trap) ? new LockHit(trap, Caster.GetFinalCaster().CharacterStatus, this) : null;
                     return null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
@@ -76,9 +76,24 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public IEnumerable<HitResult> HitTeam(IQSpace qSpace)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this);
         }
+    }
+
+    public class LockHit : IRelationMsg
+    {
+        public LockHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, IHitMedia lockArea1)
+        {
+            CasterOrOwner = casterOrOwner;
+            WhoTake = whoTake;
+            LockArea = lockArea1;
+        }
+
+        public CharacterStatus CasterOrOwner { get; }
+        public ICanBeHit WhoTake { get; }
+
+        public IHitMedia LockArea { get; }
     }
 }

@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Numerics;
 using collision_and_rigid;
 using game_config;
+using Newtonsoft.Json.Serialization;
 
 namespace game_stuff
 {
@@ -1317,7 +1318,7 @@ namespace game_stuff
             SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
         }
 
-        public bool BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
+        public DmgShow? BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
             float damageMulti, bool back)
         {
             ResetSpeed();
@@ -1329,7 +1330,7 @@ namespace game_stuff
 
             if (CatchingWho != null)
             {
-                CatchingWho.StunBuff = LocalConfig.OutCaught;
+                CatchingWho.StunBuff = LocalConfig.OutCaught(this);
                 CatchingWho = null;
             }
 
@@ -1337,7 +1338,7 @@ namespace game_stuff
             AddProtect(protectValueAdd);
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
-            if (takeDamage & b)
+            if (takeDamage.HasValue && takeDamage.Value.IsKill && b)
             {
                 bodyCaster.AddAKillScore(CharacterBody);
             }
@@ -1351,13 +1352,13 @@ namespace game_stuff
             return absorbStatusProtectAbs;
         }
 
-        public bool TakeDamage(Damage genDamage)
+        public DmgShow? TakeDamage(Damage genDamage)
         {
             var damageMulti = GetBuffs<TakeDamageBuff>().GetDamageMulti();
             genDamage.GetBuffMulti(damageMulti);
-            if (NowVehicle == null) return SurvivalStatus.TakeDamage(genDamage);
-            NowVehicle.SurvivalStatus.TakeDamage(genDamage);
-            return false;
+            if (NowVehicle == null) return new DmgShow(SurvivalStatus.TakeDamage(genDamage), genDamage);
+            var takeDamage = NowVehicle.SurvivalStatus.TakeDamage(genDamage);
+            return new DmgShow(false, genDamage);
         }
 
         public bool CheckCanBeHit()

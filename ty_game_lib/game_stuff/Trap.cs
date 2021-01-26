@@ -219,9 +219,11 @@ namespace game_stuff
             if (FailChanceStack != null) FailChanceStack -= 1;
         }
 
-        public bool TakeDamage(Damage genDamage)
+        public DmgShow? TakeDamage(Damage genDamage)
         {
-            return SurvivalStatus?.TakeDamage(genDamage) ?? false;
+            return SurvivalStatus.HasValue
+                ? new DmgShow(SurvivalStatus.Value.TakeDamage(genDamage), genDamage)
+                : (DmgShow?) null;
         }
     }
 

@@ -13,15 +13,11 @@ namespace game_stuff
             ShardedDamage = shardedDamage;
         }
 
+
         public void GetBuffMulti(float damageMulti)
         {
             MainDamage = (uint) (damageMulti * MainDamage);
             ShardedNum = (uint) (damageMulti * ShardedNum);
-        }
-
-        public static Damage Zero()
-        {
-            return new Damage(0, 0, 0);
         }
     }
 }

@@ -10,15 +10,15 @@ namespace game_stuff
         public Zone RdZone { get; }
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        HitResult? IsHitBody(IIdPointShape targetBody);
-        public IEnumerable<HitResult> HitTeam(IQSpace qSpace);
+        IRelationMsg? IsHitBody(IIdPointShape targetBody);
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace);
         public ObjType TargetType { get; }
         public bool IsHit(ICanBeHit characterBody);
     }
 
     public static class HitAbleMediaStandard
     {
-        public static IEnumerable<HitResult> HitTeam(IQSpace qSpace, IHitMedia hitMedia)
+        public static IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, IHitMedia hitMedia)
         {
             var mapToGidList = qSpace.MapToIEnumNotNullSth((body, aHitMedia) => aHitMedia.IsHitBody(body),
                 hitMedia, hitMedia.RdZone.MoveToAnchor(hitMedia.Pos));

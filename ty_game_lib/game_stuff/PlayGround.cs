@@ -157,12 +157,14 @@ namespace game_stuff
                 Dictionary<int, Operate> gidToOperates)
         {
             var teleports = new Dictionary<int, TelePortMsg>();
+            var playerBeHit = new Dictionary<int, HashSet<IRelationMsg>>();
+            var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
+            var teamRadarSee = new Dictionary<int, HashSet<ISeeTickMsg>>();
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
 
             MapInteractableGoATick();
-
-            var (playerBeHit, trapBeHit, teamRadarSee)
-                = HitMediasDo();
+            BodiesQSpaceReplace(playerBeHit);
+            HitMediasDo(playerBeHit, trapBeHit, teamRadarSee);
 
             foreach (var twoDTwoP in everyBodyGoATick)
             {
@@ -172,7 +174,7 @@ namespace game_stuff
                 }
             }
 
-            BodiesQSpaceReplace();
+
             var playerSee = GetPlayerSee();
             var playerSeeMsg =
                 playerSee.ToImmutableDictionary(pair => pair.Key,
@@ -188,7 +190,12 @@ namespace game_stuff
                     });
 
             var valueTuple =
-                new PlayGroundGoTickResult(playerBeHit, trapBeHit, playerSeeMsg, teleports.ToImmutableDictionary());
+                new PlayGroundGoTickResult(
+                    playerBeHit.ToImmutableDictionary(p => p.Key,
+                        p => p.Value.ToImmutableHashSet()), trapBeHit.ToImmutableDictionary(pa => pa.Key,
+                        pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
+                            pp => pp.Value.ToImmutableHashSet())),
+                    playerSeeMsg, teleports.ToImmutableDictionary());
 
             return valueTuple;
         }
@@ -299,7 +306,7 @@ namespace game_stuff
             return gidToCharacterBodies;
         }
 
-        private void BodiesQSpaceReplace()
+        private void BodiesQSpaceReplace(IDictionary<int, HashSet<IRelationMsg>> playerBeHit)
         {
             foreach (var (playerBodies, _) in TeamToBodies.Select(kv => kv.Value))
             {
@@ -322,21 +329,30 @@ namespace game_stuff
 
                         throw new Exception("not good idPts");
                     }, WalkMap);
+                var dd = mapToDicGidToSth
+                    .ToDictionary(x => x.Key, x => x.Value!.Value.pt);
+                var buffDmgMsgs = mapToDicGidToSth.ToDictionary(x => x.Key, x => x.Value.Value.buffDmgMsg);
+                foreach (var keyValuePair in buffDmgMsgs)
+                {
+                    if (keyValuePair.Value.HasValue && playerBeHit.TryGetValue(keyValuePair.Key, out var hashSet))
+                    {
+                        hashSet.Add(keyValuePair.Value);
+                    }
+                }
 
-
-                playerBodies.MoveIdPointBoxes(mapToDicGidToSth, LocalConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.MoveIdPointBoxes(dd, LocalConfig.QSpaceBodyMaxPerLevel);
             }
         }
 
-        private static void RecordHitResult(HitResult hitResult,
-            IDictionary<int, HashSet<HitResult>> gidD, IDictionary<int, Dictionary<int, HashSet<HitResult>>> tidD,
+        private static void RecordHitResult(IRelationMsg bulletHit,
+            IDictionary<int, HashSet<IRelationMsg>> gidD, IDictionary<int, Dictionary<int, HashSet<IRelationMsg>>> tidD,
             IDictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
         {
-            if (hitResult.HitMedia is RadarWave)
+            if (bulletHit is RadarHit)
             {
-                var id = hitResult.CasterOrOwner.Team;
-                var twoDPoint = hitResult.HitBody.GetAnchor();
-                var bodySize = hitResult.HitBody.GetSize();
+                var id = bulletHit.CasterOrOwner.CharacterBody.Team;
+                var twoDPoint = bulletHit.WhoTake.GetAnchor();
+                var bodySize = bulletHit.WhoTake.GetSize();
 
                 var radarSeeMsg = new RadarSeeMsg(twoDPoint, bodySize);
                 if (teamRadarSee.TryGetValue(id, out var seeTickMsgs))
@@ -351,17 +367,17 @@ namespace game_stuff
                 return;
             }
 
-            switch (hitResult.HitBody)
+            switch (bulletHit.WhoTake)
             {
                 case CharacterBody characterBody:
                     var key = characterBody.GetId();
                     if (gidD.TryGetValue(key, out var hBullets))
                     {
-                        hBullets.Add(hitResult);
+                        hBullets.Add(bulletHit);
                     }
                     else
                     {
-                        gidD[key] = new HashSet<HitResult> {hitResult};
+                        gidD[key] = new HashSet<IRelationMsg> {bulletHit};
                     }
 
                     break;
@@ -372,18 +388,18 @@ namespace game_stuff
                     {
                         if (hBullets2.TryGetValue(tid, out hBullets))
                         {
-                            hBullets.Add(hitResult);
+                            hBullets.Add(bulletHit);
                         }
                         else
                         {
-                            hBullets2[tid] = new HashSet<HitResult> {hitResult};
+                            hBullets2[tid] = new HashSet<IRelationMsg> {bulletHit};
                         }
                     }
                     else
                     {
-                        var dictionary = new Dictionary<int, HashSet<HitResult>>
+                        var dictionary = new Dictionary<int, HashSet<IRelationMsg>>
                         {
-                            [tid] = new HashSet<HitResult> {hitResult}
+                            [tid] = new HashSet<IRelationMsg> {bulletHit}
                         };
                         tidD[tid] = dictionary;
                     }
@@ -394,14 +410,11 @@ namespace game_stuff
             }
         }
 
-        private (ImmutableDictionary<int, ImmutableHashSet<HitResult>> gidBeHit,
-            ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<HitResult>>> gidTrapBeHit,
-            Dictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
-            HitMediasDo()
+        private void
+            HitMediasDo(IDictionary<int, HashSet<IRelationMsg>> gidHitBy,
+                IDictionary<int, Dictionary<int, HashSet<IRelationMsg>>> tidHitBy,
+                Dictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
         {
-            var gidHitBy = new Dictionary<int, HashSet<HitResult>>();
-            var tidHitBy = new Dictionary<int, Dictionary<int, HashSet<HitResult>>>();
-            var teamRadarSee = new Dictionary<int, HashSet<ISeeTickMsg>>();
             foreach (var ii in TeamToHitMedia)
             {
                 var team = ii.Key;
@@ -452,12 +465,6 @@ namespace game_stuff
 
                 hitMedias.RemoveAll(x => !x.CanGoNextTick());
             }
-
-            var gidBeHit = gidHitBy.ToImmutableDictionary(pair => pair.Key, pair => pair.Value.ToImmutableHashSet());
-            var gidTrapBeHit = tidHitBy.ToImmutableDictionary(pa => pa.Key,
-                pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
-                    pp => pp.Value.ToImmutableHashSet()));
-            return (gidBeHit, gidTrapBeHit, teamRadarSee);
         }
 
         private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyDevice;
@@ -692,7 +699,7 @@ namespace game_stuff
             return false;
         }
 
-        public void AddBodiesAtStartPts(IEnumerable<CharacterBody> characterBodies)
+        public void AddBodies(IEnumerable<CharacterBody> characterBodies)
         {
             var groupBy = characterBodies.GroupBy(x => x.Team);
 
@@ -740,7 +747,7 @@ namespace game_stuff
         }
 
 
-        public void TeleportBodiesToPts(IEnumerable<(CharacterBody characterBody, TwoDPoint pos)> characterBodies)
+        public void AddBodies(IEnumerable<(CharacterBody characterBody, TwoDPoint pos)> characterBodies)
         {
             var groupBy =
                 characterBodies.GroupBy(c => c.characterBody.Team);
@@ -771,11 +778,11 @@ namespace game_stuff
             }
         }
 
-        public void AddBodyToPt(CharacterBody characterBody, TwoDPoint telePos)
+        public void AddBody(CharacterBody characterBody, TwoDPoint? telePos = null)
         {
             var characterBodyTeam = characterBody.Team;
             var characterBodyInBox = characterBody.InBox;
-            characterBody.Teleport(telePos);
+            if (telePos != null) characterBody.Teleport(telePos);
             if (TeamToBodies.TryGetValue(characterBodyTeam, out var tuple))
             {
                 tuple.playerBodies.AddAIdPointBox(characterBodyInBox, LocalConfig.QSpaceBodyMaxPerLevel);

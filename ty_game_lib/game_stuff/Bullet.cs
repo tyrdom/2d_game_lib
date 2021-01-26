@@ -173,7 +173,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public HitResult? IsHitBody(IIdPointShape targetBody)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -185,47 +185,46 @@ namespace game_stuff
 #if DEBUG
                     Console.Out.WriteLine($"bullet hit::{isHit}");
 #endif
-                    return Caster != null
-                        ? new HitResult(targetCharacterBody, kill, Caster.GetFinalCaster(), this)
-                        : null;
+                    return Caster != null && kill.HasValue
+                        ? new BulletHit(targetCharacterBody, kill.Value,
+                            Caster.GetFinalCaster().CharacterStatus, this)
+                        : (IRelationMsg?) null;
 
                 case Trap trap:
                     var isHitBody = IsHit(trap);
                     if (!isHitBody) return null;
-                    HitOne(trap);
-                    return Caster != null ? new HitResult(trap, false, Caster.GetFinalCaster(), this) : null;
+                    var dmgShow = HitOne(trap);
+                    return Caster != null && dmgShow.HasValue
+                        ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
+                        : (IRelationMsg?) null;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }
         }
 
-        private void HitOne(Trap targetTrap)
+        private DmgShow? HitOne(Trap targetTrap)
         {
-            switch (Caster)
+            return Caster switch
             {
-                case null: throw new Exception("there is a no Caster Bullet");
-                case CharacterStatus characterStatusCaster:
-                    HitOne(targetTrap, characterStatusCaster);
-                    break;
-                case Trap trapCaster:
-                    HitOne(targetTrap, trapCaster);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(Caster));
-            }
+                null => throw new Exception("there is a no Caster Bullet"),
+                CharacterStatus characterStatusCaster => HitOne(targetTrap, characterStatusCaster),
+                Trap trapCaster => HitOne(targetTrap, trapCaster),
+                _ => throw new ArgumentOutOfRangeException(nameof(Caster))
+            };
         }
 
 
-        private void HitOne(Trap targetTrap, IBattleUnitStatus caster)
+        private DmgShow? HitOne(Trap targetTrap, IBattleUnitStatus caster)
         {
             //目标为trap 直接成功攻击
             caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetTrap);
 
-            targetTrap.TakeDamage(caster.GenDamage(DamageMulti, true));
+            var takeDamage = targetTrap.TakeDamage(caster.GenDamage(DamageMulti, true));
+            return takeDamage;
         }
 
-        private bool HitOne(CharacterStatus targetCharacterStatus)
+        private DmgShow? HitOne(CharacterStatus targetCharacterStatus)
         {
             switch (Caster)
             {
@@ -318,44 +317,42 @@ namespace game_stuff
         }
 
 
-        private bool HitOne(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster)
+        private DmgShow? HitOne(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster)
         {
             var protecting = targetCharacterStatus.NowProtectTick > 0;
             if (protecting)
             {
-                return false;
+                return null;
             }
 
             var (atkOk, back, opponentCharacterStatusAntiActBuff, isActSkill) = IsAtkPass(targetCharacterStatus);
 
             var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.GetSize();
-            var isKill = false;
+
             //AttackOk 攻击成功
             switch (atkOk)
             {
                 case HitCond.Ok:
-                    HitOk(ref isKill);
-                    break;
+                    return HitOk();
                 case HitCond.Fail:
                     HitFail();
-                    break;
+                    return null;
                 case HitCond.Draw:
                     HitDraw();
-                    break;
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            return isKill;
-
-            void HitOk(ref bool kill)
+            DmgShow? HitOk()
             {
                 //基本方面
                 // 释放方基本状态
                 caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetCharacterStatus);
 
                 // 被击中方基本状态改变 包括伤害
-                kill = targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back);
+                var dmgShow =
+                    targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back);
 
                 //stun buff方面
                 var antiActBuffConfig = SuccessStunBuffConfigToOpponent[targetCharacterBodyBodySize];
@@ -416,6 +413,8 @@ namespace game_stuff
                     default:
                         throw new ArgumentOutOfRangeException(nameof(opponentCharacterStatusAntiActBuff));
                 }
+
+                return dmgShow;
             }
 
             void HitFail()
@@ -525,7 +524,7 @@ namespace game_stuff
             }
         }
 
-        public IEnumerable<HitResult> HitTeam(IQSpace qSpace)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this);
         }

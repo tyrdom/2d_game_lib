@@ -42,7 +42,6 @@ namespace collision_and_rigid
 
         TwoDVectorLine GetMoveVectorLine();
 
-        ITwoDTwoP RelocateWithBlock(WalkBlock walkBlock);
 
         IdPointBox? IdPointBox { get; set; }
     }

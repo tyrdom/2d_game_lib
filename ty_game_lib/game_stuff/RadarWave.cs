@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using collision_and_rigid;
+using Force.DeepCloner;
 using game_config;
 
 namespace game_stuff
@@ -67,7 +68,7 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public HitResult? IsHitBody(IIdPointShape targetBody)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody)
         {
             switch (targetBody)
             {
@@ -80,7 +81,7 @@ namespace game_stuff
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif
-                    return new HitResult(characterBody1, false, Caster.GetFinalCaster(), this);
+                    return new RadarHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
 
 
                 default:
@@ -88,7 +89,7 @@ namespace game_stuff
             }
         }
 
-        public IEnumerable<HitResult> HitTeam(IQSpace qSpace)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this);
         }
@@ -105,5 +106,19 @@ namespace game_stuff
         {
             return GameTools.IsHit(this, characterBody);
         }
+    }
+
+    public class RadarHit : IRelationMsg
+    {
+        public RadarHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, RadarWave radarWave)
+        {
+            WhoTake = whoTake;
+            CasterOrOwner = casterOrOwner;
+            RadarWave = radarWave;
+        }
+
+        public CharacterStatus CasterOrOwner { get; }
+        public ICanBeHit WhoTake { get; }
+        public RadarWave RadarWave { get; }
     }
 }

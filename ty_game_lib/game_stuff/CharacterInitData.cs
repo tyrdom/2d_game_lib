@@ -14,11 +14,11 @@ namespace game_stuff
         private Dictionary<int, Weapon> Weapons { get; }
         private BodySize BodySize { get; }
 
-        private BodyMark BodyMark { get; }
+        
 
         private int BaseAttrId { get; }
 
-        public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size, BodyMark bodyMark,
+        public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size,
             int baseAttrId)
         {
             var dictionary = new Dictionary<int, Weapon>();
@@ -37,17 +37,16 @@ namespace game_stuff
             };
 
 
-            return new CharacterInitData(gid, teamId, dictionary, bz, bodyMark, baseAttrId);
+            return new CharacterInitData(gid, teamId, dictionary, bz, baseAttrId);
         }
 
-        private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize,
-            BodyMark bodyMark, int baseAttrId)
+        private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize, int baseAttrId)
         {
             Gid = gid;
             TeamId = teamId;
             Weapons = weapons;
             BodySize = bodySize;
-            BodyMark = bodyMark;
+           
             BaseAttrId = baseAttrId;
         }
 

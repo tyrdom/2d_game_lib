@@ -114,7 +114,7 @@ namespace game_stuff
             return new TwoDVectorLine(LastPos, NowPos);
         }
 
-        public ITwoDTwoP RelocateWithBlock(WalkBlock walkBlock)
+        public (ITwoDTwoP pt, BuffDmgMsg? buffDmgMsg)? RelocateWithBlock(WalkBlock walkBlock)
         {
             var (isHitWall, pt) =
                 walkBlock.PushOutToPt(LastPos, NowPos);
@@ -126,11 +126,23 @@ namespace game_stuff
             // Console.Out.WriteLine(
             //     $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
 #endif
-            if (isHitWall) HitWall();
-            // var coverPoint = walkBlock.RealCoverPoint(pt);
-            // if (coverPoint) pt = LastPos;
+            if (!isHitWall) return null;
+            if (CharacterStatus.StunBuff == null)
+            {
+                return (pt, null);
+            }
 
-            return pt;
+            var hitWall = CharacterStatus.StunBuff.HitWall();
+
+            var takeDamage = CharacterStatus.TakeDamage(hitWall);
+            if (takeDamage == null)
+            {
+                return (pt, null);
+            }
+
+            var buffDmgMsg = new BuffDmgMsg(CharacterStatus.StunBuff.Caster.GetFinalCaster().CharacterStatus,
+                takeDamage.Value, this);
+            return (pt, buffDmgMsg);
         }
 
 
@@ -146,18 +158,6 @@ namespace game_stuff
             return charGoTick;
         }
 
-        private void HitWall()
-        {
-            var characterStatusAntiActBuff = CharacterStatus.StunBuff;
-            if (characterStatusAntiActBuff == null)
-            {
-                return;
-            }
-
-            var hitWall = characterStatusAntiActBuff.HitWall();
-            var hitWallDmgParam = 1 + (uint) (LocalConfig.HitWallDmgParam * hitWall);
-            CharacterStatus.SurvivalStatus.TakeOneDamage(hitWallDmgParam);
-        }
 
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
@@ -194,10 +194,32 @@ namespace game_stuff
         }
     }
 
-    public enum BodyMark
+    public readonly struct BuffDmgMsg : IDamageMsg
     {
-        Player,
-        Creep,
-        Boss
+        public BuffDmgMsg(CharacterStatus casterOrOwner, DmgShow dmgShow, ICanBeHit whoTake)
+        {
+            CasterOrOwner = casterOrOwner;
+            DmgShow = dmgShow;
+            WhoTake = whoTake;
+        }
+
+        public CharacterStatus CasterOrOwner { get; }
+
+
+        public DmgShow DmgShow { get; }
+
+        public ICanBeHit WhoTake { get; }
+    }
+
+    public readonly struct DmgShow
+    {
+        public DmgShow(bool isKill, Damage damage)
+        {
+            IsKill = isKill;
+            Damage = damage;
+        }
+
+        public bool IsKill { get; }
+        public Damage Damage { get; }
     }
 }

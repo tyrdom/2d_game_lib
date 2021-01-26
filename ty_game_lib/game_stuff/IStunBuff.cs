@@ -6,11 +6,12 @@ namespace game_stuff
 {
     public interface IStunBuff
     {
+        public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
         public ITwoDTwoP GetItp();
         public (ITwoDTwoP, IStunBuff?) GoTickDrivePos(TwoDPoint oldPt);
 
-        public float HitWall();
+        public Damage HitWall();
     }
 
     public class PushOnEarth : IStunBuff
@@ -18,13 +19,15 @@ namespace game_stuff
         private TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
 
-        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick)
+        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick, IBattleUnitStatus caster)
         {
             PushVector = pushVector;
             DecreasePerTick = decreasePerTick;
             RestTick = restTick;
+            Caster = caster;
         }
 
+        public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
@@ -63,12 +66,13 @@ namespace game_stuff
             return (push, this);
         }
 
-        public float HitWall()
+        public Damage HitWall()
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
-            return sqNorm;
+
+            return Caster.GenDamage(sqNorm * sqNorm * LocalConfig.HitWallDmgParam, true);
         }
     }
 
@@ -79,14 +83,16 @@ namespace game_stuff
         public float UpSpeed;
 
 
-        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick)
+        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick, IBattleUnitStatus caster)
         {
             PushVector = pushVector;
             Height = height;
             UpSpeed = upSpeed;
             RestTick = restTick;
+            Caster = caster;
         }
 
+        public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
@@ -112,7 +118,7 @@ namespace game_stuff
 
 #endif
                 var pushOnEarth =
-                    new PushOnEarth(PushVector, decreasePerTick, RestTick);
+                    new PushOnEarth(PushVector, decreasePerTick, RestTick, Caster);
                 return (PushVector, pushOnEarth);
             }
 
@@ -122,27 +128,27 @@ namespace game_stuff
             return (PushVector, this);
         }
 
-        public float HitWall()
+        public Damage HitWall()
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
-            return sqNorm;
+            return Caster.GenDamage(sqNorm * sqNorm * LocalConfig.HitWallDmgParam, true);
         }
     }
 
     internal class Caught : IStunBuff
     {
         public List<TwoDPoint> MovesOnPoints { get; }
-        public IBattleUnitStatus WhoCatchMe { get; }
+        public IBattleUnitStatus Caster { get; }
 
-        public Caught(List<TwoDPoint> movesOnPoints, uint restTick, IBattleUnitStatus whoCatchMe)
+        public Caught(List<TwoDPoint> movesOnPoints, uint restTick, IBattleUnitStatus caster)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
-            WhoCatchMe = whoCatchMe;
+            Caster = caster;
         }
-
+        
         public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
@@ -168,18 +174,19 @@ namespace game_stuff
 #endif
             if (RestTick > 0)
             {
-                WhoCatchMe.CatchingWho = null;
-                return (pt, new PushOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick));
+                Caster.CatchingWho = null;
+                return (pt, new PushOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick, Caster));
             }
 
-            WhoCatchMe.CatchingWho = null;
+            Caster.CatchingWho = null;
             return (pt, null);
         }
 
-        public float HitWall()
+        public Damage HitWall()
         {
             RestTick += LocalConfig.HitWallCatchTickParam;
-            return LocalConfig.HitWallCatchDmgParam;
+            MovesOnPoints.Clear();
+            return Caster.GenDamage(LocalConfig.HitWallCatchDmgParam, true);
         }
     }
 }

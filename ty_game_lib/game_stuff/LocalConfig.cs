@@ -86,7 +86,11 @@ namespace game_stuff
         public static float TwoSToSeePerTick { get; private set; } = 50f;
 
         public static float TwoSToSeePerTickInMidV { get; private set; } = 70f;
-        public static PushOnAir OutCaught { get; } = new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6);
+
+        public static PushOnAir OutCaught(IBattleUnitStatus caster)
+        {
+            return new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6, caster);
+        }
 
         public static int QSpaceBodyMaxPerLevel { get; private set; } = 5;
 

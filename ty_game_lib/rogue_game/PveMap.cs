@@ -31,7 +31,7 @@ namespace rogue_game
             PlayGround.ActiveApplyDevice();
         }
 
-        public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<HitResult>> playerBeHit)
+        public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit)
         {
             bool Predicate(Creep creep)
             {
@@ -75,12 +75,12 @@ namespace rogue_game
 
         public void AddCharacterBodiesToStart(IEnumerable<CharacterBody> characterBodies)
         {
-            PlayGround.AddBodiesAtStartPts(characterBodies);
+            PlayGround.AddBodies(characterBodies);
         }
 
         public void TeleportToThisMap(IEnumerable<(CharacterBody, TwoDPoint)> characterBodiesToPt)
         {
-            PlayGround.TeleportBodiesToPts(characterBodiesToPt);
+            PlayGround.AddBodies(characterBodiesToPt);
         }
 
         public int GetMId()
