@@ -48,7 +48,7 @@ namespace cov_path_navi
             return path.Aggregate("", (x, s) => $"{x}=>{s.Item1}[Cost::{s.Item2}][line::{s.Item3?.ToString()}]");
         }
 
-        public void GrowFromRoot
+        internal void GrowFromRoot
         (Dictionary<int, PathNodeCovPolygon> polygonsTop, int end, List<PathTreeNode> collector,
             Dictionary<int, PathTreeNode> haveReached, TwoDPoint? startPt = null, TwoDPoint? endPoint = null)
         {
@@ -86,7 +86,7 @@ namespace cov_path_navi
             }
         }
 
-        public float GetTotalCost()
+        internal float GetTotalCost()
         {
             return GatherCost(0);
         }
@@ -96,7 +96,7 @@ namespace cov_path_navi
             return Father?.GatherCost(nowCost + Cost) ?? nowCost;
         }
 
-        public List<(int, float, TwoDVectorLine?)> GetPath2()
+        private IEnumerable<(int, float, TwoDVectorLine?)> GetPath2()
         {
             var ints = new List<(int, float, TwoDVectorLine?)>();
             GatherPathIdsAndCost(ints);

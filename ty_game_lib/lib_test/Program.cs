@@ -122,7 +122,7 @@ namespace lib_test
                 findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
             var twoDVectorLines = findAPathByPoint.Select(x => x.Item2);
-            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
+            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x.ToString());
             Console.Out.WriteLine($"way Points are {s3}");
         }
@@ -164,7 +164,7 @@ namespace lib_test
 
             var configDictionaries = new ConfigDictionaries();
             var configDictionariesBullets = configDictionaries.bullets;
-            foreach (KeyValuePair<string, bullet> configDictionariesBullet in configDictionariesBullets)
+            foreach (var configDictionariesBullet in configDictionariesBullets)
             {
                 var key = configDictionariesBullet.Key;
                 Console.Out.WriteLine($"{key}");

@@ -47,7 +47,7 @@ namespace lib_unit_test
         {
             if (ABlock() != null)
             {
-                var genFromBlocks = PathTop.GenFromBlocks(ABlock().ToList());
+                var genFromBlocks = PathTop.GenFromBlocks(ABlock()!.ToList());
 
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
@@ -68,6 +68,13 @@ namespace lib_unit_test
             var pathTest = PathTest(TestWb());
             Assert.Pass(pathTest);
         }
+        // [Test]
+        // public void PathTestW()
+        // {
+        //     var pathTest = new PathTop(TestWb());
+        //     pathTest.FindAPathById()
+        //     Assert.Pass(pathTest);
+        // }
 
         private static HashSet<IBlockShape>? ABlock()
         {
@@ -151,15 +158,15 @@ namespace lib_unit_test
             var findAPathById = pathTop.FindAPathById(0, 6, startPt, endPt);
 
             var aggregate3 =
-                findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
+                findAPathById.Aggregate("", (s, x) => s + "=>>" + x.Item2 + "||" + x.Item1);
 
 
-            var findAPathByPoint = pathTop.FindAPathByPoint(startPt, endPt);
+            var findAPathByPoint = pathTop.FindAPathByPoint(startPt, endPt).ToArray();
             var aggregate4 =
                 findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
             var twoDVectorLines = findAPathByPoint.Select(x => x.Item2);
-            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToList());
+            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x);
             Console.Out.WriteLine($"way Points are {s3}");
             return s3;

@@ -70,7 +70,9 @@ namespace cov_path_navi
             return pointInWhichArea?.PolyId;
         }
 
-        public List<(int, TwoDVectorLine?)> FindAPathByPoint(TwoDPoint startPt, TwoDPoint endPt, int? startPoly = null,
+        public IEnumerable<(int polyId, TwoDVectorLine? gothroughLine)> FindAPathByPoint(TwoDPoint startPt,
+            TwoDPoint endPt,
+            int? startPoly = null,
             int? endPoly = null)
         {
             var start = startPoly ?? InWhichPoly(startPt);
@@ -84,9 +86,16 @@ namespace cov_path_navi
             return new List<(int, TwoDVectorLine?)>();
         }
 
+        public IEnumerable<TwoDPoint> FindGoPts(TwoDPoint startPt, TwoDPoint endPt, int? startPoly = null,
+            int? endPoly = null)
+        {
+            var findAPathByPoint = FindAPathByPoint(startPt, endPt, startPoly, endPoly);
+            var twoDVectorLines = findAPathByPoint.Select(x => x.gothroughLine);
+            return GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
+        }
 
         public static IEnumerable<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end,
-            List<TwoDVectorLine?> twoDVectorLines)
+            TwoDVectorLine?[] twoDVectorLines)
         {
             var twoDPoints = new List<TwoDPoint>();
             if (!twoDVectorLines.Any())
@@ -158,7 +167,7 @@ namespace cov_path_navi
             }
 
 
-            for (var i = 1; i < twoDVectorLines.Count; i++)
+            for (var i = 1; i < twoDVectorLines.Length; i++)
             {
                 var twoDVectorLine = twoDVectorLines[i];
                 if (twoDVectorLine == null)
@@ -321,7 +330,7 @@ namespace cov_path_navi
 
         //分割为凸多边形，标记联通关系
         //合并阻挡 去除环结构
-        public static List<WalkAreaBlock> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
+        public static IEnumerable<WalkAreaBlock> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
         {
             var firstBlockUnit = isBlockIn
                 ? new WalkAreaBlock(new List<List<IBlockShape>>(), new List<IBlockShape>())
@@ -360,7 +369,10 @@ namespace cov_path_navi
             rawList.Sort((x, y) => x.GetStartPt().X.CompareTo(y.GetStartPt().X));
             List<List<IBlockShape>> res = new List<List<IBlockShape>>();
 
-            return GenLinkLists(res, rawList);
+            var genFromBlocks = GenLinkLists(res, rawList);
+            if (CheckSamePt(genFromBlocks))
+                return genFromBlocks;
+            throw new ArgumentException("there is SamePt In Blocks! Move Some Pt");
 
             static List<List<IBlockShape>> GenLinkLists(List<List<IBlockShape>> res, List<IBlockShape> rList)
             {
@@ -441,7 +453,7 @@ namespace cov_path_navi
                         )
                         {
 #if DEBUG
-                            Console.Out.WriteLine($" found finish {endPt.ToString()} vs {lstPt.ToString()}");
+                            Console.Out.WriteLine($" found finish {endPt} vs {lstPt}");
 #endif
 
                             isEnd = true;
@@ -450,7 +462,7 @@ namespace cov_path_navi
 
 #if DEBUG
                         find = true;
-                        Console.Out.WriteLine($" found new ed  {edPt.ToString()} vs {startPt.ToString()}");
+                        Console.Out.WriteLine($" found new ed  {edPt} vs {startPt}");
 #endif
 
                         edPt = blockShape.GetEndPt();
@@ -467,6 +479,14 @@ namespace cov_path_navi
 #endif
                 return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
             }
+        }
+
+        private static bool CheckSamePt(IReadOnlyCollection<List<IBlockShape>> genFromBlocks)
+        {
+            return (from genFromBlock in genFromBlocks
+                let enumerable = genFromBlocks.Where(x => x != genFromBlock)
+                let twoDPoints = enumerable.SelectMany(x => x.Select(b => b.GetEndPt()))
+                select genFromBlock.Any(x => twoDPoints.Any(xx => xx.Same(x.GetEndPt())))).All(any => !any);
         }
     }
 }

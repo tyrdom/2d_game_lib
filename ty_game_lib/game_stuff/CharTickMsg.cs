@@ -4,7 +4,67 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class CharTickMsg : ISeeTickMsg
+    public interface IBodyChange
+    {
+    }
+
+    public readonly struct MovePosAim : IBodyChange
+    {
+        public TwoDPoint? Pos { get; }
+        public TwoDVector? Aim { get; }
+        public float Speed { get; }
+    }
+
+
+    public readonly struct StunPosAim : IBodyChange
+    {
+        public TwoDPoint? Pos { get; }
+        public TwoDVector? Aim { get; }
+    }
+
+    public readonly struct ActPos : IBodyChange
+    {
+        public TwoDPoint? Pos { get; }
+        public TwoDVector? Aim { get; }
+    }
+
+
+    public readonly struct SurvivalStatusChange
+    {
+        public uint? Hp { get; }
+        public uint? Ammo { get; }
+        public uint? Shield { get; }
+        public uint? Armor { get; }
+        public uint? Prop { get; }
+    }
+
+    public readonly struct SkillLaunch
+    {
+        public SkillAction SkillAction { get; }
+
+        public int CIndex { get; }
+    }
+
+    public readonly struct SpecialActionLaunch
+    {
+        public SpecialAction SpecialAction { get; }
+    }
+
+    public readonly struct MapLaunch
+    {
+        public MapInteract MapAction { get; }
+    }
+
+    public readonly struct SightChange
+    {
+        private float SightR { get; }
+    }
+
+    public readonly struct AimSightChange
+    {
+    }
+
+    public readonly struct CharTickMsg : ISeeTickMsg
     {
         public int Gid { get; }
         public TwoDPoint Pos { get; }
