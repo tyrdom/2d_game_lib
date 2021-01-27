@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -10,17 +8,16 @@ namespace game_stuff
         public Zone RdZone { get; }
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
-        IRelationMsg? IsHitBody(IIdPointShape targetBody);
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace);
+        IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap);
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap);
         public ObjType TargetType { get; }
-        public bool IsHit(ICanBeHit characterBody);
     }
 
     public static class HitAbleMediaStandard
     {
-        public static IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, IHitMedia hitMedia)
+        public static IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, IHitMedia hitMedia, SightMap blockMap)
         {
-            var mapToGidList = qSpace.MapToIEnumNotNullSth((body, aHitMedia) => aHitMedia.IsHitBody(body),
+            var mapToGidList = qSpace.MapToIEnumNotNullSth((body, aHitMedia) => aHitMedia.IsHitBody(body, blockMap),
                 hitMedia, hitMedia.RdZone.MoveToAnchor(hitMedia.Pos));
             return mapToGidList!;
         }

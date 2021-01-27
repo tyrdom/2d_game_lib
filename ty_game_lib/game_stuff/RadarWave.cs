@@ -2,27 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using collision_and_rigid;
-using Force.DeepCloner;
 using game_config;
 
 namespace game_stuff
 {
-    public class RadarSeeMsg : ISeeTickMsg
+    public class RadarSee : IPerceivable
     {
-        public RadarSeeMsg(TwoDPoint pos, BodySize size)
+        public RadarSee(TwoDPoint pos, BodySize size)
         {
             Pos = pos;
             Size = size;
         }
 
-        public TwoDPoint Pos { get; }
+        private TwoDPoint Pos { get; }
 
-        public BodySize Size { get; }
+        private BodySize Size { get; }
     }
 
     public class RadarWave : IHitMedia
     {
-        public RadarWave(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
+        private RadarWave(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
         {
             TargetType = ObjType.OtherTeam;
             SizeToBulletCollision = sizeToBulletCollision;
@@ -68,7 +67,7 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap)
         {
             switch (targetBody)
             {
@@ -89,9 +88,9 @@ namespace game_stuff
             }
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap)
         {
-            return HitAbleMediaStandard.HitTeam(qSpace, this);
+            return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }
 
         public ObjType TargetType { get; }
@@ -102,7 +101,7 @@ namespace game_stuff
         }
 
 
-        public bool IsHit(ICanBeHit characterBody)
+        private bool IsHit(ICanBeHit characterBody)
         {
             return GameTools.IsHit(this, characterBody);
         }

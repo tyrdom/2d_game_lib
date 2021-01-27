@@ -157,7 +157,7 @@ namespace lib_test
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
 
             PathTest(genWalkBlockByPolys);
-           
+
             var ptt = new TwoDPoint(2f, -1.717f);
 
             Console.Out.WriteLine("config test~~~~~");
@@ -228,7 +228,7 @@ namespace lib_test
             var range = Enumerable.Range(1, 100).ToArray();
             foreach (var i in range)
             {
-                var (_, _, item3,_) =
+                var (_, _, item3, _) =
                     i == 1
                         ? playGround.PlayGroundGoATick(operates)
                         : i < 30
@@ -245,11 +245,12 @@ namespace lib_test
             }
         }
 
-        public static void LogCPos(ImmutableDictionary<int, ImmutableHashSet<ISeeTickMsg>> item2)
+        private static void LogCPos(ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> item2)
         {
             foreach (var keyValuePair in item2)
             {
-                foreach (var charTickMsg in keyValuePair.Value.OfType<CharTickMsg>())
+                foreach (var charTickMsg in keyValuePair.Value.OfType<ICanBeSaw>().Select(x => x.GenTickMsg())
+                    .OfType<CharTickMsg>())
                 {
                     var twoDPoint = charTickMsg.Pos;
                     var logPt = twoDPoint.LogPt();

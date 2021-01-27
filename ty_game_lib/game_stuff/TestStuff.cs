@@ -65,7 +65,7 @@ namespace game_stuff
             Console.Out.WriteLine($"test map init ok");
 #endif
             return new MapInitData(testSightMap, testMap, startPaces,
-                new HashSet<ApplyDevice>());
+                new HashSet<ApplyDevice>(), testSightMap);
         }
 
         private static WalkMap TestMap()

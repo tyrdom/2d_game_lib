@@ -15,6 +15,8 @@ namespace game_stuff
         private Zone MoveZone { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
         private SightMap SightMap { get; } //视野地图
+
+        private SightMap BulletBlockMap { get; } //子弹穿透阻挡，无特殊情况和视野地图相当
         private WalkMap WalkMap { get; } //碰撞地图
 
         private Dictionary<int, StartPts> Entrance { get; }
@@ -27,7 +29,7 @@ namespace game_stuff
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
             WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, int mgId,
-            int resMId, Zone moveZone, Dictionary<int, StartPts> entrance)
+            int resMId, Zone moveZone, Dictionary<int, StartPts> entrance, SightMap bulletBlockMap)
         {
             TeamToBodies = teamToBodies;
             SightMap = sightMap;
@@ -38,6 +40,7 @@ namespace game_stuff
             ResMId = resMId;
             MoveZone = moveZone;
             Entrance = entrance;
+            BulletBlockMap = bulletBlockMap;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
@@ -94,7 +97,7 @@ namespace game_stuff
 #endif
 
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
-                emptyRootBranch3, genMapId, mapResId, zone, mapInitData.TeamToStartPt);
+                emptyRootBranch3, genMapId, mapResId, zone, mapInitData.TeamToStartPt, mapInitData.BulletBlockMap);
 
             foreach (var applyDevice in mapInitData.StandardMapInteractableList)
             {
@@ -159,7 +162,7 @@ namespace game_stuff
             var teleports = new Dictionary<int, TelePortMsg>();
             var playerBeHit = new Dictionary<int, HashSet<IRelationMsg>>();
             var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
-            var teamRadarSee = new Dictionary<int, HashSet<ISeeTickMsg>>();
+            var teamRadarSee = new Dictionary<int, HashSet<IPerceivable>>();
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
 
             MapInteractableGoATick();
@@ -176,12 +179,12 @@ namespace game_stuff
 
 
             var playerSee = GetPlayerSee();
-            var playerSeeMsg =
+            var playerPerceivable =
                 playerSee.ToImmutableDictionary(pair => pair.Key,
                     pair =>
                     {
                         var gid = pair.Key;
-                        var seeTickMsgs = pair.Value.Select(x => x.GenTickMsg(gid));
+                        var seeTickMsgs = pair.Value;
                         if (GidToBody.TryGetValue(gid, out var cb) &&
                             teamRadarSee.TryGetValue(cb.Team, out var sees))
                             return seeTickMsgs.Union(sees).ToImmutableHashSet();
@@ -195,7 +198,7 @@ namespace game_stuff
                         p => p.Value.ToImmutableHashSet()), trapBeHit.ToImmutableDictionary(pa => pa.Key,
                         pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
                             pp => pp.Value.ToImmutableHashSet())),
-                    playerSeeMsg, teleports.ToImmutableDictionary());
+                    playerPerceivable, teleports.ToImmutableDictionary());
 
             return valueTuple;
         }
@@ -241,9 +244,9 @@ namespace game_stuff
         }
 
 
-        private Dictionary<int, HashSet<ICanBeSaw>> GetPlayerSee()
+        private Dictionary<int, HashSet<IPerceivable>> GetPlayerSee()
         {
-            var gidToCharacterBodies = new Dictionary<int, HashSet<ICanBeSaw>>();
+            var gidToCharacterBodies = new Dictionary<int, HashSet<IPerceivable>>();
             foreach (var kv in GidToBody)
             {
                 var key = kv.Key;
@@ -252,7 +255,7 @@ namespace game_stuff
 // #if DEBUG
 //                 Console.Out.WriteLine($"gid::{characterBody.GetId()}");
 // #endif
-                var characterBodies = new HashSet<ICanBeSaw>();
+                var characterBodies = new HashSet<IPerceivable>();
 
                 var filterToBoxList = MapInteractableThings.FilterToBoxList<ICanBeSaw, CharacterBody>(
                     (idp, acb) => acb.InSight(idp, SightMap),
@@ -344,40 +347,40 @@ namespace game_stuff
             }
         }
 
-        private static void RecordHitResult(IRelationMsg bulletHit,
+        private static void RecordHitResult(IRelationMsg relationMsg,
             IDictionary<int, HashSet<IRelationMsg>> gidD, IDictionary<int, Dictionary<int, HashSet<IRelationMsg>>> tidD,
-            IDictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
+            IDictionary<int, HashSet<IPerceivable>> teamRadarSee)
         {
-            if (bulletHit is RadarHit)
+            if (relationMsg is RadarHit)
             {
-                var id = bulletHit.CasterOrOwner.CharacterBody.Team;
-                var twoDPoint = bulletHit.WhoTake.GetAnchor();
-                var bodySize = bulletHit.WhoTake.GetSize();
+                var id = relationMsg.CasterOrOwner.CharacterBody.Team;
+                var twoDPoint = relationMsg.WhoTake.GetAnchor();
+                var bodySize = relationMsg.WhoTake.GetSize();
 
-                var radarSeeMsg = new RadarSeeMsg(twoDPoint, bodySize);
-                if (teamRadarSee.TryGetValue(id, out var seeTickMsgs))
+                var radarSee = new RadarSee(twoDPoint, bodySize);
+                if (teamRadarSee.TryGetValue(id, out var perceivableThings))
                 {
-                    seeTickMsgs.Add(radarSeeMsg);
+                    perceivableThings.Add(radarSee);
                 }
                 else
                 {
-                    teamRadarSee[id] = new HashSet<ISeeTickMsg> {radarSeeMsg};
+                    teamRadarSee[id] = new HashSet<IPerceivable> {radarSee};
                 }
 
                 return;
             }
 
-            switch (bulletHit.WhoTake)
+            switch (relationMsg.WhoTake)
             {
                 case CharacterBody characterBody:
                     var key = characterBody.GetId();
                     if (gidD.TryGetValue(key, out var hBullets))
                     {
-                        hBullets.Add(bulletHit);
+                        hBullets.Add(relationMsg);
                     }
                     else
                     {
-                        gidD[key] = new HashSet<IRelationMsg> {bulletHit};
+                        gidD[key] = new HashSet<IRelationMsg> {relationMsg};
                     }
 
                     break;
@@ -388,18 +391,18 @@ namespace game_stuff
                     {
                         if (hBullets2.TryGetValue(tid, out hBullets))
                         {
-                            hBullets.Add(bulletHit);
+                            hBullets.Add(relationMsg);
                         }
                         else
                         {
-                            hBullets2[tid] = new HashSet<IRelationMsg> {bulletHit};
+                            hBullets2[tid] = new HashSet<IRelationMsg> {relationMsg};
                         }
                     }
                     else
                     {
                         var dictionary = new Dictionary<int, HashSet<IRelationMsg>>
                         {
-                            [tid] = new HashSet<IRelationMsg> {bulletHit}
+                            [tid] = new HashSet<IRelationMsg> {relationMsg}
                         };
                         tidD[tid] = dictionary;
                     }
@@ -410,24 +413,23 @@ namespace game_stuff
             }
         }
 
-        private void
-            HitMediasDo(IDictionary<int, HashSet<IRelationMsg>> gidHitBy,
-                IDictionary<int, Dictionary<int, HashSet<IRelationMsg>>> tidHitBy,
-                Dictionary<int, HashSet<ISeeTickMsg>> teamRadarSee)
+        private void HitMediasDo(IDictionary<int, HashSet<IRelationMsg>> gidHitBy,
+            IDictionary<int, Dictionary<int, HashSet<IRelationMsg>>> tidHitBy,
+            IDictionary<int, HashSet<IPerceivable>> teamRadarSee)
         {
             foreach (var ii in TeamToHitMedia)
             {
                 var team = ii.Key;
                 var hitMedias = ii.Value;
-                foreach (var bullet in hitMedias)
+                foreach (var hitMedia in hitMedias)
                 {
-                    switch (bullet.TargetType)
+                    switch (hitMedia.TargetType)
                     {
                         case ObjType.OtherTeam:
-
                             var selectMany = TeamToBodies.Where(pair => pair.Key != team)
-                                .SelectMany(x => hitMedias.SelectMany(aHitM => aHitM.HitTeam(x.Value.playerBodies)
-                                    .Union(aHitM.HitTeam(x.Value.Traps))));
+                                .SelectMany(x => hitMedias.SelectMany(aHitM => aHitM
+                                    .HitTeam(x.Value.playerBodies, BulletBlockMap)
+                                    .Union(aHitM.HitTeam(x.Value.Traps, BulletBlockMap))));
 
                             foreach (var hr in selectMany)
                             {
@@ -438,8 +440,8 @@ namespace game_stuff
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
-                                var enumerable = bullet.HitTeam(qSpace.playerBodies)
-                                    .Union(bullet.HitTeam(qSpace.Traps));
+                                var enumerable = hitMedia.HitTeam(qSpace.playerBodies, BulletBlockMap)
+                                    .Union(hitMedia.HitTeam(qSpace.Traps, BulletBlockMap));
                                 foreach (var hitResult in enumerable)
                                 {
                                     RecordHitResult(hitResult, gidHitBy, tidHitBy, teamRadarSee);
@@ -449,7 +451,9 @@ namespace game_stuff
                             break;
                         case ObjType.AllTeam:
                             var results = TeamToBodies.Values.SelectMany(x =>
-                                hitMedias.SelectMany(bb => bb.HitTeam(x.playerBodies).Union(bb.HitTeam(x.Traps))));
+                                hitMedias.SelectMany(bb =>
+                                    bb.HitTeam(x.playerBodies, BulletBlockMap)
+                                        .Union(bb.HitTeam(x.Traps, BulletBlockMap))));
 
                             foreach (var hitResult in results)
                             {

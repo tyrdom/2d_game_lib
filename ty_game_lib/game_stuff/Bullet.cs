@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using collision_and_rigid;
 using Force.DeepCloner;
 using game_config;
@@ -22,13 +21,13 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
-        public bool IsFAtk { get; }
+        private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
 
         public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
         private Dictionary<BodySize, IStunBuffConfig> SuccessStunBuffConfigToOpponent { get; }
-        public Dictionary<BodySize, IStunBuffConfig> FailActBuffConfigToSelf { get; }
+        private Dictionary<BodySize, IStunBuffConfig> FailActBuffConfigToSelf { get; }
 
         private int PauseToCaster { get; }
         private int PauseToOpponent { get; }
@@ -168,17 +167,20 @@ namespace game_stuff
             return RestTick > 0;
         }
 
-        public bool IsHit(ICanBeHit characterBody)
+        private bool IsHit(ICanBeHit characterBody, SightMap blockMap)
         {
-            return GameTools.IsHit(this, characterBody);
+            var isBlockSightLine = blockMap.IsBlockSightLine(new TwoDVectorLine(this.Pos, characterBody.GetAnchor()));
+            return GameTools.IsHit(this, characterBody) && isBlockSightLine;
+
+            //造成伤害需要不被阻挡
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap)
         {
             switch (targetBody)
             {
                 case CharacterBody targetCharacterBody:
-                    var isHit = IsHit(targetCharacterBody);
+                    var isHit = IsHit(targetCharacterBody, blockMap);
                     if (!isHit) return null;
                     var kill = HitOne(targetCharacterBody.CharacterStatus);
 
@@ -191,7 +193,7 @@ namespace game_stuff
                         : (IRelationMsg?) null;
 
                 case Trap trap:
-                    var isHitBody = IsHit(trap);
+                    var isHitBody = IsHit(trap, blockMap);
                     if (!isHitBody) return null;
                     var dmgShow = HitOne(trap);
                     return Caster != null && dmgShow.HasValue
@@ -524,9 +526,9 @@ namespace game_stuff
             }
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap)
         {
-            return HitAbleMediaStandard.HitTeam(qSpace, this);
+            return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }
 
         public BulletMsg GenMsg()

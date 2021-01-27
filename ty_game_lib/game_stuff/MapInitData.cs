@@ -6,10 +6,11 @@ namespace game_stuff
 {
     public class MapInitData
     {
-        public SightMap SightMap;
-        public WalkMap WalkMap;
-        public Dictionary<int, StartPts> TeamToStartPt;
-        public HashSet<ApplyDevice> StandardMapInteractableList;
+        public SightMap SightMap { get; }
+        public WalkMap WalkMap { get; }
+        public Dictionary<int, StartPts> TeamToStartPt { get; }
+        public HashSet<ApplyDevice> StandardMapInteractableList { get; }
+        public SightMap BulletBlockMap { get; }
 
         public Zone GetZone()
         {
@@ -20,12 +21,13 @@ namespace game_stuff
         }
 
         public MapInitData(SightMap sightMap, WalkMap walkMap, Dictionary<int, StartPts> teamToStartPt,
-            HashSet<ApplyDevice > standardMapInteractableList)
+            HashSet<ApplyDevice> standardMapInteractableList, SightMap bulletBlockMap)
         {
             SightMap = sightMap;
             WalkMap = walkMap;
             TeamToStartPt = teamToStartPt;
             StandardMapInteractableList = standardMapInteractableList;
+            BulletBlockMap = bulletBlockMap;
         }
     }
 }

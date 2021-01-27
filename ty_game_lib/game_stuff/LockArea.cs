@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -49,7 +48,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap)
         {
             switch (targetBody)
             {
@@ -76,9 +75,9 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap)
         {
-            return HitAbleMediaStandard.HitTeam(qSpace, this);
+            return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }
     }
 
@@ -94,6 +93,6 @@ namespace game_stuff
         public CharacterStatus CasterOrOwner { get; }
         public ICanBeHit WhoTake { get; }
 
-        public IHitMedia LockArea { get; }
+        private IHitMedia LockArea { get; }
     }
 }

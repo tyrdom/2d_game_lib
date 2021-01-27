@@ -11,11 +11,6 @@ namespace game_stuff
     }
 
 
-    public interface ICanBeSaw : IHaveAnchor
-    {
-        ISeeTickMsg GenTickMsg(int? gid = null);
-    }
-
     public interface ISeeTickMsg
     {
         string ToString();
