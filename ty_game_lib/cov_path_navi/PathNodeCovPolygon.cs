@@ -24,6 +24,16 @@ namespace cov_path_navi
             Edges = edges;
         }
 
+        public TwoDPoint GetCenterPt()
+        {
+            var twoDPoints = Edges.Select(x => x.GetEndPt()).ToList();
+            var sum = twoDPoints.Sum(p => p.X);
+            var f = twoDPoints.Sum(p => p.Y);
+            var count = twoDPoints.Count;
+            return new TwoDPoint(sum / count, f / count);
+        }
+
+
         public void LoadLinkAndCost()
         {
             LinkAndCost = GenCost(Links);

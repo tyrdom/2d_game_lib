@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
+using game_bot;
 using game_stuff;
 
 namespace rogue_game
@@ -38,11 +39,11 @@ namespace rogue_game
 
     public class RogueGame
     {
+        private BotTeam BotTeam { get; }
         private int ChapterId { get; set; }
         private Chapter NowChapter { get; set; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
         public int RebornCountDownTick { get; set; }
-
         public GameItem[] RebornCost { get; }
         public int PlayerLeaderGid { get; set; }
 
@@ -52,13 +53,13 @@ namespace rogue_game
             int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, int chapterId)
         {
             RebornCost = LocalConfig.RogueRebornCost;
-
             NowChapter = chapters.Dequeue();
             NowGamePlayers = nowGamePlayers;
             RebornCountDownTick = rebornCountDownTick;
             PlayerLeaderGid = playerLeader;
             NowPlayMap = nowPlayMap;
             ChapterId = chapterId;
+            BotTeam = new BotTeam();
         }
 
         private bool Reborn(int seat, int toSeat)

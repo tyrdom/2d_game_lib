@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -30,44 +28,11 @@ namespace game_stuff
             };
         }
 
-        public static float GetRBySize(BodySize bodySize)
+        public static float GetRBySize(size bodySize)
         {
-            return SizeToR[bodySize];
+            return CommonConfig.Configs.bodys[bodySize].rad;
         }
 
-
-        public static BodySize GetBodySize(size size)
-        {
-            return size switch
-            {
-                size.tiny => BodySize.Tiny,
-                size.small => BodySize.Small,
-                size.medium => BodySize.Medium,
-                size.@default => BodySize.Small,
-                size.big => BodySize.Big,
-                _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
-            };
-        }
-
-
-        public static ConfigDictionaries Configs { get; private set; }
-            = CommonConfig.Configs;
-
-        public static readonly Dictionary<BodySize, float> SizeToR = new Dictionary<BodySize, float>
-        {
-            [BodySize.Tiny] = 0.3f,
-            [BodySize.Small] = 0.5f,
-            [BodySize.Medium] = 1f,
-            [BodySize.Big] = 1.5f
-        };
-
-        public static readonly Dictionary<BodySize, float> SizeToMass = new Dictionary<BodySize, float>
-        {
-            [BodySize.Tiny] = 1f,
-            [BodySize.Small] = 1f,
-            [BodySize.Medium] = 4f,
-            [BodySize.Big] = 9f
-        };
 
         public static float G { get; private set; } = 1;
 
@@ -104,8 +69,8 @@ namespace game_stuff
         public static TwoDVector StandardSightVector { get; private set; } =
             new TwoDVector(10, 7);
 
-        public static IStunBuffConfig CommonBuffConfig { get; private set; } =
-            new PushEarthStunBuffConfig(1f, PushType.Center, null, 12);
+        public static IStunBuffMaker CommonBuffMaker { get; private set; } =
+            new PushEarthStunBuffMaker(1f, PushType.Center, null, 12);
 
 
         public static float ShardedAttackMulti { get; private set; } = 0.05f;
@@ -140,8 +105,7 @@ namespace game_stuff
         public static void ReLoadP(ConfigDictionaries configs)
         {
             CommonConfig.ReLoadP(configs);
-            Configs = CommonConfig.Configs;
-            var configsOtherConfig = Configs.other_configs[1];
+            var configsOtherConfig = CommonConfig.Configs.other_configs[1];
             G = configsOtherConfig.g_acc;
             MaxHeight = configsOtherConfig.max_hegiht;
             MaxUpSpeed = MathTools.Sqrt(2f * G * MaxHeight);
@@ -157,7 +121,7 @@ namespace game_stuff
             HitWallCatchDmgParam = configsOtherConfig.hit_wall_catch_dmg_param;
             StandardSightVector =
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
-            CommonBuffConfig =
+            CommonBuffMaker =
                 StunBuffStandard.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
             ShardedAttackMulti = configsOtherConfig.ShardedAttackMulti;
             MaxCallActTwoTick = CommonConfig.GetTickByTime(configsOtherConfig.interaction_act2_call_time);

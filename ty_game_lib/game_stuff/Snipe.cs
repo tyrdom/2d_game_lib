@@ -9,7 +9,7 @@ namespace game_stuff
 {
     public class Snipe
     {
-        public ImmutableDictionary<BodySize, float> MoveSpeedMulti { get; }
+        public ImmutableDictionary<size, float> MoveSpeedMulti { get; }
 
         public int MaxStep { get; }
         public int AddStepPerTick { get; }
@@ -17,14 +17,14 @@ namespace game_stuff
         public int TrickTick { get; }
 
 
-        public float? GetSpeedMulti(BodySize bodySize)
+        public float? GetSpeedMulti(size bodySize)
         {
             var value = MoveSpeedMulti.TryGetValue(bodySize, out var f) ? f : (float?) null;
             return value;
         }
 
 
-        public Snipe(snipe snipe, ImmutableDictionary<BodySize, float> snipeMulti,int maxStep)
+        public Snipe(snipe snipe, ImmutableDictionary<size, float> snipeMulti,int maxStep)
         {
             if (snipe.TotalStep>maxStep)
             {

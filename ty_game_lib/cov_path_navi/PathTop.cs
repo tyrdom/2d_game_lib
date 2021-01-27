@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
 using collision_and_rigid;
 
 namespace cov_path_navi
@@ -475,7 +473,7 @@ namespace cov_path_navi
 #if DEBUG
                 if (find) return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
                 var aggregate = rawList.Aggregate("", (s, x) => s + x.ToString());
-                Console.Out.WriteLine($" not found {edPt.ToString()} in {aggregate}");
+                Console.Out.WriteLine($" not found {edPt} in {aggregate}");
 #endif
                 return isEnd ? (null, null, tList, newRaw)! : (lstPt, edPt, tList, newRaw);
             }
@@ -484,9 +482,11 @@ namespace cov_path_navi
         private static bool CheckSamePt(IReadOnlyCollection<List<IBlockShape>> genFromBlocks)
         {
             return (from genFromBlock in genFromBlocks
-                let enumerable = genFromBlocks.Where(x => x != genFromBlock)
-                let twoDPoints = enumerable.SelectMany(x => x.Select(b => b.GetEndPt()))
-                select genFromBlock.Any(x => twoDPoints.Any(xx => xx.Same(x.GetEndPt())))).All(any => !any);
+                    let enumerable = genFromBlocks.Where(x => x != genFromBlock)
+                    let twoDPoints = enumerable.SelectMany(x => x.Select(b => b.GetEndPt()))
+                    select genFromBlock.Any(x => twoDPoints.Any(xx =>
+                        xx.Same(x.GetEndPt()) || xx.GetPosOf(x.AsTwoDVectorLine()) == Pt2LinePos.On)))
+                .All(any => !any);
         }
     }
 }

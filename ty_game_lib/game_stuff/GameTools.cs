@@ -10,7 +10,7 @@ namespace game_stuff
     {
         public static base_attribute GenBaseAttrById(int baseAttrId)
         {
-            if (!LocalConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
+            if (!CommonConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
                 throw new ArgumentException($"not such attr{baseAttrId}");
             return baseAttribute;
         }
@@ -53,7 +53,7 @@ namespace game_stuff
             };
         }
 
-        public static Dictionary<BodySize, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
+        public static Dictionary<size, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
             Point localPoint, raw_shape rawShape)
         {
             var twoDPoint = GenVectorByConfig(localPoint);
@@ -93,7 +93,7 @@ namespace game_stuff
             return MathTools.Sqrt(f);
         }
 
-        public static Zone GenRdBox(Dictionary<BodySize, BulletBox> bulletBoxes)
+        public static Zone GenRdBox(Dictionary<size, BulletBox> bulletBoxes)
         {
             var enumerable = bulletBoxes.Select(x => x.Value.Zone);
 
@@ -104,12 +104,12 @@ namespace game_stuff
             return bulletRdBox;
         }
 
-        private static Dictionary<BodySize, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
+        private static Dictionary<size, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
         {
             return
-                LocalConfig.SizeToR.ToDictionary(pair => pair.Key, pair =>
-                    new BulletBox(rawBulletShape.GenBulletZone(pair.Value),
-                        rawBulletShape.GenBulletShape(pair.Value)));
+                CommonConfig.Configs.bodys.ToDictionary(pair => pair.Key, pair =>
+                    new BulletBox(rawBulletShape.GenBulletZone(pair.Value.rad),
+                        rawBulletShape.GenBulletShape(pair.Value.rad)));
         }
 
         public static TwoDVector GenVectorByConfig(Point pt)
@@ -118,9 +118,7 @@ namespace game_stuff
         }
 
 
-       
-
-        public static List<IMapInteractable> DropWeapon(Dictionary<int, Weapon> weapons, BodySize bodySize,
+        public static List<IMapInteractable> DropWeapon(Dictionary<int, Weapon> weapons, size bodySize,
             TwoDPoint pos)
         {
             var mapInteractable = new List<IMapInteractable>();
@@ -134,7 +132,5 @@ namespace game_stuff
 
             return mapInteractable;
         }
-
-    
     }
 }

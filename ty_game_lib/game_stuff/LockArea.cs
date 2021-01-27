@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -9,7 +10,7 @@ namespace game_stuff
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
-        public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
+        public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
         public void Sign(IBattleUnitStatus characterStatus)
@@ -19,7 +20,7 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
-        private LockArea(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
+        private LockArea(Dictionary<size, BulletBox> sizeToBulletCollision)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();

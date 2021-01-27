@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -7,7 +8,7 @@ namespace game_stuff
     {
         public Zone RdZone { get; }
 
-        public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
+        public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap);
         public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap);
         public ObjType TargetType { get; }

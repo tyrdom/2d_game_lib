@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace collision_and_rigid
 {
-    public class ClockwiseTurning : IShape, IBlockShape
+    public class ClockwiseTurning : IBlockShape
     {
         public readonly ClockwiseBalanceAngle Aob;
         public readonly TwoDVectorLine? Last;

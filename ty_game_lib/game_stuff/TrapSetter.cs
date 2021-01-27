@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -8,7 +7,7 @@ namespace game_stuff
 {
     public class TrapSetter
     {
-        public TrapSetter(bool canBeSee, int? failChanceStack, BodySize bodySize, uint callTrapTick,
+        public TrapSetter(bool canBeSee, int? failChanceStack, size bodySize, uint callTrapTick,
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
             int? baseAttrId)
         {
@@ -27,7 +26,7 @@ namespace game_stuff
 
         public static TrapSetter GenById(string id)
         {
-            if (LocalConfig.Configs.traps.TryGetValue(id, out var trap))
+            if (CommonConfig.Configs.traps.TryGetValue(id, out var trap))
             {
                 return new TrapSetter(trap);
             }
@@ -39,7 +38,7 @@ namespace game_stuff
         {
             CanBeSee = trap.CanBeSee;
             FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
-            BodySize = LocalConfig.GetBodySize(trap.BodyId);
+            BodySize = trap.BodyId;
             CallTrapTick = CommonConfig.GetTickByTime(trap.CallTrapRoundTime);
             TrapMedia = LocalConfig.GenHitMedia(trap.TrapMedia);
             BaseAttrId = trap.AttrId;
@@ -82,7 +81,7 @@ namespace game_stuff
         private int? BaseAttrId { get; }
         private bool CanBeSee { get; }
         private int? FailChanceStack { get; }
-        private BodySize BodySize { get; }
+        private size BodySize { get; }
         private uint CallTrapTick { get; }
         private uint? MaxLifeTimeTick { get; }
         public IHitMedia TrapMedia { get; }

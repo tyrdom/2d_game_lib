@@ -7,17 +7,17 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface IStunBuffConfig
+    public interface IStunBuffMaker
     {
         public uint TickLast { get; }
 
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, IBattleUnitStatus whoDid);
+            size bodySize, IBattleUnitStatus whoDid);
     }
 
     public static class StunBuffStandard
     {
-        public static IStunBuffConfig GenBuffByConfig(push_buff pushBuff)
+        public static IStunBuffMaker GenBuffByConfig(push_buff pushBuff)
         {
             var pushType = pushBuff.PushType switch
             {
@@ -31,15 +31,15 @@ namespace game_stuff
 
             if (pushBuff.UpForce > 0)
             {
-                return new PushAirStunBuffConfig(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
+                return new PushAirStunBuffMaker(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
                     CommonConfig.GetTickByTime(pushBuff.LastTime));
             }
 
-            return new PushEarthStunBuffConfig(pushBuff.PushForce, pushType, pushAboutVector,
+            return new PushEarthStunBuffMaker(pushBuff.PushForce, pushType, pushAboutVector,
                 CommonConfig.GetTickByTime(pushBuff.LastTime));
         }
 
-        private static IStunBuffConfig GenBuffByConfig(caught_buff caughtBuff)
+        private static IStunBuffMaker GenBuffByConfig(caught_buff caughtBuff)
         {
             var twoDVectors = caughtBuff.CatchKeyPoints
                 .ToDictionary(
@@ -61,7 +61,7 @@ namespace game_stuff
             var nk = key;
             var nowVector = value;
             if (twoDVectors.Count <= 1)
-                return new CatchStunBuffConfig(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
+                return new CatchStunBuffMaker(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
                     Skill.GenSkillById(caughtBuff.TrickSkill));
             for (var index = 1; index < twoDVectors.Count; index++)
             {
@@ -77,16 +77,16 @@ namespace game_stuff
                 }
             }
 
-            return new CatchStunBuffConfig(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
+            return new CatchStunBuffMaker(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
                 Skill.GenSkillById(caughtBuff.TrickSkill));
         }
 
-        public static IStunBuffConfig GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent)
+        public static IStunBuffMaker GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent)
         {
             switch (buffConfigToOpponentType)
             {
                 case buff_type.push_buff:
-                    if (LocalConfig.Configs.push_buffs.TryGetValue(configToOpponent, out var value))
+                    if (CommonConfig.Configs.push_buffs.TryGetValue(configToOpponent, out var value))
                     {
                         return GenBuffByConfig(value);
                     }
@@ -94,7 +94,7 @@ namespace game_stuff
                     throw new DirectoryNotFoundException($"not such p buff {configToOpponent}");
 
                 case buff_type.caught_buff:
-                    if (LocalConfig.Configs.caught_buffs.TryGetValue(configToOpponent, out var value2))
+                    if (CommonConfig.Configs.caught_buffs.TryGetValue(configToOpponent, out var value2))
                     {
                         return GenBuffByConfig(value2);
                     }
@@ -107,14 +107,14 @@ namespace game_stuff
         }
     }
 
-    public class PushEarthStunBuffConfig : IStunBuffConfig
+    public class PushEarthStunBuffMaker : IStunBuffMaker
     {
-        private float PushForce; //推力
-        private PushType PushType; //方向或者中心
-        private TwoDVector? PushFixVector; //修正向量，中心push为中心点，方向为方向修正
+        private float PushForce { get; } //推力
+        private PushType PushType{ get; }//方向或者中心
+        private TwoDVector? PushFixVector{ get; } //修正向量，中心push为中心点，方向为方向修正
         public uint TickLast { get; }
 
-        public PushEarthStunBuffConfig(float pushForce, PushType pushType, TwoDVector? pushFixVector,
+        public PushEarthStunBuffMaker(float pushForce, PushType pushType, TwoDVector? pushFixVector,
             uint lastTick)
         {
             PushForce = pushForce;
@@ -131,7 +131,7 @@ namespace game_stuff
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
 
 #if DEBUG
-            Console.Out.WriteLine($" vector1~~~~ {vector1.ToString()}");
+            Console.Out.WriteLine($" vector1~~~~ {vector1}");
 #endif
             if (height == null)
             {
@@ -146,9 +146,9 @@ namespace game_stuff
         }
 
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, IBattleUnitStatus whoDid)
+            size bodySize, IBattleUnitStatus whoDid)
         {
-            var mass = LocalConfig.SizeToMass[bodySize];
+            var mass = CommonConfig.Configs.bodys[bodySize].mass;
             switch (PushType)
             {
                 case PushType.Center:
@@ -172,16 +172,16 @@ namespace game_stuff
         }
     }
 
-    public class PushAirStunBuffConfig : IStunBuffConfig
+    public class PushAirStunBuffMaker : IStunBuffMaker
     {
-        private float PushForce;
-        private PushType PushType;
-        private float UpForce;
+        private float PushForce{ get; }
+        private PushType PushType{ get; }
+        private float UpForce{ get; }
 
-        private TwoDVector? PushFixVector;
+        private TwoDVector? PushFixVector{ get; }
         public uint TickLast { get; }
 
-        public PushAirStunBuffConfig(float pushForce, PushType pushType, float upForce,
+        public PushAirStunBuffMaker(float pushForce, PushType pushType, float upForce,
             TwoDVector? pushFixVector, uint tickLast)
         {
             PushForce = pushForce;
@@ -198,9 +198,9 @@ namespace game_stuff
         }
 
         public IStunBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
-            , float upSpeed, BodySize bodySize, IBattleUnitStatus whoDid)
+            , float upSpeed, size bodySize, IBattleUnitStatus whoDid)
         {
-            var mass = LocalConfig.SizeToMass[bodySize];
+            var mass = CommonConfig.Configs.bodys[bodySize].mass;
             switch (PushType)
             {
                 case PushType.Center:
@@ -237,9 +237,9 @@ namespace game_stuff
         Vector
     }
 
-    public class CatchStunBuffConfig : IStunBuffConfig
+    public class CatchStunBuffMaker : IStunBuffMaker
     {
-        public CatchStunBuffConfig(TwoDVector[] twoDVectors, uint tickLast, Skill trickSkill
+        public CatchStunBuffMaker(TwoDVector[] twoDVectors, uint tickLast, Skill trickSkill
         )
         {
             TwoDVectors = twoDVectors;
@@ -274,7 +274,7 @@ namespace game_stuff
         }
 
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            BodySize bodySize, IBattleUnitStatus whoDid)
+            size bodySize, IBattleUnitStatus whoDid)
         {
             var antiActBuff = GenABuff(pos, aim, whoDid);
             return antiActBuff;

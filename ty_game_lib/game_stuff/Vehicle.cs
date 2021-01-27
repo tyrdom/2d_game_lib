@@ -15,7 +15,7 @@ namespace game_stuff
 
         public static Vehicle GenById(int id)
         {
-            if (LocalConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
+            if (CommonConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
             {
                 return GenByConfig(vehicle);
             }
@@ -25,7 +25,7 @@ namespace game_stuff
 
         private static Vehicle GenByConfig(vehicle vehicle)
         {
-            var bodySize = LocalConfig.GetBodySize(vehicle.BodyId);
+            var bodySize = vehicle.BodyId;
             var tickByTime = CommonConfig.GetTickByTime(vehicle.DestoryDelayTime);
 
             var genByBulletId = Bullet.GenById(vehicle.DestoryBullet);
@@ -56,7 +56,7 @@ namespace game_stuff
                 vehicle.MaxWeaponSlot, genSkillById, vehicle.AttrId, vehicle.id);
         }
 
-        private Vehicle(BodySize size, Scope standardScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
+        private Vehicle(size size, Scope standardScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             uint destroyTick, int weaponCarryMax,
             Skill outAct, int baseAttrId, int vId)
         {
@@ -94,7 +94,7 @@ namespace game_stuff
 
         public int VId { get; }
         public CharacterStatus? WhoDriveOrCanDrive { get; set; }
-        public BodySize Size { get; }
+        public size Size { get; }
 
         public float MaxMoveSpeed { get; private set; }
         public float MinMoveSpeed { get; }

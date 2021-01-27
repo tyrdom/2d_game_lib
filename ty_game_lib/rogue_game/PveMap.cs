@@ -91,11 +91,19 @@ namespace rogue_game
 
     public class Creep
     {
+        public Creep(CharacterBody characterBody, WantedBonus wantedBonus)
+        {
+            CharacterBody = characterBody;
+            WantedBonus = wantedBonus;
+        }
+
         public CharacterBody CharacterBody { get; }
         public WantedBonus WantedBonus { get; }
     }
 
     public class WantedBonus
     {
+        public GameItem[] AllBonus { get; }
+        public GameItem[] KillBonus { get; }
     }
 }

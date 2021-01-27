@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
-using System.Net.Security;
 using System.Numerics;
 using collision_and_rigid;
 using game_config;
-using Newtonsoft.Json.Serialization;
 
 namespace game_stuff
 {
@@ -488,9 +483,9 @@ namespace game_stuff
         }
 
         private CharGoTickResult ActNowActATick(
-            TwoDVector? moveOp)
+            TwoDVector? moveOp, TwoDVector? aimOp)
         {
-            return NowCastAct == null ? new CharGoTickResult() : GoNowActATick(NowCastAct, moveOp);
+            return NowCastAct == null ? new CharGoTickResult() : GoNowActATick(NowCastAct, moveOp, aimOp);
         }
 
         private IPosMedia? SelfEffectFilter(IEffectMedia? effectMedia)
@@ -529,8 +524,10 @@ namespace game_stuff
         }
 
         private CharGoTickResult GoNowActATick(ICharAct charAct,
-            TwoDVector? moveOp)
+            TwoDVector? moveOp, TwoDVector? aim)
         {
+            if (charAct is Prop prop && !prop.LockAim) OpChangeAim(aim);
+
             var limitV = charAct switch
             {
                 Interaction _ => null,
@@ -617,7 +614,7 @@ namespace game_stuff
         }
 
 
-        private IEnumerable<IMapInteractable> DropWeapon(BodySize bodySize)
+        private IEnumerable<IMapInteractable> DropWeapon(size bodySize)
         {
             return GameTools.DropWeapon(Weapons, bodySize, GetPos());
         }
@@ -747,7 +744,7 @@ namespace game_stuff
 
             if (!SurvivalStatus.GoATickAndCheckAlive())
             {
-                return new CharGoTickResult(stillActive: false);
+                return new CharGoTickResult(false);
             }
 
             //
@@ -764,9 +761,11 @@ namespace game_stuff
             if (NowCastAct != null)
             {
                 // 当前动作进行一个tick
-                var skillAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
-                var skillMove = operate?.Move;
-                var actNowActATick = NowCanComboNext() ? ActNowActATick(skillMove) : DoComboByNext(skillAim, skillMove);
+                var operateAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
+                var operateMove = operate?.Move;
+                var actNowActATick = NowCanComboNext()
+                    ? ActNowActATick(operateMove, operateAim)
+                    : DoComboByNext(operateAim, operateMove);
 
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
@@ -809,10 +808,10 @@ namespace game_stuff
                 switch (NowCastAct.InWhichPeriod())
                 {
                     case SkillPeriod.Casting:
-                        NextSkill ??= (skillAim, skill, opAction.Value);
+                        NextSkill ??= (operateAim, skill, opAction.Value);
                         break;
                     case SkillPeriod.CanCombo:
-                        actNowActATick = LoadSkill(skillAim, skill, opAction.Value, skillMove);
+                        actNowActATick = LoadSkill(operateAim, skill, opAction.Value, operateMove);
                         NowWeapon = toUse;
                         break;
                     case SkillPeriod.End:
@@ -1067,9 +1066,9 @@ namespace game_stuff
             return attackStatus.GenDamage(damageMulti, b4, multi);
         }
 
-        public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)
+        public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
         {
-            LoadSkill(aim, catchAntiActBuffConfig.TrickSkill, SkillAction.CatchTrick, null);
+            LoadSkill(aim, catchAntiActBuffMaker.TrickSkill, SkillAction.CatchTrick, null);
             NextSkill = null;
         }
 
@@ -1273,7 +1272,7 @@ namespace game_stuff
 
         public void RecyclePassive(PassiveTrait passiveTrait)
         {
-            if (!LocalConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
+            if (!CommonConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
                 passive.recycle_money.Select(x => new GameItem(x.item, (int) (x.num * (1 + GetRecycleMulti()))));
             foreach (var gameItem in passiveRecycleMoney)
@@ -1357,7 +1356,7 @@ namespace game_stuff
             var damageMulti = GetBuffs<TakeDamageBuff>().GetDamageMulti();
             genDamage.GetBuffMulti(damageMulti);
             if (NowVehicle == null) return new DmgShow(SurvivalStatus.TakeDamage(genDamage), genDamage);
-            var takeDamage = NowVehicle.SurvivalStatus.TakeDamage(genDamage);
+            NowVehicle.SurvivalStatus.TakeDamage(genDamage);
             return new DmgShow(false, genDamage);
         }
 

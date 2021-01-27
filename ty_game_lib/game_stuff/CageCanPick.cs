@@ -32,7 +32,7 @@ namespace game_stuff
 
         public CageCanPick(ICanPutInMapInteractable canPutInMapInteractable, TwoDPoint pos)
         {
-            var configsInteraction = LocalConfig.Configs.interactions;
+            var configsInteraction = CommonConfig.Configs.interactions;
 
             var roundP = canPutInMapInteractable switch
             {

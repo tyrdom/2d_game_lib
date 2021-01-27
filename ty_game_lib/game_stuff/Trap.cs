@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Numerics;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -11,7 +12,7 @@ namespace game_stuff
     {
         public Trap(CharacterStatus characterStatus, SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos,
             int tid,
-            BodySize bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
+            size bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
             uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChanceStack,
             float damageMulti)
         {
@@ -46,7 +47,7 @@ namespace game_stuff
         private TwoDPoint Pos { get; }
         private int Tid { get; }
         private int? FailChanceStack { get; set; }
-        private BodySize BodySize { get; }
+        private size BodySize { get; }
         private uint CallTrapTick { get; }
         private uint? MaxLifeTimeTick { get; }
         private uint NowLifeTimeTick { get; set; }
@@ -137,7 +138,7 @@ namespace game_stuff
 
         public IdPointBox InBox { get; set; }
 
-        public BodySize GetSize()
+        public size GetSize()
         {
             return BodySize;
         }
@@ -200,13 +201,13 @@ namespace game_stuff
             return Owner.AttackStatus.GenDamage(damageMulti * DamageMulti, b);
         }
 
-        public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig)
+        public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
         {
         }
 
         public float GetRr()
         {
-            return LocalConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
+            return LocalConfig.GetRBySize(BodySize);
         }
 
         public void AddAKillScore(CharacterBody characterBody)

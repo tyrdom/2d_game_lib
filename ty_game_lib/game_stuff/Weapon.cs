@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 using collision_and_rigid;
 using game_config;
 
@@ -13,11 +12,11 @@ namespace game_stuff
     {
         public int WId { get; }
 
-        public ImmutableDictionary<BodySize, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
+        public ImmutableDictionary<size, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
             SkillGroups { get; }
 
 
-        public ImmutableArray<(float, SkillAction)> Ranges { get; }
+        public ImmutableArray<(float, SkillAction)> BotRanges { get; }
 
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
 
@@ -25,13 +24,16 @@ namespace game_stuff
         public Scope[] ZoomStepScopes { get; private set; }
 
         private Weapon(
-            ImmutableDictionary<BodySize, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
-                skillGroups,
-            ImmutableArray<(float, SkillAction)> ranges, ImmutableDictionary<SnipeAction, Snipe> snipes, int wId,
-            float[] zoomStepMulti, Scope[] zoomStepScopes)
+            ImmutableDictionary<size, ImmutableDictionary<SkillAction,
+                ImmutableDictionary<int, Skill>>> skillGroups,
+            ImmutableArray<(float, SkillAction)> botRanges,
+            ImmutableDictionary<SnipeAction, Snipe> snipes,
+            int wId,
+            float[] zoomStepMulti,
+            Scope[] zoomStepScopes)
         {
             SkillGroups = skillGroups;
-            Ranges = ranges;
+            BotRanges = botRanges;
             Snipes = snipes;
             WId = wId;
             ZoomStepScopes = zoomStepScopes;
@@ -48,7 +50,7 @@ namespace game_stuff
                 .Aggregate("", (current, logUser) => current + logUser);
         }
 
-        private bool CanBePickUp(BodySize bodySize)
+        private bool CanBePickUp(size bodySize)
         {
             return SkillGroups.TryGetValue(bodySize, out _);
         }
@@ -106,21 +108,9 @@ namespace game_stuff
         }
 
 
-        private static BodySize GetSize(size body)
-        {
-            return body switch
-            {
-                size.medium => BodySize.Medium,
-                size.small => BodySize.Small,
-                size.big => BodySize.Big,
-                size.@default => BodySize.Small,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
-
         public static Weapon GenById(int id)
         {
-            if (LocalConfig.Configs.weapons.TryGetValue(id, out var weapon))
+            if (CommonConfig.Configs.weapons.TryGetValue(id, out var weapon))
             {
                 return GenByConfig(weapon);
             }
@@ -130,11 +120,11 @@ namespace game_stuff
 
         public static Weapon GenByConfig(weapon weapon)
         {
-            var immutableDictionary = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => GetSize(x.body),
+            var immutableDictionary = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => x.body,
                 x =>
                 {
                     var argSkillGroup = x.skill_group;
-                    if (LocalConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
+                    if (CommonConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
                     {
                         return GenASkillGroup(skillGroup);
                     }
@@ -158,14 +148,14 @@ namespace game_stuff
 
             var weaponChangeRangeStep = weapon.ChangeRangeStep;
 
-            static Snipe? GetSnipeById(int id, ImmutableDictionary<BodySize, float> ff, int aWeaponChangeRangeStep)
+            static Snipe? GetSnipeById(int id, ImmutableDictionary<size, float> ff, int aWeaponChangeRangeStep)
             {
-                return LocalConfig.Configs.snipes.TryGetValue(id, out var snipe)
+                return CommonConfig.Configs.snipes.TryGetValue(id, out var snipe)
                     ? new Snipe(snipe, ff, aWeaponChangeRangeStep)
                     : null;
             }
 
-            var floats = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => GetSize(x.body),
+            var floats = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => x.body,
                 x => x.snipe_speed_fix
             ).ToImmutableDictionary() ?? throw new Exception($"weapon can not be picked by any one {weapon.id}");
             var snipeById1 = GetSnipeById(weapon.Snipe1, floats, weaponChangeRangeStep);

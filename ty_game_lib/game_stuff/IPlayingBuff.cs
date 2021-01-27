@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using game_config;
-using Newtonsoft.Json.Serialization;
 
 namespace game_stuff
 {
@@ -76,7 +75,7 @@ namespace game_stuff
 
         private static play_buff GetBuffConfig(int id)
         {
-            return LocalConfig.Configs.play_buffs.TryGetValue(id, out var playBuff)
+            return CommonConfig.Configs.play_buffs.TryGetValue(id, out var playBuff)
                 ? playBuff
                 : throw new DirectoryNotFoundException($"not such a play buff {id}");
         }

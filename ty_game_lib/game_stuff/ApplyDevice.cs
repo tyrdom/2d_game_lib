@@ -27,10 +27,10 @@ namespace game_stuff
             IsActive = isActive;
         }
 
-        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive,int aid)
+        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive, int aid)
         {
             IsActive = isActive;
-            var configsInteraction = LocalConfig.Configs.interactions;
+            var configsInteraction = CommonConfig.Configs.interactions;
             var roundP = new Round(pos, LocalConfig.SaleBoxR);
             var interaction1 = configsInteraction[interactionAct.get_info];
             var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.GetInfoCall);
@@ -134,10 +134,9 @@ namespace game_stuff
                 case SaleUnit saleUnit:
                     return new SaleBoxTickMsg(saleUnit.Cost,
                         saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray(),
-                        saleUnit.GetRestStack(gid),GetAnchor());
+                        saleUnit.GetRestStack(gid), GetAnchor());
                 case TeleportUnit teleportUnit:
-                    return new TelePortTickMsg();
-                    break;
+                    return new TelePortTickMsg(GetAnchor());
 
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -147,6 +146,11 @@ namespace game_stuff
 
     public class TelePortTickMsg : ISeeTickMsg
     {
+        public TelePortTickMsg(TwoDPoint pos)
+        {
+            Pos = pos;
+        }
+
         public TwoDPoint Pos { get; }
     }
 }

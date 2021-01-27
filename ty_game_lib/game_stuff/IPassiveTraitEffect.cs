@@ -22,7 +22,7 @@ namespace game_stuff
     {
         public static IPassiveTraitEffect GenById(int id)
         {
-            if (!LocalConfig.Configs.passives.TryGetValue(id, out var passive))
+            if (!CommonConfig.Configs.passives.TryGetValue(id, out var passive))
                 throw new DirectoryNotFoundException($"not such passive id {id}");
             var passiveParamValues = passive.param_values;
             var vector = new Vector<float>(passiveParamValues);

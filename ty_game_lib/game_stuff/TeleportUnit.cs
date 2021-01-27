@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -9,7 +10,7 @@ namespace game_stuff
     {
         public TeleportUnit(IMapInteractable? inWhichMapInteractive,
             PlayGround toPlayGround,
-            TwoDPoint toPos, BodySize[] allowSizes)
+            TwoDPoint toPos, size[] allowSizes)
         {
             InWhichMapInteractive = inWhichMapInteractive;
             FromPlayGround = null;
@@ -31,7 +32,7 @@ namespace game_stuff
 
         public TwoDPoint ToPos { get; }
 
-        public BodySize[] AllowSizes { get; }
+        public size[] AllowSizes { get; }
 
         public TwoDPoint? GetThisPos()
         {

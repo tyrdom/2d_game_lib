@@ -9,9 +9,14 @@ namespace game_stuff
 {
     public class CharacterBody : ICanBeHit
     {
-        private BodySize BodySize { get; }
+        public bool RealDead()
+        {
+            return CharacterStatus.StunBuff == null && CharacterStatus.SurvivalStatus.IsDead();
+        }
 
-        public BodySize GetSize()
+        private size BodySize { get; }
+
+        public size GetSize()
         {
             return CharacterStatus.NowVehicle?.Size ?? BodySize;
         }
@@ -38,7 +43,7 @@ namespace game_stuff
         // {
         // }
 
-        public CharacterBody(TwoDPoint nowPos, BodySize bodySize, CharacterStatus characterStatus,
+        public CharacterBody(TwoDPoint nowPos, size bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
         {
@@ -82,7 +87,7 @@ namespace game_stuff
 
         public float GetRr()
         {
-            return LocalConfig.SizeToR.TryGetValue(BodySize, out var valueOrDefault) ? valueOrDefault : 1f;
+            return LocalConfig.GetRBySize(BodySize);
         }
 
         public int GetId()

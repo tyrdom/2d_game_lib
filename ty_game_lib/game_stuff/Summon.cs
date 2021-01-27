@@ -58,7 +58,7 @@ namespace game_stuff
 
         public static Summon GenById(string id)
         {
-            if (LocalConfig.Configs.summons.TryGetValue(id, out var summon))
+            if (CommonConfig.Configs.summons.TryGetValue(id, out var summon))
             {
                 return new Summon(summon);
             }

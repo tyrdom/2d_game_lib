@@ -12,9 +12,8 @@ namespace game_stuff
 
         public int TeamId { get; }
         private Dictionary<int, Weapon> Weapons { get; }
-        private BodySize BodySize { get; }
+        private size BodySize { get; }
 
-        
 
         private int BaseAttrId { get; }
 
@@ -27,26 +26,20 @@ namespace game_stuff
                 dictionary[i] = Weapon.GenByConfig(weapons[i]);
             }
 
-            var bz = size switch
-            {
-                size.@default => BodySize.Small,
-                size.medium => BodySize.Medium,
-                size.small => BodySize.Small,
-                size.big => BodySize.Big,
-                _ => BodySize.Small
-            };
+            var bz = size;
 
 
             return new CharacterInitData(gid, teamId, dictionary, bz, baseAttrId);
         }
 
-        private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, BodySize bodySize, int baseAttrId)
+        private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, size bodySize,
+            int baseAttrId)
         {
             Gid = gid;
             TeamId = teamId;
             Weapons = weapons;
             BodySize = bodySize;
-           
+
             BaseAttrId = baseAttrId;
         }
 

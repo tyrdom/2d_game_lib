@@ -1,24 +1,25 @@
 ﻿using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
     public class WalkMap
     {
-        public Dictionary<BodySize, WalkBlock> SizeToEdge { get; }
+        public Dictionary<size, WalkBlock> SizeToEdge { get; }
 
-        public WalkMap(Dictionary<BodySize, WalkBlock> sizeToEdge)
+        public WalkMap(Dictionary<size, WalkBlock> sizeToEdge)
         {
             SizeToEdge = sizeToEdge;
         }
 
         public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp)
         {
-            var sizeToR = LocalConfig.SizeToR;
-            var walkBlocks = new Dictionary<BodySize, WalkBlock>();
+            var sizeToR = CommonConfig.Configs.bodys;
+            var walkBlocks = new Dictionary<size, WalkBlock>();
             foreach (var keyValuePair in sizeToR)
             {
-                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(lp, keyValuePair.Value, 6);
+                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(lp, keyValuePair.Value.rad, 6);
                 walkBlocks[keyValuePair.Key] = genWalkBlockByPolys;
             }
 

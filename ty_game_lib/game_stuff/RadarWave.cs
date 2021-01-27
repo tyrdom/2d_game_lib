@@ -8,7 +8,7 @@ namespace game_stuff
 {
     public class RadarSee : IPerceivable
     {
-        public RadarSee(TwoDPoint pos, BodySize size)
+        public RadarSee(TwoDPoint pos, size size)
         {
             Pos = pos;
             Size = size;
@@ -16,12 +16,12 @@ namespace game_stuff
 
         private TwoDPoint Pos { get; }
 
-        private BodySize Size { get; }
+        private size Size { get; }
     }
 
     public class RadarWave : IHitMedia
     {
-        private RadarWave(Dictionary<BodySize, BulletBox> sizeToBulletCollision)
+        private RadarWave(Dictionary<size, BulletBox> sizeToBulletCollision)
         {
             TargetType = ObjType.OtherTeam;
             SizeToBulletCollision = sizeToBulletCollision;
@@ -41,7 +41,7 @@ namespace game_stuff
 
         public static RadarWave GenById(string id)
         {
-            if (LocalConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
+            if (CommonConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
             {
                 return GenByConfig(radarWave);
             }
@@ -59,7 +59,7 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
+        public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
         public void Sign(IBattleUnitStatus characterStatus)

@@ -17,13 +17,12 @@ namespace collision_and_rigid
 
     public class TwoDVector : ITwoDTwoP
     {
-       
         public TwoDVector(float a, float b)
         {
             X = a;
             Y = b;
         }
-       
+
         public TwoDVector(TwoDPoint a, TwoDPoint b)
         {
             X = b.X - a.X;
@@ -102,6 +101,19 @@ namespace collision_and_rigid
             X += x;
 
             return this;
+        }
+
+        public TwoDVector AddY(float y)
+        {
+            Y += y;
+
+            return this;
+        }
+
+        public void Add(TwoDVector twoDVector)
+        {
+            X += twoDVector.X;
+            Y += twoDVector.Y;
         }
 
         public TwoDVector CounterClockwiseHalfPi()

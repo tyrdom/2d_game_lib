@@ -1,11 +1,12 @@
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
     public interface ICanBeHit : IIdPointShape, ICanBeSaw
     {
         IdPointBox InBox { get; set; }
-        BodySize GetSize();
+        size GetSize();
         bool CheckCanBeHit();
         public IdPointBox CovToIdBox();
     }

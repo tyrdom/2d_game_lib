@@ -45,7 +45,7 @@ namespace game_stuff
 
         public VehicleCanIn(Vehicle vehicle, TwoDPoint pos)
         {
-            var configsInteraction = LocalConfig.Configs.interactions;
+            var configsInteraction = CommonConfig.Configs.interactions;
 
             var roundP = new Round(pos, LocalConfig.GetRBySize(vehicle.Size));
             var interaction1 = configsInteraction[interactionAct.get_in_vehicle];

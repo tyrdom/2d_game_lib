@@ -22,7 +22,7 @@ namespace game_stuff
 
         private static CharacterInitData TestPlayer1()
         {
-            var keyValuePair = LocalConfig.Configs.weapons.First();
+            var keyValuePair = CommonConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
 
             var characterInitData =
@@ -36,7 +36,7 @@ namespace game_stuff
 
         private static CharacterInitData TestPlayer2()
         {
-            var keyValuePair = LocalConfig.Configs.weapons.First();
+            var keyValuePair = CommonConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
 
             var characterInitData =
@@ -54,8 +54,8 @@ namespace game_stuff
             var testSightMap = TestSightMap();
             var pt1 = new TwoDPoint(0f, 0.0f);
             var pt2 = new TwoDPoint(5f, 0.0f);
-            var startPts = new StartPts(new TwoDPoint[] {pt1});
-            var startPts2 = new StartPts(new TwoDPoint[] {pt2});
+            var startPts = new StartPts(new[] {pt1});
+            var startPts2 = new StartPts(new[] {pt2});
 
             var startPaces = new Dictionary<int, StartPts>
             {

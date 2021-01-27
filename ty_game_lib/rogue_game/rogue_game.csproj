@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\game_bot\game_bot.csproj" />
       <ProjectReference Include="..\game_stuff\game_stuff.csproj" />
       <ProjectReference Include="..\rogue_chapter_maker\rogue_chapter_maker.csproj" />
     </ItemGroup>

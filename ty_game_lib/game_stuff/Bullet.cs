@@ -24,10 +24,10 @@ namespace game_stuff
         private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
 
-        public Dictionary<BodySize, BulletBox> SizeToBulletCollision { get; }
+        public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
-        private Dictionary<BodySize, IStunBuffConfig> SuccessStunBuffConfigToOpponent { get; }
-        private Dictionary<BodySize, IStunBuffConfig> FailActBuffConfigToSelf { get; }
+        private Dictionary<size, IStunBuffMaker> SuccessStunBuffConfigToOpponent { get; }
+        private Dictionary<size, IStunBuffMaker> FailActBuffConfigToSelf { get; }
 
         private int PauseToCaster { get; }
         private int PauseToOpponent { get; }
@@ -43,7 +43,7 @@ namespace game_stuff
 
         public static Bullet GenById(string id)
         {
-            if (LocalConfig.Configs.bullets.TryGetValue(id, out var bullet))
+            if (CommonConfig.Configs.bullets.TryGetValue(id, out var bullet))
             {
                 return GenByConfig(bullet);
             }
@@ -57,7 +57,7 @@ namespace game_stuff
 
             foreach (var antiActBuffConfig in SuccessStunBuffConfigToOpponent)
             {
-                if (antiActBuffConfig.Value is CatchStunBuffConfig catchAntiActBuffConfig)
+                if (antiActBuffConfig.Value is CatchStunBuffMaker catchAntiActBuffConfig)
                 {
                     catchAntiActBuffConfig
                         .PickBySomeOne(characterStatus);
@@ -83,34 +83,15 @@ namespace game_stuff
             var antiActBuffConfigs = GAntiActBuffConfigs(bulletFailActBuffConfigToSelf);
 
 
-            static Dictionary<BodySize, IStunBuffConfig>
+            static Dictionary<size, IStunBuffMaker>
                 GAntiActBuffConfigs(IEnumerable<Buff> bulletFailActBuffConfigToSelf)
             {
-                var actBuffConfigs = LocalConfig.SizeToR.ToDictionary(
+                var actBuffConfigs = CommonConfig.Configs.bodys.ToDictionary(
                     pair => pair.Key, pair =>
                     {
-                        switch (pair.Key)
-                        {
-                            case BodySize.Small:
-                                var firstOrDefault = bulletFailActBuffConfigToSelf.First(x =>
-                                    x.size == size.small || x.size == size.@default);
-                                return StunBuffStandard.GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
-                            case BodySize.Medium:
-                                var firstOrDefault2 = bulletFailActBuffConfigToSelf.First(x =>
-                                    x.size == size.medium || x.size == size.@default);
-                                return StunBuffStandard.GenBuffByC(firstOrDefault2.buff_type, firstOrDefault2.buff_id);
-                            case BodySize.Big:
-                                var firstOrDefault3 = bulletFailActBuffConfigToSelf.First(x =>
-                                    x.size == size.big || x.size == size.@default);
-                                return StunBuffStandard.GenBuffByC(firstOrDefault3.buff_type, firstOrDefault3.buff_id);
-                            case BodySize.Tiny:
-                                var firstOrDefault4 = bulletFailActBuffConfigToSelf.First(x =>
-                                    x.size == size.tiny || x.size == size.@default);
-                                return StunBuffStandard.GenBuffByC(firstOrDefault4.buff_type, firstOrDefault4.buff_id);
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
+                        var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
+                            x.size == pair.Key) ?? bulletFailActBuffConfigToSelf.First(a => a.size == size.@default);
+                        return StunBuffStandard.GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
                     });
                 return actBuffConfigs;
             }
@@ -134,9 +115,9 @@ namespace game_stuff
                 bullet.HitType, bulletIsHAtk);
         }
 
-        private Bullet(Dictionary<BodySize, BulletBox> sizeToBulletCollision,
-            Dictionary<BodySize, IStunBuffConfig> successStunBuffConfigToOpponent,
-            Dictionary<BodySize, IStunBuffConfig> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
+        private Bullet(Dictionary<size, BulletBox> sizeToBulletCollision,
+            Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
+            Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
             hit_type hitType, bool isHAtk)
         {
@@ -372,7 +353,7 @@ namespace game_stuff
                     //初始化buff时，如果是抓取技能，会触发技能
                     switch (antiActBuffConfig)
                     {
-                        case CatchStunBuffConfig catchAntiActBuffConfig:
+                        case CatchStunBuffMaker catchAntiActBuffConfig:
                             caster.LoadCatchTrickSkill(null, catchAntiActBuffConfig);
 
                             break;
@@ -473,11 +454,11 @@ namespace game_stuff
             targetCharacterStatus.ResetSnipe();
             targetCharacterStatus.ResetCastAct();
 
-            var antiActBuff = LocalConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
+            var antiActBuff = LocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                 bodyCaster.GetPos(), Aim,
                 null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
             bodyCaster.StunBuff = antiActBuff;
-            var antiActBuff2 = LocalConfig.CommonBuffConfig.GenBuff(bodyCaster.GetPos(),
+            var antiActBuff2 = LocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
                 targetCharacterStatus.GetPos(), Aim,
                 null, 0, targetCharacterStatus.CharacterBody.GetSize(), bodyCaster);
             targetCharacterStatus.StunBuff = antiActBuff2;
@@ -485,7 +466,7 @@ namespace game_stuff
 
 
         private void CharAtkFail(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus, bool isActSkill,
-            BodySize targetCharacterBodyBodySize)
+            size targetCharacterBodyBodySize)
         {
             //清除技能数据
             bodyCaster.ResetSnipe();
@@ -502,7 +483,7 @@ namespace game_stuff
                 var aim = TwoDVector.TwoDVectorByPt(targetCharacterStatus.GetPos(), Pos).GetUnit2();
 
                 //如果为抓取技能，会马上装载抓取buff附带的触发技能
-                if (failAntiBuff is CatchStunBuffConfig catchAntiActBuffConfig)
+                if (failAntiBuff is CatchStunBuffMaker catchAntiActBuffConfig)
                 {
                     targetCharacterStatus.CatchingWho = bodyCaster;
                     targetCharacterStatus.LoadCatchTrickSkill(aim, catchAntiActBuffConfig);
@@ -519,7 +500,7 @@ namespace game_stuff
 #if DEBUG
                 Console.Out.WriteLine($"Gen Common Back");
 #endif
-                var antiActBuff = LocalConfig.CommonBuffConfig.GenBuff(targetCharacterStatus.GetPos(),
+                var antiActBuff = LocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                     bodyCaster.GetPos(), TwoDVector.Zero(),
                     null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
                 bodyCaster.StunBuff = antiActBuff;

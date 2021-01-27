@@ -10,7 +10,7 @@ namespace game_stuff
     public struct SurvivalStatus
     {
         private uint MaxHp { get; set; }
-        public uint NowHp { get; set; }
+        public uint NowHp { get; private set; }
 
         public void SetHp(int hp)
         {

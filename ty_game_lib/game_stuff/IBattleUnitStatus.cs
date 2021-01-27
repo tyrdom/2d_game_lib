@@ -15,7 +15,7 @@ namespace game_stuff
         void BaseBulletAtkOk(int pauseToCaster, int ammoAddWhenSuccess, IBattleUnitStatus targetCharacterStatus);
 
         Damage GenDamage(float damageMulti, bool back);
-        void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffConfig catchAntiActBuffConfig);
+        void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker);
         float GetRr();
         void AddAKillScore(CharacterBody characterBody);
     }

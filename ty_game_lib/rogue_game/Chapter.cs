@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace rogue_game
 {
+    [Serializable]
     public class Chapter
     {
         public Dictionary<int, PveMap> MGidToMap { get; }

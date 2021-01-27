@@ -98,7 +98,7 @@ namespace game_stuff
 
         public static Skill GenSkillById(string id)
         {
-            if (LocalConfig.Configs.skills.TryGetValue(id, out var configsSkill))
+            if (CommonConfig.Configs.skills.TryGetValue(id, out var configsSkill))
             {
                 return GenSkillByConfig(configsSkill);
             }
@@ -114,13 +114,13 @@ namespace game_stuff
                 pair =>
                 {
                     var pairValue = pair.Value;
-                    var immutableDictionary = LocalConfig.Configs.bullets;
+                    var immutableDictionary = CommonConfig.Configs.bullets;
                     var bullet = immutableDictionary[pairValue];
                     var genByConfig = Bullet.GenByConfig(bullet, CommonConfig.GetTickByTime(pair.Key));
                     return genByConfig;
                 });
 
-            var configsLockAreas = LocalConfig.Configs.lock_areas;
+            var configsLockAreas = CommonConfig.Configs.lock_areas;
 
             var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
                 ? LockArea.GenByConfig(lockArea)

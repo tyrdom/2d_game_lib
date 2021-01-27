@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -13,7 +12,7 @@ namespace game_stuff
     {
         public static Prop GenById(int id)
         {
-            if (LocalConfig.Configs.props.TryGetValue(id, out var prop)
+            if (CommonConfig.Configs.props.TryGetValue(id, out var prop)
             )
             {
                 return new Prop(prop);
@@ -22,7 +21,7 @@ namespace game_stuff
             throw new DirectoryNotFoundException($"not such id {id}");
         }
 
-        public Prop(prop prop)
+        private Prop(prop prop)
         {
             var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => CommonConfig.GetTickByTime(p.Key),
                 p => LocalConfig.GenMedia(p.Value));
@@ -30,24 +29,18 @@ namespace game_stuff
             RecyclePropStack = LocalConfig.StandardPropRecycleStack;
             StackCost = prop.PropPointCost;
             MoveMulti = prop.MoveSpeedMulti;
-            MoveMustMulti = prop.MustMoveSpeedMulti;
-            MinCos = prop.TurnLimit;
             PId = prop.id;
-            LastMoveVector = null;
-        }
-
-        public Prop(int stackCost, uint totalTick, float moveMulti,
-            ImmutableDictionary<uint, IEffectMedia> propBullets, float moveMustMulti, float minCos, int pId)
-        {
-            RecyclePropStack = LocalConfig.StandardPropRecycleStack;
-            StackCost = stackCost;
-            TotalTick = totalTick;
-            MoveMulti = moveMulti;
-            PropBullets = propBullets;
-            MoveMustMulti = moveMustMulti;
-            MinCos = minCos;
-            PId = pId;
-            LastMoveVector = null;
+            TotalTick = CommonConfig.GetTickByTime(prop.PropMustTime);
+            LockAim = prop.LockAim;
+            BotUseCond = prop.BotUseCondType;
+            CondParam = prop.BotUseCondParam.FirstOrDefault();
+            var tickByTime = CommonConfig.GetTickByTime(prop.MoveAddStartTime);
+            StartAddSpeedTick = tickByTime == 0 ? (uint?) null : tickByTime;
+            var firstOrDefault = prop.MoveAdds.FirstOrDefault();
+            AddSpeed = firstOrDefault == null
+                ? null
+                : new TwoDVector(CommonConfig.NumPerSecToTickPerSec(firstOrDefault.x),
+                    CommonConfig.NumPerSecToTickPerSec(firstOrDefault.y));
         }
 
         public int PId { get; }
@@ -58,12 +51,17 @@ namespace game_stuff
 
         public int RecyclePropStack { get; }
 
-        //推进器类专用
-        private float? MoveMustMulti { get; }
+        //bot使用
+        public bot_use_cond BotUseCond { get; }
 
-        private TwoDVector? LastMoveVector { get; set; }
+        public float? CondParam { get; }
 
-        private float MinCos { get; }
+        //强制位移类专用
+        public bool LockAim { get; }
+
+        private uint? StartAddSpeedTick { get; }
+
+        private TwoDVector? AddSpeed { get; }
 
         public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
             interactive) GoATick(TwoDPoint getPos,
@@ -71,34 +69,20 @@ namespace game_stuff
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
             var b = NowOnTick == 0;
-
+            NowOnTick++;
             var bullet = PropBullets.TryGetValue(NowOnTick, out var aBullet) ? aBullet : null;
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
-            if (MoveMustMulti != null && limitV != null) // 推进类prop
-            {
-                var moveVector = rawMoveVector ?? limitV;
-                var dVector = LastMoveVector?.GetUnit2();
-                var nVector = moveVector.GetUnit2();
-                if (dVector != null && nVector != null && LastMoveVector != null)
-                {
-                    var cos = dVector.Dot(nVector);
-                    if (cos < MinCos)
-                    {
-                        var sin = dVector.Cross(nVector);
-                        var clockwiseTurn = LastMoveVector.ClockwiseTurn(new TwoDVector(cos, sin));
-                        twoDVector = clockwiseTurn;
-                    }
-                    else
-                    {
-                        twoDVector = moveVector.Multi(MoveMustMulti.Value);
-                    }
-                }
 
-                LastMoveVector = twoDVector;
+            if (AddSpeed == null || !(NowOnTick > StartAddSpeedTick))
+                return (twoDVector, bullet, b, null, MapInteract.PickCall);
+
+            var antiClockwiseTurn = AddSpeed.AntiClockwiseTurn(sightAim);
+            if (twoDVector != null)
+            {
+                antiClockwiseTurn.Add(twoDVector);
             }
 
-            NowOnTick++;
-            return (twoDVector, bullet, b, null, MapInteract.PickCall);
+            return (antiClockwiseTurn, bullet, b, null, MapInteract.PickCall);
         }
 
         public int NowTough { get; set; }
@@ -122,6 +106,7 @@ namespace game_stuff
         }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
+
 
         public IMapInteractable DropAsIMapInteractable(TwoDPoint pos)
         {
