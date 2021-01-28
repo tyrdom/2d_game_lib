@@ -3,8 +3,9 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface ICanBeHit : IIdPointShape, ICanBeSaw
+    public interface ICanBeHit : IIdPointShape, ICanBeSaw, ICanBeEnemy
     {
+        int GetTeam();
         IdPointBox InBox { get; set; }
         size GetSize();
         bool CheckCanBeHit();

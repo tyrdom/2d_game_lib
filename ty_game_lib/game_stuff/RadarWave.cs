@@ -6,7 +6,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class RadarSee : IPerceivable
+    public class RadarSee : ICanBeEnemy
     {
         public RadarSee(TwoDPoint pos, size size)
         {
@@ -17,6 +17,11 @@ namespace game_stuff
         private TwoDPoint Pos { get; }
 
         private size Size { get; }
+
+        public TwoDPoint GetAnchor()
+        {
+            return Pos;
+        }
     }
 
     public class RadarWave : IHitMedia

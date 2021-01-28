@@ -92,9 +92,9 @@ namespace game_stuff
         //Prop
         public Prop? Prop { get; private set; }
 
-        private int NowPropStack { get; set; }
+        public int NowPropPoint { get; set; }
 
-        private int MaxPropStack { get; set; }
+        private int MaxPropPoint { get; set; }
 
         //Vehicle
         public Vehicle? NowVehicle { get; private set; }
@@ -227,8 +227,8 @@ namespace game_stuff
             IsHitSome = false;
             ResetSnipe();
             Prop = null;
-            NowPropStack = 0;
-            MaxPropStack = LocalConfig.StandardPropMaxStack;
+            NowPropPoint = 0;
+            MaxPropPoint = LocalConfig.StandardPropMaxStack;
             NowVehicle = null;
             NowAmmo = 0;
             MaxAmmo = genBaseAttrById.MaxAmmo;
@@ -299,7 +299,7 @@ namespace game_stuff
             IsHitSome = false;
             ResetSnipe();
             Prop = null;
-            NowPropStack = 0;
+            NowPropPoint = 0;
         }
 
         public Scope? GetNowScope()
@@ -599,8 +599,8 @@ namespace game_stuff
 
         internal void RecycleAProp(Prop prop)
         {
-            NowPropStack = Math.Min(MaxPropStack,
-                (int) (NowPropStack + prop.RecyclePropStack * (1 + GetRecycleMulti())));
+            NowPropPoint = Math.Min(MaxPropPoint,
+                (int) (NowPropPoint + prop.RecyclePropStack * (1 + GetRecycleMulti())));
         }
 
         private float GetRecycleMulti()
@@ -930,9 +930,9 @@ namespace game_stuff
                 {
                     case SpecialAction.UseProp:
                         if (Prop == null) return new CharGoTickResult();
-                        if (Prop.Launch(NowPropStack))
+                        if (Prop.Launch(NowPropPoint))
                         {
-                            NowPropStack -= Prop.StackCost;
+                            NowPropPoint -= Prop.PropPointCost;
                             SetAct(Prop);
                         }
 
@@ -1112,9 +1112,9 @@ namespace game_stuff
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
             AddMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
-            var lossP = MaxPropStack - NowPropStack;
-            MaxPropStack = (int) (LocalConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
-            NowPropStack = MaxPropStack - lossP;
+            var lossP = MaxPropPoint - NowPropPoint;
+            MaxPropPoint = (int) (LocalConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
+            NowPropPoint = MaxPropPoint - lossP;
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
 

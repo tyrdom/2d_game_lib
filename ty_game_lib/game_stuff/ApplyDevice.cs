@@ -142,6 +142,8 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+      
     }
 
     public class TelePortTickMsg : ISeeTickMsg

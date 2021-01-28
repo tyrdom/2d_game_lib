@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
@@ -110,16 +109,6 @@ namespace game_stuff
         public int Num { get; }
 
 
-        private uint GetMaxNum()
-        {
-            if (CommonConfig.Configs.items.TryGetValue(ItemId, out var item))
-            {
-                return item.MaxStack;
-            }
-
-            throw new Exception($"not such  item id::{ItemId}");
-        }
-
         public int GetId()
         {
             return ItemId;
@@ -128,44 +117,6 @@ namespace game_stuff
         public int GetNum()
         {
             return Num;
-        }
-    }
-
-
-    public interface IItem
-    {
-    }
-
-
-    public readonly struct KillDrops
-    {
-        public KillDrops(List<GameItem> mustDropItems,
-            (int sum, List<(int wegihtNum, IMapInteractable mapInteractable)> MapInteractables)
-                weightMapInteractableDrop)
-        {
-            MustDropItems = mustDropItems;
-            WeightMapInteractableDrop = weightMapInteractableDrop;
-        }
-
-
-        private List<GameItem> MustDropItems { get; }
-
-        private (int sum, List<(int wegihtNum, IMapInteractable mapInteractable)> MapInteractables)
-            WeightMapInteractableDrop { get; }
-
-        private IMapInteractable? DropMapInteractable(Random random, TwoDPoint pos)
-        {
-            var (sum, mapInteractables) = WeightMapInteractableDrop;
-            var next = random.Next(sum);
-            var firstOrDefault = mapInteractables.FirstOrDefault(
-                    x => next < x.wegihtNum)
-                .mapInteractable;
-            firstOrDefault?.ReLocate(pos);
-            return firstOrDefault;
-        }
-
-        void GainItemToChars(List<CharacterStatus> characterStatuses)
-        {
         }
     }
 }

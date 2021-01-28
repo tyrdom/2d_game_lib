@@ -21,7 +21,7 @@ namespace game_stuff
         public int NowTough { get; set; }
 
         private int SnipeStepNeed { get; }
-        private int AmmoCost { get; }
+        public int AmmoCost { get; }
 
         private int BaseTough { get; }
 

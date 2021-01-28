@@ -485,7 +485,12 @@ namespace cov_path_navi
                     let enumerable = genFromBlocks.Where(x => x != genFromBlock)
                     let twoDPoints = enumerable.SelectMany(x => x.Select(b => b.GetEndPt()))
                     select genFromBlock.Any(x => twoDPoints.Any(xx =>
-                        xx.Same(x.GetEndPt()) || xx.GetPosOf(x.AsTwoDVectorLine()) == Pt2LinePos.On)))
+                    {
+                        var asTwoDVectorLine = x.AsTwoDVectorLine();
+                        var scaleInPt = asTwoDVectorLine.GetScaleInPt(xx);
+                        var b = scaleInPt <= 1 && scaleInPt >= 0;
+                        return b && xx.GetPosOf(asTwoDVectorLine) == Pt2LinePos.On;
+                    })))
                 .All(any => !any);
         }
     }

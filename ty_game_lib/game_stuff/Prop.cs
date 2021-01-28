@@ -27,7 +27,7 @@ namespace game_stuff
                 p => LocalConfig.GenMedia(p.Value));
             PropBullets = dictionary.ToImmutableDictionary();
             RecyclePropStack = LocalConfig.StandardPropRecycleStack;
-            StackCost = prop.PropPointCost;
+            PropPointCost = prop.PropPointCost;
             MoveMulti = prop.MoveSpeedMulti;
             PId = prop.id;
             TotalTick = CommonConfig.GetTickByTime(prop.PropMustTime);
@@ -44,7 +44,7 @@ namespace game_stuff
         }
 
         public int PId { get; }
-        public int StackCost { get; }
+        public int PropPointCost { get; }
         public uint TotalTick { get; }
         private float MoveMulti { get; }
         private ImmutableDictionary<uint, IEffectMedia> PropBullets { get; }
@@ -100,7 +100,7 @@ namespace game_stuff
 
         public bool Launch(int nowStack)
         {
-            if (nowStack < StackCost) return false;
+            if (nowStack < PropPointCost) return false;
             NowOnTick = 0;
             return true;
         }
@@ -156,6 +156,13 @@ namespace game_stuff
             {
                 keyValuePair.Value.Sign(characterStatus);
             }
+        }
+
+        public (bool canUse, float? CondParam) BotUse(bot_use_cond enemyOnSight, int characterStatusNowPropPoint)
+        {
+            return enemyOnSight == BotUseCond && characterStatusNowPropPoint >= PropPointCost
+                ? (true, CondParam)
+                : (false, null);
         }
     }
 }

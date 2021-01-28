@@ -4,8 +4,6 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-
-
     public class Operate
     {
         // public OpAction? Action;
@@ -22,13 +20,16 @@ namespace game_stuff
 
         public SpecialAction? SpecialAction { get; }
 
-        public Operate(TwoDVector? aim, SkillAction? action, TwoDVector? move, SpecialAction? specialAction = null,
+        public Operate(TwoDVector? aim = null,
+            SkillAction? action = null,
+            TwoDVector? move = null,
+            SpecialAction? specialAction = null,
             MapInteract? mapInteractive = null,
             SnipeAction? snipeAction = null)
         {
             Aim = aim;
             Action = action;
-            Move = move;
+            Move = move ?? throw new ArgumentNullException(nameof(move));
             SpecialAction = specialAction;
             MapInteractive = mapInteractive;
             SnipeAction = snipeAction;
@@ -70,7 +71,7 @@ namespace game_stuff
         //Skill
         Op1,
         Op2,
-        Op3,//备用
+        Op3, //备用
         Switch,
         CatchTrick //CantOperateInput
     }
@@ -96,7 +97,7 @@ namespace game_stuff
     {
         SnipeOn1,
         SnipeOn2,
-        SnipeOn3,//备用
+        SnipeOn3, //备用
         SnipeOff
     }
 }

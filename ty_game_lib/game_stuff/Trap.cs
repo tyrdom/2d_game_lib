@@ -52,7 +52,6 @@ namespace game_stuff
         private uint? MaxLifeTimeTick { get; }
         private uint NowLifeTimeTick { get; set; }
         private IHitMedia TrapMedia { get; }
-
         private uint TrickDelayTick { get; }
 
         private uint NowTrickDelayTick { get; set; }

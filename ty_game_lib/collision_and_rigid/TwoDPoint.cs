@@ -82,6 +82,20 @@ namespace collision_and_rigid
             return n;
         }
 
+        public float GetDistance(TwoDVectorLine line)
+        {
+            var p1 = line.A;
+            var p2 = line.B;
+            if (p1.Same(p2)) return GetDistance(p1);
+
+            var a = p2.Y - p1.Y;
+            var b = p1.X - p2.X;
+            var c = -p1.X * a - p1.Y * b;
+
+            var distance = a * X + b * Y + c / MathTools.Sqrt(a * a + b * b);
+            return MathTools.Abs(distance);
+        }
+
         public float GetDistance(TwoDPoint another)
         {
             var dX = X - another.X;
@@ -111,7 +125,6 @@ namespace collision_and_rigid
             return new Zone(Y, Y, X, X);
         }
 
-       
 
         public TwoDPoint GenPosInLocal(TwoDPoint zero, TwoDVector xAim)
         {

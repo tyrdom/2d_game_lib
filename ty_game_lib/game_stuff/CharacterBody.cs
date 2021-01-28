@@ -32,6 +32,12 @@ namespace game_stuff
         public AngleSight Sight { get; }
         public int Team { get; }
         public IdPointBox? IdPointBox { get; set; }
+
+        public int GetTeam()
+        {
+            return Team;
+        }
+
         public IdPointBox InBox { get; set; }
 
 

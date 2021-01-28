@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using game_config;
 
 namespace game_stuff
 {
@@ -21,14 +22,15 @@ namespace game_stuff
             };
         }
 
-        public SaleRandom(IMapInteractable? inWhichMapInteractive, GameItem cost, int stack, int weightTotal,
-            ImmutableArray<(int weightOver, ISaleStuff[] good)> randomGood, Random random, GameItem[] orCosts)
+        public SaleRandom(IMapInteractable? inWhichMapInteractive, GameItem cost, int stack,
+            ImmutableArray<(int weight, ISaleStuff[] good)> randomGood, Random random, GameItem[] orCosts)
         {
             InWhichMapInteractive = inWhichMapInteractive;
             Cost = cost;
             Stack = stack;
-            WeightTotal = weightTotal;
-            RandomGood = randomGood;
+            var (weightOverList, total) = randomGood.GetWeightOverList();
+            RandomGood = weightOverList;
+            WeightTotal = total;
             Random = random;
             OrCosts = orCosts;
             var firstOrDefault = randomGood.FirstOrDefault().good.FirstOrDefault();
@@ -73,8 +75,7 @@ namespace game_stuff
         {
             var next = Random.Next(WeightTotal);
 
-            ISaleStuff[] firstOrDefault = RandomGood.FirstOrDefault(x => x.weightOver >= next).good ??
-                                          RandomGood.Last().good;
+            var firstOrDefault = RandomGood.GetWeightThings(next).things;
             return firstOrDefault;
         }
 
