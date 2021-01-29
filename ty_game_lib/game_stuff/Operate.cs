@@ -10,7 +10,7 @@ namespace game_stuff
         // public TwoDVector? Move;
         public TwoDVector? Aim { get; }
 
-        public SkillAction? Action { get; }
+        public SkillAction? SkillAction { get; }
 
         public TwoDVector? Move { get; }
 
@@ -21,14 +21,14 @@ namespace game_stuff
         public SpecialAction? SpecialAction { get; }
 
         public Operate(TwoDVector? aim = null,
-            SkillAction? action = null,
+            SkillAction? skillAction = null,
             TwoDVector? move = null,
             SpecialAction? specialAction = null,
             MapInteract? mapInteractive = null,
             SnipeAction? snipeAction = null)
         {
             Aim = aim;
-            Action = action;
+            SkillAction = skillAction;
             Move = move ?? throw new ArgumentNullException(nameof(move));
             SpecialAction = specialAction;
             MapInteractive = mapInteractive;
@@ -42,7 +42,7 @@ namespace game_stuff
 
         public MapInteract? GetMapInteractive()
         {
-            if (Action == null && SnipeAction == null)
+            if (SkillAction == null && SnipeAction == null)
             {
                 return MapInteractive;
             }
@@ -52,7 +52,7 @@ namespace game_stuff
 
         public SkillAction? GetAction()
         {
-            return SnipeAction == null ? Action : null;
+            return SnipeAction == null ? SkillAction : null;
         }
 
         public SnipeAction? GetSnipe()
@@ -62,7 +62,7 @@ namespace game_stuff
 
         public TwoDVector? GetMove()
         {
-            return Action == null ? Move : null;
+            return SkillAction == null ? Move : null;
         }
     }
 

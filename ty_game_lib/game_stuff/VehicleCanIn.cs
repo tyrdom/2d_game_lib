@@ -144,7 +144,7 @@ namespace game_stuff
         {
             if (!(CharActOne.InMapInteractable is Vehicle vehicle))
                 throw new TypeAccessException("vehicleCanIn Must contain vehicle");
-            var vehicleIsDsOn = vehicle.IsDsOn;
+            var vehicleIsDsOn = vehicle.IsDestroyOn;
             var vehicleVId = vehicle.VId;
             var genShortStatus = vehicle.SurvivalStatus.GenShortStatus();
             return new VehicleCanInTickMsg(vehicleVId, vehicleIsDsOn, genShortStatus, GetAnchor());

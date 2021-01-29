@@ -14,7 +14,7 @@ namespace game_stuff
             return CharacterStatus.StunBuff == null && CharacterStatus.SurvivalStatus.IsDead();
         }
 
-        private size BodySize { get; }
+        public size BodySize { get; }
 
         public size GetSize()
         {

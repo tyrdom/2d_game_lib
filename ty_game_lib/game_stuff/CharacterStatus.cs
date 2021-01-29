@@ -55,10 +55,6 @@ namespace game_stuff
             return CharacterBody;
         }
 
-        public List<TwoDPoint> GetMayBeSomeThing()
-        {
-            return MayBeSomeThing;
-        }
 
         public CharacterStatus? CatchingWho { get; set; }
 
@@ -176,8 +172,9 @@ namespace game_stuff
         public bool IsPause { get; private set; }
         public TwoDVector? IsBeHitBySomeOne { get; set; }
         public bool IsHitSome { get; set; }
-        public List<TwoDPoint> MayBeSomeThing { get; }
 
+
+       
 
         // drops_bonus
 
@@ -197,7 +194,7 @@ namespace game_stuff
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
             MaxTrap = genBaseAttrById.MaxTrapNum;
             Traps = new Queue<Trap>();
-            MayBeSomeThing = new List<TwoDPoint>();
+
             CharacterBody = null!;
             MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
             BuffTrick = new Dictionary<TrickCond, HashSet<IPlayingBuff>>();
@@ -225,6 +222,7 @@ namespace game_stuff
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
+           
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;
@@ -666,7 +664,7 @@ namespace game_stuff
             if (SkillLaunch != null) SkillLaunch = null;
             if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
             if (IsHitSome) IsHitSome = false;
-            MayBeSomeThing.Clear();
+          
         }
 
 
@@ -979,6 +977,7 @@ namespace game_stuff
 
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                 NowVehicle = null;
+                
                 return new CharGoTickResult(dropThing: new HashSet<IAaBbBox> {genIMapInteractable});
             }
         }
@@ -1333,7 +1332,6 @@ namespace game_stuff
                 CatchingWho = null;
             }
 
-
             AddProtect(protectValueAdd);
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
@@ -1357,6 +1355,7 @@ namespace game_stuff
             genDamage.GetBuffMulti(damageMulti);
             if (NowVehicle == null) return new DmgShow(SurvivalStatus.TakeDamage(genDamage), genDamage);
             NowVehicle.SurvivalStatus.TakeDamage(genDamage);
+           
             return new DmgShow(false, genDamage);
         }
 

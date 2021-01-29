@@ -16,7 +16,7 @@ namespace game_stuff
             SkillGroups { get; }
 
 
-        public ImmutableArray<(float, SkillAction)> BotRanges { get; }
+        public float BotRanges { get; }
 
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
 
@@ -26,7 +26,7 @@ namespace game_stuff
         private Weapon(
             ImmutableDictionary<size, ImmutableDictionary<SkillAction,
                 ImmutableDictionary<int, Skill>>> skillGroups,
-            ImmutableArray<(float, SkillAction)> botRanges,
+            float botRanges,
             ImmutableDictionary<SnipeAction, Snipe> snipes,
             int wId,
             float[] zoomStepMulti,
@@ -177,20 +177,13 @@ namespace game_stuff
             }
 
 
-            var valueTuples = weapon.BotRange
-                .Select(keyValuePair => (keyValuePair.Value, GetSkillActionByInt(keyValuePair.Key)))
-                .ToList();
-
-            valueTuples.Sort((x, y) => -x.Item1.CompareTo(x.Item1));
-            var immutableList = valueTuples.ToImmutableArray();
-
             var weaponMaxRangeMultiAdd = weapon.MaxRangeMulti - 1;
             var enumerable = Enumerable.Range(1, weaponChangeRangeStep)
                 .Select(x => 1 + x * weaponMaxRangeMultiAdd / weaponChangeRangeStep).ToArray();
 
             var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
 
-            var weapon1 = new Weapon(immutableDictionary, immutableList, snipes.ToImmutableDictionary(), weapon.id,
+            var weapon1 = new Weapon(immutableDictionary, weapon.BotRange, snipes.ToImmutableDictionary(), weapon.id,
                 enumerable, scopes);
             return weapon1;
         }

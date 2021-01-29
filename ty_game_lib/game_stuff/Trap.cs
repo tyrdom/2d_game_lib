@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq.Expressions;
-using System.Numerics;
 using collision_and_rigid;
 using game_config;
 
@@ -183,10 +178,7 @@ namespace game_stuff
             return Owner.CharacterBody;
         }
 
-        public List<TwoDPoint> GetMayBeSomeThing()
-        {
-            return Owner.MayBeSomeThing;
-        }
+       
 
         public CharacterStatus? CatchingWho { get; set; }
 

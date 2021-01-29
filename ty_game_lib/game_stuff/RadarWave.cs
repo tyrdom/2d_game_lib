@@ -81,7 +81,7 @@ namespace game_stuff
 
                     if (Caster == null || !IsHit(characterBody1)) return null;
                     if (Caster is Trap trap) trap.StartTrick();
-                    Caster.GetMayBeSomeThing().Add(targetBody.GetAnchor());
+                
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif

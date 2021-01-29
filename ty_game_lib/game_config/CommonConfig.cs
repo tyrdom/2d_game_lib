@@ -24,7 +24,8 @@ namespace game_config
             return (int) (time * TickPerSec);
         }
 
-        public static (bool isGetOk, T things) GetWeightThings<T>(this ImmutableArray<(int, T)> weightOverList, int randV)
+        public static (bool isGetOk, T things) GetWeightThings<T>(this ImmutableArray<(int, T)> weightOverList,
+            int randV)
         {
             foreach (var valueTuple in weightOverList.Where(valueTuple => valueTuple.Item1 >= randV))
             {

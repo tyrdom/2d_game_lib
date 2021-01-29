@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using collision_and_rigid;
 
 namespace game_stuff
@@ -7,7 +6,6 @@ namespace game_stuff
     {
         public DmgShow? TakeDamage(Damage genDamage);
         CharacterBody GetFinalCaster();
-        List<TwoDPoint> GetMayBeSomeThing();
         CharacterStatus? CatchingWho { get; set; }
         TwoDPoint GetPos();
         int GetId();

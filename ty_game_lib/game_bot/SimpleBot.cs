@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using cov_path_navi;
 using game_config;
@@ -22,13 +19,15 @@ namespace game_bot
     public class SimpleBot
     {
         public CharacterBody BotBody { get; }
-        public Dictionary<int, ImmutableArray<(float, SkillAction)>> SkillToTrickRange { get; set; }
 
-        public Patrol Patrol { get; }
 
-        public BotSkillCtrl BotSkillCtrl { get; }
+        public PatrolCtrl PatrolCtrl { get; }
+
+        public FirstSkillCtrl FirstSkillCtrl { get; }
+
+        public ComboCtrl ComboCtrl { get; }
         private BotStatus BotStatus { get; set; }
-        public List<(float maxRange, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
+        public List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
 
 
         private int? MyPoly { get; set; }
@@ -36,33 +35,32 @@ namespace game_bot
         private List<TwoDPoint> PathPoints { get; }
         private Random Random { get; }
 
-        public SkillAction DelaySkillAction { get; set; }
-
-        public int DelayTick { get; set; }
         private TwoDPoint? TargetRecordPos { get; set; }
 
-        public SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts, BotSkillCtrl botSkillCtrl)
+        private List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons, size bodySize)
         {
-            var valueTuples = new List<(float, int, int)>();
-            var dictionary = new Dictionary<int, ImmutableArray<(float, SkillAction)>>();
-            foreach (var keyValuePair in botBody.CharacterStatus.Weapons)
-            {
-                var weapon = keyValuePair.Value;
-                var max = weapon.BotRanges.Select(x => x.Item1).Max();
-                var i = weapon.SkillGroups[botBody.GetSize()].Values
-                    .Max(skills => skills.Values.Max(skill => skill.AmmoCost));
-                valueTuples.Add((max, i, keyValuePair.Key));
-                dictionary[keyValuePair.Key] = weapon.BotRanges;
-            }
+            var valueTuples = (from keyValuePair in weapons
+                let weapon = keyValuePair.Value
+                let min = weapon.BotRanges
+                let i = weapon.SkillGroups[bodySize].Values
+                    .Max(skills => skills.Values.Max(skill => skill.AmmoCost))
+                select (min, i, keyValuePair.Key)).ToList();
 
             valueTuples.Sort((x, y) => -x.Item1.CompareTo(y.Item1));
+            return valueTuples;
+        }
 
-            SkillToTrickRange = dictionary;
+        public SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts, FirstSkillCtrl firstSkillCtrl,
+            int comboMax)
+        {
+            var valueTuples = GetRangeAmmoWeapon(botBody.CharacterStatus.GetWeapons(), botBody.GetSize());
+
             BotBody = botBody;
             Random = random;
-            BotSkillCtrl = botSkillCtrl;
+            FirstSkillCtrl = firstSkillCtrl;
+            ComboCtrl = new ComboCtrl(comboMax);
             BotStatus = BotStatus.OnPatrol;
-            Patrol = new Patrol(patrolPts);
+            PatrolCtrl = new PatrolCtrl(patrolPts);
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
             NowWeapon = 0;
@@ -71,7 +69,7 @@ namespace game_bot
         }
 
 
-        private Operate? SeeATarget(List<TwoDPoint> canBeHitPts)
+        private Operate? SeeATargetAction(List<TwoDPoint> canBeHitPts)
         {
             var twoDPoint = NearPt(canBeHitPts);
             TargetRecordPos = twoDPoint;
@@ -89,13 +87,13 @@ namespace game_bot
         public void ReturnOnPatrol(PathTop pathTop)
         {
             BotStatus = BotStatus.OnPatrol;
-            var twoDPoint = Patrol.GetNowPt();
+            var twoDPoint = PatrolCtrl.GetNowPt();
             var twoDPoints = pathTop.FindGoPts(BotBody.GetAnchor(), twoDPoint);
             PathPoints.AddRange(twoDPoints);
         }
 
 
-        public Operate? BotSimpleTick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
+        public BotOpAndThink BotSimpleTick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
         {
             var canBeEnemies = perceivable.ToList();
             var canBeHitPts = canBeEnemies.OfType<ICanBeHit>()
@@ -107,7 +105,7 @@ namespace game_bot
                 case BotStatus.OnPatrol:
                     if (canBeHitPts.Any())
                     {
-                        return SeeATarget(canBeHitPts);
+                        return new BotOpAndThink(SeeATargetAction(canBeHitPts));
                     }
 
                     if (radarSees.Any())
@@ -117,7 +115,7 @@ namespace game_bot
                         PathPoints.Clear();
                         PathPoints.AddRange(twoDPoints);
                         BotStatus = BotStatus.GoMaybe;
-                        return null;
+                        return new BotOpAndThink();
                     }
 
                     DoPatrol();
@@ -125,24 +123,37 @@ namespace game_bot
                 case BotStatus.GoMaybe:
                     if (canBeHitPts.Any())
                     {
-                        return SeeATarget(canBeHitPts);
+                        return new BotOpAndThink(SeeATargetAction(canBeHitPts));
                     }
 
                     var goPathDirection = GoPathDirection();
                     if (goPathDirection == null)
                     {
                         ReturnOnPatrol(pathTop);
-                        return null;
+                        return new BotOpAndThink();
                     }
 
                     break;
                 case BotStatus.TargetApproach:
+
                     if (canBeHitPts.Any())
                     {
+                        var goATick = FirstSkillCtrl.GoATick(Random);
                         var twoDPoint = NearPt(canBeHitPts);
 
                         var distance = twoDPoint.GetDistance(BotBody.GetAnchor());
-                        CheckWeaponAndAmmo(distance);
+                        var (inRange, needSwitch) = CheckWeaponAndAmmo(distance);
+                        if (needSwitch)
+                        {
+                            return new BotOpAndThink(new Operate(skillAction: SkillAction.Switch), goATick);
+                        }
+
+                        if (inRange)
+                        {
+                            var skillAction = FirstSkillCtrl.GetAction(Random);
+                            BotStatus = BotStatus.EngageAct;
+                            return new BotOpAndThink(new Operate(skillAction: skillAction), goATick);
+                        }
                     }
 
                     if (TargetRecordPos != null)
@@ -153,24 +164,30 @@ namespace game_bot
                     break;
                 case BotStatus.EngageAct:
 
-                    CheckAct();
+                    CheckStartCombo();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            return null;
+            return new BotOpAndThink();
         }
 
-        private bool CheckAct()
+        private bool CheckStartCombo()
         {
-            throw new NotImplementedException();
+            return BotBody.CharacterStatus.IsHitSome;
         }
 
-        private void CheckWeaponAndAmmo(float distance)
+        public bool CheckStun()
         {
-            throw new NotImplementedException();
+            return BotBody.CharacterStatus.StunBuff != null;
         }
+
+        public bool ActFin()
+        {
+            return BotBody.CharacterStatus.NowCastAct?.ComboInputRes() == null;
+        }
+
 
         private TwoDPoint NearPt(List<TwoDPoint> pts)
         {
@@ -181,7 +198,16 @@ namespace game_bot
             return nearPt;
         }
 
-        private void DoPatrol()
+        public SpecialAction? CheckVehicle()
+        {
+            var characterStatusNowVehicle = BotBody.CharacterStatus.NowVehicle;
+            if (characterStatusNowVehicle == null || !characterStatusNowVehicle.IsDestroyOn) return null;
+            var rangeAmmoWeapon = GetRangeAmmoWeapon(BotBody.CharacterStatus.Weapons, BotBody.BodySize);
+            RangeToWeapon = rangeAmmoWeapon;
+            return SpecialAction.OutVehicle;
+        }
+
+        private Operate DoPatrol()
         {
             throw new NotImplementedException();
         }
@@ -205,102 +231,27 @@ namespace game_bot
             }
         }
 
-        private SkillAction? InRangeAct(float distance)
+        private (bool inRange, bool needSwitch) CheckWeaponAndAmmo(float distance)
         {
-            var useWeapon = -1;
-            foreach (var tuple in RangeToWeapon.Where(tuple => tuple.Item1 >= distance))
+            var botBodyCharacterStatus = BotBody.CharacterStatus;
+
+            var valueTuples = RangeToWeapon.Where(x => x.maxAmmoUse <= botBodyCharacterStatus.NowAmmo).ToArray();
+            if (!valueTuples.Any())
             {
-                useWeapon = tuple.Item2;
-                break;
+                return (false, false);
             }
 
-            if (useWeapon < 0) return null;
-            if (useWeapon != NowWeapon)
+            var longestWeapon = valueTuples.First();
+            var characterStatusNowWeapon = botBodyCharacterStatus.NowWeapon;
+            if (characterStatusNowWeapon != longestWeapon.weaponIndex) return (false, true);
+            var enumerable = valueTuples.Where(a => a.range >= distance).ToArray();
+            if (!enumerable.Any())
             {
-                return SkillAction.Switch;
+                return (false, false);
             }
 
-            if (!SkillToTrickRange.TryGetValue(useWeapon, out var tuples)) return null;
-            var valueTuples = tuples.Where(x => x.Item1 >= distance).Select(x => x.Item2).ToList();
-            if (valueTuples.Count <= 0) return null;
-            var next = Random.Next(valueTuples.Count);
-            var skillAction = valueTuples[next];
-            return skillAction;
-        }
-    }
-
-    public class BotSkillCtrl
-    {
-        public BotSkillCtrl(IEnumerable<(int weight, SkillAction skillAction)> stackWeightToSkillActions,
-            int noActWeight,
-            int doNotMaxTick,
-            int doNotMinTick, int showDelayMax)
-        {
-            var (weightOverList, i) = stackWeightToSkillActions.GetWeightOverList();
-            StackWeightToSkillActions = weightOverList;
-            Total = noActWeight + i;
-            DoNotMaxTick = doNotMaxTick;
-            DoNotMinTick = doNotMinTick;
-            NowThinkAction = null;
-            ShowDelayNow = 0;
-            ShowDelayMax = showDelayMax;
-            DoNotRestTick = 0;
-        }
-
-        private ImmutableArray<(int, SkillAction)> StackWeightToSkillActions { get; }
-
-        private int Total { get; }
-
-        public int DoNotRestTick { get; set; }
-        private int DoNotMaxTick { get; }
-        private int DoNotMinTick { get; }
-        public SkillAction? NowThinkAction { get; set; }
-        private int ShowDelayNow { get; set; }
-        private int ShowDelayMax { get; }
-
-        private SkillAction? GetAction()
-        {
-            return NowThinkAction;//todo
-        }
-
-        private void ThinkAAct(Random random)
-        {
-            var next = random.Next(Total);
-        }
-
-        private bool CanShowThinkAction()
-        {
-            return ShowDelayNow > ShowDelayMax;
-        }
-
-        private void GoATick()
-        {
-        }
-    }
-
-    public class Patrol
-    {
-        public TwoDPoint[] Points { get; }
-        public int NowToPt { get; set; }
-
-        public Patrol(List<TwoDPoint> rawPoints)
-        {
-            var twoDPoints = rawPoints.GetRange(1, rawPoints.Count - 2);
-            twoDPoints.Reverse();
-            rawPoints.AddRange(twoDPoints);
-            Points = rawPoints.ToArray();
-            NowToPt = 0;
-        }
-
-        public TwoDPoint GetNowPt()
-        {
-            return Points[NowToPt];
-        }
-
-        public TwoDPoint NextPt()
-        {
-            NowToPt = (1 + NowToPt) % Points.Length;
-            return Points[NowToPt];
+            var okWeapon = enumerable.First();
+            return characterStatusNowWeapon == okWeapon.weaponIndex ? (true, false) : (false, true);
         }
     }
 }

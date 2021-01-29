@@ -84,7 +84,7 @@ namespace game_stuff
             VId = vId;
             WhoDriveOrCanDrive = null;
             NowDsTick = 0;
-            IsDsOn = false;
+            IsDestroyOn = false;
             RecycleMulti = genBaseAttrById.RecycleMulti;
         }
 
@@ -109,7 +109,7 @@ namespace game_stuff
         public int WeaponCarryMax { get; }
         private uint DestroyTick { get; }
 
-        public bool IsDsOn { get; private set; }
+        public bool IsDestroyOn { get; private set; }
         private uint NowDsTick { get; set; }
         private Bullet DestroyBullet { get; }
         public SurvivalStatus SurvivalStatus { get; }
@@ -120,22 +120,22 @@ namespace game_stuff
 
         public (bool isBroken, Bullet? destroyBullet, Weapon[] weapons) GoATickCheckSurvival()
         {
-            if (IsDsOn)
+            if (IsDestroyOn)
             {
                 NowDsTick++;
                 if (NowDsTick > DestroyTick)
                 {
-                    return (IsDsOn, DestroyBullet, Weapons.Values.ToArray());
+                    return (IsDestroyOn, DestroyBullet, Weapons.Values.ToArray());
                 }
             }
 
             var goATickAndCheckAlive = SurvivalStatus.GoATickAndCheckAlive();
             if (!goATickAndCheckAlive)
             {
-                IsDsOn = true;
+                IsDestroyOn = true;
             }
 
-            return (IsDsOn, null, new Weapon[] { });
+            return (IsDestroyOn, null, new Weapon[] { });
         }
 
         public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
