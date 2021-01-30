@@ -33,7 +33,7 @@ namespace game_bot
         public int NowWeapon { get; set; }
         private List<TwoDPoint> PathPoints { get; }
         private Random Random { get; }
-
+        private bool InVehicle { get; }
         private TwoDPoint? TargetRecordPos { get; set; }
 
         private static List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons,
@@ -56,8 +56,10 @@ namespace game_bot
             var valueTuples = GetRangeAmmoWeapon(botBody.CharacterStatus.GetWeapons(), botBody.GetSize());
 
             BotBody = botBody;
+
             Random = random;
             FirstSkillCtrl = firstSkillCtrl;
+            InVehicle = botBody.CharacterStatus.NowVehicle != null;
             ComboCtrl = new ComboCtrl(comboMax);
             BotStatus = BotStatus.OnPatrol;
             PatrolCtrl = new PatrolCtrl(patrolPts);
@@ -105,6 +107,12 @@ namespace game_bot
                 .Where(x => x.GetTeam() != BotBody.Team)
                 .Select(x => x.GetAnchor()).ToList();
             var radarSees = canBeEnemies.OfType<RadarSee>().Select(x => x.GetAnchor()).ToList();
+
+            if (InVehicle)
+            {
+                if (CheckVehicle() != null) return new BotOpAndThink(new Operate(specialAction: CheckVehicle()));
+            }
+
             switch (BotStatus)
             {
                 case BotStatus.OnPatrol:
