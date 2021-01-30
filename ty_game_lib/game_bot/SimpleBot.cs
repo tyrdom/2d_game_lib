@@ -29,7 +29,6 @@ namespace game_bot
         private BotStatus BotStatus { get; set; }
         public List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
 
-
         private int? MyPoly { get; set; }
         public int NowWeapon { get; set; }
         private List<TwoDPoint> PathPoints { get; }
@@ -37,7 +36,8 @@ namespace game_bot
 
         private TwoDPoint? TargetRecordPos { get; set; }
 
-        private List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons, size bodySize)
+        private static List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons,
+            size bodySize)
         {
             var valueTuples = (from keyValuePair in weapons
                 let weapon = keyValuePair.Value
@@ -74,8 +74,9 @@ namespace game_bot
             var twoDPoint = NearPt(canBeHitPts);
             TargetRecordPos = twoDPoint;
             BotStatus = BotStatus.TargetApproach;
-            var valueTuple = BotBody.CharacterStatus.Prop?.BotUse(bot_use_cond.EnemyOnSight,
-                BotBody.CharacterStatus.NowPropPoint);
+            var botBodyCharacterStatus = BotBody.CharacterStatus;
+            var valueTuple = botBodyCharacterStatus.Prop?.BotUse(bot_use_cond.EnemyOnSight,
+                botBodyCharacterStatus.NowPropPoint);
             if (valueTuple.HasValue && valueTuple.Value.canUse)
             {
                 return new Operate(specialAction: SpecialAction.UseProp);
@@ -84,7 +85,7 @@ namespace game_bot
             return null;
         }
 
-        public void ReturnOnPatrol(PathTop pathTop)
+        private void ReturnOnPatrol(PathTop pathTop)
         {
             BotStatus = BotStatus.OnPatrol;
             var twoDPoint = PatrolCtrl.GetNowPt();
@@ -92,6 +93,10 @@ namespace game_bot
             PathPoints.AddRange(twoDPoints);
         }
 
+        private TwoDVector? MoveToPt(TwoDPoint pt)
+        {
+            return new TwoDVector(BotBody.GetAnchor(), pt).GetUnit2();
+        }
 
         public BotOpAndThink BotSimpleTick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
         {
@@ -118,8 +123,8 @@ namespace game_bot
                         return new BotOpAndThink();
                     }
 
-                    DoPatrol();
-                    break;
+                    var doPatrol = DoPatrol();
+                    return new BotOpAndThink(doPatrol);
                 case BotStatus.GoMaybe:
                     if (canBeHitPts.Any())
                     {
@@ -130,17 +135,16 @@ namespace game_bot
                     if (goPathDirection == null)
                     {
                         ReturnOnPatrol(pathTop);
-                        return new BotOpAndThink();
                     }
 
-                    break;
+                    return new BotOpAndThink();
                 case BotStatus.TargetApproach:
 
                     if (canBeHitPts.Any())
                     {
                         var goATick = FirstSkillCtrl.GoATick(Random);
                         var twoDPoint = NearPt(canBeHitPts);
-
+                        TargetRecordPos = twoDPoint;
                         var distance = twoDPoint.GetDistance(BotBody.GetAnchor());
                         var (inRange, needSwitch) = CheckWeaponAndAmmo(distance);
                         if (needSwitch)
@@ -154,23 +158,57 @@ namespace game_bot
                             BotStatus = BotStatus.EngageAct;
                             return new BotOpAndThink(new Operate(skillAction: skillAction), goATick);
                         }
+
+                        var operate = new Operate(move: MoveToPt(twoDPoint));
+                        return new BotOpAndThink(operate, goATick);
                     }
 
                     if (TargetRecordPos != null)
                     {
+                        var closeEnough = CloseEnough(TargetRecordPos);
+                        if (closeEnough)
+                        {
+                            TargetRecordPos = null;
+                            ReturnOnPatrol(pathTop);
+                            return new BotOpAndThink();
+                        }
+
+                        var twoDVector = MoveToPt(TargetRecordPos);
+                        var operate = new Operate(move: twoDVector);
+                        return new BotOpAndThink(operate);
                     }
 
-
-                    break;
+                    ReturnOnPatrol(pathTop);
+                    return new BotOpAndThink();
                 case BotStatus.EngageAct:
 
-                    CheckStartCombo();
-                    break;
+                    if (!ActFin())
+                    {
+                        if (CheckStartCombo())
+                        {
+                            ComboCtrl.ComboOn = true;
+                        }
+
+                        return new BotOpAndThink();
+                    }
+
+                    if (CheckStun())
+                    {
+                        ComboCtrl.ComboOn = false;
+                        return new BotOpAndThink();
+                    }
+
+                    if (ComboCtrl.ComboOn)
+                    {
+                        var comboAction = FirstSkillCtrl.GetComboAction(Random);
+                        return new BotOpAndThink(new Operate(skillAction: comboAction));
+                    }
+
+                    BotStatus = BotStatus.TargetApproach;
+                    return new BotOpAndThink();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            return new BotOpAndThink();
         }
 
         private bool CheckStartCombo()
@@ -178,12 +216,12 @@ namespace game_bot
             return BotBody.CharacterStatus.IsHitSome;
         }
 
-        public bool CheckStun()
+        private bool CheckStun()
         {
             return BotBody.CharacterStatus.StunBuff != null;
         }
 
-        public bool ActFin()
+        private bool ActFin()
         {
             return BotBody.CharacterStatus.NowCastAct?.ComboInputRes() == null;
         }
@@ -209,22 +247,34 @@ namespace game_bot
 
         private Operate DoPatrol()
         {
-            throw new NotImplementedException();
+            if (PathPoints.Any())
+            {
+                var goPathDirection = GoPathDirection()?.Multi(0.5f);
+                return new Operate(move: goPathDirection);
+            }
+
+            var next = Random.Next(PatrolCtrl.GetPtNum());
+            var twoDPoints = PatrolCtrl.NextPt(next);
+            PathPoints.AddRange(twoDPoints);
+            return new Operate();
         }
 
+        private bool CloseEnough(TwoDPoint twoDPoint)
+        {
+            return twoDPoint.GetDistance(BotBody.GetMoveVectorLine()) < 0.3f;
+        }
 
         private TwoDVector? GoPathDirection()
         {
-            var moveVectorLine = BotBody.GetMoveVectorLine();
             while (true)
             {
                 var firstOrDefault = PathPoints.FirstOrDefault();
 
                 if (firstOrDefault == null) return null;
 
-                if (firstOrDefault.GetDistance(moveVectorLine) >= 0.3f)
+                if (!CloseEnough(firstOrDefault))
                 {
-                    return new TwoDVector(BotBody.GetAnchor(), firstOrDefault).GetUnit2();
+                    return MoveToPt(firstOrDefault);
                 }
 
                 PathPoints.RemoveAt(0);

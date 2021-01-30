@@ -174,8 +174,6 @@ namespace game_stuff
         public bool IsHitSome { get; set; }
 
 
-       
-
         // drops_bonus
 
 
@@ -212,7 +210,7 @@ namespace game_stuff
             NowProtectTick = 0;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
-            MaxProtectValue = LocalConfig.ProtectTick;
+            MaxProtectValue = LocalConfig.TrickProtect;
             PassiveTraits = passiveTraits ?? new Dictionary<int, PassiveTrait>();
 
             BaseAttrId = baseAttrId;
@@ -222,7 +220,7 @@ namespace game_stuff
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
-           
+
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;
@@ -664,7 +662,6 @@ namespace game_stuff
             if (SkillLaunch != null) SkillLaunch = null;
             if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
             if (IsHitSome) IsHitSome = false;
-          
         }
 
 
@@ -977,7 +974,7 @@ namespace game_stuff
 
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                 NowVehicle = null;
-                
+
                 return new CharGoTickResult(dropThing: new HashSet<IAaBbBox> {genIMapInteractable});
             }
         }
@@ -1355,7 +1352,7 @@ namespace game_stuff
             genDamage.GetBuffMulti(damageMulti);
             if (NowVehicle == null) return new DmgShow(SurvivalStatus.TakeDamage(genDamage), genDamage);
             NowVehicle.SurvivalStatus.TakeDamage(genDamage);
-           
+
             return new DmgShow(false, genDamage);
         }
 

@@ -104,7 +104,6 @@ namespace game_stuff
 
         public static void ReLoadP(ConfigDictionaries configs)
         {
-            CommonConfig.ReLoadP(configs);
             var configsOtherConfig = CommonConfig.Configs.other_configs[1];
             G = configsOtherConfig.g_acc;
             MaxHeight = configsOtherConfig.max_hegiht;
@@ -126,7 +125,7 @@ namespace game_stuff
             ShardedAttackMulti = configsOtherConfig.ShardedAttackMulti;
             MaxCallActTwoTick = CommonConfig.GetTickByTime(configsOtherConfig.interaction_act2_call_time);
             TrickProtect = configsOtherConfig.trick_protect_value;
-            ProtectTick = (int) CommonConfig.GetTickByTime(configsOtherConfig.protect_time);
+            ProtectTick = CommonConfig.GetIntTickByTime(configsOtherConfig.protect_time);
             StandardPropMaxStack = configsOtherConfig.standard_max_prop_stack;
             StandardPropRecycleStack = configsOtherConfig.standard_recycle_prop_stack;
             PropR = configsOtherConfig.prop_R;
