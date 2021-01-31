@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_stuff;
+using rogue_chapter_maker;
 
 namespace rogue_game
 {
@@ -17,6 +18,10 @@ namespace rogue_game
             Creeps = creeps;
             PveWinCond = pveWinCond;
             IsClear = isClear;
+        }
+
+        public PveMap(PointMap pointMap, int resId)
+        {
         }
 
         public bool IsClear { get; private set; }

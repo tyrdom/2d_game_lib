@@ -9,7 +9,7 @@ namespace rogue_game
     {
         private Dictionary<int, PlayerStatusSave> PlayerSaves { get; }
 
-        private MapSave MapSave { get; }
+        private ChapterSave ChapterSave { get; }
 
         private int ChapterId { get; }
     }
