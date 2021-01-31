@@ -77,9 +77,9 @@ namespace game_bot
             TargetRecordPos = twoDPoint;
             BotStatus = BotStatus.TargetApproach;
             var botBodyCharacterStatus = BotBody.CharacterStatus;
-            var valueTuple = botBodyCharacterStatus.Prop?.BotUse(bot_use_cond.EnemyOnSight,
-                botBodyCharacterStatus.NowPropPoint);
-            if (valueTuple.HasValue && valueTuple.Value.canUse)
+            var valueTuple = botBodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(
+                botBodyCharacterStatus);
+            if (valueTuple.HasValue && valueTuple.Value)
             {
                 return new Operate(specialAction: SpecialAction.UseProp);
             }
@@ -147,6 +147,11 @@ namespace game_bot
 
                     return new BotOpAndThink();
                 case BotStatus.TargetApproach:
+                    var characterStatusProp = BotBody.CharacterStatus.Prop;
+                    if (characterStatusProp != null &&
+                        characterStatusProp.CheckAppStatusToBotPropUse(BotBody.CharacterStatus))
+                    {
+                    }
 
                     if (canBeHitPts.Any())
                     {
@@ -257,8 +262,15 @@ namespace game_bot
         {
             if (PathPoints.Any())
             {
-                var goPathDirection = GoPathDirection()?.Multi(0.5f);
+                var goPathDirection = GoPathDirection()?.Multi(LocalConfig.PatrolSlowMulti
+                );
                 return new Operate(move: goPathDirection);
+            }
+
+            var canUseWhenPatrol = BotBody.CharacterStatus.Prop?.CanUseWhenPatrol(BotBody.CharacterStatus);
+            if (canUseWhenPatrol.HasValue && canUseWhenPatrol.Value)
+            {
+                return new Operate(specialAction: SpecialAction.UseProp);
             }
 
             var next = Random.Next(PatrolCtrl.GetPtNum());
@@ -269,7 +281,7 @@ namespace game_bot
 
         private bool CloseEnough(TwoDPoint twoDPoint)
         {
-            return twoDPoint.GetDistance(BotBody.GetMoveVectorLine()) < 0.3f;
+            return twoDPoint.GetDistance(BotBody.GetMoveVectorLine()) < LocalConfig.CloseEnoughDistance;
         }
 
         private TwoDVector? GoPathDirection()

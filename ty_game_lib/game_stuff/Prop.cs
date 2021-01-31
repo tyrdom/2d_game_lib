@@ -158,11 +158,28 @@ namespace game_stuff
             }
         }
 
-        public (bool canUse, float? CondParam) BotUse(bot_use_cond enemyOnSight, int characterStatusNowPropPoint)
+        public bool BotUseWhenSeeEnemy(CharacterStatus characterStatusNowPropPoint)
         {
-            return enemyOnSight == BotUseCond && characterStatusNowPropPoint >= PropPointCost
-                ? (true, CondParam)
-                : (false, null);
+            return BotUseCond == bot_use_cond.EnemyOnSight && characterStatusNowPropPoint.NowPropPoint >= PropPointCost
+                ;
+        }
+
+        public bool CheckAppStatusToBotPropUse(CharacterStatus botBodyCharacterStatus)
+        {
+            var b = botBodyCharacterStatus.NowPropPoint >= PropPointCost;
+            return b && BotUseCond switch
+            {
+                bot_use_cond.ArmorBlowPercent => botBodyCharacterStatus.SurvivalStatus.ArmorPercent() < CondParam,
+                bot_use_cond.ShieldBlowPercent =>
+                    botBodyCharacterStatus.SurvivalStatus.ShieldPercent() < CondParam,
+                bot_use_cond.HpBlowPercent => botBodyCharacterStatus.SurvivalStatus.HpPercent() < CondParam,
+                _ => false
+            };
+        }
+
+        public bool CanUseWhenPatrol(CharacterStatus botBodyCharacterStatus)
+        {
+          return  BotUseCond == bot_use_cond.OnPatrolRandom && botBodyCharacterStatus.NowPropPoint >= PropPointCost;
         }
     }
 }

@@ -278,5 +278,20 @@ namespace game_stuff
             NowArmor = MaxArmor;
             NowHp = MaxHp;
         }
+
+        public float ArmorPercent()
+        {
+            return (float) NowArmor / MaxArmor;
+        }
+
+        public float HpPercent()
+        {
+            return (float) NowHp / MaxHp;
+        }
+
+        public float ShieldPercent()
+        {
+            return (float) NowShield / MaxShield;
+        }
     }
 }
