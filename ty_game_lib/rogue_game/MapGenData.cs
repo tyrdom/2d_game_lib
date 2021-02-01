@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using game_stuff;
 using rogue_chapter_maker;
 
 namespace rogue_game
 {
     [Serializable]
-    internal readonly struct MapSaveCell
+    internal readonly struct MapGenData
     {
         public bool IsMapClear { get; }
         private int X { get; }
@@ -25,7 +26,7 @@ namespace rogue_game
         }
 
 
-        public MapSaveCell(bool isMapClear, int x, int y, int mapResId, MapType mapType, bool n, bool s, bool e, bool w,
+        public MapGenData(bool isMapClear, int x, int y, int mapResId, MapType mapType, bool n, bool s, bool e, bool w,
             int mapId)
         {
             IsMapClear = isMapClear;
@@ -76,7 +77,7 @@ namespace rogue_game
         }
 
 
-        public MapSaveCell(PointMap pointMap, int resId, int gid)
+        public MapGenData(PointMap pointMap, int resId, int gid)
         {
             X = pointMap.Slot.x;
             Y = pointMap.Slot.y;
@@ -92,7 +93,6 @@ namespace rogue_game
 
         public PveMap GenPveMapPlayGround()
         {
-            
             throw new NotImplementedException();
         }
     }

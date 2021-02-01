@@ -5,7 +5,7 @@ namespace rogue_game
 {
     public class ChapterSave
     {
-        private MapSaveCell[] MapSaveCells { get; }
+        private MapGenData[] MapGens { get; }
 
 
         public void GenChapter()

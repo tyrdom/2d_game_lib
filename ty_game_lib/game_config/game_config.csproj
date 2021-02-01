@@ -75,6 +75,8 @@
       <EmbeddedResource Include="Resources\rogue_game_chapter_s.json" />
       <None Remove="Resources\play_buff_s.json" />
       <EmbeddedResource Include="Resources\play_buff_s.json" />
+      <None Remove="Resources\map_raws_s.json" />
+      <EmbeddedResource Include="Resources\map_raws_s.json" />
     </ItemGroup>
 
 </Project>
