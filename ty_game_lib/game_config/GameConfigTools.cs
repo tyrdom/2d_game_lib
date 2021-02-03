@@ -17,11 +17,10 @@ namespace game_config
 {
     public static class GameConfigTools
     {
-
         private static readonly char Sep = Path.DirectorySeparatorChar;
 #if UNITY_2018_1_OR_NEWER
 #else
-        //二进制文件存取位置
+        //二进制文件存取位置,不会弄
         private static readonly string ByteDir = $".{Sep}Bytes{Sep}";
 
         public static Dictionary<TK, TV> CovertIDictToDict<TK, TV>(ImmutableDictionary<TK, TV> immutableDictionary)
@@ -153,17 +152,19 @@ namespace game_config
             var namesDictionary = ResNames.NamesDictionary;
             if (!namesDictionary.TryGetValue(typeof(TV), out var name))
                 throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
-            var strings = FindFile(jsonPath, name);
-            var s = strings;
-            Console.Out.WriteLine($"aaa{s} !{jsonPath} !{name}");
-            var json = File.ReadAllText(s, Encoding.UTF8);
+            var file = FindFile(jsonPath, name) ?? "";
+
+#if DEBUG
+            Console.Out.WriteLine($"aaa{file} !{jsonPath} !{name}");
+#endif
+            var json = File.ReadAllText(file, Encoding.UTF8);
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
             var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
             return genConfigDict ?? new Dictionary<TK, TV>().ToImmutableDictionary();
         }
 
-        private static string FindFile(string path, string name)
+        private static string? FindFile(string path, string name)
         {
             var strings = Directory.GetFiles(path, name);
             if (strings.Length > 0)
@@ -175,7 +176,7 @@ namespace game_config
 
             return directories.Length > 0
                 ? directories.Select(directory => FindFile(directory, name)).FirstOrDefault(s => s != "")
-                : "";
+                : null;
         }
 #endif
     }

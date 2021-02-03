@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
 using cov_path_navi;
+using game_config;
 using game_stuff;
 using NUnit.Framework;
 
@@ -68,7 +69,13 @@ namespace lib_unit_test
             var pathTest = PathTest(TestWb());
             Assert.Pass(pathTest);
         }
-
+        [Test]
+        public void ConfigTest()
+        {
+            var keyValuePair = CommonConfig.Configs.map_rawss.Values.First();
+            var id = keyValuePair.BlockRawMap.First().First().x;
+            Assert.Pass(id.ToString());
+        }
         private static HashSet<IBlockShape>? ABlock()
         {
             var allIBlocks = TestWb().QSpace?.GetAllIBlocks();
