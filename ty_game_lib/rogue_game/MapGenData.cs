@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using game_stuff;
+using game_config;
 using rogue_chapter_maker;
 
 namespace rogue_game
@@ -83,10 +83,10 @@ namespace rogue_game
             Y = pointMap.Slot.y;
             IsMapClear = false;
             MapType = pointMap.MapType;
-            E = pointMap.Links.Any(x => x.Side == Side.East);
-            W = pointMap.Links.Any(x => x.Side == Side.West);
-            S = pointMap.Links.Any(x => x.Side == Side.South);
-            N = pointMap.Links.Any(x => x.Side == Side.North);
+            E = pointMap.Links.Any(x => x.Side == direction.East);
+            W = pointMap.Links.Any(x => x.Side == direction.West);
+            S = pointMap.Links.Any(x => x.Side == direction.South);
+            N = pointMap.Links.Any(x => x.Side == direction.North);
             MapId = gid;
             MapResId = resId;
         }

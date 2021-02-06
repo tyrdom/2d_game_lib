@@ -235,10 +235,10 @@ namespace rogue_chapter_maker
 
             return canLink.Side switch
             {
-                Side.East => (x + 1, y),
-                Side.West => (x - 1, y),
-                Side.North => (x, y + 1),
-                Side.South => (x, y - 1),
+                direction.East => (x + 1, y),
+                direction.West => (x - 1, y),
+                direction.North => (x, y + 1),
+                direction.South => (x, y - 1),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

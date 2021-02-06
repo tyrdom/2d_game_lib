@@ -289,60 +289,6 @@ namespace game_config
     }
 
     [Serializable]
-    public class fish : IGameConfig
-    {
-        public int id { get; set; }
-        public string name_text { get; set; }
-        public string name { get; set; }
-        public int fish_type { get; set; }
-        public int aim_type { get; set; }
-        public string fish_show_type { get; set; }
-        public string fish_show_sub_type { get; set; }
-        public string fish_show_type_text { get; set; }
-        public string fish_show_sub_type_text { get; set; }
-        public string multi_show_string { get; set; }
-        public string multi_show_string_text { get; set; }
-        public bool yellow_BG { get; set; }
-        public string res_pack { get; set; }
-        public float scale { get; set; }
-        public SimpleObj2[] ring_pos { get; set; }
-        public Point anchor_multi { get; set; }
-        public float animation_play_time_span { get; set; }
-        public int deep { get; set; }
-        public string boss_res { get; set; }
-        public int appear_frame { get; set; }
-        public int move_frame { get; set; }
-        public int die_frame { get; set; }
-        public int turning_mode { get; set; }
-        public float appear_time { get; set; }
-        public bool is_3d_model { get; set; }
-        public SimpleObj3 param_for_3D { get; set; }
-        public string[] dead_sound_list { get; set; }
-        public string appear_sound { get; set; }
-        public string change_bgm { get; set; }
-        public float bgm_delay { get; set; }
-        public float appear_loop { get; set; }
-        public int special_fish_type { get; set; }
-        public string show_game { get; set; }
-        public SimpleObj5 rectangle_collider_anchor { get; set; }
-        public SimpleObj6 rectangle_collider { get; set; }
-        public int spawn_rate { get; set; }
-        public int size { get; set; }
-        public int common_spawn_gap { get; set; }
-        public float z_axle_width { get; set; }
-        public int bonus_multi { get; set; }
-        public float yiwangdajin_scale { get; set; }
-        public int kill_show_effect { get; set; }
-        public float night_pearl_rate { get; set; }
-        public float night_pearl_multi { get; set; }
-        public bool is_trigger_lottery { get; set; }
-        public int diamond_num { get; set; }
-        public int coin_num { get; set; }
-        public bool is_capture_broadcast { get; set; }
-        public int exp { get; set; }
-    }
-
-    [Serializable]
     public class summon : IGameConfig
     {
         public string id { get; set; }
@@ -444,7 +390,7 @@ namespace game_config
     public class weapon : IGameConfig
     {
         public int id { get; set; }
-        public SimpleObj7[] BodySizeUseAndSnipeSpeedFix { get; set; }
+        public SimpleObj2[] BodySizeUseAndSnipeSpeedFix { get; set; }
         public float BotRange { get; set; }
         public float MaxRangeMulti { get; set; }
         public int ChangeRangeStep { get; set; }
@@ -505,62 +451,64 @@ namespace game_config
     {
         public int id { get; set; }
         public string info { get; set; }
-        public Point[][] BlockRawMap { get; set; }
+        public Point[][] WalkRawMap { get; set; }
         public Point[][] SightRawMap { get; set; }
         public Point[][] BulletRawMap { get; set; }
+        public SimpleObj3[] StartPoints { get; set; }
+        public SimpleObj4[] TransPoint { get; set; }
     }
 
     [Serializable]
     public enum ItemType
     {
         @money,
-        @bag,
-        @battle_exp
+        @battle_exp,
+        @bag
     }
 
     [Serializable]
     public enum effect_media_type
     {
-        @summon,
-        @self,
         @bullet,
-        @radar_wave
+        @summon,
+        @radar_wave,
+        @self
     }
 
     [Serializable]
     public enum size
     {
-        @big,
+        @tiny,
         @medium,
-        @default,
+        @big,
         @small,
-        @tiny
+        @default
     }
 
     [Serializable]
     public enum raw_shape
     {
-        @rectangle,
         @sector,
+        @rectangle,
         @round
     }
 
     [Serializable]
     public enum interactionAct
     {
-        @kick_vehicle,
-        @get_in_vehicle,
         @apply,
+        @get_info,
         @recycle_cage,
+        @kick_vehicle,
         @pick_up_cage,
-        @get_info
+        @get_in_vehicle
     }
 
     [Serializable]
     public enum buff_type
     {
-        @push_buff,
-        @caught_buff
+        @caught_buff,
+        @push_buff
     }
 
     [Serializable]
@@ -587,9 +535,9 @@ namespace game_config
     [Serializable]
     public enum play_buff_effect_type
     {
-        @Break,
-        @MakeDamageAdd,
         @Tough,
+        @MakeDamageAdd,
+        @Break,
         @TakeDamageAdd
     }
 
@@ -597,8 +545,8 @@ namespace game_config
     public enum stack_mode
     {
         @Stack,
-        @OverWrite,
-        @Time
+        @Time,
+        @OverWrite
     }
 
     [Serializable]
@@ -606,24 +554,33 @@ namespace game_config
     {
         @Regen,
         @AddItem,
-        @Attack,
-        @Other,
         @Survive,
-        @TickAdd,
         @TrapAbout,
+        @TickAdd,
+        @HitWinBuff,
         @AbsorbAdd,
-        @HitWinBuff
+        @Attack,
+        @Other
     }
 
     [Serializable]
     public enum bot_use_cond
     {
-        @HpBlowPercent,
-        @CantUse,
-        @ShieldBlowPercent,
-        @OnPatrolRandom,
         @EnemyOnSight,
-        @ArmorBlowPercent
+        @CantUse,
+        @OnPatrolRandom,
+        @ShieldBlowPercent,
+        @ArmorBlowPercent,
+        @HpBlowPercent
+    }
+
+    [Serializable]
+    public enum direction
+    {
+        @East,
+        @West,
+        @South,
+        @North
     }
 
     public static class ResNames
@@ -638,7 +595,7 @@ namespace game_config
             {typeof(snipe), "snipe_s.json"}, {typeof(body), "body_s.json"}, {typeof(skill_group), "skill_group_s.json"},
             {typeof(interaction), "interaction_s.json"}, {typeof(show_text), "show_text_s.json"},
             {typeof(bullet), "bullet_s.json"}, {typeof(character), "character_s.json"},
-            {typeof(push_buff), "push_buff_s.json"}, {typeof(fish), "fish_s.json"}, {typeof(summon), "summon_s.json"},
+            {typeof(push_buff), "push_buff_s.json"}, {typeof(summon), "summon_s.json"},
             {typeof(rogue_game_chapter), "rogue_game_chapter_s.json"}, {typeof(vehicle), "vehicle_s.json"},
             {typeof(play_buff), "play_buff_s.json"}, {typeof(self_effect), "self_effect_s.json"},
             {typeof(lock_area), "lock_area_s.json"}, {typeof(item), "item_s.json"}, {typeof(weapon), "weapon_s.json"},
@@ -650,7 +607,7 @@ namespace game_config
         {
             "skill", "bad_words", "caught_buff", "prop", "talent", "other_config", "trap", "radar_wave",
             "standard_level_up", "creep", "snipe", "body", "skill_group", "interaction", "show_text", "bullet",
-            "character", "push_buff", "fish", "summon", "rogue_game_chapter", "vehicle", "play_buff", "self_effect",
+            "character", "push_buff", "summon", "rogue_game_chapter", "vehicle", "play_buff", "self_effect",
             "lock_area", "item", "weapon", "passive", "base_attribute", "map_raws"
         };
     }
@@ -676,7 +633,6 @@ namespace game_config
         public ImmutableDictionary<string, bullet> bullets { get; set; }
         public ImmutableDictionary<int, character> characters { get; set; }
         public ImmutableDictionary<string, push_buff> push_buffs { get; set; }
-        public ImmutableDictionary<int, fish> fishs { get; set; }
         public ImmutableDictionary<string, summon> summons { get; set; }
         public ImmutableDictionary<int, rogue_game_chapter> rogue_game_chapters { get; set; }
         public ImmutableDictionary<int, vehicle> vehicles { get; set; }
@@ -698,8 +654,8 @@ namespace game_config
             all_Immutable_dictionary = new IDictionary[]
             {
                 skills, bad_wordss, caught_buffs, props, talents, other_configs, traps, radar_waves, standard_level_ups,
-                creeps, snipes, bodys, skill_groups, interactions, show_texts, bullets, characters, push_buffs, fishs,
-                summons, rogue_game_chapters, vehicles, play_buffs, self_effects, lock_areas, items, weapons, passives,
+                creeps, snipes, bodys, skill_groups, interactions, show_texts, bullets, characters, push_buffs, summons,
+                rogue_game_chapters, vehicles, play_buffs, self_effects, lock_areas, items, weapons, passives,
                 base_attributes, map_rawss
             };
         }
@@ -713,8 +669,8 @@ namespace game_config
             all_Immutable_dictionary = new IDictionary[]
             {
                 skills, bad_wordss, caught_buffs, props, talents, other_configs, traps, radar_waves, standard_level_ups,
-                creeps, snipes, bodys, skill_groups, interactions, show_texts, bullets, characters, push_buffs, fishs,
-                summons, rogue_game_chapters, vehicles, play_buffs, self_effects, lock_areas, items, weapons, passives,
+                creeps, snipes, bodys, skill_groups, interactions, show_texts, bullets, characters, push_buffs, summons,
+                rogue_game_chapters, vehicles, play_buffs, self_effects, lock_areas, items, weapons, passives,
                 base_attributes, map_rawss
             };
         }
@@ -726,8 +682,8 @@ namespace game_config
             all_Immutable_dictionary = new IDictionary[]
             {
                 skills, bad_wordss, caught_buffs, props, talents, other_configs, traps, radar_waves, standard_level_ups,
-                creeps, snipes, bodys, skill_groups, interactions, show_texts, bullets, characters, push_buffs, fishs,
-                summons, rogue_game_chapters, vehicles, play_buffs, self_effects, lock_areas, items, weapons, passives,
+                creeps, snipes, bodys, skill_groups, interactions, show_texts, bullets, characters, push_buffs, summons,
+                rogue_game_chapters, vehicles, play_buffs, self_effects, lock_areas, items, weapons, passives,
                 base_attributes, map_rawss
             };
         }
@@ -753,7 +709,6 @@ namespace game_config
             bullets = GameConfigTools.GenConfigDict<string, bullet>();
             characters = GameConfigTools.GenConfigDict<int, character>();
             push_buffs = GameConfigTools.GenConfigDict<string, push_buff>();
-            fishs = GameConfigTools.GenConfigDict<int, fish>();
             summons = GameConfigTools.GenConfigDict<string, summon>();
             rogue_game_chapters = GameConfigTools.GenConfigDict<int, rogue_game_chapter>();
             vehicles = GameConfigTools.GenConfigDict<int, vehicle>();
@@ -787,7 +742,6 @@ namespace game_config
             bullets = GameConfigTools.GenConfigDictByJsonFile<string, bullet>(path);
             characters = GameConfigTools.GenConfigDictByJsonFile<int, character>(path);
             push_buffs = GameConfigTools.GenConfigDictByJsonFile<string, push_buff>(path);
-            fishs = GameConfigTools.GenConfigDictByJsonFile<int, fish>(path);
             summons = GameConfigTools.GenConfigDictByJsonFile<string, summon>(path);
             rogue_game_chapters = GameConfigTools.GenConfigDictByJsonFile<int, rogue_game_chapter>(path);
             vehicles = GameConfigTools.GenConfigDictByJsonFile<int, vehicle>(path);
@@ -827,7 +781,6 @@ namespace game_config
             bullets = GameConfigTools.GenConfigDictByJsonString<string, bullet>(nameToJsonString["bullet"]);
             characters = GameConfigTools.GenConfigDictByJsonString<int, character>(nameToJsonString["character"]);
             push_buffs = GameConfigTools.GenConfigDictByJsonString<string, push_buff>(nameToJsonString["push_buff"]);
-            fishs = GameConfigTools.GenConfigDictByJsonString<int, fish>(nameToJsonString["fish"]);
             summons = GameConfigTools.GenConfigDictByJsonString<string, summon>(nameToJsonString["summon"]);
             rogue_game_chapters =
                 GameConfigTools.GenConfigDictByJsonString<int, rogue_game_chapter>(
@@ -899,48 +852,26 @@ namespace game_config
     [Serializable]
     public class SimpleObj2 : IGameConfig
     {
-        public int x { get; set; }
-        public int y { get; set; }
-        public float scale { get; set; }
-    }
-
-    [Serializable]
-    public class SimpleObj4 : IGameConfig
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public int z { get; set; }
-    }
-
-    [Serializable]
-    public class SimpleObj3 : IGameConfig
-    {
-        public SimpleObj4 pos { get; set; }
-        public SimpleObj4 rotate { get; set; }
-        public float scale { get; set; }
-    }
-
-    [Serializable]
-    public class SimpleObj5 : IGameConfig
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-    }
-
-    [Serializable]
-    public class SimpleObj6 : IGameConfig
-    {
-        public int width { get; set; }
-        public int height { get; set; }
-    }
-
-    [Serializable]
-    public class SimpleObj7 : IGameConfig
-    {
         [JsonConverter(typeof(StringEnumConverter))]
         public size body { get; set; }
 
         public float snipe_speed_fix { get; set; }
         public string skill_group { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj3 : IGameConfig
+    {
+        public int team { get; set; }
+        public Point[] StartPts { get; set; }
+    }
+
+    [Serializable]
+    public class SimpleObj4 : IGameConfig
+    {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public direction Direction { get; set; }
+
+        public Point[] TransPort { get; set; }
     }
 }

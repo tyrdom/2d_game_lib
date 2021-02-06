@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using game_config;
 
 namespace rogue_chapter_maker
 {
@@ -37,10 +38,10 @@ namespace rogue_chapter_maker
         public (string t, string c, string b ) To3Strings()
         {
             var enumerable = Links.Where(x => x.LinkTo != null).ToArray();
-            var nn = enumerable.Count(a => a.Side == Side.North);
-            var en = enumerable.Count(a => a.Side == Side.East);
-            var wn = enumerable.Count(a => a.Side == Side.West);
-            var sn = enumerable.Count(a => a.Side == Side.South);
+            var nn = enumerable.Count(a => a.Side ==   direction.North);
+            var en = enumerable.Count(a => a.Side == direction.East);
+            var wn = enumerable.Count(a => a.Side == direction.West);
+            var sn = enumerable.Count(a => a.Side == direction.South);
 
             var t = $" {nn} ";
             var c = $"{wn}{ShortChar()}{en}";
@@ -65,10 +66,10 @@ namespace rogue_chapter_maker
         {
             MapType = mapType;
             Slot = slot;
-            var enumerable = Enumerable.Range(1, n).Select(x => new Link(Side.North, this)).ToList();
-            var links = Enumerable.Range(1, s).Select(x => new Link(Side.South, this)).ToList();
-            var list = Enumerable.Range(1, e).Select(x => new Link(Side.East, this)).ToList();
-            var links1 = Enumerable.Range(1, w).Select(x => new Link(Side.West, this)).ToList();
+            var enumerable = Enumerable.Range(1, n).Select(x => new Link(direction.North, this)).ToList();
+            var links = Enumerable.Range(1, s).Select(x => new Link(direction.South, this)).ToList();
+            var list = Enumerable.Range(1, e).Select(x => new Link(direction.East, this)).ToList();
+            var links1 = Enumerable.Range(1, w).Select(x => new Link(direction.West, this)).ToList();
             enumerable.AddRange(links);
             enumerable.AddRange(list);
             enumerable.AddRange(links1);
@@ -120,30 +121,30 @@ namespace rogue_chapter_maker
 
             if (e)
             {
-                var thisLink = Links.Where(x => x.Side == Side.East);
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.West);
+                var thisLink = Links.Where(x => x.Side == direction.East);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == direction.West);
                 return (thisLink, thatLink, this, toAnotherOne);
             }
 
             if (w)
             {
-                var thisLink = Links.Where(x => x.Side == Side.West);
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.East);
+                var thisLink = Links.Where(x => x.Side == direction.West);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == direction.East);
 
                 return (thisLink, thatLink, this, toAnotherOne);
             }
 
             if (n)
             {
-                var thisLink = Links.Where(x => x.Side == Side.North);
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.South);
+                var thisLink = Links.Where(x => x.Side == direction.North);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == direction.South);
                 return (thisLink, thatLink, this, toAnotherOne);
             }
 
             if (s)
             {
-                var thisLink = Links.Where(x => x.Side == Side.South);
-                var thatLink = toAnotherOne.Links.Where(x => x.Side == Side.North);
+                var thisLink = Links.Where(x => x.Side == direction.South);
+                var thatLink = toAnotherOne.Links.Where(x => x.Side == direction.North);
 
                 return (thisLink, thatLink, this, toAnotherOne);
             }

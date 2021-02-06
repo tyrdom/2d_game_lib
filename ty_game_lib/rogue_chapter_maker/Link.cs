@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using game_config;
 
 namespace rogue_chapter_maker
 {
@@ -13,7 +14,7 @@ namespace rogue_chapter_maker
 
     public class Link
     {
-        public Link(Side side, PointMap inPointMap)
+        public Link(direction side, PointMap inPointMap)
         {
             Side = side;
             InPointMap = inPointMap;
@@ -21,7 +22,7 @@ namespace rogue_chapter_maker
         }
 
         public PointMap InPointMap { get; }
-        public Side Side { get; }
+        public direction Side { get; }
 
         public PointMap? LinkTo { get; private set; }
 

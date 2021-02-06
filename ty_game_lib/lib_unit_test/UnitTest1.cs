@@ -69,13 +69,15 @@ namespace lib_unit_test
             var pathTest = PathTest(TestWb());
             Assert.Pass(pathTest);
         }
+
         [Test]
         public void ConfigTest()
         {
             var keyValuePair = CommonConfig.Configs.map_rawss.Values.First();
-            var id = keyValuePair.BlockRawMap.First().First().x;
+            var id = keyValuePair.WalkRawMap.First().First().x;
             Assert.Pass(id.ToString());
         }
+
         private static HashSet<IBlockShape>? ABlock()
         {
             var allIBlocks = TestWb().QSpace?.GetAllIBlocks();
