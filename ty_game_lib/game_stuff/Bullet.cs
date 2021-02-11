@@ -21,6 +21,7 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
+        public bool CanOverBulletBlock { get; }
         private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
 
@@ -112,14 +113,14 @@ namespace game_stuff
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue,
-                bullet.HitType, bulletIsHAtk);
+                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock);
         }
 
         private Bullet(Dictionary<size, BulletBox> sizeToBulletCollision,
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -138,6 +139,7 @@ namespace game_stuff
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
             HitType = hitType;
+            CanOverBulletBlock = canOverBulletBlock;
             IsFAtk = !isHAtk;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
@@ -148,15 +150,16 @@ namespace game_stuff
             return RestTick > 0;
         }
 
-        private bool IsHit(ICanBeHit characterBody, SightMap blockMap)
+        private bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
         {
-            var isBlockSightLine = blockMap.IsBlockSightLine(new TwoDVectorLine(this.Pos, characterBody.GetAnchor()));
-            return GameTools.IsHit(this, characterBody) && isBlockSightLine;
+            var isBlockSightLine =
+                blockMap?.IsBlockSightLine(new TwoDVectorLine(this.Pos, characterBody.GetAnchor())) ?? false;
+            return GameTools.IsHit(this, characterBody) && (CanOverBulletBlock || isBlockSightLine);
 
             //造成伤害需要不被阻挡
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
         {
             switch (targetBody)
             {
@@ -507,7 +510,7 @@ namespace game_stuff
             }
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }

@@ -457,7 +457,7 @@ namespace collision_and_rigid
         {
             var blockShapes =
                 AaBbPackBox.OfType<BlockBox>().Select(x => x.Shape).ToList();
-            return SomeTools.EnumerableToHashSet(blockShapes);
+            return SomeTools.IeToHashSet(blockShapes);
         }
 
         public AreaBox? PointInWhichArea(TwoDPoint pt)

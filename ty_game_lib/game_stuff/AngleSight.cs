@@ -33,16 +33,16 @@ namespace game_stuff
         }
 
 
-        public bool InSight(TwoDVectorLine sLine, SightMap map, Scope? scope)
+        public bool InSight(TwoDVectorLine sLine, SightMap? map, Scope? scope)
         {
             var useScope = scope ?? StandardScope;
-            
+
             var twoDVector = sLine.GetVector().ClockwiseTurn(Aim);
             var c1 = twoDVector.Cross(useScope.FaceRightLeftPt);
             var c2 = twoDVector.Cross(useScope.FaceRightRightPt);
             var b = twoDVector.SqNorm() <= NowR * NowR;
 
-            var isBlockSightLine = map.IsBlockSightLine(sLine);
+            var isBlockSightLine = map?.IsBlockSightLine(sLine) ?? false;
 
 
             var blockSightLine = c1 >= 0 && c2 <= 0 && b && !isBlockSightLine;
@@ -55,7 +55,7 @@ namespace game_stuff
         }
 
 
-        public void OpChangeAim(TwoDVector? newAim, Scope? scope,float twoSToSeePerTick)
+        public void OpChangeAim(TwoDVector? newAim, Scope? scope, float twoSToSeePerTick)
         {
             var useScope = scope ?? StandardScope;
 
@@ -90,7 +90,7 @@ namespace game_stuff
             var down = getAnchor.Y - NowR;
             var left = getAnchor.X - NowR;
             var right = getAnchor.X + NowR;
-          return  new Zone(up,down,left,right);
+            return new Zone(up, down, left, right);
         }
     }
 }

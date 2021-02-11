@@ -29,7 +29,7 @@ namespace collision_and_rigid
         public HashSet<IBlockShape> GetBlockShapes()
         {
             var blockShapes = AabbBoxShapes.Select(x => x.Shape).ToList();
-            var listToHashSet = SomeTools.EnumerableToHashSet(blockShapes);
+            var listToHashSet = blockShapes.IeToHashSet();
             return listToHashSet;
         }
 

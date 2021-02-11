@@ -72,7 +72,7 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
         {
             switch (targetBody)
             {
@@ -93,7 +93,7 @@ namespace game_stuff
             }
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }

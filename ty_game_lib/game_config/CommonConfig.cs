@@ -7,6 +7,8 @@ namespace game_config
 {
     public static class CommonConfig
     {
+        
+        
         public static int BattleExpId { get; private set; } = 1;
         public static ConfigDictionaries Configs { get; private set; }
 #if NETCOREAPP

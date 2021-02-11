@@ -49,7 +49,7 @@ namespace game_stuff
             return GameTools.IsHit(this, characterBody);
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap blockMap)
+        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
         {
             switch (targetBody)
             {
@@ -76,7 +76,7 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap blockMap)
+        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap)
         {
             return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }

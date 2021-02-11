@@ -14,13 +14,17 @@ namespace game_stuff
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }
 
-        public static SightMap GenByConfig(IEnumerable<(Poly, bool)> lp, IEnumerable<TwoDVectorLine> lines)
+        public static SightMap GenByConfig(IEnumerable<(Poly, bool)> lp, IEnumerable<TwoDVectorLine>? lines = null)
         {
             var twoDVectorLines = lp.SelectMany(x => x.Item1.CovToLines(x.Item2));
 
             var dVectorLines = twoDVectorLines as TwoDVectorLine[] ?? twoDVectorLines.ToArray();
-            dVectorLines.ToList().AddRange(lines);
-            var aabbBoxShapes = dVectorLines.Select(x => x.CovToAabbPackBox());
+            var vectorLines = dVectorLines.ToList();
+            if (lines != null)
+            {
+                vectorLines.AddRange(lines);
+            }
+            var aabbBoxShapes = vectorLines.Select(x => x.CovToAabbPackBox());
             var qSpaceByAabbBoxShapes = SomeTools.CreateWalkBlockQSpaceByBlockBoxes(aabbBoxShapes.ToArray(), 5);
             var sightMap = new SightMap(qSpaceByAabbBoxShapes);
             return sightMap;

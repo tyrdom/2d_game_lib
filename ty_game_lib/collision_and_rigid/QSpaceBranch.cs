@@ -369,7 +369,7 @@ namespace collision_and_rigid
             foreach (var splitByQuad in splitByQuads)
             {
                 var enumerable = splitByQuad.Select(tuple => tuple.Item2);
-                var enumerableToHashSet = SomeTools.EnumerableToHashSet(enumerable);
+                var enumerableToHashSet = SomeTools.IeToHashSet(enumerable);
                 switch (splitByQuad.Key)
                 {
                     case 0:
@@ -696,7 +696,7 @@ namespace collision_and_rigid
             var hashSet = QuadThree.GetAllIBlocks();
             var blocks = QuadFour.GetAllIBlocks();
             var enumerable = blockShapes.Union(allIBlocks).Union(iBlocks).Union(hashSet).Union(blocks).ToList();
-            return SomeTools.EnumerableToHashSet(enumerable);
+            return SomeTools.IeToHashSet(enumerable);
         }
 
         public AreaBox? PointInWhichArea(TwoDPoint pt)

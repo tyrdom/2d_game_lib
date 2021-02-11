@@ -76,7 +76,7 @@ namespace game_stuff
             return Sight.GenZone(GetAnchor());
         }
 
-        public bool InSight(IHaveAnchor another, SightMap map)
+        public bool InSight(IHaveAnchor another, SightMap? map)
         {
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map, CharacterStatus.GetNowScope());
         }

@@ -548,6 +548,15 @@ namespace collision_and_rigid
             ).ToList();
         }
 
+        public static Zone? Join2(this Zone? a, Zone? b)
+        {
+            if (a == null)
+            {
+                return b;
+            }
+
+            return b == null ? a.Value : a.Value.Join(b.Value);
+        }
 
         public static WalkBlock GenWalkBlockByPolygons(List<(Poly, bool)> rawData, float r, int limit)
         {
@@ -573,7 +582,7 @@ namespace collision_and_rigid
             return genWalkBlockByBlockShapes;
         }
 
-        public static HashSet<TX> EnumerableToHashSet<TX>(IEnumerable<TX> aList)
+        public static HashSet<TX> IeToHashSet<TX>(this IEnumerable<TX> aList)
         {
 #if NETCOREAPP3
             var  hashSet = aList.ToHashSet();
@@ -592,7 +601,7 @@ namespace collision_and_rigid
             var joinAabbZone = JoinAaBbZone(aabbBoxShapes);
             if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
 
-            var aabbPackPackBoxShapes = EnumerableToHashSet(aabbBoxShapes);
+            var aabbPackPackBoxShapes = IeToHashSet(aabbBoxShapes);
 
 
             var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
@@ -604,7 +613,7 @@ namespace collision_and_rigid
         {
             var joinAaBbZone = JoinAaBbZone(aaBbBoxes);
 
-            var aaBbPackPackBox = EnumerableToHashSet(aaBbBoxes);
+            var aaBbPackPackBox = IeToHashSet(aaBbBoxes);
             var emptyRootBranch = CreateEmptyRootBranch(joinAaBbZone);
             emptyRootBranch.AddRangeAabbBoxes(aaBbPackPackBox, limit);
 

@@ -577,7 +577,7 @@ namespace game_stuff
                 case null:
                     break;
                 case DropThings dropThings1:
-                    dropThings1DropSet = SomeTools.EnumerableToHashSet(dropThings1.DropSet.OfType<IAaBbBox>());
+                    dropThings1DropSet = SomeTools.IeToHashSet(dropThings1.DropSet.OfType<IAaBbBox>());
                     break;
                 case TelePortMsg telePort:
                     t = telePort;
@@ -732,7 +732,7 @@ namespace game_stuff
 
                     var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
                     return new CharGoTickResult(launchBullet: destroyBullet,
-                        dropThing: SomeTools.EnumerableToHashSet(mapInteractables.OfType<IAaBbBox>()));
+                        dropThing: SomeTools.IeToHashSet(mapInteractables.OfType<IAaBbBox>()));
                 }
             }
 

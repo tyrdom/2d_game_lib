@@ -15,6 +15,7 @@ namespace collision_and_rigid
                 throw new ArgumentOutOfRangeException();
         }
 
+
         public TwoDPoint[] Pts { get; }
 
         public Poly Move(TwoDVector mv)
@@ -149,6 +150,44 @@ namespace collision_and_rigid
             return pp.ToNotCrossPoly();
         }
 
+        public bool CrossAnotherOne(Poly another)
+        {
+            var twoDVectorLines = CovToLines(true);
+            var dVectorLines = another.CovToLines(true);
+            var any = twoDVectorLines.Any(x =>
+                dVectorLines.Any(y => x.CrossAnotherPointInLinesNotIncludeEnds(y) != null));
+            return any;
+        }
+
+        public bool IsAwayFrom(Poly another)
+        {
+            var genZone = another.GenZone();
+            var zone = GenZone();
+            var notCross = zone.NotCross(genZone);
+            if (notCross)
+            {
+                return true;
+            }
+
+            var isIn = genZone.IsIn(zone) || zone.IsIn(genZone);
+            if (isIn)
+            {
+                return false;
+            }
+
+            var crossAnotherOne = CrossAnotherOne(another);
+            return !crossAnotherOne;
+        }
+
+        public bool IsIncludeAnother(Poly another)
+        {
+            var genZone = GenZone();
+            var zone = another.GenZone();
+            var isIn = zone.IsIn(genZone);
+            var crossAnotherOne = CrossAnotherOne(another);
+            var includeAnother = isIn && !crossAnotherOne;
+            return includeAnother;
+        }
 
         public List<TwoDVectorLine> CovToLines(bool isBlockIn)
         {
@@ -298,7 +337,8 @@ namespace collision_and_rigid
 
             var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateWalkBlockQSpaceByBlockBoxes(genBlockAabbBoxShapes.ToArray(), limit);
+            var qSpaceByAabbBoxShapes =
+                SomeTools.CreateWalkBlockQSpaceByBlockBoxes(genBlockAabbBoxShapes.ToArray(), limit);
 
             var block = new WalkBlock(isBlockIn, qSpaceByAabbBoxShapes);
             return block;
@@ -311,7 +351,8 @@ namespace collision_and_rigid
 #endif
             var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
 
-            var qSpaceByAabbBoxShapes = SomeTools.CreateWalkBlockQSpaceByBlockBoxes(genBlockAabbBoxShapes.ToArray(), limit);
+            var qSpaceByAabbBoxShapes =
+                SomeTools.CreateWalkBlockQSpaceByBlockBoxes(genBlockAabbBoxShapes.ToArray(), limit);
 
             var block = new WalkBlock(isBlockIn, qSpaceByAabbBoxShapes);
             return block;

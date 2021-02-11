@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -7,6 +8,48 @@ namespace game_stuff
 {
     public static class LocalConfig
     {
+        public static bool PloyListCheckOK(this IEnumerable<Poly> list)
+        {
+            var enumerable = list.ToList();
+            var any = enumerable.Any(x => enumerable.Any(p => p != x && p.CrossAnotherOne(x)));
+            return !any;
+        }
+
+        public static Poly GenPoly(this IEnumerable<Point> points)
+        {
+            return new Poly(points.Select(x => new TwoDPoint(x.x, x.y)).ToArray());
+        }
+
+        public static List<(Poly poly, bool isBlockIn)> PloyListMark(this IEnumerable<Poly> polys)
+        {
+            var list = polys.IeToHashSet();
+
+            if (!list.Any())
+            {
+                return new List<(Poly poly, bool isBlockIn)>();
+            }
+
+
+            var valueTuples = new List<(Poly poly, bool isBlockIn)>();
+            const bool nowBlockIn = false;
+
+            static void Mark(List<(Poly poly, bool isBlockIn)> collector, ISet<Poly> resList, bool nowIsBlockIn)
+            {
+                if (!resList.Any())
+                {
+                    return;
+                }
+
+                var enumerable = resList.Where(x => !resList.Any(p => p != x && p.IsIncludeAnother(x))).ToArray();
+                collector.AddRange(enumerable.Select(x => (x, nowIsBlockIn)));
+                resList.ExceptWith(enumerable);
+                Mark(collector, resList, !nowIsBlockIn);
+            }
+
+            Mark(valueTuples, list, nowBlockIn);
+            return valueTuples;
+        }
+
         public static IHitMedia GenHitMedia(Media media)
         {
             var effectMedia = GenMedia(media);

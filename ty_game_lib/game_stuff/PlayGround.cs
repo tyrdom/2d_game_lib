@@ -14,10 +14,10 @@ namespace game_stuff
         public int ResMId { get; }
         private Zone MoveZone { get; }
         private Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> TeamToBodies { get; } //角色实体放置到四叉树中，方便子弹碰撞逻辑
-        private SightMap SightMap { get; } //视野地图
+        private SightMap? SightMap { get; } //视野地图
 
-        private SightMap BulletBlockMap { get; } //子弹穿透阻挡，无特殊情况和视野地图相当
-        private WalkMap WalkMap { get; } //碰撞地图
+        private SightMap? BulletBlockMap { get; } //子弹穿透阻挡，无特殊情况和视野地图相当
+        private WalkMap? WalkMap { get; } //碰撞地图
 
         private Dictionary<int, StartPts> Entrance { get; }
         private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
@@ -46,6 +46,42 @@ namespace game_stuff
 
 
         //初始化状态信息,包括玩家信息和地图信息
+        public static PlayGround GenEmptyPlayGround(map_raws mapRaws, int genId)
+        {
+            var genEmptyByConfig = GenEmptyByConfig(mapRaws);
+            var (playGround, _) = InitPlayGround(new CharacterInitData[]{},genEmptyByConfig,genId,mapRaws.id);
+            return playGround;
+        }
+
+        public static MapInitData GenEmptyByConfig(map_raws mapRaws)
+        {
+            var mapRawsWalkRawMap = mapRaws.WalkRawMap;
+            var mapRawsSightRawMap = mapRaws.SightRawMap;
+            var mapRawsBulletRawMap = mapRaws.BulletRawMap;
+            var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
+            var walkMap = enumerable.Any()
+                ? enumerable.PloyListCheckOK() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark()) :
+                throw new Exception($"no good walk raw poly in {mapRaws.id} ")
+                : null;
+            var array = mapRawsSightRawMap.Select(x => x.GenPoly()).ToArray();
+            var sightMap = array.Any()
+                ? array.PloyListCheckOK() ? SightMap.GenByConfig(array.PloyListMark()) :
+                throw new Exception($"no good sight raw poly in {mapRaws.id} ")
+                : null;
+            var polys = mapRawsBulletRawMap.Select(x => x.GenPoly()).ToArray();
+            var genByConfig = polys.Any()
+                ? polys.PloyListCheckOK() ? SightMap.GenByConfig(polys.PloyListMark()) :
+                throw new Exception($"no good bullet raw poly in {mapRaws.id} ")
+                : null;
+
+            var mapRawsStartPoints = mapRaws.StartPoints;
+            var startPointsLength = mapRawsStartPoints.Length;
+            var pointsMap = Enumerable.Range(0, startPointsLength).Select(pp => (pp, mapRawsStartPoints[pp]))
+                .ToDictionary(tuple => tuple.pp,
+                    tuple => new StartPts(tuple.Item2.Select(x => new TwoDPoint(x.x, x.y)).ToArray()));
+            return new MapInitData(sightMap, walkMap, pointsMap, new HashSet<ApplyDevice>(), genByConfig);
+        }
+
         public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
             IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, int genMapId, int mapResId)
         {
@@ -83,7 +119,7 @@ namespace game_stuff
                 {
                     var hashSet = p.Value;
                     var aabbBoxShapes =
-                        SomeTools.EnumerableToHashSet(hashSet.Select(x => x.InBox));
+                        hashSet.Select(x => x.InBox).IeToHashSet();
                     emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, LocalConfig.QSpaceBodyMaxPerLevel);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
@@ -104,7 +140,7 @@ namespace game_stuff
                 applyDevice.SetInPlayGround(playGround);
             }
 
-            var aaBbBoxes = SomeTools.EnumerableToHashSet(mapInitData.StandardMapInteractableList.OfType<IAaBbBox>());
+            var aaBbBoxes = SomeTools.IeToHashSet(mapInitData.StandardMapInteractableList.OfType<IAaBbBox>());
             playGround.MapInteractableThings.AddRangeAabbBoxes(aaBbBoxes,
                 LocalConfig.QSpaceBodyMaxPerLevel);
 
@@ -166,7 +202,11 @@ namespace game_stuff
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
 
             MapInteractableGoATick();
-            BodiesQSpaceReplace(playerBeHit);
+            if (WalkMap != null)
+            {
+                BodiesQSpaceReplace(playerBeHit);
+            }
+
             HitMediasDo(playerBeHit, trapBeHit, teamRadarSee);
 
             foreach (var twoDTwoP in everyBodyGoATick)
@@ -239,7 +279,7 @@ namespace game_stuff
             }
 
             var selectMany = tuples.SelectMany(x => x.weapons.Select(w => (IAaBbBox) w.DropAsIMapInteractable(x.pos)));
-            var enumerableToHashSet = SomeTools.EnumerableToHashSet(selectMany);
+            var enumerableToHashSet = selectMany.IeToHashSet();
             MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
         }
 
@@ -334,7 +374,7 @@ namespace game_stuff
                     }, WalkMap);
                 var dd = mapToDicGidToSth
                     .ToDictionary(x => x.Key, x => x.Value!.Value.pt);
-                var buffDmgMsgs = mapToDicGidToSth.ToDictionary(x => x.Key, x => x.Value.Value.buffDmgMsg);
+                var buffDmgMsgs = mapToDicGidToSth.ToDictionary(x => x.Key, x => x.Value!.Value.buffDmgMsg);
                 foreach (var keyValuePair in buffDmgMsgs)
                 {
                     if (keyValuePair.Value.HasValue && playerBeHit.TryGetValue(keyValuePair.Key, out var hashSet))
@@ -639,6 +679,18 @@ namespace game_stuff
             }
         }
 
+
+        public void AddRangeMapInteractable(IEnumerable<IMapInteractable> interactableSet)
+        {
+            MapInteractableThings.AddRangeAabbBoxes(SomeTools.IeToHashSet(interactableSet.Cast<IAaBbBox>()),
+                LocalConfig.QSpaceBodyMaxPerLevel);
+        }
+
+        public void AddMapInteractable(IMapInteractable interactable)
+        {
+            MapInteractableThings.AddSingleAaBbBox(interactable, LocalConfig.QSpaceBodyMaxPerLevel);
+        }
+
         public IEnumerable<int> RemoveBodies(HashSet<int> ints)
         {
             var enumerable = ints.Where(x => GidToBody.ContainsKey(x)).ToArray();
@@ -666,7 +718,7 @@ namespace game_stuff
         public IEnumerable<CharacterBody> RemoveBodies(HashSet<CharacterBody> characterBodies)
         {
             if (!characterBodies.Any()) return characterBodies;
-            IEnumerable<CharacterBody>? enumerable = characterBodies.Where(x => GidToBody.Remove(x.GetId())).ToArray();
+            IEnumerable<CharacterBody> enumerable = characterBodies.Where(x => GidToBody.Remove(x.GetId())).ToArray();
             var except = characterBodies.Except(enumerable);
             var selectMany = RemoveInQSpace(enumerable);
             var removeBodies = selectMany.Select(box => box.IdPointShape).OfType<CharacterBody>();
@@ -721,7 +773,7 @@ namespace game_stuff
                         body.Teleport(point);
                     }
 
-                    var enumerableToHashSet = SomeTools.EnumerableToHashSet(grouping.Select(x => x.InBox));
+                    var enumerableToHashSet = SomeTools.IeToHashSet(grouping.Select(x => x.InBox));
                     AddTeamBodies(team, enumerableToHashSet);
                 }
                 else
@@ -763,7 +815,7 @@ namespace game_stuff
                     characterBody.Teleport(pos);
                 }
 
-                var enumerableToHashSet = SomeTools.EnumerableToHashSet(valueTuples.Select(x => x.characterBody.InBox));
+                var enumerableToHashSet = SomeTools.IeToHashSet(valueTuples.Select(x => x.characterBody.InBox));
                 if (TeamToBodies.TryGetValue(team, out var qTuple))
                 {
                     qTuple.playerBodies.AddIdPointBoxes(
