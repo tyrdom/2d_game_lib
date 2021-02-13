@@ -39,6 +39,7 @@ namespace rogue_game
 
     public class RogueGame
     {
+        
         private BotTeam BotTeam { get; }
         private int ChapterId { get; set; }
         private Chapter NowChapter { get; set; }
@@ -152,7 +153,7 @@ namespace rogue_game
 
             if (NowPlayMap.IsClear)
             {
-                NowPlayMap.ActiveApplyDevice();
+                NowPlayMap.PlayGround.ActiveApplyDevice();
                 gameRespSet.Add(new MapClear());
             }
 

@@ -27,7 +27,7 @@ namespace game_stuff
             IsActive = isActive;
         }
 
-        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive, int aid)
+        public ApplyDevice(IApplyUnit saleUnit, TwoDPoint pos, bool isActive)
         {
             IsActive = isActive;
             var configsInteraction = CommonConfig.Configs.interactions;
@@ -142,8 +142,6 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-      
     }
 
     public class TelePortTickMsg : ISeeTickMsg

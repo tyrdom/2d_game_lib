@@ -8,11 +8,10 @@ namespace game_stuff
 {
     public class TeleportUnit : IApplyUnit
     {
-        public TeleportUnit(IMapInteractable? inWhichMapInteractive,
-            PlayGround toPlayGround,
+        public TeleportUnit(PlayGround toPlayGround,
             TwoDPoint toPos, size[] allowSizes)
         {
-            InWhichMapInteractive = inWhichMapInteractive;
+            InWhichMapInteractive = null;
             FromPlayGround = null;
             ToPlayGround = toPlayGround;
             ToPos = toPos;

@@ -64,7 +64,6 @@
       <None Remove="Resources\character_s.json" />
       <EmbeddedResource Include="Resources\character_s.json" />
       <None Remove="Resources\creep_s.json" />
-      <EmbeddedResource Include="Resources\creep_s.json" />
       <None Remove="Resources\radar_wave_s.json" />
       <EmbeddedResource Include="Resources\radar_wave_s.json" />
       <None Remove="Resources\self_effect_s.json" />
@@ -77,6 +76,8 @@
       <EmbeddedResource Include="Resources\play_buff_s.json" />
       <None Remove="Resources\map_raws_s.json" />
       <EmbeddedResource Include="Resources\map_raws_s.json" />
+      <None Remove="Resources\battle_npc_s.json" />
+      <EmbeddedResource Include="Resources\battle_npc_s.json" />
     </ItemGroup>
 
 </Project>

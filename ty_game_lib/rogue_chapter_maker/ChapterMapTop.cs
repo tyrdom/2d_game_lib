@@ -1,9 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using game_config;
+
 
 namespace rogue_chapter_maker
 {
@@ -70,6 +69,16 @@ namespace rogue_chapter_maker
                 Side.South => Side.North,
                 _ => throw new ArgumentOutOfRangeException(nameof(side), side, null)
             };
+        }
+
+        public static ChapterMapTop GenAChapterTopByConfig(rogue_game_chapter gameChapter)
+        {
+            return GenAChapterMap(gameChapter.BigMap, gameChapter.SmallMap, gameChapter.VendorMap,
+                gameChapter.HangarMap,
+                gameChapter.StartWithBig, gameChapter.EndWithBig,
+                gameChapter.VendorMapStart, gameChapter.VendorMapRange, gameChapter.HangarMapStart,
+                gameChapter.HangarMapRange
+            );
         }
 
         public static ChapterMapTop GenAChapterMap(int big, int small, int vendor, int hangar, bool startB,

@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using game_config;
 using game_stuff;
+using rogue_chapter_maker;
 
 namespace rogue_game
 {
@@ -16,6 +18,33 @@ namespace rogue_game
             }
 
             throw new DirectoryNotFoundException($"not such item id{itemId}");
+        }
+
+        public static size[] AllowSizes(this MapType mapType)
+        {
+            return mapType switch
+            {
+                MapType.BigStart => new[] {size.medium, size.small},
+                MapType.BigEnd => new[] {size.medium, size.small},
+                MapType.Small => new[] {size.small},
+                MapType.Big => new[] {size.medium, size.small},
+                MapType.SmallStart => new[] {size.small},
+                MapType.SmallEnd => new[] {size.small},
+                MapType.Vendor => new[] {size.small},
+                MapType.Hangar => new[] {size.medium, size.small},
+                _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
+            };
+        }
+        public static direction OppositeDirection(this direction direction)
+        {
+            return direction switch
+            {
+                direction.West => direction.East,
+                direction.South => direction.North,
+                direction.East => direction.West,
+                direction.North => direction.South,
+                _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+            };
         }
 
         public static int GameRuleCheckTick { get; private set; } = 10;

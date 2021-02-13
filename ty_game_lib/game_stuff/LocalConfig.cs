@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -76,6 +77,15 @@ namespace game_stuff
             return CommonConfig.Configs.bodys[bodySize].rad;
         }
 
+        public static ImmutableDictionary<int, MapInitData> PerLoadMapConfig { get; private set; } =
+            new Dictionary<int, MapInitData>().ToImmutableDictionary();
+
+        public static ImmutableDictionary<int, ImmutableDictionary<direction, TwoDPoint[]>> PerLoadMapTransPort
+        {
+            get;
+            private set;
+        } =
+            new Dictionary<int, ImmutableDictionary<direction, TwoDPoint[]>>().ToImmutableDictionary();
 
         public static float G { get; private set; } = 1;
 
@@ -147,6 +157,17 @@ namespace game_stuff
 
         public static void ReLoadP(ConfigDictionaries configs)
         {
+            PerLoadMapTransPort = configs.map_rawss.ToImmutableDictionary(p => p.Key,
+                p => p.Value.TransPoint.GroupBy(obj2 => obj2.Direction)
+                    .ToImmutableDictionary(
+                        s => s.Key,
+                        s => s
+                            .SelectMany(ss => ss.TransPort
+                                .Select(pt => new TwoDPoint(pt.x, pt.y)))
+                            .ToArray()));
+
+            PerLoadMapConfig = configs.map_rawss.ToImmutableDictionary(x => x.Key,
+                x => PlayGround.GenEmptyByConfig(x.Value));
             var configsOtherConfig = CommonConfig.Configs.other_configs[1];
             G = configsOtherConfig.g_acc;
             MaxHeight = configsOtherConfig.max_hegiht;

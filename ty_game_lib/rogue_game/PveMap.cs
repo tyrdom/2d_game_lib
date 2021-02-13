@@ -10,7 +10,7 @@ namespace rogue_game
 {
     public class PveMap
     {
-        public PveMap(PlayGround playGround, HashSet<Creep> bosses, HashSet<Creep> creeps,
+        public PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
             PveWinCond pveWinCond, bool isClear)
         {
             PlayGround = playGround;
@@ -20,16 +20,41 @@ namespace rogue_game
             IsClear = isClear;
         }
 
-        public PveMap(PointMap pointMap, int resId)
+        private static (PveWinCond winCond, bool isClear) GetWinCond(MapType mapType)
         {
+            return mapType switch
+            {
+                MapType.BigStart => (PveWinCond.AllClear, true),
+                MapType.BigEnd => (PveWinCond.BossClear, false),
+                MapType.Small => (PveWinCond.AllClear, false),
+                MapType.Big => (PveWinCond.AllClear, false),
+                MapType.SmallStart => (PveWinCond.AllClear, true),
+                MapType.SmallEnd => (PveWinCond.BossClear, false),
+                MapType.Vendor => (PveWinCond.AllClear, true),
+                MapType.Hangar => (PveWinCond.AllClear, true),
+                _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
+            };
+        }
+
+        public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid)
+        {
+            var (winCond, isClear) = GetWinCond(pointMap.MapType);
+            var genEmptyPlayGround = PlayGround.GenEmptyPlayGround(resId, gmMid);
+            var pveMap = new PveMap(genEmptyPlayGround, new HashSet<BattleNpc>(), new HashSet<BattleNpc>(), winCond, isClear);
+            return pveMap;
         }
 
         public bool IsClear { get; private set; }
-        private PlayGround PlayGround { get; }
-        public HashSet<Creep> Bosses { get; }
-        public HashSet<Creep> Creeps { get; }
+        public PlayGround PlayGround { get; }
+        public HashSet<BattleNpc> Bosses { get; }
+        public HashSet<BattleNpc> Creeps { get; }
         public PveWinCond PveWinCond { get; }
 
+
+        public void AddMapInteractable(IEnumerable<IMapInteractable> mapInteractableSet)
+        {
+            PlayGround.AddRangeMapInteractable(mapInteractableSet);
+        }
 
         public void ActiveApplyDevice()
         {
@@ -38,7 +63,7 @@ namespace rogue_game
 
         public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit)
         {
-            bool Predicate(Creep creep)
+            bool Predicate(BattleNpc creep)
             {
                 return playerBeHit.ContainsKey(creep.CharacterBody.GetId()) &&
                        creep.CharacterBody.CharacterStatus.SurvivalStatus.IsDead();
@@ -92,23 +117,5 @@ namespace rogue_game
         {
             return PlayGround.MgId;
         }
-    }
-
-    public class Creep
-    {
-        public Creep(CharacterBody characterBody, WantedBonus wantedBonus)
-        {
-            CharacterBody = characterBody;
-            WantedBonus = wantedBonus;
-        }
-
-        public CharacterBody CharacterBody { get; }
-        public WantedBonus WantedBonus { get; }
-    }
-
-    public class WantedBonus
-    {
-        public GameItem[] AllBonus { get; }
-        public GameItem[] KillBonus { get; }
     }
 }

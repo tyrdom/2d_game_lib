@@ -1,0 +1,118 @@
+{
+  "content_name": {
+    "id": "",
+    "info": "说明",
+    "BodyId": "体型",
+    "AttrId": "属性id",
+    "Weapons": "携带武器",
+    "MaxWeaponSlot": "武器组上限",
+    "AllDrops": "全体奖励",
+    "KillDrops": "击杀奖励",
+    "WithVehicleId": "座驾 0表示没有",
+    "DropMapInteractableType": "掉落交互物类型",
+    "DropMapInteractableId": "掉落交互物类型",
+    "PassiveRange": "被动范围",
+    "PassiveNum": "被动数量",
+    "ActShowDelayTime": "反应提示时间"
+  },
+  "content_info": {
+    "id": "",
+    "info": "",
+    "BodyId": "",
+    "AttrId": "",
+    "Weapons": "",
+    "MaxWeaponSlot": "",
+    "AllDrops": "",
+    "KillDrops": "",
+    "WithVehicleId": "",
+    "DropMapInteractableType": "",
+    "DropMapInteractableId": "",
+    "PassiveRange": "",
+    "PassiveNum": "",
+    "ActShowDelayTime": ""
+  },
+  "content_schema": {
+    "id": "int",
+    "info": "string",
+    "BodyId": "size@enum",
+    "AttrId": "int",
+    "Weapons": "int[]",
+    "MaxWeaponSlot": "int",
+    "AllDrops": "{item|item=num|int}[]",
+    "KillDrops": "{item|item=num|int}[]",
+    "WithVehicleId": "int",
+    "DropMapInteractableType": "interactableType@enum",
+    "DropMapInteractableId": "int",
+    "PassiveRange": "int[]",
+    "PassiveNum": "int",
+    "ActShowDelayTime": "float"
+  },
+  "content": {
+    "1": {
+      "id": 1,
+      "info": "",
+      "BodyId": "small",
+      "AttrId": 5,
+      "Weapons": [
+        1
+      ],
+      "MaxWeaponSlot": 1,
+      "AllDrops": [],
+      "KillDrops": [],
+      "WithVehicleId": 0,
+      "DropMapInteractableType": "weapon",
+      "DropMapInteractableId": 1,
+      "PassiveRange": [
+        1,
+        2,
+        3
+      ],
+      "PassiveNum": 1,
+      "ActShowDelayTime": 0.5
+    },
+    "2": {
+      "id": 2,
+      "info": "",
+      "BodyId": "small",
+      "AttrId": 5,
+      "Weapons": [
+        1
+      ],
+      "MaxWeaponSlot": 1,
+      "AllDrops": [],
+      "KillDrops": [],
+      "WithVehicleId": 0,
+      "DropMapInteractableType": "prop",
+      "DropMapInteractableId": 1,
+      "PassiveRange": [
+        1,
+        2,
+        3
+      ],
+      "PassiveNum": 1,
+      "ActShowDelayTime": 0.5
+    },
+    "3": {
+      "id": 3,
+      "info": "",
+      "BodyId": "small",
+      "AttrId": 5,
+      "Weapons": [
+        2
+      ],
+      "MaxWeaponSlot": 2,
+      "AllDrops": [],
+      "KillDrops": [],
+      "WithVehicleId": 1,
+      "DropMapInteractableType": "vehicle",
+      "DropMapInteractableId": 1,
+      "PassiveRange": [
+        1,
+        2,
+        3
+      ],
+      "PassiveNum": 2,
+      "ActShowDelayTime": 0.5
+    }
+  }
+}

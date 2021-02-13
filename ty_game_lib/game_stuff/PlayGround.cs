@@ -26,10 +26,10 @@ namespace game_stuff
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
 
 
-        private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap sightMap,
-            WalkMap walkMap,
+        private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap? sightMap,
+            WalkMap? walkMap,
             Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, int mgId,
-            int resMId, Zone moveZone, Dictionary<int, StartPts> entrance, SightMap bulletBlockMap)
+            int resMId, Zone moveZone, Dictionary<int, StartPts> entrance, SightMap? bulletBlockMap)
         {
             TeamToBodies = teamToBodies;
             SightMap = sightMap;
@@ -44,12 +44,20 @@ namespace game_stuff
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
         }
 
+        public static PlayGround GenEmptyPlayGround(int resId, int genId)
+        {
+            if (LocalConfig.PerLoadMapConfig.TryGetValue(resId, out var initData))
+            {
+                return GenEmptyPlayGround(initData, genId, resId);
+            }
+
+            throw new Exception($"no good resId {resId}");
+        }
 
         //初始化状态信息,包括玩家信息和地图信息
-        public static PlayGround GenEmptyPlayGround(map_raws mapRaws, int genId)
+        private static PlayGround GenEmptyPlayGround(MapInitData initData, int genId, int resId)
         {
-            var genEmptyByConfig = GenEmptyByConfig(mapRaws);
-            var (playGround, _) = InitPlayGround(new CharacterInitData[]{},genEmptyByConfig,genId,mapRaws.id);
+            var (playGround, _) = InitPlayGround(new CharacterInitData[] { }, initData, genId, resId);
             return playGround;
         }
 
@@ -360,7 +368,7 @@ namespace game_stuff
                         {
                             case CharacterBody characterBody:
                                 var characterBodyBodySize = characterBody.GetSize();
-                                if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
+                                if (dic!.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
                                     return characterBody.RelocateWithBlock(walkBlock);
                                 }
@@ -682,12 +690,23 @@ namespace game_stuff
 
         public void AddRangeMapInteractable(IEnumerable<IMapInteractable> interactableSet)
         {
-            MapInteractableThings.AddRangeAabbBoxes(SomeTools.IeToHashSet(interactableSet.Cast<IAaBbBox>()),
+            var mapInteractables = interactableSet.IeToHashSet();
+            foreach (var applyDevice in mapInteractables.OfType<ApplyDevice>())
+            {
+                applyDevice.SetInPlayGround(this);
+            }
+
+            MapInteractableThings.AddRangeAabbBoxes(mapInteractables.Cast<IAaBbBox>().IeToHashSet(),
                 LocalConfig.QSpaceBodyMaxPerLevel);
         }
 
         public void AddMapInteractable(IMapInteractable interactable)
         {
+            if (interactable is ApplyDevice applyDevice)
+            {
+                applyDevice.SetInPlayGround(this);
+            }
+
             MapInteractableThings.AddSingleAaBbBox(interactable, LocalConfig.QSpaceBodyMaxPerLevel);
         }
 
