@@ -30,7 +30,7 @@ namespace game_stuff
                 canPutInMapInteractable, null, mapInteract);
         }
 
-        public CageCanPick(ICanPutInMapInteractable canPutInMapInteractable, TwoDPoint pos)
+        public CageCanPick(IPutInCage canPutInMapInteractable, TwoDPoint pos)
         {
             var configsInteraction = CommonConfig.Configs.interactions;
 

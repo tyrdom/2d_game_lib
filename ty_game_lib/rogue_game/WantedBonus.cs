@@ -14,6 +14,5 @@ namespace rogue_game
             KillBonus = killBonus;
             MapInteractableDrop = mapInteractableDrop;
         }
-        
     }
 }

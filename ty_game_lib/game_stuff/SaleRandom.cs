@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
@@ -47,6 +48,12 @@ namespace game_stuff
         public int GetRestStack(int? gid)
         {
             return SaleUnitStandard.GetRestStack(gid, this);
+        }
+
+        public IMapInteractable PutInteractable(TwoDPoint pos,bool isActive)
+        {
+            
+            return new ApplyDevice(this, pos, isActive);
         }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }

@@ -23,6 +23,11 @@ namespace game_stuff
             FromPlayGround = fromPlayGround;
         }
 
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
+        {
+            return new ApplyDevice(this, pos, isActive);
+        }
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public PlayGround? FromPlayGround { get; set; }

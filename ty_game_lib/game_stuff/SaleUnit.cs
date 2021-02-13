@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using collision_and_rigid;
 
 namespace game_stuff
 {
@@ -16,6 +17,12 @@ namespace game_stuff
             DoneDictionary = new Dictionary<int, int>();
         }
 
+
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
+        {
+            
+            return new ApplyDevice(this, pos, isActive);
+        }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
 

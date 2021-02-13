@@ -8,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ISaleStuff, ICanDrop, ICanPutInMapInteractable
+    public class Weapon : ISaleStuff, ICanPickDrop, ICanPutInMapInteractable, IPutInCage
     {
         public int WId { get; }
 
@@ -188,11 +188,16 @@ namespace game_stuff
             return weapon1;
         }
 
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
+        {
+            return CanPutInMapInteractableStandard.PutInMapInteractable(pos, this);
+        }
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public IMapInteractable DropAsIMapInteractable(TwoDPoint pos)
         {
-            return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
+            return CanPutInMapInteractableStandard.PutInMapInteractable(pos, this);
         }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)

@@ -13,9 +13,21 @@ namespace game_stuff
         public int TeamId { get; }
         private Dictionary<int, Weapon> Weapons { get; }
         private size BodySize { get; }
-
-
         private int BaseAttrId { get; }
+
+        public static CharacterInitData GenByIds(int gid, int teamId, int[] weapons, size size,
+            int baseAttrId)
+        {
+            var dictionary = new Dictionary<int, Weapon>();
+            for (var i = 0; i < MathTools.Min(LocalConfig.StandardWeaponNum, weapons.Length); i++)
+            {
+                dictionary[i] = Weapon.GenById(weapons[i]);
+            }
+
+            var bz = size;
+
+            return new CharacterInitData(gid, teamId, dictionary, bz, baseAttrId);
+        }
 
         public static CharacterInitData GenByConfig(int gid, int teamId, weapon[] weapons, size size,
             int baseAttrId)
@@ -27,7 +39,6 @@ namespace game_stuff
             }
 
             var bz = size;
-
 
             return new CharacterInitData(gid, teamId, dictionary, bz, baseAttrId);
         }

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class PassiveTrait : ISaleStuff, ICanPutInMapInteractable
+    public class PassiveTrait : ISaleStuff, ICanPutInMapInteractable, IPutInCage
     {
         public PassiveTrait(int passId, uint level, IPassiveTraitEffect passiveTraitEffect)
         {
@@ -11,6 +12,7 @@ namespace game_stuff
             Level = level;
             PassiveTraitEffect = passiveTraitEffect;
         }
+
 
         public int PassId { get; }
 
@@ -31,6 +33,12 @@ namespace game_stuff
 
         public uint Level { get; private set; }
         public IPassiveTraitEffect PassiveTraitEffect { get; }
+
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
+        {
+            return CanPutInMapInteractableStandard.PutInMapInteractable(pos, this);
+        }
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)

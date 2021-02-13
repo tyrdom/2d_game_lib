@@ -8,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ISaleStuff, ICanDrop, ICanPutInMapInteractable
+    public class Prop : ICharAct, ISaleStuff, ICanPickDrop, ICanPutInMapInteractable, IPutInCage
     {
         public static Prop GenById(int id)
         {
@@ -105,12 +105,17 @@ namespace game_stuff
             return true;
         }
 
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
+        {
+            return CanPutInMapInteractableStandard.PutInMapInteractable(pos, this);
+        }
+
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
 
         public IMapInteractable DropAsIMapInteractable(TwoDPoint pos)
         {
-            return CanPutInMapInteractableStandard.GenIMapInteractable(pos, this);
+            return CanPutInMapInteractableStandard.PutInMapInteractable(pos, this);
         }
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)
@@ -179,7 +184,7 @@ namespace game_stuff
 
         public bool CanUseWhenPatrol(CharacterStatus botBodyCharacterStatus)
         {
-          return  BotUseCond == bot_use_cond.OnPatrolRandom && botBodyCharacterStatus.NowPropPoint >= PropPointCost;
+            return BotUseCond == bot_use_cond.OnPatrolRandom && botBodyCharacterStatus.NowPropPoint >= PropPointCost;
         }
     }
 }

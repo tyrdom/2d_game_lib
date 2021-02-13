@@ -9,7 +9,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanDrop, ICanPutInMapInteractable
+    public class Vehicle : ISaleStuff, IMoveBattleAttrModel, ICanPickDrop, ICanPutInMapInteractable
     {
         public float TrapAtkMulti { get; set; }
 
@@ -187,6 +187,11 @@ namespace game_stuff
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
         }
 
+
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
+        {
+            return new VehicleCanIn(this, pos);
+        }
 
         public IMapInteractable? InWhichMapInteractive { get; set; }
 
