@@ -20,7 +20,7 @@ namespace game_stuff
                 return GenByConfig(vehicle);
             }
 
-            throw new DirectoryNotFoundException();
+            throw new KeyNotFoundException();
         }
 
         private static Vehicle GenByConfig(vehicle vehicle)

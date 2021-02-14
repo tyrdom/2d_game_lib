@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -101,7 +100,7 @@ namespace game_stuff
                 var initDataTeamId = initData.TeamId;
                 if (!mapInitData.TeamToStartPt.TryGetValue(initDataTeamId, out var startPts))
                 {
-                    throw new DirectoryNotFoundException($"not have such team start{initDataTeamId}");
+                    throw new KeyNotFoundException($"not have such team start{initDataTeamId}");
                 }
 
                 var twoDPoint = startPts.GenPt();
@@ -148,7 +147,7 @@ namespace game_stuff
                 applyDevice.SetInPlayGround(playGround);
             }
 
-            var aaBbBoxes = SomeTools.IeToHashSet(mapInitData.StandardMapInteractableList.OfType<IAaBbBox>());
+            var aaBbBoxes = mapInitData.StandardMapInteractableList.OfType<IAaBbBox>().IeToHashSet();
             playGround.MapInteractableThings.AddRangeAabbBoxes(aaBbBoxes,
                 LocalConfig.QSpaceBodyMaxPerLevel);
 
@@ -232,11 +231,11 @@ namespace game_stuff
                     pair =>
                     {
                         var gid = pair.Key;
-                        var seeTickMsgs = pair.Value;
+                        var seeTickMsgS = pair.Value;
                         if (GidToBody.TryGetValue(gid, out var cb) &&
                             teamRadarSee.TryGetValue(cb.Team, out var sees))
-                            return seeTickMsgs.Union(sees).ToImmutableHashSet();
-                        return seeTickMsgs
+                            return seeTickMsgS.Union(sees).ToImmutableHashSet();
+                        return seeTickMsgS
                             .ToImmutableHashSet();
                     });
 
@@ -797,7 +796,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    throw new DirectoryNotFoundException($"not Such Team Entrance {team}");
+                    throw new KeyNotFoundException($"not Such Team Entrance {team}");
                 }
             }
         }

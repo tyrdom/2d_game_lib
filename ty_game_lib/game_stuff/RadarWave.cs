@@ -51,7 +51,7 @@ namespace game_stuff
                 return GenByConfig(radarWave);
             }
 
-            throw new DirectoryNotFoundException($"not such radar_wave id::{id}");
+            throw new KeyNotFoundException($"not such radar_wave id::{id}");
         }
 
         public Zone RdZone { get; }

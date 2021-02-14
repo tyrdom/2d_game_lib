@@ -9,11 +9,9 @@ namespace game_stuff
     {
         public static SelfEffect GenById(string id)
         {
-            if (CommonConfig.Configs.self_effects.TryGetValue(id, out var selfEffect))
-            {
-                return new SelfEffect(selfEffect);
-            }
-            throw new DirectoryNotFoundException($"not such self effect id::{id}");
+            return CommonConfig.Configs.self_effects.TryGetValue(id, out var selfEffect)
+                ? new SelfEffect(selfEffect)
+                : throw new KeyNotFoundException($"not such self effect id::{id}");
         }
         public SelfEffect(self_effect selfEffect)
         {

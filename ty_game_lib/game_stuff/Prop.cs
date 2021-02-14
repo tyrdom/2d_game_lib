@@ -18,7 +18,7 @@ namespace game_stuff
                 return new Prop(prop);
             }
 
-            throw new DirectoryNotFoundException($"not such id {id}");
+            throw new KeyNotFoundException($"not such id {id}");
         }
 
         private Prop(prop prop)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -17,11 +18,23 @@ namespace rogue_game
         public CharacterBody CharacterBody { get; }
         public WantedBonus WantedBonus { get; }
 
-        public static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team)
+        public static BattleNpc GenById(int id, int gid, int team, Random random)
+        {
+            return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
+                ? GenByConfig(battleNpc, gid, team, random)
+                : throw new KeyNotFoundException();
+        }
+
+        public static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
         {
             var characterInitData =
                 CharacterInitData.GenByIds(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId);
-            var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
+
+            var chooseRandCanSame = battleNpc.PassiveRange.ChooseRandCanSame(battleNpc.PassiveNum, random);
+            var passiveTraits = chooseRandCanSame.GroupBy(x => x).ToDictionary(p => p.Key,
+                p => PassiveTrait.GenById(p.Key, (uint) p.Count()));
+
+            var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero(), passiveTraits);
 
             static ICanPutInMapInteractable Func(interactableType t, int id)
             {

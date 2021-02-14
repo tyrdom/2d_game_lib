@@ -91,7 +91,7 @@ namespace game_stuff
                         return GenBuffByConfig(value);
                     }
 
-                    throw new DirectoryNotFoundException($"not such p buff {configToOpponent}");
+                    throw new KeyNotFoundException($"not such p buff {configToOpponent}");
 
                 case buff_type.caught_buff:
                     if (CommonConfig.Configs.caught_buffs.TryGetValue(configToOpponent, out var value2))
@@ -99,7 +99,7 @@ namespace game_stuff
                         return GenBuffByConfig(value2);
                     }
 
-                    throw new DirectoryNotFoundException($"not such c buff {configToOpponent}");
+                    throw new KeyNotFoundException($"not such c buff {configToOpponent}");
 
                 default:
                     throw new ArgumentOutOfRangeException();

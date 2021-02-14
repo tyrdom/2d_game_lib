@@ -28,9 +28,39 @@ namespace rogue_game
             return Finish.IsClear;
         }
 
-        public static Chapter GenById(int id)
+        public static BattleNpc[] GenBattleNpcByConfig(rogue_game_chapter gameChapter, Random random)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public static Chapter GenMapsById(int id, Random random)
+        {
+            return CommonConfig.Configs.rogue_game_chapters.TryGetValue(id, out var chapter)
+                ? GenByConfig(chapter, random)
+                : throw new KeyNotFoundException();
+        }
+
+        public static (int[] creep, int[] boss) ChooseNpcId(MapType mapType, rogue_game_chapter gameChapter,
+            Random random)
+        {
+            var enumerable = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.SmallCreepNum, random).Union(
+                gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.SmallEliteNum, random));
+            var union = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.BigCreepNum, random).Union(
+                gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.BigEliteNum, random));
+            return mapType switch
+            {
+                MapType.BigStart => (new int[] { }, new int[] { }),
+                MapType.BigEnd => (union.ToArray(),
+                    gameChapter.BigBossCreepRandIn.ChooseRandCanSame(1, random).ToArray()),
+                MapType.Small => (enumerable.ToArray(), new int[] { }),
+                MapType.Big => (union.ToArray(), new int[] { }),
+                MapType.SmallStart => (new int[] { }, new int[] { }),
+                MapType.SmallEnd => (enumerable.ToArray(),
+                    gameChapter.SmallBossCreepRandIn.ChooseRandCanSame(1, random).ToArray()),
+                MapType.Vendor => (new int[] { }, new int[] { }),
+                MapType.Hangar => (new int[] { }, new int[] { }),
+                _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
+            };
         }
 
         public static int[] ChooseInts(MapType mapType, rogue_game_chapter gameChapter)
@@ -64,13 +94,9 @@ namespace rogue_game
                     var pointMap = pair.Key;
                     var value = pair.Value;
                     var chooseInts = ChooseInts(pointMap.MapType, gameChapter);
-                    var next =
-                        chooseInts.Any()
-                            ? chooseInts.Length > 1
-                                ? chooseInts[random.Next(chooseInts.Length)]
-                                : chooseInts[0]
-                            : throw new IndexOutOfRangeException();
-                    return PveMap.GenEmptyPveMap(pointMap, next, value);
+                    var next = chooseInts.ChooseRandCanSame(1, random).First();
+                    var (creep, boss) = ChooseNpcId(pointMap.MapType, gameChapter, random);
+                    return PveMap.GenEmptyPveMap(pointMap, next, value, creep, boss);
                 }
             );
             var start = pointMaps.FirstOrDefault(x => x.MapType == MapType.BigStart || x.MapType == MapType.SmallStart);
@@ -78,8 +104,8 @@ namespace rogue_game
 
             PveMap Converter(PointMap? x) =>
                 dictionary.TryGetValue(x ?? throw new InvalidOperationException(), out var value)
-                    ? pveEmptyMaps.TryGetValue(value, out var map) ? map : throw new DirectoryNotFoundException()
-                    : throw new DirectoryNotFoundException();
+                    ? pveEmptyMaps.TryGetValue(value, out var map) ? map : throw new KeyNotFoundException()
+                    : throw new KeyNotFoundException();
 
             var startMap = Converter(start);
             var endMap = Converter(end);
@@ -88,8 +114,8 @@ namespace rogue_game
                 game_stuff.LocalConfig.PerLoadMapTransPort.TryGetValue(id, out var dd)
                     ? dd.TryGetValue(direct, out var twoDp)
                         ? twoDp.FirstOrDefault() ?? throw new IndexOutOfRangeException()
-                        : throw new DirectoryNotFoundException()
-                    : throw new DirectoryNotFoundException();
+                        : throw new KeyNotFoundException()
+                    : throw new KeyNotFoundException();
 
 
             // add teleport
@@ -117,8 +143,7 @@ namespace rogue_game
                 value.PlayGround.AddRangeMapInteractable(applyDevices);
             }
 
-
-            throw new System.NotImplementedException();
+            return new Chapter(pveEmptyMaps, startMap, endMap);
         }
     }
 }

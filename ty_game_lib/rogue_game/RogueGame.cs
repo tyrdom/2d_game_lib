@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
-using collision_and_rigid;
 using game_bot;
 using game_stuff;
 
@@ -39,7 +37,6 @@ namespace rogue_game
 
     public class RogueGame
     {
-        
         private BotTeam BotTeam { get; }
         private int ChapterId { get; set; }
         private Chapter NowChapter { get; set; }
@@ -49,6 +46,8 @@ namespace rogue_game
         public int PlayerLeaderGid { get; set; }
 
         public PveMap NowPlayMap { get; set; }
+
+        public Random Random { get; }
 
         public RogueGame(Queue<Chapter> chapters, Dictionary<int, RogueGamePlayer> nowGamePlayers,
             int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, int chapterId)
@@ -61,6 +60,7 @@ namespace rogue_game
             NowPlayMap = nowPlayMap;
             ChapterId = chapterId;
             BotTeam = new BotTeam();
+            Random = new Random();
         }
 
         private bool Reborn(int seat, int toSeat)
@@ -92,7 +92,7 @@ namespace rogue_game
         private void GoNextChapter()
         {
             ChapterId++;
-            NowChapter = Chapter.GenById(ChapterId);
+            NowChapter = Chapter.GenMapsById(ChapterId, Random);
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);

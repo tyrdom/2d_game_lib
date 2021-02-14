@@ -10,6 +10,22 @@ namespace rogue_game
 {
     public static class LocalConfig
     {
+        public static IEnumerable<T> ChooseRandCanSame<T>(this T[] array, int num, Random random)
+        {
+            var enumerable = Enumerable.Range(0, num);
+            return array.Any()
+                ? array.Length > 1
+                    ? enumerable.Select(x => array[random.Next(array.Length)])
+                    : enumerable.Select(x => array[0])
+                : throw new IndexOutOfRangeException();
+        }
+
+        public static IEnumerable<T> ChooseRandDif<T>(this T[] array, int num)
+        {
+            array.Shuffle();
+            return array.Take(num);
+        }
+
         public static bool CanEndRest(int itemId)
         {
             if (CommonConfig.Configs.items.TryGetValue(itemId, out var item))
@@ -17,7 +33,7 @@ namespace rogue_game
                 return !item.IsEndClear;
             }
 
-            throw new DirectoryNotFoundException($"not such item id{itemId}");
+            throw new KeyNotFoundException($"not such item id{itemId}");
         }
 
         public static size[] AllowSizes(this MapType mapType)
@@ -35,6 +51,7 @@ namespace rogue_game
                 _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
             };
         }
+
         public static direction OppositeDirection(this direction direction)
         {
             return direction switch

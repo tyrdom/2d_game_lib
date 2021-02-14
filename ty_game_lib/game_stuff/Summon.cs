@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using collision_and_rigid;
 using game_config;
@@ -58,12 +59,9 @@ namespace game_stuff
 
         public static Summon GenById(string id)
         {
-            if (CommonConfig.Configs.summons.TryGetValue(id, out var summon))
-            {
-                return new Summon(summon);
-            }
-
-            throw new DirectoryNotFoundException($"not such id {id}");
+            return CommonConfig.Configs.summons.TryGetValue(id, out var summon)
+                ? new Summon(summon)
+                : throw new KeyNotFoundException($"not such id {id}");
         }
 
         private Summon(summon summon)

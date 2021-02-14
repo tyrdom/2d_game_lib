@@ -55,10 +55,11 @@ namespace game_stuff
         }
 
 
-        public CharacterBody GenCharacterBody(TwoDPoint startPos)
+        public CharacterBody GenCharacterBody(TwoDPoint startPos, 
+            Dictionary<int, PassiveTrait>? passiveTraits = null,PlayingItemBag? playingItemBag = null)
         {
-            var characterStatus = new CharacterStatus(Gid, BaseAttrId,
-                PlayingItemBag.InitByConfig());
+            var characterStatus = new CharacterStatus(Gid, BaseAttrId, playingItemBag ??
+                                                                       PlayingItemBag.InitByConfig(), passiveTraits);
 
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {

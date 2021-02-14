@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Numerics;
 using game_config;
 
@@ -23,7 +23,7 @@ namespace game_stuff
         public static IPassiveTraitEffect GenById(int id)
         {
             if (!CommonConfig.Configs.passives.TryGetValue(id, out var passive))
-                throw new DirectoryNotFoundException($"not such passive id {id}");
+                throw new KeyNotFoundException($"not such passive id {id}");
             var passiveParamValues = passive.param_values;
             var vector = new Vector<float>(passiveParamValues);
 

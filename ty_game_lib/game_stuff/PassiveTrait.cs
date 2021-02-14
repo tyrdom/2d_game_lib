@@ -4,7 +4,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public class PassiveTrait : ISaleStuff, ICanPutInMapInteractable, IPutInCage
+    public class PassiveTrait : ISaleStuff, IPutInCage
     {
         public PassiveTrait(int passId, uint level, IPassiveTraitEffect passiveTraitEffect)
         {
@@ -74,6 +74,11 @@ namespace game_stuff
         public int GetNum()
         {
             return 1;
+        }
+
+        public static PassiveTrait GenById(int i, uint level)
+        {
+            return new PassiveTrait(i, level, PassiveEffectStandard.GenById(i));
         }
     }
 }

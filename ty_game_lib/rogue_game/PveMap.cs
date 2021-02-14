@@ -11,13 +11,15 @@ namespace rogue_game
     public class PveMap
     {
         public PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
-            PveWinCond pveWinCond, bool isClear)
+            PveWinCond pveWinCond, bool isClear, int[] battleNpcToSpawn, int[] bossToSpawn)
         {
             PlayGround = playGround;
             Bosses = bosses;
             Creeps = creeps;
             PveWinCond = pveWinCond;
             IsClear = isClear;
+            BattleNpcToSpawn = battleNpcToSpawn;
+            BossToSpawn = bossToSpawn;
         }
 
         private static (PveWinCond winCond, bool isClear) GetWinCond(MapType mapType)
@@ -36,29 +38,33 @@ namespace rogue_game
             };
         }
 
-        public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid)
+        public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid, int[] bNpc, int[] boss)
         {
             var (winCond, isClear) = GetWinCond(pointMap.MapType);
             var genEmptyPlayGround = PlayGround.GenEmptyPlayGround(resId, gmMid);
-            var pveMap = new PveMap(genEmptyPlayGround, new HashSet<BattleNpc>(), new HashSet<BattleNpc>(), winCond, isClear);
+            var pveMap = new PveMap(genEmptyPlayGround, new HashSet<BattleNpc>(), new HashSet<BattleNpc>(), winCond,
+                isClear, bNpc, boss);
             return pveMap;
         }
 
         public bool IsClear { get; private set; }
         public PlayGround PlayGround { get; }
-        public HashSet<BattleNpc> Bosses { get; }
-        public HashSet<BattleNpc> Creeps { get; }
+        public HashSet<BattleNpc> Bosses { get; set; }
+        public HashSet<BattleNpc> Creeps { get; set; }
         public PveWinCond PveWinCond { get; }
 
+        public int[] BattleNpcToSpawn { get; }
 
-        public void AddMapInteractable(IEnumerable<IMapInteractable> mapInteractableSet)
+        public int[] BossToSpawn { get; }
+
+        public IEnumerable<BattleNpc> GenBattleNpc(int[] ints, Random random)
         {
-            PlayGround.AddRangeMapInteractable(mapInteractableSet);
+            return Enumerable.Range(0, ints.Length)
+                .Select(x => BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random));
         }
 
-        public void ActiveApplyDevice()
+        public void SpawnNpc(Random random)
         {
-            PlayGround.ActiveApplyDevice();
         }
 
         public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit)
@@ -111,11 +117,6 @@ namespace rogue_game
         public void TeleportToThisMap(IEnumerable<(CharacterBody, TwoDPoint)> characterBodiesToPt)
         {
             PlayGround.AddBodies(characterBodiesToPt);
-        }
-
-        public int GetMId()
-        {
-            return PlayGround.MgId;
         }
     }
 }

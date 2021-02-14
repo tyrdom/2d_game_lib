@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -26,12 +27,9 @@ namespace game_stuff
 
         public static TrapSetter GenById(string id)
         {
-            if (CommonConfig.Configs.traps.TryGetValue(id, out var trap))
-            {
-                return new TrapSetter(trap);
-            }
-
-            throw new DirectoryNotFoundException($"not such id {id}");
+            return CommonConfig.Configs.traps.TryGetValue(id, out var trap)
+                ? new TrapSetter(trap)
+                : throw new KeyNotFoundException($"not such id {id}");
         }
 
         private TrapSetter(trap trap)

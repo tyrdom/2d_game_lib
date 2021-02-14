@@ -77,7 +77,7 @@ namespace game_stuff
         {
             return CommonConfig.Configs.play_buffs.TryGetValue(id, out var playBuff)
                 ? playBuff
-                : throw new DirectoryNotFoundException($"not such a play buff {id}");
+                : throw new KeyNotFoundException($"not such a play buff {id}");
         }
 
         public static void GoATick(this IPlayingBuff playingBuff)

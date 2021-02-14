@@ -115,7 +115,7 @@ namespace game_stuff
                 return GenByConfig(weapon);
             }
 
-            throw new DirectoryNotFoundException($"cant find weapon id {id}");
+            throw new KeyNotFoundException($"cant find weapon id {id}");
         }
 
         public static Weapon GenByConfig(weapon weapon)
