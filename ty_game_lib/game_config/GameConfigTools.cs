@@ -16,6 +16,8 @@ using UnityEngine;
 namespace game_config
 {
     public static class GameConfigTools
+
+
     {
         private static readonly char Sep = Path.DirectorySeparatorChar;
 #if UNITY_2018_1_OR_NEWER

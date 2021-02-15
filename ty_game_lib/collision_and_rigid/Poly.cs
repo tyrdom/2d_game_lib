@@ -333,7 +333,7 @@ namespace collision_and_rigid
         public WalkBlock GenWalkBlockByPoly(float r, int limit, bool isBlockIn)
         {
             var genBlockShapes = GenBlockShapes(r, isBlockIn);
-            if (genBlockShapes.Count <= 1) return new WalkBlock(true, null);
+            if (genBlockShapes.Count <= 1) throw new Exception("must more than 2 line");
 
             var genBlockAabbBoxShapes = GenBlockAabbBoxShapes(genBlockShapes);
 

@@ -10,22 +10,7 @@ namespace rogue_game
 {
     public static class LocalConfig
     {
-        public static IEnumerable<T> ChooseRandCanSame<T>(this T[] array, int num, Random random)
-        {
-            var enumerable = Enumerable.Range(0, num);
-            return array.Any()
-                ? array.Length > 1
-                    ? enumerable.Select(x => array[random.Next(array.Length)])
-                    : enumerable.Select(x => array[0])
-                : throw new IndexOutOfRangeException();
-        }
-
-        public static IEnumerable<T> ChooseRandDif<T>(this T[] array, int num)
-        {
-            array.Shuffle();
-            return array.Take(num);
-        }
-
+       
         public static bool CanEndRest(int itemId)
         {
             if (CommonConfig.Configs.items.TryGetValue(itemId, out var item))

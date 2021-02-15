@@ -8,11 +8,11 @@ namespace cov_path_navi
 {
     public class PathNodeCovPolygon
     {
-        public List<Link> Links;
+        public List<Link> Links { get; }
 
-        public int ThisPathNodeId;
+        public int ThisPathNodeId { get; }
 
-        private List<IBlockShape> Edges;
+        private List<IBlockShape> Edges { get; }
 
         public ImmutableDictionary<int, List<(int id, float cost, TwoDVectorLine GoTrough)>>? LinkAndCost;
 

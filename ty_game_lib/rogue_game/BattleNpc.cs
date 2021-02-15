@@ -35,6 +35,17 @@ namespace rogue_game
                 p => PassiveTrait.GenById(p.Key, (uint) p.Count()));
 
             var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero(), passiveTraits);
+            var battleNpcWithVehicleId = battleNpc.WithVehicleId;
+            var genById = Vehicle.GenById(battleNpcWithVehicleId);
+            var characterStatus = genCharacterBody.CharacterStatus;
+            characterStatus.GetInAVehicle(genById);
+            var battleNpcPropIds = battleNpc.PropIds;
+            if (battleNpcPropIds.Any())
+            {
+                var chooseRandOne = battleNpcPropIds.ChooseRandOne(random);
+                var byId = Prop.GenById(chooseRandOne);
+                characterStatus.PickAProp(byId);
+            }
 
             static ICanPutInMapInteractable Func(interactableType t, int id)
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
+using game_bot;
 using game_stuff;
 using rogue_chapter_maker;
 
@@ -11,15 +12,15 @@ namespace rogue_game
     public class PveMap
     {
         public PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
-            PveWinCond pveWinCond, bool isClear, int[] battleNpcToSpawn, int[] bossToSpawn)
+            PveWinCond pveWinCond, bool isClear, int[] creepIdToSpawn, int[] bossIdToSpawn)
         {
             PlayGround = playGround;
             Bosses = bosses;
             Creeps = creeps;
             PveWinCond = pveWinCond;
             IsClear = isClear;
-            BattleNpcToSpawn = battleNpcToSpawn;
-            BossToSpawn = bossToSpawn;
+            CreepIdToSpawn = creepIdToSpawn;
+            BossIdToSpawn = bossIdToSpawn;
         }
 
         private static (PveWinCond winCond, bool isClear) GetWinCond(MapType mapType)
@@ -49,22 +50,27 @@ namespace rogue_game
 
         public bool IsClear { get; private set; }
         public PlayGround PlayGround { get; }
-        public HashSet<BattleNpc> Bosses { get; set; }
-        public HashSet<BattleNpc> Creeps { get; set; }
+        public HashSet<BattleNpc> Bosses { get; private set; }
+        public HashSet<BattleNpc> Creeps { get; private set; }
         public PveWinCond PveWinCond { get; }
+        public int[] CreepIdToSpawn { get; }
+        public int[] BossIdToSpawn { get; }
 
-        public int[] BattleNpcToSpawn { get; }
-
-        public int[] BossToSpawn { get; }
-
-        public IEnumerable<BattleNpc> GenBattleNpc(int[] ints, Random random)
+        public HashSet<(int npcId, BattleNpc battleNpc)> GenBattleNpc(int[] ints, Random random)
         {
             return Enumerable.Range(0, ints.Length)
-                .Select(x => BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random));
+                .Select(x => (ints[x], BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random))).IeToHashSet();
         }
 
-        public void SpawnNpc(Random random)
+
+        public IEnumerable<(int, CharacterBody)> SpawnNpc(Random random)
         {
+            var genBattleNpc = GenBattleNpc(CreepIdToSpawn, random);
+            Creeps = genBattleNpc.Select(x => x.Item2).IeToHashSet();
+            var battleNpc = GenBattleNpc(BossIdToSpawn, random);
+            Bosses = battleNpc.Select(x => x.Item2).IeToHashSet();
+            var valueTuples = genBattleNpc.Union(battleNpc).Select(x => (x.npcId, x.battleNpc.CharacterBody));
+            return valueTuples;
         }
 
         public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit)

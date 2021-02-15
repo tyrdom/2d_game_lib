@@ -20,7 +20,6 @@ namespace game_bot
     {
         public CharacterBody BotBody { get; }
 
-
         public PatrolCtrl PatrolCtrl { get; }
 
         public FirstSkillCtrl FirstSkillCtrl { get; }
@@ -30,7 +29,7 @@ namespace game_bot
         public List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
 
         private int? MyPoly { get; set; }
-        public int NowWeapon { get; set; }
+
         private List<TwoDPoint> PathPoints { get; }
         private Random Random { get; }
         private bool InVehicle { get; }
@@ -50,13 +49,49 @@ namespace game_bot
             return valueTuples;
         }
 
-        public SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts, FirstSkillCtrl firstSkillCtrl,
+        public static SimpleBot GenById(int id, CharacterBody body, Random random, PathTop pathTop)
+        {
+            return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
+                ? GenByConfig(battleNpc, body, random, pathTop)
+                : throw new KeyNotFoundException();
+        }
+
+        public static SimpleBot GenByConfig(battle_npc battleNpc, CharacterBody body, Random random,
+            PathTop pathTop)
+        {
+            var polyCount = pathTop.GetPolyCount();
+            var next = random.Next((int) (polyCount * LocalConfig.PatrolMin),
+                (int) (polyCount * LocalConfig.PatrolMax + 1));
+            var twoDPoints = pathTop.GetPatrolPts(random, next);
+            var battleNpcActWeight = battleNpc.ActWeight;
+            var weight = battleNpcActWeight.FirstOrDefault(x => x.op == botOp.none)?.weight ?? 0;
+            var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
+                .Select(x => (x.weight, CovOp(x.op)));
+            var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
+                CommonConfig.GetIntTickByTime(battleNpc.DoNotMinMaxTime.item2),
+                CommonConfig.GetIntTickByTime(battleNpc.DoNotMinMaxTime.item1),
+                CommonConfig.GetIntTickByTime(battleNpc.ActShowDelayTime));
+
+            return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleNpc.MaxCombo);
+        }
+
+        private static SkillAction CovOp(botOp botOp)
+        {
+            return botOp switch
+            {
+                botOp.op1 => SkillAction.Op1,
+                botOp.op2 => SkillAction.Op2,
+                botOp.none => SkillAction.Op1,
+                _ => throw new ArgumentOutOfRangeException(nameof(botOp), botOp, null)
+            };
+        }
+
+        private SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts, FirstSkillCtrl firstSkillCtrl,
             int comboMax)
         {
             var valueTuples = GetRangeAmmoWeapon(botBody.CharacterStatus.GetWeapons(), botBody.GetSize());
 
             BotBody = botBody;
-
             Random = random;
             FirstSkillCtrl = firstSkillCtrl;
             InVehicle = botBody.CharacterStatus.NowVehicle != null;
@@ -65,7 +100,6 @@ namespace game_bot
             PatrolCtrl = new PatrolCtrl(patrolPts);
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
-            NowWeapon = 0;
             MyPoly = null;
             TargetRecordPos = null;
         }
@@ -100,7 +134,7 @@ namespace game_bot
             return new TwoDVector(BotBody.GetAnchor(), pt).GetUnit2();
         }
 
-        public BotOpAndThink BotSimpleTick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
+        public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
         {
             var canBeEnemies = perceivable.ToList();
             var canBeHitPts = canBeEnemies.OfType<ICanBeHit>()

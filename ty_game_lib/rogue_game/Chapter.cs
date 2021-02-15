@@ -28,10 +28,7 @@ namespace rogue_game
             return Finish.IsClear;
         }
 
-        public static BattleNpc[] GenBattleNpcByConfig(rogue_game_chapter gameChapter, Random random)
-        {
-            throw new NotImplementedException();
-        }
+       
 
         public static Chapter GenMapsById(int id, Random random)
         {

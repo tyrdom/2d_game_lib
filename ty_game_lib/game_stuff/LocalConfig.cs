@@ -155,9 +155,9 @@ namespace game_stuff
         public static int AtkPassBuffId { get; private set; } = 0;
         public static int DefPassBuffId { get; private set; } = 0;
 
-        public static void ReLoadP(ConfigDictionaries configs)
+        public static void ReLoadP()
         {
-            PerLoadMapTransPort = configs.map_rawss.ToImmutableDictionary(p => p.Key,
+            PerLoadMapTransPort = CommonConfig.Configs.map_rawss.ToImmutableDictionary(p => p.Key,
                 p => p.Value.TransPoint.GroupBy(obj2 => obj2.Direction)
                     .ToImmutableDictionary(
                         s => s.Key,
@@ -166,8 +166,9 @@ namespace game_stuff
                                 .Select(pt => new TwoDPoint(pt.x, pt.y)))
                             .ToArray()));
 
-            PerLoadMapConfig = configs.map_rawss.ToImmutableDictionary(x => x.Key,
+            PerLoadMapConfig = CommonConfig.Configs.map_rawss.ToImmutableDictionary(x => x.Key,
                 x => PlayGround.GenEmptyByConfig(x.Value));
+
             var configsOtherConfig = CommonConfig.Configs.other_configs[1];
             G = configsOtherConfig.g_acc;
             MaxHeight = configsOtherConfig.max_hegiht;
@@ -185,7 +186,8 @@ namespace game_stuff
             StandardSightVector =
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
             CommonBuffMaker =
-                StunBuffStandard.GenBuffByConfig(configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
+                StunBuffStandard.GenBuffByConfig(
+                    CommonConfig.Configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
             ShardedAttackMulti = configsOtherConfig.ShardedAttackMulti;
             MaxCallActTwoTick = CommonConfig.GetTickByTime(configsOtherConfig.interaction_act2_call_time);
             TrickProtect = configsOtherConfig.trick_protect_value;
@@ -207,14 +209,12 @@ namespace game_stuff
 #if NETCOREAPP
         public static void LoadConfig()
         {
-            var configs = new ConfigDictionaries();
-            ReLoadP(configs);
+            ReLoadP();
         }
 #else
-        public static void LoadConfig(Dictionary<string, string> jsons)
+        public static void LoadConfig()
         {
-            var configs = new ConfigDictionaries(jsons);
-            ReLoadP(configs);
+            ReLoadP();
         }
 #endif
     }

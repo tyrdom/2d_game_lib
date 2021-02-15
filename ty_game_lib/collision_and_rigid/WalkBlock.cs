@@ -6,11 +6,11 @@ namespace collision_and_rigid
     public class WalkBlock
     {
 //        private float R;
-        public bool IsBlockIn;
-        public IQSpace? QSpace;
+        public bool IsBlockIn { get; }
+        public IQSpace QSpace { get; }
 
 
-        public WalkBlock(bool isBlockIn, IQSpace? qSpace)
+        public WalkBlock(bool isBlockIn, IQSpace qSpace)
         {
             IsBlockIn = isBlockIn;
             QSpace = qSpace;
@@ -18,8 +18,6 @@ namespace collision_and_rigid
 
         public bool RealCoverPoint(TwoDPoint p)
         {
-            if (QSpace == null) return true;
-
             var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
 #if DEBUG
             Console.Out.WriteLine("num::" + item1);
@@ -29,7 +27,7 @@ namespace collision_and_rigid
             if (item1 >= 0)
             {
                 var inBlock = item1 % 2 != 0;
-                
+
                 return IsBlockIn ? inBlock : !inBlock;
             }
 
@@ -41,7 +39,6 @@ namespace collision_and_rigid
             PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true) //null表示不需要被动移动
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
-            if (QSpace == null) return (false, nowP);
             var apt = QSpace.GetSlidePoint(inLine, safe);
 
             if (safe) return (apt != null, apt ?? nowP);

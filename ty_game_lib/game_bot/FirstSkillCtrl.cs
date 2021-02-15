@@ -8,10 +8,12 @@ namespace game_bot
 {
     public class FirstSkillCtrl
     {
-        public FirstSkillCtrl(IEnumerable<(int weight, SkillAction skillAction)> stackWeightToSkillActions,
+        public FirstSkillCtrl(
+            IEnumerable<(int weight, SkillAction skillAction)> stackWeightToSkillActions,
             int noActWeight,
             int doNotMaxTick,
-            int doNotMinTick, int showDelayMax)
+            int doNotMinTick,
+            int showDelayMax)
         {
             var (weightOverList, i) = stackWeightToSkillActions.GetWeightOverList();
             StackWeightToSkillActions = weightOverList;
@@ -26,9 +28,7 @@ namespace game_bot
         }
 
         private ImmutableArray<(int, SkillAction)> StackWeightToSkillActions { get; }
-
         private int Total { get; }
-
         private int ComboTotal { get; }
         public int DoNotRestTick { get; set; }
         private int DoNotMaxTick { get; }

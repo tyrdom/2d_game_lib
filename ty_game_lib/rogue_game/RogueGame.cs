@@ -38,7 +38,7 @@ namespace rogue_game
     public class RogueGame
     {
         private BotTeam BotTeam { get; }
-        private int ChapterId { get; set; }
+        private Queue<int> ChapterId { get; }
         private Chapter NowChapter { get; set; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
         public int RebornCountDownTick { get; set; }
@@ -49,18 +49,24 @@ namespace rogue_game
 
         public Random Random { get; }
 
-        public RogueGame(Queue<Chapter> chapters, Dictionary<int, RogueGamePlayer> nowGamePlayers,
-            int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, int chapterId)
+        public RogueGame(Dictionary<int, RogueGamePlayer> nowGamePlayers,
+            int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, IEnumerable<int> chapterId)
         {
+            ChapterId =
+                chapterId
+                    .Aggregate(new Queue<int>(), (ints, i) =>
+                    {
+                        ints.Enqueue(i);
+                        return ints;
+                    });
+            Random = new Random();
             RebornCost = LocalConfig.RogueRebornCost;
-            NowChapter = chapters.Dequeue();
+            NowChapter = Chapter.GenMapsById(ChapterId.Dequeue(), Random);
             NowGamePlayers = nowGamePlayers;
             RebornCountDownTick = rebornCountDownTick;
             PlayerLeaderGid = playerLeader;
             NowPlayMap = nowPlayMap;
-            ChapterId = chapterId;
             BotTeam = new BotTeam();
-            Random = new Random();
         }
 
         private bool Reborn(int seat, int toSeat)
@@ -91,13 +97,12 @@ namespace rogue_game
 
         private void GoNextChapter()
         {
-            ChapterId++;
-            NowChapter = Chapter.GenMapsById(ChapterId, Random);
+            var dequeue = ChapterId.Dequeue();
+            NowChapter = Chapter.GenMapsById(dequeue, Random);
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
         }
-
 
         private bool IsPlayerAllDead()
         {
@@ -165,14 +170,17 @@ namespace rogue_game
             return gameRespSet;
         }
 
-        public void Start()
-        {
-        }
-
         // roguelike接入核心玩法，
         public PlayGroundGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
         {
+            foreach (var botTeamTempOpThink in BotTeam.TempOpThinks)
+            {
+                if (botTeamTempOpThink.Value.Operate == null) continue;
+                opDic[botTeamTempOpThink.Key] = botTeamTempOpThink.Value.Operate;
+            }
+
             var playGroundGoTickResult = NowPlayMap.PlayGroundGoATick(opDic);
+            BotTeam.AllBotsGoATick(playGroundGoTickResult.PlayerSee);
             var playerBeHit = playGroundGoTickResult.PlayerBeHit;
 
 
@@ -195,7 +203,9 @@ namespace rogue_game
 
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
-
+            var valueTuples = NowPlayMap.SpawnNpc(Random);
+            BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
+            BotTeam.SetBots(valueTuples, Random);
             return playGroundGoTickResult;
         }
     }

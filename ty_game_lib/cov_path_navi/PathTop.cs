@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace cov_path_navi
 {
@@ -20,6 +21,33 @@ namespace cov_path_navi
             return aggregate;
         }
 
+        public int GetPolyCount()
+        {
+            return PolygonsTop.Count;
+        }
+        
+
+        public List<TwoDPoint> GetPatrolPts(Random random, int polyNum)
+        {
+            var pathNodeCovPolygons = PolygonsTop.Values.ToArray();
+            var pathNodeCovPolygon = pathNodeCovPolygons.ChooseRandOne(random);
+            var twoDPoints = new List<TwoDPoint> {pathNodeCovPolygon.GetCenterPt()};
+            for (int i = 0; i < polyNum; i++)
+            {
+                var any = pathNodeCovPolygon.Links.Any();
+                if (any)
+                {
+                    var chooseRandOne = pathNodeCovPolygon.Links.ChooseRandOne(random);
+                    pathNodeCovPolygon = PolygonsTop[chooseRandOne.LinkToPathNodeId];
+                    twoDPoints.Add(pathNodeCovPolygon.GetCenterPt());
+                    continue;
+                }
+
+                break;
+            }
+
+            return twoDPoints;
+        }
 
         public PathTop(WalkBlock walkBlock)
         {

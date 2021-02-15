@@ -548,6 +548,18 @@ namespace collision_and_rigid
             ).ToList();
         }
 
+        public static Zone JoinAll(IEnumerable<Zone> zones)
+        {
+            var enumerable = zones.ToList();
+            var maxUp = enumerable.Max(x => x.Up);
+            var maxRight = enumerable.Max(x => x.Right);
+            var left = enumerable.Min(x => x.Left);
+            var down = enumerable.Min(x => x.Down);
+
+
+            return new Zone(maxUp, down, left, maxRight);
+        }
+
         public static Zone? Join2(this Zone? a, Zone? b)
         {
             if (a == null)

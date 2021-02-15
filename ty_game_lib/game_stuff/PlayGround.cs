@@ -16,7 +16,7 @@ namespace game_stuff
         private SightMap? SightMap { get; } //视野地图
 
         private SightMap? BulletBlockMap { get; } //子弹穿透阻挡，无特殊情况和视野地图相当
-        private WalkMap? WalkMap { get; } //碰撞地图
+        public WalkMap WalkMap { get; } //碰撞地图
 
         private Dictionary<int, StartPts> Entrance { get; }
         private Dictionary<int, CharacterBody> GidToBody { get; } //gid到玩家地图实体对应
@@ -26,7 +26,7 @@ namespace game_stuff
 
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap? sightMap,
-            WalkMap? walkMap,
+            WalkMap walkMap,
             Dictionary<int, CharacterBody> gidToBody, IQSpace mapInteractableThings, int mgId,
             int resMId, Zone moveZone, Dictionary<int, StartPts> entrance, SightMap? bulletBlockMap)
         {
@@ -69,7 +69,7 @@ namespace game_stuff
             var walkMap = enumerable.Any()
                 ? enumerable.PloyListCheckOK() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark()) :
                 throw new Exception($"no good walk raw poly in {mapRaws.id} ")
-                : null;
+                : throw new Exception("must have walk map");
             var array = mapRawsSightRawMap.Select(x => x.GenPoly()).ToArray();
             var sightMap = array.Any()
                 ? array.PloyListCheckOK() ? SightMap.GenByConfig(array.PloyListMark()) :
@@ -209,10 +209,7 @@ namespace game_stuff
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
 
             MapInteractableGoATick();
-            if (WalkMap != null)
-            {
-                BodiesQSpaceReplace(playerBeHit);
-            }
+            BodiesQSpaceReplace(playerBeHit);
 
             HitMediasDo(playerBeHit, trapBeHit, teamRadarSee);
 

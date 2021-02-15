@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\collision_and_rigid\collision_and_rigid.csproj" />
+      <ProjectReference Include="..\game_config\game_config.csproj" />
     </ItemGroup>
 
     <ItemGroup>
