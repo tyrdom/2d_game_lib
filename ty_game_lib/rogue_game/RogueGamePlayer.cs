@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using game_stuff;
 
 namespace rogue_game
@@ -11,15 +12,18 @@ namespace rogue_game
             IsDead = false;
         }
 
-        public bool IsDead { get; set; }
+        public bool IsDead { get; private set; }
 
         public CharacterBody Player { get; }
 
 
         public FinalDeal FinalBill { get; }
 
-        public void Teleport(PveMap pveMap)
+
+        public void AddItem(ImmutableList<GameItem> gameItems)
         {
+            Player.CharacterStatus.PlayingItemBag.Gain(gameItems);
+            FinalBill.AddGain(gameItems);
         }
 
         public PlayerStatusSave PlayerSave(int mid)

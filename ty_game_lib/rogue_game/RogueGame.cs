@@ -38,7 +38,7 @@ namespace rogue_game
     public class RogueGame
     {
         private BotTeam BotTeam { get; }
-        private Queue<int> ChapterId { get; }
+        private Queue<int> ChapterIds { get; }
         private Chapter NowChapter { get; set; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
         public int RebornCountDownTick { get; set; }
@@ -49,11 +49,11 @@ namespace rogue_game
 
         public Random Random { get; }
 
-        public RogueGame(Dictionary<int, RogueGamePlayer> nowGamePlayers,
-            int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, IEnumerable<int> chapterId)
+        public RogueGame(HashSet<CharacterBody> characterBodies,
+            int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, IEnumerable<int> chapterIds)
         {
-            ChapterId =
-                chapterId
+            ChapterIds =
+                chapterIds
                     .Aggregate(new Queue<int>(), (ints, i) =>
                     {
                         ints.Enqueue(i);
@@ -61,12 +61,13 @@ namespace rogue_game
                     });
             Random = new Random();
             RebornCost = LocalConfig.RogueRebornCost;
-            NowChapter = Chapter.GenMapsById(ChapterId.Dequeue(), Random);
-            NowGamePlayers = nowGamePlayers;
+            NowChapter = Chapter.GenMapsById(ChapterIds.Dequeue(), Random);
+            NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
             RebornCountDownTick = rebornCountDownTick;
             PlayerLeaderGid = playerLeader;
             NowPlayMap = nowPlayMap;
             BotTeam = new BotTeam();
+            NowChapter.Entrance.AddCharacterBodiesToStart(characterBodies);
         }
 
         private bool Reborn(int seat, int toSeat)
@@ -84,10 +85,10 @@ namespace rogue_game
             return true;
         }
 
-        private bool LeaveGame(int seat)
+        private bool LeaveGame(int gidSeat)
         {
-            var leaveGame = NowGamePlayers.Remove(seat);
-            if (leaveGame && seat == PlayerLeaderGid && NowGamePlayers.Any())
+            var leaveGame = NowGamePlayers.Remove(gidSeat);
+            if (leaveGame && gidSeat == PlayerLeaderGid && NowGamePlayers.Any())
             {
                 PlayerLeaderGid = NowGamePlayers.First().Key;
             }
@@ -97,7 +98,7 @@ namespace rogue_game
 
         private void GoNextChapter()
         {
-            var dequeue = ChapterId.Dequeue();
+            var dequeue = ChapterIds.Dequeue();
             NowChapter = Chapter.GenMapsById(dequeue, Random);
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
@@ -144,7 +145,9 @@ namespace rogue_game
         public HashSet<IGameResp> GameConsoleGoATick(Dictionary<int, IGameRequest> gameRequests)
         {
             var gameRespSet = new HashSet<IGameResp>();
-            var enumerable = gameRequests.ToImmutableDictionary(x => x.Key, x => DoGameRequest(x.Key, x.Value));
+            var enumerable = gameRequests
+                .ToImmutableDictionary(x => x.Key,
+                    x => DoGameRequest(x.Key, x.Value));
             if (enumerable != null && enumerable.Any())
             {
                 gameRespSet.Add(new RequestResult(enumerable));
@@ -173,34 +176,44 @@ namespace rogue_game
         // roguelike接入核心玩法，
         public PlayGroundGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
         {
-            foreach (var botTeamTempOpThink in BotTeam.TempOpThinks)
+            foreach (var botTeamTempOpThink in BotTeam.TempOpThinks.Where(botTeamTempOpThink =>
+                botTeamTempOpThink.Value.Operate != null))
             {
-                if (botTeamTempOpThink.Value.Operate == null) continue;
-                opDic[botTeamTempOpThink.Key] = botTeamTempOpThink.Value.Operate;
+                opDic[botTeamTempOpThink.Key] = botTeamTempOpThink.Value.Operate!;
             }
 
             var playGroundGoTickResult = NowPlayMap.PlayGroundGoATick(opDic);
             BotTeam.AllBotsGoATick(playGroundGoTickResult.PlayerSee);
-            var playerBeHit = playGroundGoTickResult.PlayerBeHit;
+            var characterBeHit = playGroundGoTickResult.CharacterBeHit;
 
-
-            if (playerBeHit.Any())
+            if (characterBeHit.Any())
             {
-                NowPlayMap.KillCreep(playerBeHit);
+                var (all, kill, mapInteractableList) =
+                    NowPlayMap.KillCreep(characterBeHit);
 
-                foreach (var rogueGamePlayer in NowGamePlayers.Values.Where(rogueGamePlayer => !rogueGamePlayer.IsDead)
-                )
+                foreach (var rogueGamePlayer in NowGamePlayers)
                 {
-                    rogueGamePlayer.CheckDead();
+                    rogueGamePlayer.Value.AddItem(all);
+                    if (kill.TryGetValue(rogueGamePlayer.Key, out var enumerable))
+                    {
+                        rogueGamePlayer.Value.AddItem(enumerable);
+                    }
+
+                    if (!rogueGamePlayer.Value.IsDead)
+                    {
+                        rogueGamePlayer.Value.CheckDead();
+                    }
+                }
+
+                foreach (var mapInteractable in mapInteractableList)
+                {
+                    NowPlayMap.PlayGround.AddMapInteractable(mapInteractable);
                 }
             }
 
             var playerTeleportTo = playGroundGoTickResult.PlayerTeleportTo;
             if (!playerTeleportTo.Any()) return playGroundGoTickResult;
-
             var (map, toPos) = playerTeleportTo.Values.First();
-
-
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
             var valueTuples = NowPlayMap.SpawnNpc(Random);

@@ -6,19 +6,19 @@ namespace game_stuff
 {
     public readonly struct PlayGroundGoTickResult
     {
-        public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit,
+        public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> characterBeHit,
             ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapBeHit,
             ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> playerSee,
             ImmutableDictionary<int, TelePortMsg> playerTeleportTo)
         {
-            PlayerBeHit = playerBeHit;
+            CharacterBeHit = characterBeHit;
             TrapBeHit = trapBeHit;
             PlayerSee = playerSee;
             PlayerTeleportTo = playerTeleportTo;
         }
 
         public ImmutableDictionary<int, TelePortMsg> PlayerTeleportTo { get; }
-        public ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> PlayerBeHit { get; }
+        public ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> CharacterBeHit { get; }
         public ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> TrapBeHit { get; }
         public ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> PlayerSee { get; }
 
@@ -34,7 +34,7 @@ namespace game_stuff
                 {
                     var (dictionary, dictionary1, see1, ins) = s;
                     var keyValuePairs = dictionary1.Union(x.TrapBeHit);
-                    var valuePairs = dictionary.Union(x.PlayerBeHit);
+                    var valuePairs = dictionary.Union(x.CharacterBeHit);
                     var enumerable = see1.Union(x.PlayerSee);
                     var union = ins.Union(x.PlayerTeleportTo);
                     return ((Dictionary<int, ImmutableHashSet<IRelationMsg>> hit,
@@ -54,7 +54,7 @@ namespace game_stuff
         {
             playerSee = PlayerSee;
             trapBeHit = TrapBeHit;
-            playerBeHit = PlayerBeHit;
+            playerBeHit = CharacterBeHit;
             playerTeleportTo = PlayerTeleportTo;
         }
     }

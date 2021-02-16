@@ -8,8 +8,9 @@ namespace game_stuff
         public ICanBeHit WhoTake { get; }
     }
 
-    internal interface IDamageMsg : IRelationMsg
+    public interface IDamageMsg : IRelationMsg
     {
+      
         DmgShow DmgShow { get; }
     }
 
@@ -21,8 +22,10 @@ namespace game_stuff
             DmgShow = dmgShow;
             CasterOrOwner = casterOrOwner;
             HitMedia = hitMedia;
+          
         }
 
+     
         public DmgShow DmgShow { get; }
 
         public CharacterStatus CasterOrOwner { get; }

@@ -55,7 +55,7 @@ namespace game_stuff
             return all;
         }
 
-        public bool Cost(GameItem gameItem)
+        private bool Cost(GameItem gameItem)
         {
             var gameItemItemId = gameItem.ItemId;
             if (!GameItems.TryGetValue(gameItemItemId, out var num)) return false;
@@ -81,6 +81,17 @@ namespace game_stuff
             }
 
             throw new Exception($"not such  item id::{itemId}");
+        }
+
+        public void Gain(IEnumerable<GameItem> gameItems)
+        {
+            foreach (var grouping in gameItems.GroupBy(item => item.ItemId))
+            {
+                var sum = grouping.Sum(x => x.Num);
+                var gameItem = new GameItem(grouping.Key, sum);
+                Gain(gameItem);
+            }
+
         }
     }
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
-using game_bot;
 using game_stuff;
 using rogue_chapter_maker;
 
@@ -73,17 +72,35 @@ namespace rogue_game
             return valueTuples;
         }
 
-        public void KillCreep(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit)
+        public (ImmutableList<GameItem> all, ImmutableDictionary<int, ImmutableList<GameItem>> kill,
+            ImmutableList<IMapInteractable> mapInteractables) KillCreep(
+                ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> charBeHit)
         {
+            var all = new List<GameItem>();
+            var kill = new List<(int, GameItem[])>();
+            var mapInteractables = new List<IMapInteractable>();
+
             bool Predicate(BattleNpc creep)
             {
-                return playerBeHit.ContainsKey(creep.CharacterBody.GetId()) &&
-                       creep.CharacterBody.CharacterStatus.SurvivalStatus.IsDead();
+                var getValue = charBeHit.TryGetValue(creep.CharacterBody.GetId(), out var relationMsgSet);
+                if (!getValue) return false;
+                var damageMsg = relationMsgSet.OfType<IDamageMsg>().FirstOrDefault(x => x.DmgShow.IsKill);
+                if (damageMsg == null) return false;
+                var gId = damageMsg.CasterOrOwner.GId;
+                var creepWantedBonus = creep.WantedBonus;
+                all.AddRange(creepWantedBonus.AllBonus);
+                kill.Add((gId, creepWantedBonus.KillBonus));
+                creepWantedBonus.MapInteractableDrop.ReLocate(creep.CharacterBody.GetAnchor());
+                mapInteractables.Add(creepWantedBonus.MapInteractableDrop);
+                return false;
             }
 
+            var immutableDictionary = kill.GroupBy(x => x.Item1).ToImmutableDictionary(p => p.Key,
+                p => p.SelectMany(x => x.Item2).ToImmutableList());
             switch (PveWinCond)
             {
                 case PveWinCond.AllClear:
+
                     var removeWhere = Bosses.RemoveWhere(Predicate);
                     var i = Creeps.RemoveWhere(Predicate);
                     if (removeWhere > 0 || i > 0)
@@ -91,8 +108,7 @@ namespace rogue_game
                         IsClear = !(Bosses.Any() || Creeps.Any());
                     }
 
-
-                    return;
+                    return (all.ToImmutableList(), immutableDictionary, mapInteractables.ToImmutableList());
                 case PveWinCond.BossClear:
                     var ii = Bosses.RemoveWhere(Predicate);
                     if (ii > 0)
@@ -100,7 +116,7 @@ namespace rogue_game
                         IsClear = !Bosses.Any();
                     }
 
-                    return;
+                    return (all.ToImmutableList(), immutableDictionary, mapInteractables.ToImmutableList());
                 default:
                     throw new ArgumentOutOfRangeException();
             }
