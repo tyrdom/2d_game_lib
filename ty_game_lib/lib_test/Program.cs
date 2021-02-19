@@ -17,9 +17,7 @@ namespace lib_test
         {
             Console.Out.WriteLine("Block test!!!");
             Console.Out.WriteLine("ResIsBlockIN?" + walkBlock.IsBlockIn);
-            Console.Out.WriteLine(walkBlock.QSpace != null
-                ? walkBlock.QSpace.OutZones()
-                : "all block");
+            Console.Out.WriteLine(walkBlock.QSpace.OutZones());
 
             var inBlock2 = walkBlock.RealCoverPoint(ptt);
 
@@ -129,120 +127,7 @@ namespace lib_test
 
         private static void Main(string[] args)
         {
-            uint acc = 1;
-            uint bcc = 5;
-            var u = acc - bcc;
-            Console.Out.WriteLine($"uint~~~~~~~~~:{u}");
-            var poly1 = TestStuff.TestPoly2();
-            var poly2 = TestStuff.TestPoly3();
-            var poly3 = new Poly(new[]
-                {new TwoDPoint(2, 1), new TwoDPoint(4, 1), new TwoDPoint(4, -1), new TwoDPoint(2, -1),});
-
-            var poly4 = new Poly(new[]
-                {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
-
-            var poly5 = new Poly(new[]
-            {
-                new TwoDPoint(-2, -2), new TwoDPoint(-2, -4), new TwoDPoint(-4, -4), new TwoDPoint(-4, -2)
-            });
-            var poly = TestStuff.TestPoly();
-            var tuples = new List<(Poly, bool)>
-            {
-                (poly, false), (poly3, true)
-                // , (poly1, true)
-                // , (poly5, true)
-            };
-
-            var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(tuples, 2f, 6);
-            var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
-
-            PathTest(genWalkBlockByPolys);
-
-            var ptt = new TwoDPoint(2f, -1.717f);
-
-            Console.Out.WriteLine("config test~~~~~");
-
-            var configDictionaries = new ConfigDictionaries();
-            var configDictionariesBullets = configDictionaries.bullets;
-            foreach (var configDictionariesBullet in configDictionariesBullets)
-            {
-                var key = configDictionariesBullet.Key;
-                Console.Out.WriteLine($"{key}");
-                foreach (var keyValuePair in configDictionariesBullet.Value.FailActBuffConfigToSelf)
-                {
-                    Console.Out.WriteLine($"{keyValuePair.size}");
-                }
-            }
-
-            var (playGround, item2) = TestStuff.TestPlayGround();
-            return;
-            Console.Out.WriteLine("pg ok");
-            // void ConfigTest()
-            // {
-            //     Console.Out.WriteLine("game test~~~~~");
-            //
-            //    
-            //     foreach (var (key, charInitMsgs) in item2)
-            //     {
-            //         Console.Out.WriteLine($"{key}");
-            //         foreach (var charInitMsg in charInitMsgs)
-            //         {
-            //             var gId = charInitMsg.GId;
-            //             var logPt = charInitMsg.Pos.LogPt();
-            //             var twoDVector = charInitMsg.Aim.LogVector();
-            //             Console.Out.WriteLine($"{gId}::{logPt}::{twoDVector}");
-            //         }
-            //     }
-            // }
-
-
-            var pi = MathTools.Pi();
-            var aa = pi;
-            var bb = pi / 2f;
-            var aVector = new TwoDVector(MathTools.Cos(aa), MathTools.Sin(aa));
-            var bVector = new TwoDVector(MathTools.Cos(bb), MathTools.Sin(bb));
-            var cVector = new TwoDVector(-1, 0);
-
-            var move = new Operate(null, null,
-                aVector);
-            var skill = new Operate(null, SkillAction.Op2, null);
-            var skill2 = new Operate(null, SkillAction.Op1, null);
-            var turn = new Operate(bVector, null, null);
-            var turn2 = new Operate(aVector, null, null);
-            // var logVector = operate.Move?.LogVector();
-            // Console.Out.WriteLine($"move op ::{logVector}");
-            var operate1 = new Operate(cVector, null, null);
-            var operates1 = new[] {operate1, turn2, turn, turn2, operate1};
-            var dictionary = new Dictionary<int, Operate> {{1, skill}};
-            var dictionary2 = new Dictionary<int, Operate> {{1, skill2}};
-            var enumerable = operates1.Select(x => new Dictionary<int, Operate> {{1, x}}).ToArray();
-
-            // var playGroundGoATick = playGround.PlayGroundGoATick(dictionary);
-            //
-            // LogCPos(playGroundGoATick.Item2);
-
-            var operates = new Dictionary<int, Operate> {{1, operate1}};
-
-            // var (item1, item2) = playGround.PlayGroundGoATick(operates);
-            // LogCPos(item2);
-            var range = Enumerable.Range(1, 100).ToArray();
-            foreach (var i in range)
-            {
-                var (_, _, item3, _) =
-                    i == 1
-                        ? playGround.PlayGroundGoATick(operates)
-                        : i < 30
-                            ? playGround.PlayGroundGoATick(dictionary)
-                            : playGround.PlayGroundGoATick(dictionary2);
-
-                // if (i == 1) playGround.PlayGroundGoATick(operates);
-                //
-                // var (_, item3) = (i % 20 != 1 && i < 60)
-                //     ? playGround.PlayGroundGoATick(dictionary)
-                //     : playGround.PlayGroundGoATick(operates);
-                Console.Out.WriteLine($"{i}");
-                LogCPos(item3);
-            }
+           
         }
 
         private static void LogCPos(ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> item2)

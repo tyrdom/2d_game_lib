@@ -12,7 +12,7 @@ namespace collision_and_rigid
             if (pts.Length >= 3 && !CheckCross(pts) && CheckNoSame(pts))
                 Pts = pts;
             else
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(pts.Aggregate("", (s, point) => s +" "+ point));
         }
 
 

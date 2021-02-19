@@ -31,7 +31,7 @@ namespace game_stuff
         {
             IsActive = isActive;
             var configsInteraction = CommonConfig.Configs.interactions;
-            var roundP = new Round(pos, LocalConfig.SaleBoxR);
+            var roundP = new Round(pos, CommonConfig.OtherConfig.saleBox_R);
             var interaction1 = configsInteraction[interactionAct.get_info];
             var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.GetInfoCall);
             var interaction2 = configsInteraction[interactionAct.apply];
@@ -135,7 +135,7 @@ namespace game_stuff
                     return new SaleBoxTickMsg(saleUnit.Cost,
                         saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray(),
                         saleUnit.GetRestStack(gid), GetAnchor());
-                case TeleportUnit teleportUnit:
+                case TeleportUnit _:
                     return new TelePortTickMsg(GetAnchor());
 
                 default:

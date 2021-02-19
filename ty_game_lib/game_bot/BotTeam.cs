@@ -59,5 +59,17 @@ namespace game_bot
 
             TempOpThinks = botOpAndThinks;
         }
+
+        public PathTop GetNaviMap(size getSize)
+        {
+            return SizeToNaviMap.TryGetValue(getSize, out var top)
+                ? top
+                : throw new KeyNotFoundException();
+        }
+
+        public void SetBots(IEnumerable<SimpleBot> valueTuples)
+        {
+            SimpleBots = valueTuples.IeToHashSet();
+        }
     }
 }

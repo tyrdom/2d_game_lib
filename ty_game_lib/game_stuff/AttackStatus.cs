@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Security.Authentication.ExtendedProtection;
 using game_config;
 
 namespace game_stuff
@@ -23,7 +22,7 @@ namespace game_stuff
 
         private AttackStatus(uint baseAttack, uint bsn, float backStabAdd)
         {
-            ShardedAttack = (uint) (baseAttack * LocalConfig.ShardedAttackMulti);
+            ShardedAttack = (uint) (baseAttack *  CommonConfig.OtherConfig.ShardedAttackMulti);
             ShardedNum = bsn;
             BackStabAdd = backStabAdd;
             MainAttack = baseAttack;

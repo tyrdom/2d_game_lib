@@ -59,7 +59,7 @@ namespace game_stuff
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)
         {
-            var id = characterStatus.GetId() * LocalConfig.UpMaxTrap + characterStatus.Traps.Count;
+            var id = characterStatus.GetId() * CommonConfig.OtherConfig.up_trap_max + characterStatus.Traps.Count;
 
             if (BaseAttrId == null)
                 return new Trap(characterStatus, null, CanBeSee, pos, id, BodySize,

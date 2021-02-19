@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
+using game_bot;
 using game_stuff;
 using rogue_chapter_maker;
 
@@ -55,21 +56,32 @@ namespace rogue_game
         public int[] CreepIdToSpawn { get; }
         public int[] BossIdToSpawn { get; }
 
-        public HashSet<(int npcId, BattleNpc battleNpc)> GenBattleNpc(int[] ints, Random random)
+        public HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(int[] ints, Random random,
+            BotTeam botTeam)
         {
-            return Enumerable.Range(0, ints.Length)
-                .Select(x => (ints[x], BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random))).IeToHashSet();
+            var genBattleNpcAndBot = Enumerable.Range(0, ints.Length)
+                .Select(x =>
+                {
+                    var genById = BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random);
+                    var simpleBot = SimpleBot.GenById(x, genById.CharacterBody, random,
+                        botTeam.GetNaviMap(genById.CharacterBody.GetSize()));
+
+                    return (simpleBot, genById);
+                }).IeToHashSet();
+            return genBattleNpcAndBot;
         }
 
-
-        public IEnumerable<(int, CharacterBody)> SpawnNpc(Random random)
+        public void SpawnNpcWithBot(Random random, BotTeam botTeam)
         {
-            var genBattleNpc = GenBattleNpc(CreepIdToSpawn, random);
+            var genBattleNpc = GenBattleNpcWithBot(CreepIdToSpawn, random, botTeam);
             Creeps = genBattleNpc.Select(x => x.Item2).IeToHashSet();
-            var battleNpc = GenBattleNpc(BossIdToSpawn, random);
+            var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam);
             Bosses = battleNpc.Select(x => x.Item2).IeToHashSet();
-            var valueTuples = genBattleNpc.Union(battleNpc).Select(x => (x.npcId, x.battleNpc.CharacterBody));
-            return valueTuples;
+            var valueTuples = genBattleNpc.Union(battleNpc)
+                .Select(x => (x.simpleBot, x.battleNpc.CharacterBody, x.simpleBot.GetStartPt())).IeToHashSet();
+            var battleNpcS = valueTuples.Select(x => x.simpleBot);
+            botTeam.SetBots(battleNpcS);
+            TeleportToThisMap(valueTuples.Select(x => (x.CharacterBody, x.Item3)));
         }
 
         public (ImmutableList<GameItem> all, ImmutableDictionary<int, ImmutableList<GameItem>> kill,
@@ -78,7 +90,7 @@ namespace rogue_game
         {
             var all = new List<GameItem>();
             var kill = new List<(int, GameItem[])>();
-            var mapInteractables = new List<IMapInteractable>();
+            var mapInteractableS = new List<IMapInteractable>();
 
             bool Predicate(BattleNpc creep)
             {
@@ -91,7 +103,7 @@ namespace rogue_game
                 all.AddRange(creepWantedBonus.AllBonus);
                 kill.Add((gId, creepWantedBonus.KillBonus));
                 creepWantedBonus.MapInteractableDrop.ReLocate(creep.CharacterBody.GetAnchor());
-                mapInteractables.Add(creepWantedBonus.MapInteractableDrop);
+                mapInteractableS.Add(creepWantedBonus.MapInteractableDrop);
                 return false;
             }
 
@@ -108,7 +120,7 @@ namespace rogue_game
                         IsClear = !(Bosses.Any() || Creeps.Any());
                     }
 
-                    return (all.ToImmutableList(), immutableDictionary, mapInteractables.ToImmutableList());
+                    return (all.ToImmutableList(), immutableDictionary, mapInteractableS.ToImmutableList());
                 case PveWinCond.BossClear:
                     var ii = Bosses.RemoveWhere(Predicate);
                     if (ii > 0)
@@ -116,7 +128,7 @@ namespace rogue_game
                         IsClear = !Bosses.Any();
                     }
 
-                    return (all.ToImmutableList(), immutableDictionary, mapInteractables.ToImmutableList());
+                    return (all.ToImmutableList(), immutableDictionary, mapInteractableS.ToImmutableList());
                 default:
                     throw new ArgumentOutOfRangeException();
             }

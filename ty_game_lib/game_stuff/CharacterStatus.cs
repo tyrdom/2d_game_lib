@@ -178,7 +178,7 @@ namespace game_stuff
 
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
-            Dictionary<int, PassiveTrait>? passiveTraits = null)
+            Dictionary<int, PassiveTrait>? passiveTraits = null, int? maxWeaponNum = null)
         {
             HaveChange = false;
             ScoreData = new CharKillData();
@@ -190,7 +190,7 @@ namespace game_stuff
             ProtectTickMultiAdd = 0;
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
-            MaxTrap = genBaseAttrById.MaxTrapNum;
+            MaxTrap = Math.Min(genBaseAttrById.MaxTrapNum, (uint) CommonConfig.OtherConfig.up_trap_max);
             Traps = new Queue<Trap>();
 
             CharacterBody = null!;
@@ -210,7 +210,7 @@ namespace game_stuff
             NowProtectTick = 0;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
-            MaxProtectValue = LocalConfig.TrickProtect;
+            MaxProtectValue = CommonConfig.OtherConfig.trick_protect_value;
             PassiveTraits = passiveTraits ?? new Dictionary<int, PassiveTrait>();
 
             BaseAttrId = baseAttrId;
@@ -224,14 +224,14 @@ namespace game_stuff
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;
-            MaxPropPoint = LocalConfig.StandardPropMaxStack;
+            MaxPropPoint = CommonConfig.OtherConfig.standard_max_prop_stack;
             NowVehicle = null;
             NowAmmo = 0;
             MaxAmmo = genBaseAttrById.MaxAmmo;
             MaxCallLongStack = LocalConfig.MaxCallActTwoTick;
             NowCallLongStack = 0;
             NowMapInteractive = null;
-            MaxWeaponSlot = LocalConfig.StandardWeaponNum;
+            MaxWeaponSlot = maxWeaponNum ?? CommonConfig.OtherConfig.weapon_num;
             RecycleMulti = genBaseAttrById.RecycleMulti;
             StartPassiveInitRefresh();
         }
@@ -272,7 +272,9 @@ namespace game_stuff
         private void OpChangeAim(TwoDVector? aim)
         {
             var twoSToSeePerTick =
-                NowVehicle == null ? LocalConfig.TwoSToSeePerTick : LocalConfig.TwoSToSeePerTickInMidV;
+                NowVehicle == null
+                    ? CommonConfig.OtherConfig.two_s_to_see_pertick
+                    : CommonConfig.OtherConfig.two_s_to_see_pertick_medium_vehicle;
 
             CharacterBody.Sight.OpChangeAim(aim, GetNowScope(), twoSToSeePerTick);
         }
@@ -1006,10 +1008,10 @@ namespace game_stuff
         {
             var dot = move.Dot(CharacterBody.Sight.Aim);
             var normalSpeedMinCos = MathTools.Max(0f, MathTools.Min(1f,
-                (dot + LocalConfig.DecreaseMinCos) / (LocalConfig.DecreaseMinCos + LocalConfig.NormalSpeedMinCos)
+                (dot + CommonConfig.OtherConfig.DecreaseMinCos) / (CommonConfig.OtherConfig.DecreaseMinCos + CommonConfig.OtherConfig.NormalSpeedMinCos)
             ));
-            var moveDecreaseMinMulti = LocalConfig.MoveDecreaseMinMulti +
-                                       (1f - LocalConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
+            var moveDecreaseMinMulti = CommonConfig.OtherConfig.MoveDecreaseMinMulti +
+                                       (1f - CommonConfig.OtherConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
             var maxMoveSpeed = GetMaxMoveSpeed() * moveDecreaseMinMulti;
             var nowMoveSpeed = MathTools.Max(GetMinMoveSpeed(), MathTools.Min(maxMoveSpeed,
                 NowMoveSpeed + GetAddMoveSpeed()));
@@ -1109,7 +1111,7 @@ namespace game_stuff
             var add = otherAttrPassiveEffects[2];
             AddMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
             var lossP = MaxPropPoint - NowPropPoint;
-            MaxPropPoint = (int) (LocalConfig.StandardPropMaxStack * (1f + otherAttrPassiveEffects[3]));
+            MaxPropPoint = (int) (CommonConfig.OtherConfig.standard_max_prop_stack * (1f + otherAttrPassiveEffects[3]));
             NowPropPoint = MaxPropPoint - lossP;
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
@@ -1208,13 +1210,13 @@ namespace game_stuff
         private void HitBuffTrickRefresh(Vector<float> vector)
         {
             var passiveEffect = (int) vector[0];
-            var genById = PlayBuffStandard.GenById(LocalConfig.AtkPassBuffId);
+            var genById = PlayBuffStandard.GenById(CommonConfig.OtherConfig.atkPassBuffId);
             genById.Stack = passiveEffect;
             BuffTrick[TrickCond.MyAtkOk] = new HashSet<IPlayingBuff> {genById};
 
 
             var passiveEffect2 = (int) vector[1];
-            var genById2 = PlayBuffStandard.GenById(LocalConfig.DefPassBuffId);
+            var genById2 = PlayBuffStandard.GenById(CommonConfig.OtherConfig.defPassBuffId);
             genById2.Stack = passiveEffect2;
 
             BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> {genById};

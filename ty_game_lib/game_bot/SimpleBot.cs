@@ -49,9 +49,9 @@ namespace game_bot
             return valueTuples;
         }
 
-        public static SimpleBot GenById(int id, CharacterBody body, Random random, PathTop pathTop)
+        public static SimpleBot GenById(int npcId, CharacterBody body, Random random, PathTop pathTop)
         {
-            return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
+            return CommonConfig.Configs.battle_npcs.TryGetValue(npcId, out var battleNpc)
                 ? GenByConfig(battleNpc, body, random, pathTop)
                 : throw new KeyNotFoundException();
         }
@@ -356,6 +356,12 @@ namespace game_bot
 
             var okWeapon = enumerable.First();
             return characterStatusNowWeapon == okWeapon.weaponIndex ? (true, false) : (false, true);
+        }
+
+        public TwoDPoint GetStartPt()
+        {
+            var twoDPoint = PatrolCtrl.GetNowPt();
+            return twoDPoint;
         }
     }
 }

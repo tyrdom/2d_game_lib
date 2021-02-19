@@ -21,7 +21,7 @@ namespace game_stuff
         {
             return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed, baseAttribute.MoveMinSpeed,
                 baseAttribute.MoveAddSpeed,
-                LocalConfig.StandardPropMaxStack, baseAttribute.RecycleMulti);
+                CommonConfig.OtherConfig.standard_max_prop_stack, baseAttribute.RecycleMulti);
         }
 
         public static ( float TrapAtkMulti, float TrapSurvivalMulti) GenTrapAttr(base_attribute baseAttribute)
@@ -88,8 +88,8 @@ namespace game_stuff
                 return LocalConfig.MaxUpSpeed;
             }
 
-            var maxHeight = LocalConfig.MaxHeight - height.Value;
-            var f = 2f * LocalConfig.G * maxHeight;
+            var maxHeight =  CommonConfig.OtherConfig.max_hegiht - height.Value;
+            var f = 2f * CommonConfig.OtherConfig.g_acc * maxHeight;
             return MathTools.Sqrt(f);
         }
 

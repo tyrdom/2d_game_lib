@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,23 +8,24 @@ namespace game_config
 {
     public static class CommonConfig
     {
-        
-        
-        public static int BattleExpId { get; private set; } = 1;
         public static ConfigDictionaries Configs { get; private set; }
+
 #if NETCOREAPP
             = new ConfigDictionaries();
 #else
             = new ConfigDictionaries("");
 #endif
+
+        public static other_config OtherConfig { get; private set; }
+
         public static uint GetTickByTime(float time)
         {
-            return (uint) (time * TickPerSec);
+            return (uint) Math.Round(time / OtherConfig.tick_time, 0);
         }
 
         public static int GetIntTickByTime(float time)
         {
-            return (int) (time * TickPerSec);
+            return (int) Math.Round(time / OtherConfig.tick_time, 0);
         }
 
         public static (bool isGetOk, T things) GetWeightThings<T>(this ImmutableArray<(int, T)> weightOverList,
@@ -56,28 +58,26 @@ namespace game_config
 
         public static float NumPerSecToTickPerSec(float numPerSec)
         {
-            return numPerSec / TickPerSec;
+            return numPerSec * OtherConfig.tick_time;
         }
 
         public static uint NumPerSecToTickPerSec(uint numPerSec)
         {
-            return (uint) (numPerSec / TickPerSec);
+            return (uint) Math.Round(numPerSec * OtherConfig.tick_time, 0);
         }
 
         public static int NumPerSecToTickPerSec(int numPerSec)
         {
-            return numPerSec / TickPerSec;
+            return (int) Math.Round(numPerSec * OtherConfig.tick_time);
         }
 
 
-        private static int TickPerSec { get; set; } = 10;
         public static void ReLoadP(ConfigDictionaries configs)
         {
             Configs = configs;
-            var configsOtherConfig = configs.other_configs[1];
-            TickPerSec = configsOtherConfig.tick_per_sec;
-            BattleExpId = configs.items.Values.First(x => x.ItemType == ItemType.battle_exp).id;
+            OtherConfig = configs.other_configs[1];
         }
+
 #if NETCOREAPP
         public static void LoadConfig()
         {

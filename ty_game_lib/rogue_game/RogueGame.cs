@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using game_bot;
+using game_config;
 using game_stuff;
 
 namespace rogue_game
@@ -43,14 +44,21 @@ namespace rogue_game
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
         public int RebornCountDownTick { get; set; }
         public GameItem[] RebornCost { get; }
-        public int PlayerLeaderGid { get; set; }
+        public int PlayerLeaderGid { get; private set; }
 
         public PveMap NowPlayMap { get; set; }
 
         public Random Random { get; }
 
-        public RogueGame(HashSet<CharacterBody> characterBodies,
-            int rebornCountDownTick, int playerLeader, PveMap nowPlayMap, IEnumerable<int> chapterIds)
+
+        public static RogueGame GenByConfig(HashSet<CharacterBody> characterBodies, CharacterBody leader)
+        {
+            var otherConfig = CommonConfig.OtherConfig;
+            var otherConfigRogueChapters = otherConfig.RogueChapters;
+            return new RogueGame(characterBodies, leader.GetId(), otherConfigRogueChapters);
+        }
+
+        public RogueGame(HashSet<CharacterBody> characterBodies, int playerLeader, IEnumerable<int> chapterIds)
         {
             ChapterIds =
                 chapterIds
@@ -63,9 +71,9 @@ namespace rogue_game
             RebornCost = LocalConfig.RogueRebornCost;
             NowChapter = Chapter.GenMapsById(ChapterIds.Dequeue(), Random);
             NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
-            RebornCountDownTick = rebornCountDownTick;
+            RebornCountDownTick = LocalConfig.RogueRebornTick;
             PlayerLeaderGid = playerLeader;
-            NowPlayMap = nowPlayMap;
+            NowPlayMap = NowChapter.Entrance;
             BotTeam = new BotTeam();
             NowChapter.Entrance.AddCharacterBodiesToStart(characterBodies);
         }
@@ -216,9 +224,8 @@ namespace rogue_game
             var (map, toPos) = playerTeleportTo.Values.First();
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
-            var valueTuples = NowPlayMap.SpawnNpc(Random);
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
-            BotTeam.SetBots(valueTuples, Random);
+            NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
             return playGroundGoTickResult;
         }
     }

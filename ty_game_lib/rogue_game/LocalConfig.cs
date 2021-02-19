@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using game_config;
 using game_stuff;
@@ -10,7 +9,11 @@ namespace rogue_game
 {
     public static class LocalConfig
     {
-       
+        public static int GetRuleCheckIntTickByTime(float time)
+        {
+            return (int) (time / CommonConfig.OtherConfig.rogueGameCheckTickTime);
+        }
+
         public static bool CanEndRest(int itemId)
         {
             if (CommonConfig.Configs.items.TryGetValue(itemId, out var item))
@@ -49,14 +52,15 @@ namespace rogue_game
             };
         }
 
-        public static int GameRuleCheckTick { get; private set; } = 10;
+        public static int GameRuleCheckTickPerSec { get; private set; } = 1;
         public static GameItem[] RogueRebornCost { get; private set; } = { };
         public static int RogueRebornTick { get; private set; } = 1000;
         private static void ReLoadP(ConfigDictionaries configs)
         {
-            var configsOtherConfig = configs.other_configs[1];
+            game_bot.LocalConfig.ReLoadP(configs);
+            var configsOtherConfig = CommonConfig.OtherConfig;
             RogueRebornCost = configsOtherConfig.rogue_reborn_cost.Select(GameItem.GenByConfigGain).ToArray();
-            RogueRebornTick = (int) CommonConfig.GetTickByTime(configsOtherConfig.rogue_reborn_limit_time);
+            RogueRebornTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogue_reborn_limit_time);
         }
 #if NETCOREAPP
         public static void LoadConfig()

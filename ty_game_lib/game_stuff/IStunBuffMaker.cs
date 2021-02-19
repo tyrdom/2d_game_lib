@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -45,7 +44,10 @@ namespace game_stuff
                 .ToDictionary(
                     x =>
                     {
+#if DEBUG
                         Console.Out.WriteLine($"time is {CommonConfig.GetTickByTime(x.key_time)}");
+#endif
+
                         return CommonConfig.GetTickByTime(x.key_time);
                     },
                     x => GameTools.GenVectorByConfig(x.key_point))
@@ -110,8 +112,8 @@ namespace game_stuff
     public class PushEarthStunBuffMaker : IStunBuffMaker
     {
         private float PushForce { get; } //推力
-        private PushType PushType{ get; }//方向或者中心
-        private TwoDVector? PushFixVector{ get; } //修正向量，中心push为中心点，方向为方向修正
+        private PushType PushType { get; } //方向或者中心
+        private TwoDVector? PushFixVector { get; } //修正向量，中心push为中心点，方向为方向修正
         public uint TickLast { get; }
 
         public PushEarthStunBuffMaker(float pushForce, PushType pushType, TwoDVector? pushFixVector,
@@ -155,7 +157,8 @@ namespace game_stuff
                     var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector) : pos;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit =
-                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, LocalConfig.Friction, whoDid);
+                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed,
+                            CommonConfig.OtherConfig.friction, whoDid);
                     return genBuffFromUnit;
 
 
@@ -163,7 +166,8 @@ namespace game_stuff
                     var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
-                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, LocalConfig.Friction, whoDid);
+                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, CommonConfig.OtherConfig.friction,
+                            whoDid);
                     return genBuffFromUnit1;
 
                 default:
@@ -174,11 +178,11 @@ namespace game_stuff
 
     public class PushAirStunBuffMaker : IStunBuffMaker
     {
-        private float PushForce{ get; }
-        private PushType PushType{ get; }
-        private float UpForce{ get; }
+        private float PushForce { get; }
+        private PushType PushType { get; }
+        private float UpForce { get; }
 
-        private TwoDVector? PushFixVector{ get; }
+        private TwoDVector? PushFixVector { get; }
         public uint TickLast { get; }
 
         public PushAirStunBuffMaker(float pushForce, PushType pushType, float upForce,

@@ -133,6 +133,12 @@ namespace rogue_chapter_maker
                 genAChapterMap.SetVendors(startP, vStart, vRangeCount, vendor);
             }
 
+            foreach (var pointMap in genAChapterMap.PointMaps)
+            {
+                var where = pointMap.Links.Where(x => x.LinkTo != null);
+                pointMap.Links = where.ToList();
+            }
+
             return genAChapterMap;
         }
 

@@ -36,9 +36,9 @@ namespace game_stuff
 
             var roundP = canPutInMapInteractable switch
             {
-                Prop _ => new Round(pos, LocalConfig.PropR),
-                Weapon _ => new Round(pos, LocalConfig.WeaponR),
-                PassiveTrait _ => new Round(pos, LocalConfig.PassiveR),
+                Prop _ => new Round(pos, CommonConfig.OtherConfig.prop_R),
+                Weapon _ => new Round(pos, CommonConfig.OtherConfig.weapon_R),
+                PassiveTrait _ => new Round(pos, CommonConfig.OtherConfig.pass_R),
                 _ => throw new ArgumentOutOfRangeException(nameof(canPutInMapInteractable))
             };
             var interaction1 = configsInteraction[interactionAct.pick_up_cage];

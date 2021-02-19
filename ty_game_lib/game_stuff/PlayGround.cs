@@ -56,7 +56,7 @@ namespace game_stuff
         //初始化状态信息,包括玩家信息和地图信息
         private static PlayGround GenEmptyPlayGround(MapInitData initData, int genId, int resId)
         {
-            var (playGround, _) = InitPlayGround(new CharacterInitData[] { }, initData, genId, resId);
+            var playGround = InitPlayGround(new CharacterInitData[] { }, initData, genId, resId);
             return playGround;
         }
 
@@ -67,17 +67,17 @@ namespace game_stuff
             var mapRawsBulletRawMap = mapRaws.BulletRawMap;
             var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
             var walkMap = enumerable.Any()
-                ? enumerable.PloyListCheckOK() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark()) :
+                ? enumerable.PloyListCheckOk() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark()) :
                 throw new Exception($"no good walk raw poly in {mapRaws.id} ")
                 : throw new Exception("must have walk map");
             var array = mapRawsSightRawMap.Select(x => x.GenPoly()).ToArray();
             var sightMap = array.Any()
-                ? array.PloyListCheckOK() ? SightMap.GenByConfig(array.PloyListMark()) :
+                ? array.PloyListCheckOk() ? SightMap.GenByConfig(array.PloyListMark()) :
                 throw new Exception($"no good sight raw poly in {mapRaws.id} ")
                 : null;
             var polys = mapRawsBulletRawMap.Select(x => x.GenPoly()).ToArray();
             var genByConfig = polys.Any()
-                ? polys.PloyListCheckOK() ? SightMap.GenByConfig(polys.PloyListMark()) :
+                ? polys.PloyListCheckOk() ? SightMap.GenByConfig(polys.PloyListMark()) :
                 throw new Exception($"no good bullet raw poly in {mapRaws.id} ")
                 : null;
 
@@ -89,7 +89,7 @@ namespace game_stuff
             return new MapInitData(sightMap, walkMap, pointsMap, new HashSet<ApplyDevice>(), genByConfig);
         }
 
-        public static (PlayGround playGround, Dictionary<int, HashSet<CharInitMsg>> initMsg) InitPlayGround(
+        public static PlayGround InitPlayGround(
             IEnumerable<CharacterInitData> playerInitData, MapInitData mapInitData, int genMapId, int mapResId)
         {
             var bodies = new Dictionary<int, HashSet<CharacterBody>>();
@@ -127,7 +127,7 @@ namespace game_stuff
                     var hashSet = p.Value;
                     var aabbBoxShapes =
                         hashSet.Select(x => x.InBox).IeToHashSet();
-                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, LocalConfig.QSpaceBodyMaxPerLevel);
+                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes,  CommonConfig.OtherConfig.qspace_max_per_level);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
             var emptyRootBranch3 = SomeTools.CreateEmptyRootBranch(zone);
@@ -149,9 +149,9 @@ namespace game_stuff
 
             var aaBbBoxes = mapInitData.StandardMapInteractableList.OfType<IAaBbBox>().IeToHashSet();
             playGround.MapInteractableThings.AddRangeAabbBoxes(aaBbBoxes,
-                LocalConfig.QSpaceBodyMaxPerLevel);
+                CommonConfig.OtherConfig.qspace_max_per_level);
 
-            return (playGround, playGround.GenInitMsg());
+            return playGround;
         }
 
         // 初始化状态消息输出
@@ -284,7 +284,7 @@ namespace game_stuff
 
             var selectMany = tuples.SelectMany(x => x.weapons.Select(w => (IAaBbBox) w.DropAsIMapInteractable(x.pos)));
             var enumerableToHashSet = selectMany.IeToHashSet();
-            MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
+            MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet,  CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
 
@@ -387,7 +387,7 @@ namespace game_stuff
                     }
                 }
 
-                playerBodies.MoveIdPointBoxes(dd, LocalConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.MoveIdPointBoxes(dd,  CommonConfig.OtherConfig.qspace_max_per_level);
             }
         }
 
@@ -607,7 +607,7 @@ namespace game_stuff
                     var mapInteractive = aCharGoTickMsg.DropThing;
                     foreach (var aInteractable in mapInteractive)
                     {
-                        MapInteractableThings.AddSingleAaBbBox(aInteractable, LocalConfig.QSpaceBodyMaxPerLevel);
+                        MapInteractableThings.AddSingleAaBbBox(aInteractable,  CommonConfig.OtherConfig.qspace_max_per_level);
                     }
 
                     var interactCaller = aCharGoTickMsg.WhoInteractCall;
@@ -651,7 +651,7 @@ namespace game_stuff
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
-                traps.AddIdPointBoxes(idPointBoxesToAdd, LocalConfig.QSpaceBodyMaxPerLevel, true);
+                traps.AddIdPointBoxes(idPointBoxesToAdd,  CommonConfig.OtherConfig.qspace_max_per_level, true);
             }
 
             return twoDTwoPs;
@@ -693,7 +693,7 @@ namespace game_stuff
             }
 
             MapInteractableThings.AddRangeAabbBoxes(mapInteractables.Cast<IAaBbBox>().IeToHashSet(),
-                LocalConfig.QSpaceBodyMaxPerLevel);
+                CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
         public void AddMapInteractable(IMapInteractable interactable)
@@ -703,7 +703,7 @@ namespace game_stuff
                 applyDevice.SetInPlayGround(this);
             }
 
-            MapInteractableThings.AddSingleAaBbBox(interactable, LocalConfig.QSpaceBodyMaxPerLevel);
+            MapInteractableThings.AddSingleAaBbBox(interactable,  CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
         public IEnumerable<int> RemoveBodies(HashSet<int> ints)
@@ -804,13 +804,13 @@ namespace game_stuff
             {
                 qTuple.playerBodies.AddIdPointBoxes(
                     enumerableToHashSet,
-                    LocalConfig.QSpaceBodyMaxPerLevel);
+                    CommonConfig.OtherConfig.qspace_max_per_level);
             }
             else
             {
                 var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                 var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                playerBodies.AddIdPointBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.AddIdPointBoxes(enumerableToHashSet,  CommonConfig.OtherConfig.qspace_max_per_level);
                 var emptyRootBranch = (playerBodies,
                     traps);
                 TeamToBodies[team] = emptyRootBranch;
@@ -830,18 +830,18 @@ namespace game_stuff
                     characterBody.Teleport(pos);
                 }
 
-                var enumerableToHashSet = SomeTools.IeToHashSet(valueTuples.Select(x => x.characterBody.InBox));
+                var enumerableToHashSet = valueTuples.Select(x => x.characterBody.InBox).IeToHashSet();
                 if (TeamToBodies.TryGetValue(team, out var qTuple))
                 {
                     qTuple.playerBodies.AddIdPointBoxes(
                         enumerableToHashSet,
-                        LocalConfig.QSpaceBodyMaxPerLevel);
+                        CommonConfig.OtherConfig.qspace_max_per_level);
                 }
                 else
                 {
                     var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                     var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                    playerBodies.AddIdPointBoxes(enumerableToHashSet, LocalConfig.QSpaceBodyMaxPerLevel);
+                    playerBodies.AddIdPointBoxes(enumerableToHashSet,  CommonConfig.OtherConfig.qspace_max_per_level);
                     var emptyRootBranch = (playerBodies,
                         traps);
                     TeamToBodies[team] = emptyRootBranch;
@@ -856,13 +856,13 @@ namespace game_stuff
             if (telePos != null) characterBody.Teleport(telePos);
             if (TeamToBodies.TryGetValue(characterBodyTeam, out var tuple))
             {
-                tuple.playerBodies.AddAIdPointBox(characterBodyInBox, LocalConfig.QSpaceBodyMaxPerLevel);
+                tuple.playerBodies.AddAIdPointBox(characterBodyInBox,  CommonConfig.OtherConfig.qspace_max_per_level);
             }
             else
             {
                 var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                 var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                playerBodies.AddAIdPointBox(characterBodyInBox, LocalConfig.QSpaceBodyMaxPerLevel);
+                playerBodies.AddAIdPointBox(characterBodyInBox,  CommonConfig.OtherConfig.qspace_max_per_level);
                 var emptyRootBranch = (playerBodies,
                     traps);
                 TeamToBodies[characterBodyTeam] = emptyRootBranch;

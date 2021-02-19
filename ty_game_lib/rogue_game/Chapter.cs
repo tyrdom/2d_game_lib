@@ -28,7 +28,6 @@ namespace rogue_game
             return Finish.IsClear;
         }
 
-       
 
         public static Chapter GenMapsById(int id, Random random)
         {
@@ -79,6 +78,9 @@ namespace rogue_game
         public static Chapter GenByConfig(rogue_game_chapter gameChapter, Random random)
         {
             var chapterMapTop = ChapterMapTop.GenAChapterTopByConfig(gameChapter);
+#if DEBUG
+            Console.Out.WriteLine($"{chapterMapTop}");
+#endif
             var dictionary = new Dictionary<PointMap, int>();
             var pointMaps = chapterMapTop.PointMaps.ToList();
             for (var i = 0; i < pointMaps.Count; i++)
@@ -122,7 +124,9 @@ namespace rogue_game
 
                 var applyDevices = pointMap.Links.GroupBy(x => x.Side).Select(pointMapLink =>
                 {
-                    var linkTo = pointMapLink.FirstOrDefault()?.LinkTo ?? throw new IndexOutOfRangeException();
+                    var linkTo = pointMapLink.FirstOrDefault()?.LinkTo
+                                 ?? throw new IndexOutOfRangeException(
+                                     $"{pointMap.Links.Count} : direction {pointMapLink.Key} {pointMap.Slot.x}| {pointMap.Slot.y}");
                     var direction = pointMapLink.Key;
                     var playGroundResMId = value.PlayGround.ResMId;
 

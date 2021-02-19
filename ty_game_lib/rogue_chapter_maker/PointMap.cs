@@ -92,7 +92,7 @@ namespace rogue_chapter_maker
         public (int x, int y) Slot { get; }
         public MapType MapType { get; private set; }
 
-        public List<Link> Links { get; }
+        public List<Link> Links { get; set; }
 
         public static void SetNearLinks(IEnumerable<Link> thisLinks, IEnumerable<Link> thatLinks, PointMap thisMap,
             PointMap thatMap)

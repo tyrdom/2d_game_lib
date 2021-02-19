@@ -4,12 +4,13 @@ using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
+using game_stuff;
 
-namespace game_stuff
+namespace lib_unit_test
 {
     public static class TestStuff
     {
-        public static (PlayGround, Dictionary<int, HashSet<CharInitMsg>>) TestPlayGround()
+        public static PlayGround TestPlayGround()
         {
             var testInitData = TestInitData();
             var twoDPoints = testInitData.TeamToStartPt.ToDictionary(p => p.Key, p => p.Value.GenPt())
@@ -20,13 +21,13 @@ namespace game_stuff
             return initPlayGround;
         }
 
-        private static CharacterInitData TestPlayer1()
+        public static CharacterInitData TestPlayer1()
         {
             var keyValuePair = CommonConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
 
             var characterInitData =
-                CharacterInitData.GenByConfig(1, 1, new[] {weapons}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 1, new[] {weapons}, size.small,
                     1);
 #if DEBUG
             Console.Out.WriteLine($"Test P1 ok");
@@ -34,13 +35,13 @@ namespace game_stuff
             return characterInitData;
         }
 
-        private static CharacterInitData TestPlayer2()
+        public static CharacterInitData TestPlayer2()
         {
             var keyValuePair = CommonConfig.Configs.weapons.First();
             var weapons = keyValuePair.Value;
 
             var characterInitData =
-                CharacterInitData.GenByConfig(2, 2, new[] {weapons}, size.small,
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapons}, size.small,
                     1);
 #if DEBUG
             Console.Out.WriteLine($"Test P2 ok");
@@ -48,7 +49,7 @@ namespace game_stuff
             return characterInitData;
         }
 
-        private static MapInitData TestInitData()
+        public static MapInitData TestInitData()
         {
             var testMap = TestMap();
             var testSightMap = TestSightMap();

@@ -21,7 +21,7 @@ namespace game_stuff
 
         public Zone RdZone { get; }
 
-        public bool CanOverBulletBlock { get; }
+        private bool CanOverBulletBlock { get; }
         private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
 
@@ -107,7 +107,7 @@ namespace game_stuff
             var bulletIsHAtk = bullet.IsHAtk;
             if (bullet.Tough == -1)
             {
-                tough = (int) (pairKey * (1 + LocalConfig.ToughGrowPerTick));
+                tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
 
@@ -278,7 +278,7 @@ namespace game_stuff
                 }
                 else if (checkBuff)
                 {
-                    targetCharacterStatus.UseBuff(LocalConfig.DefPassBuffId);
+                    targetCharacterStatus.UseBuff(CommonConfig.OtherConfig.defPassBuffId);
                     return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
                 }
             }
@@ -291,7 +291,7 @@ namespace game_stuff
 
 #if DEBUG
             Console.Out.WriteLine(
-                $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{LocalConfig.MidTough}");
+                $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{CommonConfig.OtherConfig.mid_tough}");
 #endif
 
             if (targetCharacterStatus.BuffTrick.TryGetValue(TrickCond.OpponentAtkFail, out var value))

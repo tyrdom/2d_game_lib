@@ -47,7 +47,7 @@ namespace game_stuff
                     from keyValuePair in variable.Value
                     from valuePair in keyValuePair.Value
                     select valuePair.Value.LogUser())
-                .Aggregate("", (current, logUser) => current + logUser);
+                .Aggregate("", (current, logUser) => current +"."+ logUser);
         }
 
         private bool CanBePickUp(size bodySize)

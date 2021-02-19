@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using collision_and_rigid;
 using cov_path_navi;
 using game_config;
 using game_stuff;
 using NUnit.Framework;
+using rogue_game;
 
 namespace lib_unit_test
 {
@@ -14,6 +16,7 @@ namespace lib_unit_test
         [SetUp]
         public void Setup()
         {
+            rogue_game.LocalConfig.LoadConfig();
         }
 
         [Test]
@@ -75,7 +78,22 @@ namespace lib_unit_test
         {
             var keyValuePair = CommonConfig.Configs.map_rawss.Values.First();
             var id = keyValuePair.WalkRawMap.First().First().x;
-            Assert.Pass(id.ToString());
+            Assert.Pass(id.ToString(CultureInfo.InvariantCulture));
+        }
+
+        [Test]
+        public void RGameInitTest()
+        {
+            var characterBodies = Players();
+            var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First());
+            Assert.Pass(genByConfig.PlayerLeaderGid.ToString());
+        }
+
+        private static HashSet<CharacterBody> Players()
+        {
+            var characterInitDataS = new[] {TestStuff.TestPlayer1(), TestStuff.TestPlayer2()};
+            var characterBodies = characterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero()));
+            return characterBodies.IeToHashSet();
         }
 
         private static HashSet<IBlockShape>? ABlock()
@@ -109,7 +127,6 @@ namespace lib_unit_test
             return genWalkBlockByPolys;
         }
 
-
         private static string PathTest(WalkBlock genWalkBlockByPolys)
         {
             Console.Out.WriteLine("path test~~~~~");
@@ -131,7 +148,7 @@ namespace lib_unit_test
 
                 Console.Out.WriteLine($"linked blocks is \n{aggregate1}");
 
-                var genBlockUnits = PathTop.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn);
+                var genBlockUnits = PathTop.GenBlockUnits(genFromBlocks, genWalkBlockByPolys.IsBlockIn).ToList();
 
                 var s1 = genBlockUnits.Aggregate("", (s, x) => s + x);
 

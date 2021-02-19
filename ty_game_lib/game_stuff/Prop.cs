@@ -26,7 +26,7 @@ namespace game_stuff
             var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => CommonConfig.GetTickByTime(p.Key),
                 p => LocalConfig.GenMedia(p.Value));
             PropBullets = dictionary.ToImmutableDictionary();
-            RecyclePropStack = LocalConfig.StandardPropRecycleStack;
+            RecyclePropStack = CommonConfig.OtherConfig.standard_recycle_prop_stack;
             PropPointCost = prop.PropPointCost;
             MoveMulti = prop.MoveSpeedMulti;
             PId = prop.id;

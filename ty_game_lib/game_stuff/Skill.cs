@@ -25,7 +25,7 @@ namespace game_stuff
 
         private int BaseTough { get; }
 
-        public int CanInputMove { get; }
+        private int CanInputMove { get; }
         private Dictionary<uint, Bullet> LaunchTickToBullet { get; }
         private TwoDVector[] Moves { get; }
 
@@ -192,7 +192,7 @@ namespace game_stuff
                 bullet = LockArea.Active(casterPos, casterAim);
             }
 
-            NowTough += LocalConfig.ToughGrowPerTick;
+            NowTough += CommonConfig.OtherConfig.tough_grow;
 
             if (LaunchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {

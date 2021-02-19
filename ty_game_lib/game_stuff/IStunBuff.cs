@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -72,7 +73,7 @@ namespace game_stuff
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
 
-            return Caster.GenDamage(sqNorm * sqNorm * LocalConfig.HitWallDmgParam, true);
+            return Caster.GenDamage(sqNorm * sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param, true);
         }
     }
 
@@ -111,7 +112,7 @@ namespace game_stuff
 
             if (nowHeight <= 0)
             {
-                var decreasePerTick = PushVector.GetUnit().Multi(LocalConfig.Friction);
+                var decreasePerTick = PushVector.GetUnit().Multi(CommonConfig.OtherConfig.friction);
 #if DEBUG
                 Console.Out.WriteLine(
                     $"{PushVector}~~~~~air gen_earth buff~~~~~~{decreasePerTick}");
@@ -122,7 +123,7 @@ namespace game_stuff
                 return (PushVector, pushOnEarth);
             }
 
-            var nowUpSpeed = UpSpeed - LocalConfig.G;
+            var nowUpSpeed = UpSpeed - CommonConfig.OtherConfig.g_acc;
             Height = nowHeight;
             UpSpeed = nowUpSpeed;
             return (PushVector, this);
@@ -133,13 +134,13 @@ namespace game_stuff
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
-            return Caster.GenDamage(sqNorm * sqNorm * LocalConfig.HitWallDmgParam, true);
+            return Caster.GenDamage(sqNorm * sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param, true);
         }
     }
 
     internal class Caught : IStunBuff
     {
-        public List<TwoDPoint> MovesOnPoints { get; }
+        private List<TwoDPoint> MovesOnPoints { get; }
         public IBattleUnitStatus Caster { get; }
 
         public Caught(List<TwoDPoint> movesOnPoints, uint restTick, IBattleUnitStatus caster)
@@ -148,7 +149,7 @@ namespace game_stuff
             RestTick = restTick;
             Caster = caster;
         }
-        
+
         public uint RestTick { get; set; }
 
         public ITwoDTwoP GetItp()
@@ -186,7 +187,7 @@ namespace game_stuff
         {
             RestTick += LocalConfig.HitWallCatchTickParam;
             MovesOnPoints.Clear();
-            return Caster.GenDamage(LocalConfig.HitWallCatchDmgParam, true);
+            return Caster.GenDamage(CommonConfig.OtherConfig.hit_wall_catch_dmg_param, true);
         }
     }
 }
