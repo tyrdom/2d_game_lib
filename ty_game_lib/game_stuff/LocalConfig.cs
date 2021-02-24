@@ -121,7 +121,7 @@ namespace game_stuff
                     .ToImmutableDictionary(
                         s => s.Key,
                         s => s
-                            .SelectMany(ss => ss.TransPort
+                            .SelectMany(ss => ss.Teleport
                                 .Select(pt => new TwoDPoint(pt.x, pt.y)))
                             .ToArray()));
 

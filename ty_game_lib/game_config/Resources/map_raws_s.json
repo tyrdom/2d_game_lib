@@ -24,7 +24,7 @@
     "SightRawMap": "{x|float=y|float}[][]",
     "BulletRawMap": "{x|float=y|float}[][]",
     "StartPoints": "{x|float=y|float}[][]",
-    "TransPoint": "{Direction|direction@enum=TransPort|{x|float=y|float}[]}[]"
+    "TransPoint": "TelPoint[]"
   },
   "content": {
     "1": {
@@ -193,7 +193,7 @@
       "TransPoint": [
         {
           "Direction": "East",
-          "TransPort": [
+          "Teleport": [
             {
               "x": 32.0,
               "y": 4.5
@@ -202,7 +202,7 @@
         },
         {
           "Direction": "West",
-          "TransPort": [
+          "Teleport": [
             {
               "x": -26.2,
               "y": 1.4
@@ -211,7 +211,7 @@
         },
         {
           "Direction": "North",
-          "TransPort": [
+          "Teleport": [
             {
               "x": 0.6,
               "y": 27.6
@@ -220,7 +220,7 @@
         },
         {
           "Direction": "South",
-          "TransPort": [
+          "Teleport": [
             {
               "x": 4.5,
               "y": -20.7
