@@ -1,1 +1,233 @@
-{"content_name": {"id": "", "info": "", "WalkRawMap": "", "SightRawMap": "", "BulletRawMap": "", "StartPoints": "", "TransPoint": ""}, "content_info": {"id": "", "info": "", "WalkRawMap": "", "SightRawMap": "", "BulletRawMap": "", "StartPoints": "", "TransPoint": ""}, "content_schema": {"id": "int", "info": "string", "WalkRawMap": "{x|float=y|float}[][]", "SightRawMap": "{x|float=y|float}[][]", "BulletRawMap": "{x|float=y|float}[][]", "StartPoints": "{x|float=y|float}[][]", "TransPoint": "{Direction|direction@enum=TransPort|{x|float=y|float}[]}[]"}, "content": {"1": {"id": 1, "info": "test_data", "WalkRawMap": [[{"x": 10.0, "y": 10.0}, {"x": -10.0, "y": 10.0}, {"x": -10.0, "y": -10.0}, {"x": 10.0, "y": -10.0}], [{"x": 2.0, "y": 2.0}, {"x": 2.0, "y": -2.0}, {"x": -2.0, "y": -2.0}]], "SightRawMap": [[{"x": 10.0, "y": 10.0}, {"x": -10.0, "y": 10.0}, {"x": -10.0, "y": -10.0}, {"x": 10.0, "y": -10.0}], [{"x": 2.0, "y": 2.0}, {"x": 2.0, "y": -2.0}, {"x": -2.0, "y": -2.0}]], "BulletRawMap": [[{"x": 10.0, "y": 10.0}, {"x": -10.0, "y": 10.0}, {"x": -10.0, "y": -10.0}, {"x": 10.0, "y": -10.0}], [{"x": 2.0, "y": 2.0}, {"x": 2.0, "y": -2.0}, {"x": -2.0, "y": -2.0}]], "StartPoints": [[{"x": 3.0, "y": 5.0}, {"x": -4.0, "y": 5.0}, {"x": -3.0, "y": -2.0}], [{"x": 2.0, "y": -2.0}]], "TransPoint": [{"Direction": "East", "TransPort": [{"x": 1.0, "y": 2.0}]}, {"Direction": "West", "TransPort": [{"x": 3.0, "y": 5.0}]}, {"Direction": "North", "TransPort": [{"x": 1.0, "y": 2.0}]}, {"Direction": "South", "TransPort": [{"x": 3.0, "y": 5.0}]}]}}}
+{
+  "content_name": {
+    "id": "",
+    "info": "",
+    "WalkRawMap": "",
+    "SightRawMap": "",
+    "BulletRawMap": "",
+    "StartPoints": "",
+    "TransPoint": ""
+  },
+  "content_info": {
+    "id": "",
+    "info": "",
+    "WalkRawMap": "",
+    "SightRawMap": "",
+    "BulletRawMap": "",
+    "StartPoints": "",
+    "TransPoint": ""
+  },
+  "content_schema": {
+    "id": "int",
+    "info": "string",
+    "WalkRawMap": "{x|float=y|float}[][]",
+    "SightRawMap": "{x|float=y|float}[][]",
+    "BulletRawMap": "{x|float=y|float}[][]",
+    "StartPoints": "{x|float=y|float}[][]",
+    "TransPoint": "{Direction|direction@enum=TransPort|{x|float=y|float}[]}[]"
+  },
+  "content": {
+    "1": {
+      "id": 1,
+      "info": "test_data",
+      "WalkRawMap": [
+        [
+          {
+            "x": 10.0,
+            "y": 10.0
+          },
+          {
+            "x": -10.0,
+            "y": 10.0
+          },
+          {
+            "x": -10.0,
+            "y": -10.0
+          }
+        ],
+        [
+          {
+            "x": -16.9,
+            "y": 27.8
+          },
+          {
+            "x": -29.6,
+            "y": 21.0
+          },
+          {
+            "x": -26.3,
+            "y": -25.1
+          },
+          {
+            "x": -2.350582,
+            "y": -23.7722874
+          },
+          {
+            "x": 35.4,
+            "y": -20.1
+          },
+          {
+            "x": 32.3,
+            "y": 27.5
+          },
+          {
+            "x": 8.87,
+            "y": 30.16
+          }
+        ]
+      ],
+      "SightRawMap": [
+        [
+          {
+            "x": 10.0,
+            "y": 10.0
+          },
+          {
+            "x": -10.0,
+            "y": 10.0
+          },
+          {
+            "x": -10.0,
+            "y": -10.0
+          }
+        ],
+        [
+          {
+            "x": -16.9,
+            "y": 27.8
+          },
+          {
+            "x": -29.6,
+            "y": 21.0
+          },
+          {
+            "x": -26.3,
+            "y": -25.1
+          },
+          {
+            "x": -2.350582,
+            "y": -23.7722874
+          },
+          {
+            "x": 35.4,
+            "y": -20.1
+          },
+          {
+            "x": 32.3,
+            "y": 27.5
+          },
+          {
+            "x": 8.87,
+            "y": 30.16
+          }
+        ]
+      ],
+      "BulletRawMap": [
+        [
+          {
+            "x": 10.0,
+            "y": 10.0
+          },
+          {
+            "x": -10.0,
+            "y": 10.0
+          },
+          {
+            "x": -10.0,
+            "y": -10.0
+          }
+        ],
+        [
+          {
+            "x": -16.9,
+            "y": 27.8
+          },
+          {
+            "x": -29.6,
+            "y": 21.0
+          },
+          {
+            "x": -26.3,
+            "y": -25.1
+          },
+          {
+            "x": -2.350582,
+            "y": -23.7722874
+          },
+          {
+            "x": 35.4,
+            "y": -20.1
+          },
+          {
+            "x": 32.3,
+            "y": 27.5
+          },
+          {
+            "x": 8.87,
+            "y": 30.16
+          }
+        ]
+      ],
+      "StartPoints": [
+        [
+          {
+            "x": 4.2,
+            "y": -5.99
+          },
+          {
+            "x": 14.67,
+            "y": 15.02
+          },
+          {
+            "x": -4.84,
+            "y": 15.24
+          }
+        ],
+        [
+          {
+            "x": 25.2,
+            "y": -11.2
+          }
+        ]
+      ],
+      "TransPoint": [
+        {
+          "Direction": "East",
+          "TransPort": [
+            {
+              "x": 32.0,
+              "y": 4.5
+            }
+          ]
+        },
+        {
+          "Direction": "West",
+          "TransPort": [
+            {
+              "x": -26.2,
+              "y": 1.4
+            }
+          ]
+        },
+        {
+          "Direction": "North",
+          "TransPort": [
+            {
+              "x": 0.6,
+              "y": 27.6
+            }
+          ]
+        },
+        {
+          "Direction": "South",
+          "TransPort": [
+            {
+              "x": 4.5,
+              "y": -20.7
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
