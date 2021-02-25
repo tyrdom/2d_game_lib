@@ -24,7 +24,7 @@ namespace lib_unit_test
         public static CharacterInitData TestPlayer1()
         {
             var keyValuePair = CommonConfig.Configs.weapons.First();
-            var weapons = keyValuePair.Value;
+            var weapons = keyValuePair.Key;
 
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(1, 1, new[] {weapons}, size.small,
@@ -38,7 +38,7 @@ namespace lib_unit_test
         public static CharacterInitData TestPlayer2()
         {
             var keyValuePair = CommonConfig.Configs.weapons.First();
-            var weapons = keyValuePair.Value;
+            var weapons = keyValuePair.Key;
 
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapons}, size.small,

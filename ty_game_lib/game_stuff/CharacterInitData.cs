@@ -17,7 +17,7 @@ namespace game_stuff
 
         private int? WeaponMaxNum { get; }
 
-        public static CharacterInitData GenByConfig(int gid, int teamId, int[] weapons, size size,
+        public static CharacterInitData GenNpcByConfig(int gid, int teamId, int[] weapons, size size,
             int baseAttrId, int battleNpcMaxWeaponSlot)
         {
             var dictionary = new Dictionary<int, Weapon>();
@@ -31,13 +31,13 @@ namespace game_stuff
             return new CharacterInitData(gid, teamId, dictionary, bz, baseAttrId, battleNpcMaxWeaponSlot);
         }
 
-        public static CharacterInitData GenPlayerByConfig(int gid, int teamId, weapon[] weapons, size size,
+        public static CharacterInitData GenPlayerByConfig(int gid, int teamId, int[] weapons, size size,
             int baseAttrId)
         {
             var dictionary = new Dictionary<int, Weapon>();
             for (var i = 0; i < MathTools.Min(CommonConfig.OtherConfig.weapon_num, weapons.Length); i++)
             {
-                dictionary[i] = Weapon.GenByConfig(weapons[i]);
+                dictionary[i] = Weapon.GenById(weapons[i]);
             }
 
             var bz = size;

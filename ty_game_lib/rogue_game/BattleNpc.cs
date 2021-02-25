@@ -28,7 +28,7 @@ namespace rogue_game
         public static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
         {
             var characterInitData =
-                CharacterInitData.GenByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,battleNpc.MaxWeaponSlot);
+                CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,battleNpc.MaxWeaponSlot);
 
             var chooseRandCanSame = battleNpc.PassiveRange.ChooseRandCanSame(battleNpc.PassiveNum, random);
             var passiveTraits = chooseRandCanSame.GroupBy(x => x).ToDictionary(p => p.Key,

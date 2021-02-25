@@ -14,6 +14,11 @@ namespace game_stuff
             return CharacterStatus.StunBuff == null && CharacterStatus.SurvivalStatus.IsDead();
         }
 
+        public TwoDVector GetAim()
+        {
+            return Sight.Aim;
+        }
+
         public size BodySize { get; }
 
         public size GetSize()
