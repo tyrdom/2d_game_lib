@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Xml.Schema;
 using collision_and_rigid;
 using cov_path_navi;
 using game_config;
@@ -15,12 +14,13 @@ namespace game_bot
         private ImmutableDictionary<size, PathTop> SizeToNaviMap { get; set; }
         private HashSet<SimpleBot> SimpleBots { get; set; }
 
-        public Dictionary<int, BotOpAndThink> TempOpThinks { get; set; }
+        public Dictionary<int, BotOpAndThink> TempOpThinks { get; private set; }
 
         public BotTeam()
         {
             SimpleBots = new HashSet<SimpleBot>();
             SizeToNaviMap = new Dictionary<size, PathTop>().ToImmutableDictionary();
+            TempOpThinks = new Dictionary<int, BotOpAndThink>();
         }
 
         public void SetNaviMaps(WalkMap walkMap)

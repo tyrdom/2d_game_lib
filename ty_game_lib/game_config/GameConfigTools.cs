@@ -81,7 +81,7 @@ namespace game_config
         private static string GetNameSpace()
         {
             var declaringType = MethodBase.GetCurrentMethod()?.DeclaringType;
-            return declaringType != null ? declaringType.Namespace : "";
+            return declaringType?.Namespace ?? "";
         }
 
         public static readonly string DllName = GetNameSpace() + ".dll";
