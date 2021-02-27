@@ -40,7 +40,7 @@ namespace lib_unit_test
         [Test]
         public void PathTest1()
         {
-            var aggregate = ABlock()!.Aggregate("Path Test1:\n", (s, x) => s + x.ToString() + "\n") +
+            var aggregate = ABlock()?.Aggregate("Path Test1:\n", (s, x) => s + x.ToString() + "\n") +
                             "Path Test1 end:\n";
 
             Assert.Pass(aggregate);
@@ -51,7 +51,7 @@ namespace lib_unit_test
         {
             if (ABlock() != null)
             {
-                var genFromBlocks = PathTop.GenFromBlocks(ABlock()!.ToList());
+                var genFromBlocks = PathTop.GenFromBlocks(ABlock()?.ToList());
 
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
@@ -98,7 +98,7 @@ namespace lib_unit_test
 
         private static HashSet<IBlockShape>? ABlock()
         {
-            var allIBlocks = TestWb().QSpace?.GetAllIBlocks();
+            var allIBlocks = TestWb().QSpace.GetAllIBlocks();
             return allIBlocks;
         }
 

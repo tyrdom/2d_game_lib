@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>8</LangVersion>
+        <TargetFrameworks>netcoreapp2.1;netstandard2.0</TargetFrameworks>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,6 +12,7 @@
       <ProjectReference Include="..\cov_path_navi\cov_path_navi.csproj" />
       <ProjectReference Include="..\game_config\game_config.csproj" />
       <ProjectReference Include="..\game_stuff\game_stuff.csproj" />
+      <ProjectReference Include="..\rogue_game\rogue_game.csproj" />
     </ItemGroup>
 
 </Project>

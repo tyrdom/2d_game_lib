@@ -60,7 +60,7 @@ namespace rogue_game
         public static int GameRuleCheckTickPerSec { get; private set; } = 1;
         public static GameItem[] RogueRebornCost { get; private set; } = { };
         public static int RogueRebornTick { get; private set; } = 1000;
-        private static void ReLoadP(ConfigDictionaries configs)
+        public static void ReLoadP(ConfigDictionaries configs)
         {
             game_bot.LocalConfig.ReLoadP(configs);
             var configsOtherConfig = CommonConfig.OtherConfig;
