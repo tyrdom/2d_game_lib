@@ -56,17 +56,17 @@ namespace game_config
             return (list.ToImmutableArray(), t);
         }
 
-        public static float NumPerSecToTickPerSec(float numPerSec)
+        public static float ValuePerSecToValuePerTick(this float numPerSec)
         {
             return numPerSec * OtherConfig.tick_time;
         }
 
-        public static uint NumPerSecToTickPerSec(uint numPerSec)
+        public static uint ValuePerSecToValuePerTick(this uint numPerSec)
         {
             return (uint) Math.Round(numPerSec * OtherConfig.tick_time, 0);
         }
 
-        public static int NumPerSecToTickPerSec(int numPerSec)
+        public static int ValuePerSecToValuePerTick(this int numPerSec)
         {
             return (int) Math.Round(numPerSec * OtherConfig.tick_time);
         }

@@ -108,7 +108,7 @@ namespace game_stuff
 
         public TwoDPoint Move(ITwoDTwoP vector)
         {
-            // LastPos = NowPos;
+            
             var twoDPoint = vector switch
             {
                 TwoDPoint twoDPoint1 => twoDPoint1,
@@ -136,11 +136,11 @@ namespace game_stuff
                 walkBlock.PushOutToPt(LastPos, NowPos);
 
 #if DEBUG
-            // if (walkBlock.QSpace != null)
-            //     Console.Out.WriteLine(
-            //         $" check:: {qSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
-            // Console.Out.WriteLine(
-            //     $" lastPos:: {characterBody.LastPos.Log()} nowPos::{characterBody.NowPos.Log()}");
+            if (walkBlock.QSpace != null)
+                Console.Out.WriteLine(
+                    $" check:: {walkBlock.QSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
+            Console.Out.WriteLine(
+                $" lastPos:: {LastPos} nowPos::{NowPos} :: is hit ::{isHitWall}");
 #endif
             if (!isHitWall) return null;
             if (CharacterStatus.StunBuff == null)
@@ -180,10 +180,12 @@ namespace game_stuff
             var isStun = CharacterStatus.StunBuff != null;
             var skillAct = CharacterStatus.NowCastAct != null;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
+            var sightStandardScope = CharacterStatus.GetNowScope() ?? Sight.StandardScope;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome
+                , sightStandardScope.Theta
             );
         }
 

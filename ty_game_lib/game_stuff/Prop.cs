@@ -39,8 +39,8 @@ namespace game_stuff
             var firstOrDefault = prop.MoveAdds.FirstOrDefault();
             AddSpeed = firstOrDefault == null
                 ? null
-                : new TwoDVector(CommonConfig.NumPerSecToTickPerSec(firstOrDefault.x),
-                    CommonConfig.NumPerSecToTickPerSec(firstOrDefault.y));
+                : new TwoDVector(CommonConfig.ValuePerSecToValuePerTick(firstOrDefault.x),
+                    CommonConfig.ValuePerSecToValuePerTick(firstOrDefault.y));
         }
 
         public int PId { get; }

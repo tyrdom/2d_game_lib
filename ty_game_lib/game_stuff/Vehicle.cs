@@ -69,7 +69,7 @@ namespace game_stuff
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
             Size = size;
-            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
+            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed.ValuePerSecToValuePerTick();
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             StandardScope = standardScope;

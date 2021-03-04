@@ -12,7 +12,7 @@ namespace collision_and_rigid
             if (pts.Length >= 3 && !CheckCross(pts) && CheckNoSame(pts))
                 Pts = pts;
             else
-                throw new ArgumentOutOfRangeException(pts.Aggregate("", (s, point) => s +" "+ point));
+                throw new ArgumentOutOfRangeException(pts.Aggregate("", (s, point) => s + " " + point));
         }
 
 
@@ -35,9 +35,9 @@ namespace collision_and_rigid
             return new Zone(yMax, yMin, xMin, xMax);
         }
 
-        private void ShowPts()
+        public override string ToString()
         {
-            foreach (var twoDPoint in Pts) Console.Out.WriteLine("pt:" + twoDPoint.X + "|" + twoDPoint.Y);
+            return Pts.Aggregate("Poly pts: \n", ((s, point) => s + point + "\n"));
         }
 
         public Poly ClockTurnAboutZero(TwoDVector aim)

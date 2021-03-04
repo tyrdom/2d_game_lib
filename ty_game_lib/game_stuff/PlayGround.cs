@@ -127,7 +127,7 @@ namespace game_stuff
                     var hashSet = p.Value;
                     var aabbBoxShapes =
                         hashSet.Select(x => x.InBox).IeToHashSet();
-                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes,  CommonConfig.OtherConfig.qspace_max_per_level);
+                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, CommonConfig.OtherConfig.qspace_max_per_level);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
             var emptyRootBranch3 = SomeTools.CreateEmptyRootBranch(zone);
@@ -209,7 +209,7 @@ namespace game_stuff
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
 
             MapInteractableGoATick();
-            BodiesQSpaceReplace(playerBeHit);
+
 
             HitMediasDo(playerBeHit, trapBeHit, teamRadarSee);
 
@@ -221,6 +221,7 @@ namespace game_stuff
                 }
             }
 
+            BodiesQSpaceReplace(playerBeHit);
 
             var playerSee = GetPlayerSee();
             var playerPerceivable =
@@ -284,7 +285,7 @@ namespace game_stuff
 
             var selectMany = tuples.SelectMany(x => x.weapons.Select(w => (IAaBbBox) w.DropAsIMapInteractable(x.pos)));
             var enumerableToHashSet = selectMany.IeToHashSet();
-            MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet,  CommonConfig.OtherConfig.qspace_max_per_level);
+            MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet, CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
 
@@ -387,7 +388,7 @@ namespace game_stuff
                     }
                 }
 
-                playerBodies.MoveIdPointBoxes(dd,  CommonConfig.OtherConfig.qspace_max_per_level);
+                playerBodies.MoveIdPointBoxes(dd, CommonConfig.OtherConfig.qspace_max_per_level);
             }
         }
 
@@ -607,7 +608,8 @@ namespace game_stuff
                     var mapInteractive = aCharGoTickMsg.DropThing;
                     foreach (var aInteractable in mapInteractive)
                     {
-                        MapInteractableThings.AddSingleAaBbBox(aInteractable,  CommonConfig.OtherConfig.qspace_max_per_level);
+                        MapInteractableThings.AddSingleAaBbBox(aInteractable,
+                            CommonConfig.OtherConfig.qspace_max_per_level);
                     }
 
                     var interactCaller = aCharGoTickMsg.WhoInteractCall;
@@ -651,7 +653,7 @@ namespace game_stuff
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
-                traps.AddIdPointBoxes(idPointBoxesToAdd,  CommonConfig.OtherConfig.qspace_max_per_level, true);
+                traps.AddIdPointBoxes(idPointBoxesToAdd, CommonConfig.OtherConfig.qspace_max_per_level, true);
             }
 
             return twoDTwoPs;
@@ -703,7 +705,7 @@ namespace game_stuff
                 applyDevice.SetInPlayGround(this);
             }
 
-            MapInteractableThings.AddSingleAaBbBox(interactable,  CommonConfig.OtherConfig.qspace_max_per_level);
+            MapInteractableThings.AddSingleAaBbBox(interactable, CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
         public IEnumerable<int> RemoveBodies(HashSet<int> ints)
@@ -786,9 +788,10 @@ namespace game_stuff
                     {
                         var (body, point) = tuple;
                         body.Teleport(point);
+                        GidToBody[body.GetId()] = body;
                     }
 
-                    var enumerableToHashSet = SomeTools.IeToHashSet(grouping.Select(x => x.InBox));
+                    var enumerableToHashSet = grouping.Select(x => x.InBox).IeToHashSet();
                     AddTeamBodies(team, enumerableToHashSet);
                 }
                 else
@@ -810,7 +813,7 @@ namespace game_stuff
             {
                 var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                 var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                playerBodies.AddIdPointBoxes(enumerableToHashSet,  CommonConfig.OtherConfig.qspace_max_per_level);
+                playerBodies.AddIdPointBoxes(enumerableToHashSet, CommonConfig.OtherConfig.qspace_max_per_level);
                 var emptyRootBranch = (playerBodies,
                     traps);
                 TeamToBodies[team] = emptyRootBranch;
@@ -828,24 +831,11 @@ namespace game_stuff
                 foreach (var (characterBody, pos) in valueTuples)
                 {
                     characterBody.Teleport(pos);
+                    GidToBody.Add(characterBody.GetId(), characterBody);
                 }
 
                 var enumerableToHashSet = valueTuples.Select(x => x.characterBody.InBox).IeToHashSet();
-                if (TeamToBodies.TryGetValue(team, out var qTuple))
-                {
-                    qTuple.playerBodies.AddIdPointBoxes(
-                        enumerableToHashSet,
-                        CommonConfig.OtherConfig.qspace_max_per_level);
-                }
-                else
-                {
-                    var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
-                    var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                    playerBodies.AddIdPointBoxes(enumerableToHashSet,  CommonConfig.OtherConfig.qspace_max_per_level);
-                    var emptyRootBranch = (playerBodies,
-                        traps);
-                    TeamToBodies[team] = emptyRootBranch;
-                }
+                AddTeamBodies(team, enumerableToHashSet);
             }
         }
 
@@ -856,13 +846,13 @@ namespace game_stuff
             if (telePos != null) characterBody.Teleport(telePos);
             if (TeamToBodies.TryGetValue(characterBodyTeam, out var tuple))
             {
-                tuple.playerBodies.AddAIdPointBox(characterBodyInBox,  CommonConfig.OtherConfig.qspace_max_per_level);
+                tuple.playerBodies.AddAIdPointBox(characterBodyInBox, CommonConfig.OtherConfig.qspace_max_per_level);
             }
             else
             {
                 var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                 var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                playerBodies.AddAIdPointBox(characterBodyInBox,  CommonConfig.OtherConfig.qspace_max_per_level);
+                playerBodies.AddAIdPointBox(characterBodyInBox, CommonConfig.OtherConfig.qspace_max_per_level);
                 var emptyRootBranch = (playerBodies,
                     traps);
                 TeamToBodies[characterBodyTeam] = emptyRootBranch;

@@ -194,7 +194,7 @@ namespace game_stuff
             Traps = new Queue<Trap>();
 
             CharacterBody = null!;
-            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
+            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed.ValuePerSecToValuePerTick();
             BuffTrick = new Dictionary<TrickCond, HashSet<IPlayingBuff>>();
             GId = gId;
             PauseTick = 0;
@@ -208,8 +208,8 @@ namespace game_stuff
             PlayingBuffs = new Dictionary<int, IPlayingBuff>();
 
             NowProtectTick = 0;
-            AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
-            MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
+            AddMoveSpeed = genBaseAttrById.MoveAddSpeed.ValuePerSecToValuePerTick();
+            MinMoveSpeed = genBaseAttrById.MoveMinSpeed.ValuePerSecToValuePerTick();
             MaxProtectValue = CommonConfig.OtherConfig.trick_protect_value;
             PassiveTraits = passiveTraits ?? new Dictionary<int, PassiveTrait>();
 
@@ -646,7 +646,7 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"{GId} ::skill next start {NextSkill!.Value.skill.NowOnTick}");
 #endif
-            if (NextSkill.Value.opAction == SkillAction.Switch)
+            if ( NextSkill!.Value.opAction == SkillAction.Switch)
             {
                 NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
             }
@@ -1008,7 +1008,8 @@ namespace game_stuff
         {
             var dot = move.Dot(CharacterBody.Sight.Aim);
             var normalSpeedMinCos = MathTools.Max(0f, MathTools.Min(1f,
-                (dot + CommonConfig.OtherConfig.DecreaseMinCos) / (CommonConfig.OtherConfig.DecreaseMinCos + CommonConfig.OtherConfig.NormalSpeedMinCos)
+                (dot + CommonConfig.OtherConfig.DecreaseMinCos) / (CommonConfig.OtherConfig.DecreaseMinCos +
+                                                                   CommonConfig.OtherConfig.NormalSpeedMinCos)
             ));
             var moveDecreaseMinMulti = CommonConfig.OtherConfig.MoveDecreaseMinMulti +
                                        (1f - CommonConfig.OtherConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;

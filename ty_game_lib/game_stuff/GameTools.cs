@@ -19,8 +19,8 @@ namespace game_stuff
             ,
             float RecycleMulti) GenOtherBaseStatusByAttr(base_attribute baseAttribute)
         {
-            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed, baseAttribute.MoveMinSpeed,
-                baseAttribute.MoveAddSpeed,
+            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed.ValuePerSecToValuePerTick(), baseAttribute.MoveMinSpeed.ValuePerSecToValuePerTick(),
+                baseAttribute.MoveAddSpeed.ValuePerSecToValuePerTick(),
                 CommonConfig.OtherConfig.standard_max_prop_stack, baseAttribute.RecycleMulti);
         }
 

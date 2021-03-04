@@ -214,7 +214,7 @@ namespace game_stuff
             var baseAttributeMaxArmor = (uint) (baseAttribute.MaxArmor * multi);
             var baseAttributeArmorDefence = baseAttribute.ArmorDefence;
             var baseAttributeMaxShield = (uint) (baseAttribute.MaxShield * multi);
-            var baseAttributeShieldRecover = CommonConfig.NumPerSecToTickPerSec(baseAttribute.ShieldRecover);
+            var baseAttributeShieldRecover = baseAttribute.ShieldRecover.ValuePerSecToValuePerTick();
             var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
             var baseAttributeShieldDelayTime = CommonConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
 

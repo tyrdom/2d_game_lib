@@ -15,7 +15,7 @@ namespace game_stuff
 
     public interface ISeeTickMsg
     {
-        string ToString();
+        string? ToString();
     }
 
     public interface ISeeActive

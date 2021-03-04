@@ -133,17 +133,6 @@ namespace game_stuff
                 }).ToImmutableDictionary();
 
 
-            static SkillAction GetSkillActionByInt(int i)
-            {
-                return i switch
-                {
-                    0 => SkillAction.Op1,
-                    1 => SkillAction.Op2,
-                    2 => SkillAction.Op3,
-                    _ => throw new Exception($"not good Act config {i}")
-                };
-            }
-
             var snipes = new Dictionary<SnipeAction, Snipe>();
 
             var weaponChangeRangeStep = weapon.ChangeRangeStep;

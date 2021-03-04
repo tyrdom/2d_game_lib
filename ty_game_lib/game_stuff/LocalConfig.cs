@@ -48,6 +48,12 @@ namespace game_stuff
             }
 
             Mark(valueTuples, list, nowBlockIn);
+
+#if DEBUG
+            valueTuples.Aggregate("", ((s, tuple) => s +
+                                                     tuple.poly + tuple.isBlockIn));
+            Console.Out.WriteLine("");
+#endif
             return valueTuples;
         }
 

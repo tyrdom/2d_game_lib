@@ -35,6 +35,11 @@ namespace game_stuff
             InBox = CovToIdBox();
         }
 
+        public override string ToString()
+        {
+            return $"trapId :{Tid} pos: {Pos}";
+        }
+
         public bool NotOverFlow { get; set; }
         private CharacterStatus Owner { get; }
         private SurvivalStatus? SurvivalStatus { get; }
@@ -178,7 +183,6 @@ namespace game_stuff
             return Owner.CharacterBody;
         }
 
-       
 
         public CharacterStatus? CatchingWho { get; set; }
 
