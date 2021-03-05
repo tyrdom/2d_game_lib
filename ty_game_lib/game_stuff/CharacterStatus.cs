@@ -319,7 +319,11 @@ namespace game_stuff
                 OpChangeAim(aim);
             }
 
-            if (!skill.Launch(NowSnipeStep, GetAmmo())) return new CharGoTickResult();
+            if (!skill.Launch(NowSnipeStep, GetAmmo()))
+            {
+                return new CharGoTickResult();
+            }
+
             SkillLaunch = skillAction;
             SetAct(skill);
 
@@ -524,7 +528,7 @@ namespace game_stuff
         private CharGoTickResult GoNowActATick(ICharAct charAct,
             TwoDVector? moveOp, TwoDVector? aim)
         {
-            if (charAct is Prop prop && !prop.LockAim) OpChangeAim(aim);
+            if (charAct is Prop {LockAim: false}) OpChangeAim(aim);
 
             var limitV = charAct switch
             {
@@ -579,7 +583,7 @@ namespace game_stuff
                 case null:
                     break;
                 case DropThings dropThings1:
-                    dropThings1DropSet = SomeTools.IeToHashSet(dropThings1.DropSet.OfType<IAaBbBox>());
+                    dropThings1DropSet = dropThings1.DropSet.OfType<IAaBbBox>().IeToHashSet();
                     break;
                 case TelePortMsg telePort:
                     t = telePort;
@@ -637,8 +641,12 @@ namespace game_stuff
 
         private bool NowCanComboNext()
         {
-            return NextSkill != null && NowCastAct != null &&
-                   NowCastAct.InWhichPeriod() == SkillPeriod.CanCombo;
+#if DEBUG
+            Console.Out.WriteLine($"{GId} ::skill next can act :: {NextSkill != null} ");
+#endif
+            var nowCanComboNext = NextSkill != null && NowCastAct != null &&
+                                  NowCastAct.InWhichPeriod() == SkillPeriod.CanCombo;
+            return nowCanComboNext;
         }
 
         private CharGoTickResult DoComboByNext(TwoDVector? operateAim, TwoDVector? moveOp)
@@ -646,7 +654,7 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"{GId} ::skill next start {NextSkill!.Value.skill.NowOnTick}");
 #endif
-            if ( NextSkill!.Value.opAction == SkillAction.Switch)
+            if (NextSkill!.Value.opAction == SkillAction.Switch)
             {
                 NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
             }
@@ -761,8 +769,8 @@ namespace game_stuff
                 var operateAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
                 var operateMove = operate?.Move;
                 var actNowActATick = NowCanComboNext()
-                    ? ActNowActATick(operateMove, operateAim)
-                    : DoComboByNext(operateAim, operateMove);
+                        ? DoComboByNext(operateAim, operateMove)
+                        : ActNowActATick(operateMove, operateAim);
 
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");

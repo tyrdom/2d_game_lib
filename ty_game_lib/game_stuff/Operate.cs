@@ -29,7 +29,7 @@ namespace game_stuff
         {
             Aim = aim;
             SkillAction = skillAction;
-            Move = move ?? throw new ArgumentNullException(nameof(move));
+            Move = move;
             SpecialAction = specialAction;
             MapInteractive = mapInteractive;
             SnipeAction = snipeAction;

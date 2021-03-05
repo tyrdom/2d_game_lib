@@ -132,7 +132,7 @@ namespace game_stuff
                 CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
                 skillBaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
                 CommonConfig.GetTickByTime(skill.BreakSnipeTime),
-                skill.SnipeStepNeed, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
+                skill.SnipeStepNeed-1, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
         }
 
 
@@ -214,7 +214,13 @@ namespace game_stuff
 
         public bool Launch(int nowSnipeStep, int nowAmmo)
         {
-            if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost) return false;
+            if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost)
+            {
+#if DEBUG
+                Console.Out.WriteLine($"not enough ammo {AmmoCost} / {nowAmmo} or not enough step {SnipeStepNeed}/ {nowSnipeStep}");
+#endif
+                return false;
+            }
             NowTough = BaseTough;
             NowOnTick = 0;
             return true;

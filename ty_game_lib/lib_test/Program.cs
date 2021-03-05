@@ -25,9 +25,9 @@ namespace lib_test
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
                 rogue_game.RogueGame.GenByConfig(new HashSet<CharacterBody>() {genCharacterBody}, genCharacterBody);
-            for (int i = 0; i < 200; i++)
+            for (var i = 0; i < 200; i++)
             {
-                var operate = new Operate(move: new TwoDVector(1, 0));
+                var operate = new Operate(skillAction: SkillAction.Op1);
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
                     genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
 

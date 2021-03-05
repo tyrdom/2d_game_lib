@@ -51,7 +51,7 @@ namespace lib_unit_test
         {
             if (ABlock() != null)
             {
-                var genFromBlocks = PathTop.GenFromBlocks(ABlock()?.ToList());
+                var genFromBlocks = PathTop.GenFromBlocks(ABlock()?.ToList()?? new List<IBlockShape>());
 
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
