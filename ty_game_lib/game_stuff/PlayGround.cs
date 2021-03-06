@@ -24,6 +24,18 @@ namespace game_stuff
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
 
+        public List<ApplyDevice> GetMapApplyDevices()
+        {
+            var applyDevices = new List<ApplyDevice>();
+
+            MapInteractableThings.ForeachBoxDoWithOutMove<List<ApplyDevice>, ApplyDevice>(
+                (idp, aps) =>
+                {
+                    
+                    aps.Add(idp);
+                }, applyDevices);
+            return applyDevices;
+        }
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap? sightMap,
             WalkMap walkMap,

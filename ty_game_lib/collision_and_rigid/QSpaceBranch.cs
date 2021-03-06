@@ -447,8 +447,7 @@ namespace collision_and_rigid
 
         public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t)
         {
-            foreach (var shape in AaBbPackBox.OfType<TK>()
-            )
+            foreach (var shape in AaBbPackBox.OfType<TK>())
             {
                 action(shape, t);
             }
