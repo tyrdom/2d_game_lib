@@ -166,10 +166,16 @@ namespace rogue_game
                 GoNextChapter();
                 gameRespSet.Add(new ChapterPass());
             }
-
+            #if DEBUG
+            Console.Out.WriteLine($" clear!!~~~~~~~~~{NowPlayMap.IsClear}");
+            #endif
             if (NowPlayMap.IsClear)
             {
                 NowPlayMap.PlayGround.ActiveApplyDevice();
+#if DEBUG
+                Console.Out.WriteLine($" app!!~~~~~~~~~{ NowPlayMap.PlayGround.GetMapApplyDevices().All(x=>x.IsActive)}");
+#endif
+
                 gameRespSet.Add(new MapClear());
             }
 
@@ -222,6 +228,10 @@ namespace rogue_game
             var playerTeleportTo = playGroundGoTickResult.PlayerTeleportTo;
             if (!playerTeleportTo.Any()) return playGroundGoTickResult;
             var (map, toPos) = playerTeleportTo.Values.First();
+
+#if DEBUG
+            Console.Out.WriteLine($"map change ~~~~{map} ~~ {toPos}");
+#endif
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);

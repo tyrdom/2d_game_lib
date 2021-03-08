@@ -742,7 +742,7 @@ namespace game_stuff
 
                     var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
                     return new CharGoTickResult(launchBullet: destroyBullet,
-                        dropThing: SomeTools.IeToHashSet(mapInteractables.OfType<IAaBbBox>()));
+                        dropThing: mapInteractables.OfType<IAaBbBox>().IeToHashSet());
                 }
             }
 
@@ -769,8 +769,8 @@ namespace game_stuff
                 var operateAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
                 var operateMove = operate?.Move;
                 var actNowActATick = NowCanComboNext()
-                        ? DoComboByNext(operateAim, operateMove)
-                        : ActNowActATick(operateMove, operateAim);
+                    ? DoComboByNext(operateAim, operateMove)
+                    : ActNowActATick(operateMove, operateAim);
 
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
@@ -870,6 +870,7 @@ namespace game_stuff
                                 CharacterBody))
                             : new CharGoTickResult();
                     case MapInteract.BuyOrApplyCall:
+
                         return CallLongTouch(MapInteract.BuyOrApplyCall)
                             ? new CharGoTickResult(mapInteractiveAbout: (MapInteract.BuyOrApplyCall,
                                 CharacterBody))
@@ -1002,13 +1003,24 @@ namespace game_stuff
             {
                 NowCallLongStack++;
             }
-
+            else
+            {
+                NowMapInteractive = kickVehicleCall;
+            }
+            
             var b = NowCallLongStack > MaxCallLongStack;
-            if (b || !b1)
+            if (b)
             {
                 ResetLongInterAct();
             }
+#if DEBUG
+            Console.Out.WriteLine($"calling~~{NowCallLongStack}");
+            if (b)
+            {
+                Console.Out.WriteLine($"start inter app {b}");
+            }
 
+#endif
             return b;
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using collision_and_rigid;
 using cov_path_navi;
 using game_config;
@@ -51,7 +52,7 @@ namespace lib_unit_test
         {
             if (ABlock() != null)
             {
-                var genFromBlocks = PathTop.GenFromBlocks(ABlock()?.ToList()?? new List<IBlockShape>());
+                var genFromBlocks = PathTop.GenFromBlocks(ABlock()?.ToList() ?? new List<IBlockShape>());
 
                 var aggregate1 =
                     genFromBlocks.Aggregate("",
@@ -87,6 +88,16 @@ namespace lib_unit_test
             var characterBodies = Players();
             var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First());
             Assert.Pass(genByConfig.PlayerLeaderGid.ToString());
+        }
+
+        [Test]
+        public void PassiveTest()
+        {
+            var floats = new[] {1.2f, 0f, 0f, 4.1f, 5.4f, 4f, 4f, 4f, 4f};
+            Span<float> span = floats;
+            var vector = new Vector<float>(floats);
+            var hashCode = vector[1];
+            Assert.Pass($"ok~ok~ok~~~~{hashCode}");
         }
 
         private static HashSet<CharacterBody> Players()
