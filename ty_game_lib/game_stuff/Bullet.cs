@@ -129,8 +129,11 @@ namespace game_stuff
             SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
             PauseToCaster = pauseToCaster;
-            PauseToOpponent = pauseToOpponent;
 
+            PauseToOpponent = pauseToOpponent;
+#if DEBUG
+            Console.Out.WriteLine($"{PauseToCaster} ----- {PauseToOpponent}");
+#endif
             TargetType = targetType;
             Tough = tough;
             RestTick = 1;
@@ -346,7 +349,9 @@ namespace game_stuff
                 void InitBuff()
                 {
                     targetCharacterStatus.PauseTick = Math.Max(PauseToOpponent, targetCharacterStatus.PauseTick);
-
+#if DEBUG
+                    Console.Out.WriteLine($"bullet hit!! target pause tick {targetCharacterStatus.PauseTick}");
+#endif
                     targetCharacterStatus.StunBuff = antiActBuffConfig
                         .GenBuff(Pos,
                             targetCharacterStatus.GetPos(),
@@ -457,11 +462,11 @@ namespace game_stuff
             targetCharacterStatus.ResetSnipe();
             targetCharacterStatus.ResetCastAct();
 
-            var antiActBuff = LocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
+            var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                 bodyCaster.GetPos(), Aim,
                 null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
             bodyCaster.StunBuff = antiActBuff;
-            var antiActBuff2 = LocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
+            var antiActBuff2 = StuffLocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
                 targetCharacterStatus.GetPos(), Aim,
                 null, 0, targetCharacterStatus.CharacterBody.GetSize(), bodyCaster);
             targetCharacterStatus.StunBuff = antiActBuff2;
@@ -503,7 +508,7 @@ namespace game_stuff
 #if DEBUG
                 Console.Out.WriteLine($"Gen Common Back");
 #endif
-                var antiActBuff = LocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
+                var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                     bodyCaster.GetPos(), TwoDVector.Zero(),
                     null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
                 bodyCaster.StunBuff = antiActBuff;

@@ -68,10 +68,10 @@ namespace rogue_game
                         return ints;
                     });
             Random = new Random();
-            RebornCost = LocalConfig.RogueRebornCost;
+            RebornCost = RogueLocalConfig.RogueRebornCost;
             NowChapter = Chapter.GenMapsById(ChapterIds.Dequeue(), Random);
             NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
-            RebornCountDownTick = LocalConfig.RogueRebornTick;
+            RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             PlayerLeaderGid = playerLeader;
             NowPlayMap = NowChapter.Entrance;
             BotTeam = new BotTeam();
@@ -134,7 +134,7 @@ namespace rogue_game
                 return RebornCountDownTick < 0;
             }
 
-            RebornCountDownTick = LocalConfig.RogueRebornTick;
+            RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             return false;
         }
 
@@ -166,14 +166,15 @@ namespace rogue_game
                 GoNextChapter();
                 gameRespSet.Add(new ChapterPass());
             }
-            #if DEBUG
-            Console.Out.WriteLine($" clear!!~~~~~~~~~{NowPlayMap.IsClear}");
-            #endif
+#if DEBUG
+            // Console.Out.WriteLine($" clear!!~~~~~~~~~{NowPlayMap.IsClear}");
+#endif
             if (NowPlayMap.IsClear)
             {
                 NowPlayMap.PlayGround.ActiveApplyDevice();
 #if DEBUG
-                Console.Out.WriteLine($" app!!~~~~~~~~~{ NowPlayMap.PlayGround.GetMapApplyDevices().All(x=>x.IsActive)}");
+                // Console.Out.WriteLine(
+                //     $" app!!~~~~~~~~~{NowPlayMap.PlayGround.GetMapApplyDevices().All(x => x.IsActive)}");
 #endif
 
                 gameRespSet.Add(new MapClear());
@@ -188,7 +189,7 @@ namespace rogue_game
         }
 
         // roguelike接入核心玩法，
-        public PlayGroundGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
+        public RogueGameGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
         {
             foreach (var botTeamTempOpThink in BotTeam.TempOpThinks.Where(botTeamTempOpThink =>
                 botTeamTempOpThink.Value.Operate != null))
@@ -226,9 +227,9 @@ namespace rogue_game
             }
 
             var playerTeleportTo = playGroundGoTickResult.PlayerTeleportTo;
-            if (!playerTeleportTo.Any()) return playGroundGoTickResult;
+            if (!playerTeleportTo.Any()) return new RogueGameGoTickResult(playGroundGoTickResult, false);
             var (map, toPos) = playerTeleportTo.Values.First();
-
+            if (NowPlayMap.PlayGround.MgId == map) return new RogueGameGoTickResult(playGroundGoTickResult, false);
 #if DEBUG
             Console.Out.WriteLine($"map change ~~~~{map} ~~ {toPos}");
 #endif
@@ -236,8 +237,21 @@ namespace rogue_game
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
             NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
-            return playGroundGoTickResult;
+            return new RogueGameGoTickResult(playGroundGoTickResult, true);
         }
+    }
+
+    public readonly struct RogueGameGoTickResult
+    {
+        public RogueGameGoTickResult(PlayGroundGoTickResult playGroundGoTickResult, bool mapChange)
+        {
+            PlayGroundGoTickResult = playGroundGoTickResult;
+            MapChange = mapChange;
+        }
+
+        public PlayGroundGoTickResult PlayGroundGoTickResult { get; }
+
+        public bool MapChange { get; }
     }
 
     public interface IGameResp

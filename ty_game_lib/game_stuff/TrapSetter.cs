@@ -38,7 +38,7 @@ namespace game_stuff
             FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
             BodySize = trap.BodyId;
             CallTrapTick = CommonConfig.GetTickByTime(trap.CallTrapRoundTime);
-            TrapMedia = LocalConfig.GenHitMedia(trap.TrapMedia);
+            TrapMedia = StuffLocalConfig.GenHitMedia(trap.TrapMedia);
             BaseAttrId = trap.AttrId;
             MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : CommonConfig.GetTickByTime(trap.MaxLifeTime);
 
@@ -51,7 +51,7 @@ namespace game_stuff
                 return;
             }
 
-            var genHitMedia = LocalConfig.GenHitMedia(firstOrDefault);
+            var genHitMedia = StuffLocalConfig.GenHitMedia(firstOrDefault);
             LaunchMedia = genHitMedia;
             TrickStack = (int?) trap.TrickStack;
             TrickDelayTick = CommonConfig.GetTickByTime(trap.TrickDelayTime);

@@ -80,7 +80,7 @@ namespace game_stuff
                 NotOverFlow &&
                 (FailChanceStack == null || FailChanceStack > 0) &&
                 (TrickStack == null || TrickStack > 0)
-                && (SurvivalStatus == null || SurvivalStatus.Value.GoATickAndCheckAlive())
+                && (SurvivalStatus == null || SurvivalStatus.GoATickAndCheckAlive())
                 && (MaxLifeTimeTick == null || NowLifeTimeTick < MaxLifeTimeTick);
 
             if (!goATickAndCheckAlive) return new TrapGoTickResult(false, null, this);
@@ -202,7 +202,7 @@ namespace game_stuff
 
         public float GetRr()
         {
-            return LocalConfig.GetRBySize(BodySize);
+            return StuffLocalConfig.GetRBySize(BodySize);
         }
 
         public void AddAKillScore(CharacterBody characterBody)
@@ -217,9 +217,15 @@ namespace game_stuff
 
         public DmgShow? TakeDamage(Damage genDamage)
         {
-            return SurvivalStatus.HasValue
-                ? new DmgShow(SurvivalStatus.Value.TakeDamage(genDamage), genDamage)
-                : (DmgShow?) null;
+            if (SurvivalStatus != null)
+            {
+                var survivalStatus = SurvivalStatus;
+                var isDead = survivalStatus.IsDead();
+                survivalStatus.TakeDamage(genDamage);
+                return new DmgShow(!isDead && survivalStatus.IsDead(), genDamage);
+            }
+            else
+                return (DmgShow?) null;
         }
     }
 

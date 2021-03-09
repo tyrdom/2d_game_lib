@@ -71,7 +71,7 @@ namespace game_stuff
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
-            RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
+            RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
 
             return Caster.GenDamage(sqNorm * sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param, true);
         }
@@ -133,7 +133,7 @@ namespace game_stuff
         {
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
-            RestTick = RestTick + 1 + (uint) (sqNorm * LocalConfig.HitWallTickParam);
+            RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
             return Caster.GenDamage(sqNorm * sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param, true);
         }
     }
@@ -185,7 +185,7 @@ namespace game_stuff
 
         public Damage HitWall()
         {
-            RestTick += LocalConfig.HitWallCatchTickParam;
+            RestTick += StuffLocalConfig.HitWallCatchTickParam;
             MovesOnPoints.Clear();
             return Caster.GenDamage(CommonConfig.OtherConfig.hit_wall_catch_dmg_param, true);
         }

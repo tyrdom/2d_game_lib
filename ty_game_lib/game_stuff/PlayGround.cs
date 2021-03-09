@@ -57,7 +57,7 @@ namespace game_stuff
 
         public static PlayGround GenEmptyPlayGround(int resId, int genId)
         {
-            if (LocalConfig.PerLoadMapConfig.TryGetValue(resId, out var initData))
+            if (StuffLocalConfig.PerLoadMapConfig.TryGetValue(resId, out var initData))
             {
                 return GenEmptyPlayGround(initData, genId, resId);
             }
@@ -600,8 +600,8 @@ namespace game_stuff
                     if (twoDTwoP != null)
                     {
 #if DEBUG
-                        Console.Out.WriteLine(
-                            $" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.ToString()}");
+                        // Console.Out.WriteLine(
+                        //     $" {twoDTwoP.GetType().TypeHandle.Value.ToString()} :: move res :: {twoDTwoP.ToString()}");
 #endif
                         twoDTwoPs[gid] = twoDTwoP;
                     }

@@ -5,7 +5,7 @@ using game_config;
 
 namespace game_bot
 {
-    public static class LocalConfig
+    public static class BotLocalConfig
     {
         public static float PatrolSlowMulti { get; private set; } = 0.5f;
 
@@ -16,14 +16,14 @@ namespace game_bot
 
         public static ImmutableDictionary<int, ImmutableDictionary<size, PathTop>> NaviMapPerLoad { get; private set; }
             =
-            game_stuff.LocalConfig.PerLoadMapConfig.ToImmutableDictionary(p => p.Key,
+            game_stuff.StuffLocalConfig.PerLoadMapConfig.ToImmutableDictionary(p => p.Key,
                 p => p.Value.WalkMap.SizeToEdge.ToImmutableDictionary(pp => pp.Key, pp => new PathTop(pp.Value)));
 
         public static void ReLoadP(ConfigDictionaries configDictionaries)
         {
-            game_stuff.LocalConfig.ReLoadP(configDictionaries);
+            game_stuff.StuffLocalConfig.ReLoadP(configDictionaries);
             NaviMapPerLoad =
-                game_stuff.LocalConfig.PerLoadMapConfig.ToImmutableDictionary(p => p.Key,
+                game_stuff.StuffLocalConfig.PerLoadMapConfig.ToImmutableDictionary(p => p.Key,
                     p => p.Value.WalkMap.SizeToEdge.ToImmutableDictionary(pp => pp.Key, pp => new PathTop(pp.Value)));
         }
 #if NETCOREAPP

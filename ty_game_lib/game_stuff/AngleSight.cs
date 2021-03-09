@@ -12,7 +12,7 @@ namespace game_stuff
 
         public static AngleSight StandardAngleSight()
         {
-            return new AngleSight(LocalConfig.StandardSightVector);
+            return new AngleSight(StuffLocalConfig.StandardSightVector);
         }
 
         private AngleSight(TwoDVector upLeft)
@@ -48,7 +48,7 @@ namespace game_stuff
             var blockSightLine = c1 >= 0 && c2 <= 0 && b && !isBlockSightLine;
 
 #if DEBUG
-            Console.Out.WriteLine($" _nowR ::: {NowR}");
+            // Console.Out.WriteLine($" _nowR ::: {NowR}");
 
 #endif
             return blockSightLine;

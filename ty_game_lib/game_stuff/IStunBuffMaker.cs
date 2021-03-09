@@ -132,12 +132,13 @@ namespace game_stuff
 
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
 
-#if DEBUG
-            Console.Out.WriteLine($" vector1~~~~ {vector1}");
-#endif
+
             if (height == null)
             {
                 var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast, battleUnitStatus);
+#if DEBUG
+                Console.Out.WriteLine($" vector1~~~~ {vector1} push {dVector1}");
+#endif
                 return pushOnEarth;
             }
 

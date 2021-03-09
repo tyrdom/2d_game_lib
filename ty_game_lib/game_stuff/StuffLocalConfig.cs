@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public static class LocalConfig
+    public static class StuffLocalConfig
     {
         public static bool PloyListCheckOk(this IEnumerable<Poly> list)
         {

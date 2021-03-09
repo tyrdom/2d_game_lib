@@ -25,7 +25,7 @@ namespace rogue_game
                 : throw new KeyNotFoundException();
         }
 
-        public static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
+        private static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
         {
             var characterInitData =
                 CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,battleNpc.MaxWeaponSlot);
@@ -35,10 +35,15 @@ namespace rogue_game
                 p => PassiveTrait.GenById(p.Key, (uint) p.Count()));
 
             var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero(), passiveTraits);
-            var battleNpcWithVehicleId = battleNpc.WithVehicleId;
-            var genById = Vehicle.GenById(battleNpcWithVehicleId);
             var characterStatus = genCharacterBody.CharacterStatus;
-            characterStatus.GetInAVehicle(genById);
+            var battleNpcWithVehicleId = battleNpc.WithVehicleId;
+            if (battleNpcWithVehicleId!=0)
+            {
+                var genById = Vehicle.GenById(battleNpcWithVehicleId);
+                
+                characterStatus.GetInAVehicle(genById);
+            }
+          
             var battleNpcPropIds = battleNpc.PropIds;
             if (battleNpcPropIds.Any())
             {

@@ -31,7 +31,7 @@ namespace game_bot
 
         public void SetNaviMaps(int mapResId)
         {
-            var sizeToNaviMap = LocalConfig.NaviMapPerLoad.TryGetValue(mapResId, out var immutableDictionary)
+            var sizeToNaviMap = BotLocalConfig.NaviMapPerLoad.TryGetValue(mapResId, out var immutableDictionary)
                 ? immutableDictionary ?? throw new NullReferenceException()
                 : throw new KeyNotFoundException();
             SizeToNaviMap = sizeToNaviMap;

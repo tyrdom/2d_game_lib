@@ -17,7 +17,7 @@ namespace lib_unit_test
         [SetUp]
         public void Setup()
         {
-            rogue_game.LocalConfig.LoadConfig();
+            rogue_game.RogueLocalConfig.LoadConfig();
         }
 
         [Test]

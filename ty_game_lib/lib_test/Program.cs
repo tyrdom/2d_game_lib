@@ -16,35 +16,48 @@ namespace lib_test
         {
             var dictionary = ResNames.Names.ToDictionary(x => x, GetStringByFile);
 
-            rogue_game.LocalConfig.LoadConfig(dictionary);
+            RogueLocalConfig.LoadConfig(dictionary);
 #if DEBUG
-            Console.Out.WriteLine($"~~~~~~{rogue_game.LocalConfig.RogueRebornTick}");
+            Console.Out.WriteLine($"~~~~~~{RogueLocalConfig.RogueRebornTick}");
 #endif
 
 
-            var genPlayerByConfig = game_stuff.CharacterInitData.GenPlayerByConfig(1, 1, new[] {1}, size.small, 1);
+            var genPlayerByConfig = CharacterInitData.GenPlayerByConfig(1, 0, new[] {1}, size.small, 1);
+            var characterInitData = CharacterInitData.GenPlayerByConfig(2, 1, new[] {1}, size.small, 1);
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
+            var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                rogue_game.RogueGame.GenByConfig(new HashSet<CharacterBody>() {genCharacterBody}, genCharacterBody);
+                RogueGame.GenByConfig(new HashSet<CharacterBody>() {genCharacterBody, characterBody}, genCharacterBody);
 
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
             var any = mapApplyDevices.Any(x => x.IsActive);
             Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
-            for (var i = 0; i < 200; i++)
+            for (var i = 0; i < 300; i++)
             {
-                var operate = new Operate(mapInteractive: MapInteract.BuyOrApplyCall);
+                var twoDVector = new TwoDVector(1f, 0);
+                var operate = new Operate(twoDVector, SkillAction.Op1);
+                var rogueGameGoTickResult = genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
-                    genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
+                    rogueGameGoTickResult.PlayGroundGoTickResult;
+                var mapChange = rogueGameGoTickResult.MapChange;
                 if (i % 5 == 0)
                 {
                     genByConfig.GameConsoleGoATick(new Dictionary<int, IGameRequest>());
                 }
 
-                var twoDPoint = playerSee[1].OfType<CharacterBody>().FirstOrDefault()?.GetAnchor();
+                var characterBodies = playerSee[1].OfType<CharacterBody>();
+                var firstOrDefault = characterBodies.FirstOrDefault();
+                var genTickMsg = (CharTickMsg) firstOrDefault.GenTickMsg();
+                var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
-                Console.Out.WriteLine($"$ ~~~~~{twoDPoint}");
+                if (mapChange)
+                {
+                    Console.Out.WriteLine($"map change to {genByConfig.NowPlayMap.PlayGround.MgId}");
+                }
+
+                Console.Out.WriteLine($"$ ~~~~~{twoDPoint} {genTickMsg.Gid} pause :{genTickMsg.IsPause}");
 #endif
             }
         }

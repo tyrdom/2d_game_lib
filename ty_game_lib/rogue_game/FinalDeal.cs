@@ -19,7 +19,7 @@ namespace rogue_game
         {
             {
                 var sumSame = GameItem.SumSame(gameItems);
-                var enumerable = sumSame.Where(x => LocalConfig.CanEndRest(x.ItemId));
+                var enumerable = sumSame.Where(x => RogueLocalConfig.CanEndRest(x.ItemId));
                 foreach (var gameItem in enumerable)
                 {
                     var gameItemItemId = gameItem.ItemId;

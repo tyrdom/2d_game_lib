@@ -98,7 +98,7 @@ namespace game_stuff
 
         public float GetRr()
         {
-            return LocalConfig.GetRBySize(BodySize);
+            return StuffLocalConfig.GetRBySize(BodySize);
         }
 
         public int GetId()
@@ -108,7 +108,6 @@ namespace game_stuff
 
         public TwoDPoint Move(ITwoDTwoP vector)
         {
-            
             var twoDPoint = vector switch
             {
                 TwoDPoint twoDPoint1 => twoDPoint1,
@@ -136,11 +135,10 @@ namespace game_stuff
                 walkBlock.PushOutToPt(LastPos, NowPos);
 
 #if DEBUG
-            if (walkBlock.QSpace != null)
-                Console.Out.WriteLine(
-                    $" check:: {walkBlock.QSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
-            Console.Out.WriteLine(
-                $" lastPos:: {LastPos} nowPos::{NowPos} :: is hit ::{isHitWall}");
+            // Console.Out.WriteLine(
+            //     $" check:: {walkBlock.QSpace.Count()} map :: shapes num {walkBlock.QSpace.Count()}");
+            // Console.Out.WriteLine(
+            //     $" lastPos:: {LastPos} nowPos::{NowPos} :: is hit wall ::{isHitWall}");
 #endif
             if (!isHitWall) return null;
             if (CharacterStatus.StunBuff == null)
@@ -169,7 +167,7 @@ namespace game_stuff
             if (!gidToOp.TryGetValue(id, out var o)) return CharacterStatus.CharGoTick(null);
             var charGoTick = CharacterStatus.CharGoTick(o);
 #if DEBUG
-            Console.Out.WriteLine($"bgt::{charGoTick.Move?.ToString()}");
+            // Console.Out.WriteLine($"bgt::{charGoTick.Move?.ToString()}");
 #endif
             return charGoTick;
         }

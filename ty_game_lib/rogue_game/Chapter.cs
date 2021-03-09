@@ -110,7 +110,7 @@ namespace rogue_game
             var endMap = Converter(end);
 
             static TwoDPoint Func(int id, direction direct) =>
-                game_stuff.LocalConfig.PerLoadMapTransPort.TryGetValue(id, out var dd)
+                game_stuff.StuffLocalConfig.PerLoadMapTransPort.TryGetValue(id, out var dd)
                     ? dd.TryGetValue(direct, out var twoDp)
                         ? twoDp.FirstOrDefault() ?? throw new IndexOutOfRangeException()
                         : throw new KeyNotFoundException()

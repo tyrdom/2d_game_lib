@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
@@ -7,7 +8,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public struct SurvivalStatus
+    public class SurvivalStatus
     {
         private uint MaxHp { get; set; }
         public uint NowHp { get; private set; }
@@ -26,7 +27,7 @@ namespace game_stuff
         private uint MaxArmor { get; set; }
 
         private uint ArmorDefence { get; set; }
-        private uint NowShield { get; set; }
+        public uint NowShield { get; private set; }
         private uint MaxShield { get; set; }
 
 
@@ -60,7 +61,7 @@ namespace game_stuff
 
         public override string ToString()
         {
-            return $"HP: {NowHp}/{MaxHp} AM: {NowArmor}/{MaxArmor} SD: {NowShield}/{MaxShield}";
+            return $"HP: {NowHp}/{MaxHp} AM: {NowArmor}/{MaxArmor} SD: {NowShield}/{MaxShield}r{NowDelayTick}";
         }
 
         public bool IsDead()
@@ -68,13 +69,18 @@ namespace game_stuff
             return NowHp <= 0;
         }
 
-        public bool TakeDamage(Damage damage)
+        public void TakeDamage(Damage damage)
         {
-            var beforeIsDead = IsDead();
+            
             NowDelayTick = ShieldDelayTick;
             TakeOneDamage(damage.MainDamage);
-            TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
-            return beforeIsDead && IsDead();
+#if DEBUG
+            Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
+#endif
+            if (damage.ShardedDamage>0)
+            {
+                TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
+            }
         }
 
         private void TakeMultiDamage(uint damage, uint times)
@@ -124,7 +130,7 @@ namespace game_stuff
         }
 
 
-        public void TakeOneDamage(uint damage)
+        private void TakeOneDamage(uint damage)
         {
             var rest = (int) damage;
 
@@ -135,6 +141,8 @@ namespace game_stuff
                 if (nowShield >= 0)
                 {
                     NowShield = (uint) nowShield;
+
+                    
                     return;
                 }
 
@@ -194,6 +202,8 @@ namespace game_stuff
         public bool GoATickAndCheckAlive()
         {
             if (IsDead()) return false;
+
+
             if (NowShield < MaxShield && NowDelayTick == 0)
             {
                 NowShield = Math.Min(NowShield + ShieldRecover, MaxShield);
@@ -203,7 +213,9 @@ namespace game_stuff
             {
                 NowDelayTick--;
             }
-
+#if DEBUG
+            // Console.Out.WriteLine($"now shield {NowShield} d {NowDelayTick} this {this.GetHashCode()}");
+#endif
             return true;
         }
 

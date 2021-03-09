@@ -85,7 +85,7 @@ namespace game_stuff
         {
             if (height == null)
             {
-                return LocalConfig.MaxUpSpeed;
+                return StuffLocalConfig.MaxUpSpeed;
             }
 
             var maxHeight =  CommonConfig.OtherConfig.max_hegiht - height.Value;

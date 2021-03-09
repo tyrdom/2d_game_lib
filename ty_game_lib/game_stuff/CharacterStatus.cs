@@ -88,7 +88,7 @@ namespace game_stuff
         //Prop
         public Prop? Prop { get; private set; }
 
-        public int NowPropPoint { get; set; }
+        public int NowPropPoint { get; private set; }
 
         private int MaxPropPoint { get; set; }
 
@@ -228,7 +228,7 @@ namespace game_stuff
             NowVehicle = null;
             NowAmmo = 0;
             MaxAmmo = genBaseAttrById.MaxAmmo;
-            MaxCallLongStack = LocalConfig.MaxCallActTwoTick;
+            MaxCallLongStack = StuffLocalConfig.MaxCallActTwoTick;
             NowCallLongStack = 0;
             NowMapInteractive = null;
             MaxWeaponSlot = maxWeaponNum ?? CommonConfig.OtherConfig.weapon_num;
@@ -261,8 +261,12 @@ namespace game_stuff
                     continue;
                 }
 
-                var enumerable = passiveTraits.Select(x => x);
-                var aggregate = enumerable.Aggregate(Vector<float>.Zero,
+
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"key: {firstOrDefault.PassId} enum {passiveTraits.Count()} type : {firstOrDefault.PassiveTraitEffect.GetType()}");
+#endif
+                var aggregate = passiveTraits.Aggregate(Vector<float>.Zero,
                     (s, x) => s + x.PassiveTraitEffect.GenEffect(x.Level).GetVector());
 
                 RefreshStatusByAKindOfPass(firstOrDefault, aggregate);
@@ -700,7 +704,7 @@ namespace game_stuff
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
             {
-                NowProtectTick = (int) (LocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
+                NowProtectTick = (int) (StuffLocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
                 NowProtectValue = 0;
             }
 
@@ -751,7 +755,12 @@ namespace game_stuff
             {
                 return new CharGoTickResult(false);
             }
-
+#if DEBUG
+            // if (GId == 1)
+            // {
+            //     Console.Out.WriteLine($"id::{GId} now sv{SurvivalStatus} {SurvivalStatus.GetHashCode()}");
+            // }
+#endif
             //
             if (NowProtectTick > 0)
             {
@@ -1007,7 +1016,7 @@ namespace game_stuff
             {
                 NowMapInteractive = kickVehicleCall;
             }
-            
+
             var b = NowCallLongStack > MaxCallLongStack;
             if (b)
             {
@@ -1067,6 +1076,9 @@ namespace game_stuff
         public void BaseBulletAtkOk(int pauseToCaster, int ammoAddWhenSuccess, IBattleUnitStatus targetCharacterStatus)
         {
             PauseTick = pauseToCaster;
+#if DEBUG
+            Console.Out.WriteLine($"bullet hit!! caster pause tick {PauseTick}");
+#endif
             AddAmmo(ammoAddWhenSuccess);
             //如果没有锁定目标，则锁定当前命中的目标
             LockingWho ??= targetCharacterStatus;
@@ -1348,7 +1360,7 @@ namespace game_stuff
 
             if (CatchingWho != null)
             {
-                CatchingWho.StunBuff = LocalConfig.OutCaught(this);
+                CatchingWho.StunBuff = StuffLocalConfig.OutCaught(this);
                 CatchingWho = null;
             }
 
@@ -1373,7 +1385,20 @@ namespace game_stuff
         {
             var damageMulti = GetBuffs<TakeDamageBuff>().GetDamageMulti();
             genDamage.GetBuffMulti(damageMulti);
-            if (NowVehicle == null) return new DmgShow(SurvivalStatus.TakeDamage(genDamage), genDamage);
+            if (NowVehicle == null)
+            {
+                var isDead = SurvivalStatus.IsDead();
+
+                this.SurvivalStatus.TakeDamage(genDamage);
+
+                var after = SurvivalStatus.IsDead();
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"{GId} take damage {genDamage.MainDamage}| {genDamage.ShardedDamage} Sv {SurvivalStatus} {SurvivalStatus.GetHashCode()}");
+#endif
+                return new DmgShow(!isDead && after, genDamage);
+            }
+
             NowVehicle.SurvivalStatus.TakeDamage(genDamage);
 
             return new DmgShow(false, genDamage);

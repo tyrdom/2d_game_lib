@@ -7,7 +7,7 @@ using rogue_chapter_maker;
 
 namespace rogue_game
 {
-    public static class LocalConfig
+    public static class RogueLocalConfig
     {
         public static int GetRuleCheckIntTickByTime(float time)
         {
@@ -62,7 +62,7 @@ namespace rogue_game
         public static int RogueRebornTick { get; private set; } = 1000;
         public static void ReLoadP(ConfigDictionaries configs)
         {
-            game_bot.LocalConfig.ReLoadP(configs);
+            game_bot.BotLocalConfig.ReLoadP(configs);
             var configsOtherConfig = CommonConfig.OtherConfig;
             RogueRebornCost = configsOtherConfig.rogue_reborn_cost.Select(GameItem.GenByConfigGain).ToArray();
             RogueRebornTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogue_reborn_limit_time);

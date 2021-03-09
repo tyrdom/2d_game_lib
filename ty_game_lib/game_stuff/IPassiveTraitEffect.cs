@@ -48,7 +48,7 @@ namespace game_stuff
                 passive_type.TickAdd => new TickAddEffect(vector),
                 passive_type.Other => new OtherAttrPassiveEffect(vector),
                 passive_type.HitWinBuff => new HitPass(vector),
-                passive_type.Attack => new OtherAttrPassiveEffect(vector),
+                passive_type.Attack => new AtkAboutPassiveEffect(vector),
                 passive_type.AddItem => new AddItem(vector),
                 passive_type.TrapAbout => new TrapEffect(vector),
                 passive_type.Regen => new RegenPassiveEffect(vector),
@@ -304,7 +304,7 @@ namespace game_stuff
 
     public readonly struct AtkAboutPassiveEffect : IPassiveTraitEffectForVehicle
     {
-        private AtkAboutPassiveEffect(Vector<float> atkAttrAdd)
+        public AtkAboutPassiveEffect(Vector<float> atkAttrAdd)
         {
             // MainAtkMultiAdd = mainAtkMultiAdd;
             // ShardedNumAdd = shardedNumAdd;

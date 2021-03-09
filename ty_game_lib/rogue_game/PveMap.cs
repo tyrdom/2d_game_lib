@@ -11,9 +11,10 @@ namespace rogue_game
 {
     public class PveMap
     {
-        public PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
+        private PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
             PveWinCond pveWinCond, bool isClear, int[] creepIdToSpawn, int[] bossIdToSpawn)
         {
+            
             PlayGround = playGround;
             Bosses = bosses;
             Creeps = creeps;
@@ -63,7 +64,7 @@ namespace rogue_game
                 .Select(x =>
                 {
                     var genById = BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random);
-                    var simpleBot = SimpleBot.GenById(x, genById.CharacterBody, random,
+                    var simpleBot = SimpleBot.GenById(ints[x], genById.CharacterBody, random,
                         botTeam.GetNaviMap(genById.CharacterBody.GetSize()));
 
                     return (simpleBot, genById);

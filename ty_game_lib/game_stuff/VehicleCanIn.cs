@@ -47,7 +47,7 @@ namespace game_stuff
         {
             var configsInteraction = CommonConfig.Configs.interactions;
 
-            var roundP = new Round(pos, LocalConfig.GetRBySize(vehicle.Size));
+            var roundP = new Round(pos, StuffLocalConfig.GetRBySize(vehicle.Size));
             var interaction1 = configsInteraction[interactionAct.get_in_vehicle];
             var interaction11
                 =
