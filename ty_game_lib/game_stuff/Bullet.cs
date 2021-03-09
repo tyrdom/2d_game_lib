@@ -156,8 +156,8 @@ namespace game_stuff
         private bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
         {
             var isBlockSightLine =
-                blockMap?.IsBlockSightLine(new TwoDVectorLine(this.Pos, characterBody.GetAnchor())) ?? false;
-            return GameTools.IsHit(this, characterBody) && (CanOverBulletBlock || isBlockSightLine);
+                blockMap?.IsBlockSightLine(new TwoDVectorLine(Pos, characterBody.GetAnchor())) ?? false;
+            return GameTools.IsHit(this, characterBody) && (CanOverBulletBlock || !isBlockSightLine);
 
             //造成伤害需要不被阻挡
         }
