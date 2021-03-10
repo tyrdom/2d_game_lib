@@ -233,9 +233,11 @@ namespace rogue_game
 #if DEBUG
             Console.Out.WriteLine($"map change ~~~~{map} ~~ {toPos}");
 #endif
+            NowPlayMap.TelePortOut();
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
+            BotTeam.ClearBot();
             NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
             return new RogueGameGoTickResult(playGroundGoTickResult, true);
         }

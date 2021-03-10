@@ -582,6 +582,7 @@ namespace game_stuff
 
             HashSet<IAaBbBox>? dropThings1DropSet = null;
             TelePortMsg? t = null;
+            var mapInteractive = getThing is IApplyUnit ? null : getThing.InWhichMapInteractive;
             switch (actResult)
             {
                 case null:
@@ -599,7 +600,7 @@ namespace game_stuff
 
             return new CharGoTickResult(move: move, launchBullet: selfEffectFilter,
                 dropThing: dropThings1DropSet,
-                getThing: getThing.InWhichMapInteractive, teleTo: t);
+                getThing: mapInteractive, teleTo: t);
         }
 
 

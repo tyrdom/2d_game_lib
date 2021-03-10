@@ -6,6 +6,7 @@ using collision_and_rigid;
 using game_bot;
 using game_stuff;
 using rogue_chapter_maker;
+using Random = System.Random;
 
 namespace rogue_game
 {
@@ -14,7 +15,6 @@ namespace rogue_game
         private PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
             PveWinCond pveWinCond, bool isClear, int[] creepIdToSpawn, int[] bossIdToSpawn)
         {
-            
             PlayGround = playGround;
             Bosses = bosses;
             Creeps = creeps;
@@ -63,7 +63,7 @@ namespace rogue_game
             var genBattleNpcAndBot = Enumerable.Range(0, ints.Length)
                 .Select(x =>
                 {
-                    var genById = BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 2, random);
+                    var genById = BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 1, random);
                     var simpleBot = SimpleBot.GenById(ints[x], genById.CharacterBody, random,
                         botTeam.GetNaviMap(genById.CharacterBody.GetSize()));
 
@@ -105,7 +105,7 @@ namespace rogue_game
                 kill.Add((gId, creepWantedBonus.KillBonus));
                 creepWantedBonus.MapInteractableDrop.ReLocate(creep.CharacterBody.GetAnchor());
                 mapInteractableS.Add(creepWantedBonus.MapInteractableDrop);
-                return false;
+                return true;
             }
 
             var immutableDictionary = kill.GroupBy(x => x.Item1).ToImmutableDictionary(p => p.Key,
@@ -113,7 +113,6 @@ namespace rogue_game
             switch (PveWinCond)
             {
                 case PveWinCond.AllClear:
-
                     var removeWhere = Bosses.RemoveWhere(Predicate);
                     var i = Creeps.RemoveWhere(Predicate);
                     if (removeWhere > 0 || i > 0)
@@ -148,6 +147,12 @@ namespace rogue_game
         {
             PlayGround.AddBodies(characterBodies);
         }
+
+        public void TelePortOut()
+        {
+            PlayGround.RemoveAllBodies();
+        }
+
 
         public void TeleportToThisMap(IEnumerable<(CharacterBody, TwoDPoint)> characterBodiesToPt)
         {

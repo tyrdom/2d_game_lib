@@ -50,12 +50,17 @@ namespace game_bot
 
         public void AllBotsGoATick(ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> perceivable)
         {
-            var botOpAndThinks = SimpleBots.ToDictionary(x => x.BotBody.GetId(), x => x.BotSimpleGoATick(
-                perceivable.TryGetValue(x.BotBody.GetId(), out var enumerable)
+            var botOpAndThinks = SimpleBots.ToDictionary(bot => bot.BotBody.GetId(), bot =>
+            {
+                var key = bot.BotBody.GetId();
+                var canBeEnemies = perceivable.TryGetValue(key, out var enumerable)
                     ? enumerable.OfType<ICanBeEnemy>()
-                    : throw new KeyNotFoundException(),
-                SizeToNaviMap.TryGetValue(x.BotBody.GetSize(), out var top) ? top : throw new KeyNotFoundException()
-            ));
+                    : new ICanBeEnemy[] { };
+                return bot.BotSimpleGoATick(canBeEnemies,
+                    SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)
+                        ? top
+                        : throw new KeyNotFoundException($"size {bot.BotBody.GetSize()}"));
+            });
 
             TempOpThinks = botOpAndThinks;
         }
@@ -70,6 +75,11 @@ namespace game_bot
         public void SetBots(IEnumerable<SimpleBot> valueTuples)
         {
             SimpleBots = valueTuples.IeToHashSet();
+        }
+
+        public void ClearBot()
+        {
+            SimpleBots.Clear();
         }
     }
 }

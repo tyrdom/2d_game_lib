@@ -29,11 +29,7 @@ namespace game_stuff
             var applyDevices = new List<ApplyDevice>();
 
             MapInteractableThings.ForeachBoxDoWithOutMove<List<ApplyDevice>, ApplyDevice>(
-                (idp, aps) =>
-                {
-                    
-                    aps.Add(idp);
-                }, applyDevices);
+                (idp, aps) => { aps.Add(idp); }, applyDevices);
             return applyDevices;
         }
 
@@ -843,7 +839,7 @@ namespace game_stuff
                 foreach (var (characterBody, pos) in valueTuples)
                 {
                     characterBody.Teleport(pos);
-                    GidToBody.Add(characterBody.GetId(), characterBody);
+                    GidToBody[characterBody.GetId()] = characterBody;
                 }
 
                 var enumerableToHashSet = valueTuples.Select(x => x.characterBody.InBox).IeToHashSet();
@@ -880,6 +876,16 @@ namespace game_stuff
             }
 
             MapInteractableThings.ForeachBoxDoWithOutMove<bool, ApplyDevice>(Active, true);
+        }
+
+        public void RemoveAllBodies()
+        {
+            var array = GidToBody.Values.IeToHashSet();
+            var removeBodies = RemoveBodies(array);
+            if (removeBodies.Any())
+            {
+                throw new Exception("sb not rm success");
+            }
         }
     }
 }
