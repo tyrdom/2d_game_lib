@@ -10,7 +10,7 @@ namespace game_stuff
 {
     public class SurvivalStatus
     {
-        private uint MaxHp { get; set; }
+        public uint MaxHp { get; set; }
         public uint NowHp { get; private set; }
 
         public void SetHp(int hp)
@@ -24,11 +24,11 @@ namespace game_stuff
         }
 
         public uint NowArmor { get; private set; }
-        private uint MaxArmor { get; set; }
+        public uint MaxArmor { get; set; }
 
-        private uint ArmorDefence { get; set; }
+        public uint ArmorDefence { get; set; }
         public uint NowShield { get; private set; }
-        private uint MaxShield { get; set; }
+        public uint MaxShield { get; set; }
 
 
         private uint NowDelayTick { get; set; }
