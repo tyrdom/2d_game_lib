@@ -71,13 +71,12 @@ namespace game_stuff
 
         public void TakeDamage(Damage damage)
         {
-            
             NowDelayTick = ShieldDelayTick;
             TakeOneDamage(damage.MainDamage);
 #if DEBUG
             Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
 #endif
-            if (damage.ShardedDamage>0)
+            if (damage.ShardedDamage > 0)
             {
                 TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
             }
@@ -85,30 +84,24 @@ namespace game_stuff
 
         private void TakeMultiDamage(uint damage, uint times)
         {
-            static uint GetTime(int restDamage, uint damage)
-            {
-                return (uint) restDamage / damage;
-            }
-
-            var restDamage = (int) (damage * times);
-            var restTime = GetTime(restDamage, damage);
+            var restTime = times;
             if (NowShield > 0)
             {
-                var nowShield = (int) NowShield - (int) (ShieldInstability * restTime) - restDamage;
+                var nowShield = (int) NowShield - (int) ((damage + ShieldInstability) * restTime);
                 if (nowShield >= 0)
                 {
                     NowShield = (uint) nowShield;
                     return;
                 }
 
+                var lossTimes = NowShield / (ShieldInstability + damage);
                 NowShield = 0;
-                restDamage = -nowShield;
-                restTime = GetTime(restDamage, damage);
+                restTime -= lossTimes;
             }
 
             if (NowArmor > 0)
             {
-                var nowArmor = (int) NowArmor + (int) (ArmorDefence * restTime) - restDamage;
+                var nowArmor = (int) NowArmor - MathTools.Max(0, (int) (damage - ArmorDefence)) * restTime;
 
                 if (nowArmor >= 0)
                 {
@@ -116,17 +109,18 @@ namespace game_stuff
                     return;
                 }
 
+                var armorDefence = NowArmor / (damage - ArmorDefence);
                 NowArmor = 0;
-                restDamage = -nowArmor;
+                restTime -= armorDefence;
             }
 
-            if ((uint) restDamage >= NowHp)
+            if (restTime * damage >= NowHp)
             {
                 NowHp = 0;
                 return;
             }
 
-            NowHp -= (uint) restDamage;
+            NowHp -= damage * restTime;
         }
 
 
@@ -142,7 +136,7 @@ namespace game_stuff
                 {
                     NowShield = (uint) nowShield;
 
-                    
+
                     return;
                 }
 
@@ -152,7 +146,7 @@ namespace game_stuff
 
             if (NowArmor > 0)
             {
-                var nowArmor = (int) NowArmor + (int) ArmorDefence - rest;
+                var nowArmor = (int) (NowArmor + MathTools.Min(0, (int) ArmorDefence - rest));
 
                 if (nowArmor >= 0)
                 {
