@@ -90,7 +90,7 @@ namespace game_stuff
         public void PickedBySomeOne(IBattleUnitStatus characterStatus)
         {
             LockArea?.Sign(characterStatus);
-            foreach (var bullet in LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value))
+            foreach (var bullet in LaunchTickToBullet.Values)
             {
                 bullet.Sign(characterStatus);
             }
@@ -132,7 +132,7 @@ namespace game_stuff
                 CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
                 skillBaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
                 CommonConfig.GetTickByTime(skill.BreakSnipeTime),
-                skill.SnipeStepNeed-1, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
+                skill.SnipeStepNeed - 1, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
         }
 
 
@@ -217,10 +217,12 @@ namespace game_stuff
             if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost)
             {
 #if DEBUG
-                Console.Out.WriteLine($"not enough ammo {AmmoCost} / {nowAmmo} or not enough step {SnipeStepNeed}/ {nowSnipeStep}");
+                Console.Out.WriteLine(
+                    $"not enough ammo {AmmoCost} / {nowAmmo} or not enough step {SnipeStepNeed}/ {nowSnipeStep}");
 #endif
                 return false;
             }
+
             NowTough = BaseTough;
             NowOnTick = 0;
             return true;

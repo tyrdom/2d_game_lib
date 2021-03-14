@@ -38,7 +38,7 @@ namespace game_stuff
 
         private hit_type HitType { get; }
         private int RestTick { get; set; }
-        private int ResId { get; }
+        private string BulletId { get; }
 
         private int ProtectValueAdd { get; }
 
@@ -56,12 +56,20 @@ namespace game_stuff
         {
             Caster = characterStatus;
 
-            foreach (var antiActBuffConfig in SuccessStunBuffConfigToOpponent)
+            foreach (var antiActBuffConfig in SuccessStunBuffConfigToOpponent.Values)
             {
-                if (antiActBuffConfig.Value is CatchStunBuffMaker catchAntiActBuffConfig)
+                if (antiActBuffConfig is CatchStunBuffMaker catchAntiActBuffConfig)
                 {
                     catchAntiActBuffConfig
                         .PickBySomeOne(characterStatus);
+                }
+            }
+
+            foreach (var fValue in FailActBuffConfigToSelf.Values)
+            {
+                if (fValue is CatchStunBuffMaker catchStunBuffMaker)
+                {
+                    catchStunBuffMaker.PickBySomeOne(characterStatus);
                 }
             }
         }
@@ -113,14 +121,14 @@ namespace game_stuff
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue,
-                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock);
+                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id);
         }
 
         private Bullet(Dictionary<size, BulletBox> sizeToBulletCollision,
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk, bool canOverBulletBlock)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock, string bulletId)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -137,7 +145,7 @@ namespace game_stuff
             TargetType = targetType;
             Tough = tough;
             RestTick = 1;
-            ResId = 1;
+            BulletId = bulletId;
             AmmoAddWhenSuccess = ammoAddWhenSuccess;
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
@@ -196,7 +204,7 @@ namespace game_stuff
         {
             return Caster switch
             {
-                null => throw new Exception("there is a no Caster Bullet"),
+                null => throw new Exception($"there is a no Caster Bullet {BulletId}"),
                 CharacterStatus characterStatusCaster => HitOne(targetTrap, characterStatusCaster),
                 Trap trapCaster => HitOne(targetTrap, trapCaster),
                 _ => throw new ArgumentOutOfRangeException(nameof(Caster))
@@ -494,6 +502,7 @@ namespace game_stuff
                 if (failAntiBuff is CatchStunBuffMaker catchAntiActBuffConfig)
                 {
                     targetCharacterStatus.CatchingWho = bodyCaster;
+                    catchAntiActBuffConfig.PickBySomeOne(targetCharacterStatus);
                     targetCharacterStatus.LoadCatchTrickSkill(aim, catchAntiActBuffConfig);
                 }
 
@@ -522,7 +531,7 @@ namespace game_stuff
 
         public BulletMsg GenMsg()
         {
-            return new BulletMsg(Pos, Aim, ResId, Caster?.GetPos());
+            return new BulletMsg(Pos, Aim, BulletId, Caster?.GetPos());
         }
 
         public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)

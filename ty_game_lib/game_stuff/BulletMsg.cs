@@ -6,10 +6,10 @@ namespace game_stuff
     {
         private TwoDPoint Pos;
         private TwoDVector Aim;
-        private int ResId;
+        private string ResId;
         private TwoDPoint? MastPos;
 
-        public BulletMsg(TwoDPoint pos, TwoDVector aim, int resId, TwoDPoint? mastPos)
+        public BulletMsg(TwoDPoint pos, TwoDVector aim, string resId, TwoDPoint? mastPos)
         {
             Pos = pos;
             Aim = aim;

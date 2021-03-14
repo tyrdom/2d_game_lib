@@ -47,7 +47,7 @@ namespace game_stuff
                     from keyValuePair in variable.Value
                     from valuePair in keyValuePair.Value
                     select valuePair.Value.LogUser())
-                .Aggregate("", (current, logUser) => current +"."+ logUser);
+                .Aggregate("", (current, logUser) => current + "." + logUser);
         }
 
         private bool CanBePickUp(size bodySize)
@@ -58,12 +58,17 @@ namespace game_stuff
         public IMapInteractable? PickedBySomebody(CharacterStatus characterStatus)
         {
             foreach (var skill in
-                SkillGroups.SelectMany(keyValuePair => keyValuePair.Value)
-                    .SelectMany(x => x.Value)
-                    .Select(immutableDictionary => immutableDictionary.Value))
+                SkillGroups.Values)
             {
-                skill.PickedBySomeOne(characterStatus);
+                foreach (var variable in skill.Values)
+                {
+                    foreach (var value in variable.Values)
+                    {
+                        value.PickedBySomeOne(characterStatus);
+                    }
+                }
             }
+
 
             ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.GetStandardScope().GenNewScope(x))
                 .ToArray();
