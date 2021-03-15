@@ -119,8 +119,12 @@ namespace game_stuff
             }
 
 
+            var bulletDamageMulti = bullet.DamageMulti <= 0
+                ? ((float) pairKey).ValuePerSecToValuePerTick()
+                : bullet.DamageMulti;
+
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
-                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bullet.DamageMulti, bullet.ProtectValue,
+                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bulletDamageMulti, bullet.ProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id);
         }
 

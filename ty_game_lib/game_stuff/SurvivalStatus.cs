@@ -132,7 +132,7 @@ namespace game_stuff
             {
                 var nowShield = (int) NowShield - (int) ShieldInstability - rest;
 
-                if (nowShield >= 0)
+                if (nowShield > 0)
                 {
                     NowShield = (uint) nowShield;
 
@@ -146,9 +146,9 @@ namespace game_stuff
 
             if (NowArmor > 0)
             {
-                var nowArmor = (int) (NowArmor + MathTools.Min(0, (int) ArmorDefence - rest));
+                var nowArmor = (int) NowArmor - (int) MathTools.Max(0, rest - (int) ArmorDefence);
 
-                if (nowArmor >= 0)
+                if (nowArmor > 0)
                 {
                     NowArmor = (uint) nowArmor;
                     return;
