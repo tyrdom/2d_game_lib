@@ -1396,7 +1396,7 @@ namespace game_stuff
                 var after = SurvivalStatus.IsDead();
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"{GId} take damage {genDamage.MainDamage}| {genDamage.ShardedDamage} Sv {SurvivalStatus} {SurvivalStatus.GetHashCode()}");
+                    $"{GId} take damage {genDamage.MainDamage}| {genDamage.ShardedDamage}~{genDamage.ShardedNum} Sv {SurvivalStatus} {SurvivalStatus.GetHashCode()}");
 #endif
                 return new DmgShow(!isDead && after, genDamage);
             }

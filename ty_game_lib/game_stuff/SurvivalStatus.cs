@@ -76,7 +76,7 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
 #endif
-            if (damage.ShardedDamage > 0)
+            if (damage.ShardedNum > 0)
             {
                 TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
             }
@@ -84,24 +84,37 @@ namespace game_stuff
 
         private void TakeMultiDamage(uint damage, uint times)
         {
-            var restTime = times;
+            var restTime = (int) times;
             if (NowShield > 0)
             {
-                var nowShield = (int) NowShield - (int) ((damage + ShieldInstability) * restTime);
+                var shieldInstability = damage + ShieldInstability;
+                if (shieldInstability <= 0)
+                {
+                    return;
+                }
+
+                var nowShield = (int) NowShield - (int) (shieldInstability * restTime);
                 if (nowShield >= 0)
                 {
                     NowShield = (uint) nowShield;
                     return;
                 }
 
-                var lossTimes = NowShield / (ShieldInstability + damage);
+
+                var lossTimes = (int) (NowShield / shieldInstability);
                 NowShield = 0;
                 restTime -= lossTimes;
             }
 
             if (NowArmor > 0)
             {
-                var nowArmor = (int) NowArmor - MathTools.Max(0, (int) (damage - ArmorDefence)) * restTime;
+                var defence = (int) (damage - ArmorDefence);
+                if (defence <= 0)
+                {
+                    return;
+                }
+
+                var nowArmor = (int) NowArmor - defence * restTime;
 
                 if (nowArmor >= 0)
                 {
@@ -109,7 +122,7 @@ namespace game_stuff
                     return;
                 }
 
-                var armorDefence = NowArmor / (damage - ArmorDefence);
+                var armorDefence = (int) NowArmor / defence;
                 NowArmor = 0;
                 restTime -= armorDefence;
             }
@@ -120,7 +133,7 @@ namespace game_stuff
                 return;
             }
 
-            NowHp -= damage * restTime;
+            NowHp -= damage * (uint) restTime;
         }
 
 

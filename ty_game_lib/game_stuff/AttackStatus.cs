@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using game_config;
 
@@ -15,7 +16,14 @@ namespace game_stuff
             var bk = isBackStab ? 1f + BackStabAdd : 1f;
             var mainDamage = (uint) (MainAttack * damageMulti * bk * buffMulti);
             var shardedAttack = (uint) (ShardedAttack * damageMulti);
-            var damage = new Damage((uint) (ShardedNum * buffMulti * bk), mainDamage, shardedAttack);
+            var shardedNum = (uint) (ShardedNum * buffMulti * bk);
+            var damage = new Damage(shardedNum, mainDamage, shardedAttack);
+
+#if DEBUG
+            
+             Console.Out.WriteLine($"{MainAttack} cause {mainDamage} and {ShardedAttack} cause {shardedAttack}~{shardedNum}");
+#endif
+           
             return damage;
         }
 

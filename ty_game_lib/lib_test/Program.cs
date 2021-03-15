@@ -27,12 +27,12 @@ namespace lib_test
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterBody>() {genCharacterBody, characterBody}, genCharacterBody);
+                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody}, genCharacterBody);
 
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
             var any = mapApplyDevices.Any(x => x.IsActive);
-            Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
+            // Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
             for (var i = 0; i < 300; i++)
             {
