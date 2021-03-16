@@ -20,9 +20,9 @@ namespace collision_and_rigid
         {
             var (item1, aabbBoxShape) = QSpace.TouchWithARightShootPoint(p);
 #if DEBUG
-            Console.Out.WriteLine("num::" + item1);
-            var logSide = aabbBoxShape == null ? "" : aabbBoxShape.Zone.LogSide();
-            Console.Out.WriteLine($"{p}  box::{logSide}");
+            // Console.Out.WriteLine("num::" + item1);
+            // var logSide = aabbBoxShape == null ? "" : aabbBoxShape.Zone.LogSide();
+            // Console.Out.WriteLine($"{p}  box::{logSide}");
 #endif
             if (item1 >= 0)
             {

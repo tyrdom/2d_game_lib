@@ -221,11 +221,11 @@ namespace collision_and_rigid
 
             var startWithACovNotFlush = StartWithACovAndClockwise();
 #if DEBUG
-            Console.Out.WriteLine("poly ::~~~");
-            foreach (var twoDPoint in startWithACovNotFlush.Pts)
-            {
-                Console.Out.WriteLine($"poly pt::{twoDPoint.ToString()}");
-            }
+            // Console.Out.WriteLine("poly ::~~~");
+            // foreach (var twoDPoint in startWithACovNotFlush.Pts)
+            // {
+            //     Console.Out.WriteLine($"poly pt::{twoDPoint.ToString()}");
+            // }
 #endif
             var pPts = isBlockIn ? startWithACovNotFlush.Pts : startWithACovNotFlush.Pts.Reverse().ToArray();
             // foreach (var twoDPoint in pPts)

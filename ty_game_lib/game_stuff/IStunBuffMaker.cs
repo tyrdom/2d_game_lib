@@ -45,7 +45,7 @@ namespace game_stuff
                     x =>
                     {
 #if DEBUG
-                        Console.Out.WriteLine($"time is {CommonConfig.GetTickByTime(x.key_time)}");
+                        // Console.Out.WriteLine($"time is {CommonConfig.GetTickByTime(x.key_time)}");
 #endif
 
                         return CommonConfig.GetTickByTime(x.key_time);

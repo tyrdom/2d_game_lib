@@ -48,7 +48,9 @@ namespace game_bot
             {
                 twoDPoints.AddRange(Points);
             }
-
+#if DEBUG
+            Console.Out.WriteLine($"get patrol num {twoDPoints.Count}");
+#endif
             var dPoints = twoDPoints.Skip(start).Take(num);
             NowToPt += num;
             return dPoints.ToArray();

@@ -28,7 +28,6 @@ namespace game_bot
         private BotStatus BotStatus { get; set; }
         public List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
 
-        private int? MyPoly { get; set; }
 
         private List<TwoDPoint> PathPoints { get; }
         private Random Random { get; }
@@ -86,7 +85,8 @@ namespace game_bot
             };
         }
 
-        private SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts, FirstSkillCtrl firstSkillCtrl,
+        private SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts,
+            FirstSkillCtrl firstSkillCtrl,
             int comboMax)
         {
             var valueTuples = GetRangeAmmoWeapon(botBody.CharacterStatus.GetWeapons(), botBody.GetSize());
@@ -100,7 +100,6 @@ namespace game_bot
             PatrolCtrl = new PatrolCtrl(patrolPts);
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
-            MyPoly = null;
             TargetRecordPos = null;
         }
 
@@ -131,7 +130,11 @@ namespace game_bot
 
         private TwoDVector? MoveToPt(TwoDPoint pt)
         {
-            return new TwoDVector(BotBody.GetAnchor(), pt).GetUnit2();
+            var twoDVector = new TwoDVector(BotBody.GetAnchor(), pt).GetUnit2();
+#if DEBUG
+            Console.Out.WriteLine($" {BotBody.GetAnchor()} go direction {twoDVector}");
+#endif
+            return twoDVector;
         }
 
         public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
@@ -315,7 +318,11 @@ namespace game_bot
 
         private bool CloseEnough(TwoDPoint twoDPoint)
         {
-            return twoDPoint.GetDistance(BotBody.GetMoveVectorLine()) < BotLocalConfig.CloseEnoughDistance;
+            var distance = twoDPoint.GetDistance(BotBody.GetMoveVectorLine());
+#if DEBUG
+            Console.Out.WriteLine($"distance to pt{twoDPoint}--{BotBody.GetMoveVectorLine()} is {distance}");
+#endif
+            return distance < BotLocalConfig.CloseEnoughDistance;
         }
 
         private TwoDVector? GoPathDirection()
@@ -330,7 +337,9 @@ namespace game_bot
                 {
                     return MoveToPt(firstOrDefault);
                 }
-
+#if DEBUG
+                Console.Out.WriteLine("close enough pts rv ");
+#endif
                 PathPoints.RemoveAt(0);
             }
         }

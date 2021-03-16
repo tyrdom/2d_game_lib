@@ -5,9 +5,11 @@ using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
 using cov_path_navi;
+using game_bot;
 using game_config;
 using game_stuff;
 using NUnit.Framework;
+using rogue_chapter_maker;
 using rogue_game;
 
 namespace lib_unit_test
@@ -98,6 +100,30 @@ namespace lib_unit_test
             var vector = new Vector<float>(floats);
             var hashCode = vector[1];
             Assert.Pass($"ok~ok~ok~~~~{hashCode}");
+        }
+
+        [Test]
+        public void BotTest()
+        {
+            var pointMap = new PointMap(MapType.Small, 1, 1, 1, 1, (0, 0));
+            var genEmptyPveMap = PveMap.GenEmptyPveMap(pointMap, 1, 1, new[] {1}, new int[] { });
+            var botTeam = new BotTeam();
+            botTeam.SetNaviMaps(genEmptyPveMap.PlayGround.ResMId);
+            genEmptyPveMap.SpawnNpcWithBot(new Random(), botTeam);
+            genEmptyPveMap.PlayGroundGoATick(new Dictionary<int, Operate>());
+
+            for (var i = 0; i < 10000; i++)
+            {
+                Console.Out.WriteLine($"op num {botTeam.TempOpThinks.Count}");
+                
+                var keyValuePairs = botTeam.TempOpThinks.Where(botTeamTempOpThink =>
+                    botTeamTempOpThink.Value.Operate != null).ToDictionary(p => p.Key, p => p.Value.Operate!);
+
+                var playGroundGoTickResult = genEmptyPveMap.PlayGroundGoATick(keyValuePairs);
+                botTeam.AllBotsGoATick(playGroundGoTickResult.PlayerSee);
+            }
+
+            Assert.Pass($"fin");
         }
 
         private static HashSet<CharacterBody> Players()
