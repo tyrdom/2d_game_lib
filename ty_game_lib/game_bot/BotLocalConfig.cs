@@ -9,7 +9,7 @@ namespace game_bot
     {
         public static float PatrolSlowMulti { get; private set; } = 0.5f;
 
-        public static float CloseEnoughDistance { get; private set; } = 0.2f;
+        public static float CloseEnoughDistance { get; private set; } = 0.25f;
 
         public static float PatrolMin { get; private set; } = 0.5f;
         public static float PatrolMax { get; private set; } = 0.8f;

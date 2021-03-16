@@ -320,7 +320,7 @@ namespace game_bot
         {
             var distance = twoDPoint.GetDistance(BotBody.GetMoveVectorLine());
 #if DEBUG
-            Console.Out.WriteLine($"distance to pt{twoDPoint}--{BotBody.GetMoveVectorLine()} is {distance}");
+            Console.Out.WriteLine($"distance to pt{twoDPoint}  {BotBody.GetMoveVectorLine()} is {distance}");
 #endif
             return distance < BotLocalConfig.CloseEnoughDistance;
         }
