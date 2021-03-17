@@ -14,6 +14,8 @@ namespace game_bot
         public static float PatrolMin { get; private set; } = 0.5f;
         public static float PatrolMax { get; private set; } = 0.8f;
 
+        public static float MaxTraceDistance { get; set; } = 8f;
+
         public static ImmutableDictionary<int, ImmutableDictionary<size, PathTop>> NaviMapPerLoad { get; private set; }
             =
             game_stuff.StuffLocalConfig.PerLoadMapConfig.ToImmutableDictionary(p => p.Key,

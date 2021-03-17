@@ -32,7 +32,9 @@ namespace game_bot
         private List<TwoDPoint> PathPoints { get; }
         private Random Random { get; }
         private bool InVehicle { get; }
-        private TwoDPoint? TargetRecordPos { get; set; }
+
+        private ICanBeHit? LockBody { get; set; }
+
 
         private static List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons,
             size bodySize)
@@ -94,20 +96,19 @@ namespace game_bot
             BotBody = botBody;
             Random = random;
             FirstSkillCtrl = firstSkillCtrl;
+            LockBody = null;
             InVehicle = botBody.CharacterStatus.NowVehicle != null;
             ComboCtrl = new ComboCtrl(comboMax);
             BotStatus = BotStatus.OnPatrol;
             PatrolCtrl = new PatrolCtrl(patrolPts);
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
-            TargetRecordPos = null;
         }
 
 
-        private Operate? SeeATargetAction(List<TwoDPoint> canBeHitPts)
+        private Operate? SeeATargetAction(ICanBeHit canBeHit)
         {
-            var twoDPoint = NearPt(canBeHitPts);
-            TargetRecordPos = twoDPoint;
+            LockBody = canBeHit;
             BotStatus = BotStatus.TargetApproach;
             var botBodyCharacterStatus = BotBody.CharacterStatus;
             var valueTuple = botBodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(
@@ -140,9 +141,23 @@ namespace game_bot
         public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
         {
             var canBeEnemies = perceivable.ToList();
-            var canBeHitPts = canBeEnemies.OfType<ICanBeHit>()
-                .Where(x => x.GetTeam() != BotBody.Team)
-                .Select(x => x.GetAnchor()).ToList();
+            var canBeHits = canBeEnemies.OfType<ICanBeHit>()
+                .Where(x => x.GetTeam() != BotBody.Team);
+
+            var beHit = canBeHits.Aggregate((ICanBeHit?) null, (s, x) =>
+            {
+                if (s == null)
+                {
+                    return x;
+                }
+
+                var distance1 = BotBody.GetAnchor().GetDistance(s.GetAnchor());
+                var distance2 = BotBody.GetAnchor().GetDistance(x.GetAnchor());
+                var canBeHit = distance1 > distance2 ? x : s;
+                return canBeHit;
+            });
+            // var canBeHitPts = canBeHits
+            //     .Select(x => x.GetAnchor()).ToList();
             var radarSees = canBeEnemies.OfType<RadarSee>().Select(x => x.GetAnchor()).ToList();
 
             if (InVehicle)
@@ -153,9 +168,9 @@ namespace game_bot
             switch (BotStatus)
             {
                 case BotStatus.OnPatrol:
-                    if (canBeHitPts.Any())
+                    if (beHit != null)
                     {
-                        return new BotOpAndThink(SeeATargetAction(canBeHitPts));
+                        return new BotOpAndThink(SeeATargetAction(beHit));
                     }
 
                     if (radarSees.Any())
@@ -171,9 +186,9 @@ namespace game_bot
                     var doPatrol = DoPatrol();
                     return new BotOpAndThink(doPatrol);
                 case BotStatus.GoMaybe:
-                    if (canBeHitPts.Any())
+                    if (beHit != null)
                     {
-                        return new BotOpAndThink(SeeATargetAction(canBeHitPts));
+                        return new BotOpAndThink(SeeATargetAction(beHit));
                     }
 
                     var goPathDirection = GoPathDirection();
@@ -188,13 +203,15 @@ namespace game_bot
                     if (characterStatusProp != null &&
                         characterStatusProp.CheckAppStatusToBotPropUse(BotBody.CharacterStatus))
                     {
+                        var botSimpleGoATick = new Operate(specialAction: SpecialAction.UseProp);
+                        return new BotOpAndThink(botSimpleGoATick);
                     }
 
-                    if (canBeHitPts.Any())
+                    if (beHit != null)
                     {
                         var goATick = FirstSkillCtrl.GoATick(Random);
-                        var twoDPoint = NearPt(canBeHitPts);
-                        TargetRecordPos = twoDPoint;
+                        var twoDPoint = beHit.GetAnchor();
+
                         var distance = twoDPoint.GetDistance(BotBody.GetAnchor());
                         var (inRange, needSwitch) = CheckWeaponAndAmmo(distance);
                         if (needSwitch)
@@ -213,17 +230,18 @@ namespace game_bot
                         return new BotOpAndThink(operate, goATick);
                     }
 
-                    if (TargetRecordPos != null)
+                    if (LockBody != null)
                     {
-                        var closeEnough = CloseEnough(TargetRecordPos);
+                        var closeEnough = LockBody.GetAnchor().GetDistance(this.BotBody.GetAnchor()) >
+                                          BotLocalConfig.MaxTraceDistance;
                         if (closeEnough)
                         {
-                            TargetRecordPos = null;
+                            LockBody = null;
                             ReturnOnPatrol(pathTop);
                             return new BotOpAndThink();
                         }
 
-                        var twoDVector = MoveToPt(TargetRecordPos);
+                        var twoDVector = MoveToPt(LockBody.GetAnchor());
                         var operate = new Operate(move: twoDVector);
                         return new BotOpAndThink(operate);
                     }

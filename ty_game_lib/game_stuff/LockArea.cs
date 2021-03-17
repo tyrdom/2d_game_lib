@@ -29,7 +29,7 @@ namespace game_stuff
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
-        public static LockArea GenByConfig(game_config.lock_area lockArea)
+        public static LockArea GenByConfig(lock_area lockArea)
         {
             var genBulletShapes = GameTools.GenBulletShapes(lockArea.ShapeParams, lockArea.LocalRotate,
                 lockArea.LocalPos, lockArea.ShapeType);
