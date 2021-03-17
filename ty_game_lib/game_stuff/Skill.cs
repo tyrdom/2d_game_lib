@@ -148,7 +148,7 @@ namespace game_stuff
 
         public int? ComboInputRes() //可以连击，返回 下一个动作
         {
-            // 如果命中返回命中连击状态id，如果不是返回miss连击id，大部分是一样的
+            // 返回连击id
             var weaponSkillStatus = NextCombo;
             return NowOnTick >= ComboInputStartTick && NowOnTick < TotalTick
                 ? weaponSkillStatus

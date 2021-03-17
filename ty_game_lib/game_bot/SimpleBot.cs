@@ -236,7 +236,7 @@ namespace game_bot
                     {
                         if (CheckStartCombo())
                         {
-                            ComboCtrl.ComboOn = true;
+                            ComboCtrl.ComboTurnOn();
                         }
 
                         return new BotOpAndThink();
@@ -244,12 +244,13 @@ namespace game_bot
 
                     if (CheckStun())
                     {
-                        ComboCtrl.ComboOn = false;
+                        ComboCtrl.ComboLoss();
                         return new BotOpAndThink();
                     }
 
-                    if (ComboCtrl.ComboOn)
+                    if (ComboCtrl.CanCombo())
                     {
+                        ComboCtrl.ActACombo();
                         var comboAction = FirstSkillCtrl.GetComboAction(Random);
                         return new BotOpAndThink(new Operate(skillAction: comboAction));
                     }
