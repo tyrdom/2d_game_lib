@@ -31,7 +31,13 @@ namespace game_stuff
         {
             IsActive = isActive;
             var configsInteraction = CommonConfig.Configs.interactions;
-            var roundP = new Round(pos, CommonConfig.OtherConfig.saleBox_R);
+            var r = saleUnit switch
+            {
+                ISaleUnit _ => CommonConfig.OtherConfig.saleBox_R,
+                TeleportUnit teleportUnit => teleportUnit.GetMaxR() + CommonConfig.OtherConfig.tele_gap,
+                _ => throw new ArgumentOutOfRangeException(nameof(saleUnit))
+            };
+            var roundP = new Round(pos, r);
             var interaction1 = configsInteraction[interactionAct.get_info];
             var interaction11 = CageCanPick.GenInteractionByConfig(saleUnit, interaction1, MapInteract.GetInfoCall);
             var interaction2 = configsInteraction[interactionAct.apply];

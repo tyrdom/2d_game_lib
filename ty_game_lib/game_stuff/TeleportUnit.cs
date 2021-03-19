@@ -69,5 +69,11 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
             }
         }
+
+        public float GetMaxR()
+        {
+            var max = AllowSizes.Max(x => CommonConfig.Configs.bodys.TryGetValue(x, out var b) ? b.rad : 0);
+            return max;
+        }
     }
 }

@@ -1,1 +1,39 @@
-{"content_name": {"id": "id", "mass": "", "rad": ""}, "content_info": {"id": "", "mass": "", "rad": ""}, "content_schema": {"id": "size@enum", "mass": "float", "rad": "float"}, "content": {"small": {"id": "small", "mass": 2.5, "rad": 0.5}, "medium": {"id": "medium", "mass": 9.0, "rad": 1.0}, "big": {"id": "big", "mass": 20.0, "rad": 1.5}, "tiny": {"id": "tiny", "mass": 1.0, "rad": 0.25}}}
+{
+  "content_name": {
+    "id": "id",
+    "mass": "",
+    "rad": ""
+  },
+  "content_info": {
+    "id": "",
+    "mass": "",
+    "rad": ""
+  },
+  "content_schema": {
+    "id": "size@enum",
+    "mass": "float",
+    "rad": "float"
+  },
+  "content": {
+    "small": {
+      "id": "small",
+      "mass": 2.5,
+      "rad": 0.5
+    },
+    "medium": {
+      "id": "medium",
+      "mass": 9.0,
+      "rad": 1.0
+    },
+    "big": {
+      "id": "big",
+      "mass": 20.0,
+      "rad": 1.5
+    },
+    "tiny": {
+      "id": "tiny",
+      "mass": 1.0,
+      "rad": 0.25
+    }
+  }
+}
