@@ -57,10 +57,10 @@ namespace rogue_game
         public int[] CreepIdToSpawn { get; }
         public int[] BossIdToSpawn { get; }
 
-        private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(int[] ints, Random random,
+        private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints, Random random,
             BotTeam botTeam, bool isBoss)
         {
-            var genBattleNpcAndBot = Enumerable.Range(0, ints.Length)
+            var genBattleNpcAndBot = Enumerable.Range(0, ints.Count)
                 .Select(x =>
                 {
                     var genById = BattleNpc.GenById(ints[x], (1+PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 1,
