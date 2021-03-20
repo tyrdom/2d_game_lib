@@ -210,6 +210,7 @@ namespace game_stuff
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
+
             var teleports = new Dictionary<int, TelePortMsg>();
             var playerBeHit = new Dictionary<int, HashSet<IRelationMsg>>();
             var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
@@ -305,9 +306,9 @@ namespace game_stuff
                 var key = kv.Key;
                 var characterBody = kv.Value;
                 var sightZone = characterBody.GetSightZone();
-// #if DEBUG
-//                 Console.Out.WriteLine($"gid::{characterBody.GetId()}");
-// #endif
+#if DEBUG
+                // Console.Out.WriteLine($"gid::{characterBody.GetId()}");
+#endif
                 var characterBodies = new HashSet<IPerceivable>();
 
                 var filterToBoxList = MapInteractableThings.FilterToBoxList<ICanBeSaw, CharacterBody>(
@@ -341,15 +342,15 @@ namespace game_stuff
                             qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
                                 characterBody, sightZone);
                         var bodies = filterToGIdPsList.OfType<CharacterBody>();
-
                         var trapsSee =
                             traps.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
                                     characterBody, sightZone)
                                 .OfType<Trap>()
                                 .Where(t => t.CanBeSee);
-// #if DEBUG
-//                         Console.Out.WriteLine($" {characterBody.Team}:other:{bTeam}::{qSpace.Count()}::{bodies.Count()}");
-// #endif
+#if DEBUG
+                        Console.Out.WriteLine(
+                            $" {characterBody.Team}:look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()}");
+#endif
 
                         characterBodies.UnionWith(bodies);
                         characterBodies.UnionWith(trapsSee);
@@ -385,9 +386,12 @@ namespace game_stuff
 
                         throw new Exception("not good idPts");
                     }, WalkMap);
-                var dd = mapToDicGidToSth
-                    .ToDictionary(x => x.Key, x => x.Value!.Value.pt);
-                var buffDmgMsgs = mapToDicGidToSth.ToDictionary(x => x.Key, x => x.Value!.Value.buffDmgMsg);
+
+                var dd = mapToDicGidToSth.Where(x => x.Value.HasValue)
+                    .ToDictionary(x =>
+                        x.Key, x => x.Value!.Value.pt);
+                var buffDmgMsgs = mapToDicGidToSth.ToDictionary(
+                    x => x.Key, x => x.Value!.Value.buffDmgMsg);
                 foreach (var keyValuePair in buffDmgMsgs)
                 {
                     if (keyValuePair.Value.HasValue && playerBeHit.TryGetValue(keyValuePair.Key, out var hashSet))
@@ -395,8 +399,13 @@ namespace game_stuff
                         hashSet.Add(keyValuePair.Value);
                     }
                 }
-
+#if DEBUG
+                Console.Out.WriteLine($"team~ bf {TeamToBodies[1].playerBodies.Count()}");
+#endif
                 playerBodies.MoveIdPointBoxes(dd, CommonConfig.OtherConfig.qspace_max_per_level);
+#if DEBUG
+                Console.Out.WriteLine($"team~ af {TeamToBodies[1].playerBodies.Count()}");
+#endif
             }
         }
 
@@ -826,6 +835,10 @@ namespace game_stuff
                     traps);
                 TeamToBodies[team] = emptyRootBranch;
             }
+#if DEBUG
+            Console.Out.WriteLine($"team {team} add body num :{enumerableToHashSet.Count}");
+            Console.Out.WriteLine($"QSpace {team} now have {TeamToBodies[team].playerBodies.Count()}");
+#endif
         }
 
 

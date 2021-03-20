@@ -18,11 +18,17 @@ namespace game_config
         public static IEnumerable<T> ChooseRandCanSame<T>(this T[] array, int num, Random random)
         {
             var enumerable = Enumerable.Range(0, num);
-            return array.Any()
+
+
+            var chooseRandCanSame = array.Any()
                 ? array.Length > 1
                     ? enumerable.Select(x => array[random.Next(array.Length)])
                     : enumerable.Select(x => array[0])
                 : throw new IndexOutOfRangeException();
+#if DEBUG
+            Console.Out.WriteLine($"rand {num} so enum {enumerable.Count()} chose {chooseRandCanSame.Count()}");
+#endif
+            return chooseRandCanSame;
         }
 
         public static IEnumerable<T> ChooseRandDif<T>(this T[] array, int num, Random random)

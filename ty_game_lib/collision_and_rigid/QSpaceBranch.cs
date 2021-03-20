@@ -163,7 +163,8 @@ namespace collision_and_rigid
 
         public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
         {
-            var (inZone, outZone) = SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
+            var (inZone, outZone) =
+                SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
             AaBbPackBox = inZone;
 
             if (Father != null)

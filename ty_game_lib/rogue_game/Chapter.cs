@@ -39,10 +39,17 @@ namespace rogue_game
         public static (int[] creep, int[] boss) ChooseNpcId(MapType mapType, rogue_game_chapter gameChapter,
             Random random)
         {
-            var enumerable = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.SmallCreepNum, random).Union(
-                gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.SmallEliteNum, random));
-            var union = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.BigCreepNum, random).Union(
-                gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.BigEliteNum, random));
+            var chooseRandCanSame = gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.SmallEliteNum, random);
+            var enumerable = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.SmallCreepNum, random).ToList();
+            enumerable.AddRange(chooseRandCanSame);
+            var randCanSame = gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.BigEliteNum, random);
+            var union = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.BigCreepNum, random).ToList();
+            union.AddRange(randCanSame);
+#if DEBUG
+            Console.Out.WriteLine(
+                $"small creep{gameChapter.SmallCreepNum + gameChapter.SmallEliteNum} | big creep {gameChapter.BigCreepNum + gameChapter.BigEliteNum}");
+            Console.Out.WriteLine($"so small {enumerable.Count()}  big {union.Count()}");
+#endif
             return mapType switch
             {
                 MapType.BigStart => (new int[] { }, new int[] { }),
@@ -95,6 +102,11 @@ namespace rogue_game
                     var chooseInts = ChooseInts(pointMap.MapType, gameChapter);
                     var next = chooseInts.ChooseRandCanSame(1, random).First();
                     var (creep, boss) = ChooseNpcId(pointMap.MapType, gameChapter, random);
+
+#if DEBUG
+                    Console.Out.WriteLine(
+                        $"creep {creep.Aggregate("", (s, x) => s + x + ",")} and boss {boss.Aggregate("", (s, x) => s + x + ",")}");
+#endif
                     return PveMap.GenEmptyPveMap(pointMap, next, value, creep, boss);
                 }
             );

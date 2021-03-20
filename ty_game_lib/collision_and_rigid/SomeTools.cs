@@ -241,8 +241,6 @@ namespace collision_and_rigid
                 {
                     inZone.Add(aabbPackBoxShape);
                 }
-
-                break;
             }
 
             return (inZone, outZone);

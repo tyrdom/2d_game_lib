@@ -58,12 +58,13 @@ namespace rogue_game
         public int[] BossIdToSpawn { get; }
 
         private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(int[] ints, Random random,
-            BotTeam botTeam)
+            BotTeam botTeam, bool isBoss)
         {
             var genBattleNpcAndBot = Enumerable.Range(0, ints.Length)
                 .Select(x =>
                 {
-                    var genById = BattleNpc.GenById(ints[x], PlayGround.MgId * 100 + x, 1, random);
+                    var genById = BattleNpc.GenById(ints[x], PlayGround.MgId * 1000 + (isBoss ? 100 : 0) + x, 1,
+                        random);
                     var simpleBot = SimpleBot.GenById(ints[x], genById.CharacterBody, random,
                         botTeam.GetNaviMap(genById.CharacterBody.GetSize()));
 
@@ -74,9 +75,9 @@ namespace rogue_game
 
         public void SpawnNpcWithBot(Random random, BotTeam botTeam)
         {
-            var genBattleNpc = GenBattleNpcWithBot(CreepIdToSpawn, random, botTeam);
+            var genBattleNpc = GenBattleNpcWithBot(CreepIdToSpawn, random, botTeam, false);
             Creeps = genBattleNpc.Select(x => x.Item2).IeToHashSet();
-            var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam);
+            var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam, true);
             Bosses = battleNpc.Select(x => x.Item2).IeToHashSet();
             var valueTuples = genBattleNpc.Union(battleNpc)
                 .Select(x => (x.simpleBot, x.battleNpc.CharacterBody, x.simpleBot.GetStartPt())).IeToHashSet();

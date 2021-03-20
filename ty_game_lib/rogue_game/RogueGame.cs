@@ -58,7 +58,7 @@ namespace rogue_game
             return new RogueGame(characterBodies, leader.GetId(), otherConfigRogueChapters);
         }
 
-        public RogueGame(HashSet<CharacterBody> characterBodies, int playerLeader, IEnumerable<int> chapterIds)
+        private RogueGame(HashSet<CharacterBody> characterBodies, int playerLeader, IEnumerable<int> chapterIds)
         {
             ChapterIds =
                 chapterIds

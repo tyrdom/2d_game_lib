@@ -52,7 +52,7 @@ namespace game_bot
             Console.Out.WriteLine($"get patrol num {twoDPoints.Count}");
 #endif
             var dPoints = twoDPoints.Skip(start).Take(num);
-            NowToPt += num;
+            NowToPt = end % Points.Length;
             return dPoints.ToArray();
         }
     }

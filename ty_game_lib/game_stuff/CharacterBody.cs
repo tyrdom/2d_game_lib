@@ -46,13 +46,7 @@ namespace game_stuff
         public IdPointBox InBox { get; set; }
 
 
-        // public static CharacterBody GenByCharId(int id)
-        // {
-        // }
-        //
-        // public static CharacterBody GenByCreeperId(int id)
-        // {
-        // }
+   
 
         public CharacterBody(TwoDPoint nowPos, size bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,

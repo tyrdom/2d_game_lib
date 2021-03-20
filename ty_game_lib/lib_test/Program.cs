@@ -24,10 +24,13 @@ namespace lib_test
 
             var genPlayerByConfig = CharacterInitData.GenPlayerByConfig(1, 0, new[] {1}, size.small, 1);
             var characterInitData = CharacterInitData.GenPlayerByConfig(2, 1, new[] {1}, size.small, 1);
+            var characterInitData2 = CharacterInitData.GenPlayerByConfig(3, 1, new[] {1}, size.small, 1);
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
+            var body = characterInitData2.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody}, genCharacterBody);
+                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody, body},
+                    genCharacterBody);
 
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
@@ -37,7 +40,7 @@ namespace lib_test
             for (var i = 0; i < 300; i++)
             {
                 var twoDVector = new TwoDVector(1f, 0);
-                var operate = new Operate(twoDVector, SkillAction.Op1);
+                var operate = new Operate(aim: twoDVector);
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
