@@ -1,1 +1,1 @@
-{"content_name": {"id": "id", "Setter": ""}, "content_info": {"id": "", "Setter": ""}, "content_schema": {"id": "string", "Setter": "string"}, "content": {"s_a_alert": {"id": "s_a_alert", "Setter": "alert"}, "s_a_mine": {"id": "s_a_mine", "Setter": "mine"}}}
+{"content_schema": {"id": ["string", "id", ""], "Setter": ["string", "", ""]}, "content": {"s_a_alert": {"id": "s_a_alert", "Setter": "alert"}, "s_a_mine": {"id": "s_a_mine", "Setter": "mine"}}}
