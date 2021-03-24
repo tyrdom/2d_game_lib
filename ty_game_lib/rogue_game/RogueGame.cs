@@ -111,6 +111,7 @@ namespace rogue_game
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
+            NowPlayMap = nowChapterEntrance;
         }
 
         private bool IsPlayerAllDead()
