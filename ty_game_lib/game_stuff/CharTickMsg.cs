@@ -5,7 +5,7 @@ using collision_and_rigid;
 namespace game_stuff
 {
     public readonly struct CharTickMsg : ISeeTickMsg
-    //todo only change to set value
+        //todo only change to set value
     {
         public int Gid { get; }
         public TwoDPoint Pos { get; }
@@ -17,14 +17,14 @@ namespace game_stuff
 
         public float SightRad { get; }
         public SkillAction? SkillLaunch { get; }
-        public bool SkillOnAct { get; }
+        public int SkillOnAct { get; }
         public bool IsStun { get; }
         public TwoDVector? IsBeHit { get; }
         public bool IsHitSome { get; }
 
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
-            bool antiBuff, float speed, float sightR, bool isPause, bool skillOnAct, TwoDVector? isBeHit,
+            bool antiBuff, float speed, float sightR, bool isPause, int skillOnAct, TwoDVector? isBeHit,
             bool isHitSome, float sightRad)
         {
             Gid = gid;

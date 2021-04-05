@@ -174,7 +174,7 @@ namespace game_stuff
                 move = Moves[moveOnTick];
                 if (limitV != null)
                 {
-                    var movesLengthRest = (float) Moves.Length - moveOnTick;
+                    var movesLengthRest = (float) (Moves.Length - moveOnTick);
                     var min = MathTools.Min(limitV.X, move.X);
                     var max = MathTools.Max(limitV.Y, move.Y) / movesLengthRest;
 

@@ -46,8 +46,6 @@ namespace game_stuff
         public IdPointBox InBox { get; set; }
 
 
-   
-
         public CharacterBody(TwoDPoint nowPos, size bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
@@ -170,7 +168,7 @@ namespace game_stuff
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             var isStun = CharacterStatus.StunBuff != null;
-            var skillAct = CharacterStatus.NowCastAct != null;
+            var skillAct = ((int?) CharacterStatus.NowCastAct?.NowOnTick ?? -1);
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             var sightStandardScope = CharacterStatus.GetNowScope() ?? Sight.StandardScope;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
