@@ -22,7 +22,7 @@ namespace lib_test
 #endif
 
 
-            var genPlayerByConfig = CharacterInitData.GenPlayerByConfig(1, 0, new[] {1}, size.small, 1);
+            var genPlayerByConfig = CharacterInitData.GenPlayerByConfig(1, 0, new[] {2}, size.small, 1);
             var characterInitData = CharacterInitData.GenPlayerByConfig(2, 1, new[] {1}, size.small, 1);
             var characterInitData2 = CharacterInitData.GenPlayerByConfig(3, 1, new[] {1}, size.small, 1);
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());

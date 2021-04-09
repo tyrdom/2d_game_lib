@@ -17,15 +17,17 @@ namespace game_stuff
 
         public float SightRad { get; }
         public SkillAction? SkillLaunch { get; }
+        public SnipeAction? SnipeActionLaunch { get; }
         public int SkillOnAct { get; }
         public bool IsStun { get; }
         public TwoDVector? IsBeHit { get; }
         public bool IsHitSome { get; }
 
+        public bool SilentChangeWeapon { get; }
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, int skillOnAct, TwoDVector? isBeHit,
-            bool isHitSome, float sightRad)
+            bool isHitSome, float sightRad, SnipeAction? snipeActionLaunch, bool silentChangeWeapon)
         {
             Gid = gid;
             Pos = pos;
@@ -40,6 +42,8 @@ namespace game_stuff
             IsBeHit = isBeHit;
             IsHitSome = isHitSome;
             SightRad = sightRad;
+            SnipeActionLaunch = snipeActionLaunch;
+            SilentChangeWeapon = silentChangeWeapon;
         }
 
         public override string ToString()

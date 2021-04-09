@@ -169,10 +169,11 @@ namespace game_stuff
         // for_tick_msg
         public bool HaveChange { get; set; } //todo to change an use
         public SkillAction? SkillLaunch { get; private set; }
+        public SnipeAction? TickSnipeActionLaunch { get; private set; }
         public bool IsPause { get; private set; }
         public TwoDVector? IsBeHitBySomeOne { get; set; }
         public bool IsHitSome { get; set; }
-
+        public bool SilentChange { get; private set; }
 
         // drops_bonus
 
@@ -217,6 +218,7 @@ namespace game_stuff
             PlayingItemBag = playingItemBag;
             NowMoveSpeed = 0f;
             SkillLaunch = null;
+
             IsPause = false;
             IsBeHitBySomeOne = null;
             IsHitSome = false;
@@ -402,6 +404,7 @@ namespace game_stuff
                 {
                     if (NowTempSnipe == null) return;
                     NowOnSnipeAct = SnipeAction.SnipeOff;
+                    TickSnipeActionLaunch = SnipeAction.SnipeOff;
                     OffSnipe(NowTempSnipe);
                     return;
                 }
@@ -415,6 +418,7 @@ namespace game_stuff
                 NowOnSnipeAct = snipeAction;
                 SnipeCallStack = 0;
                 NowTempSnipe = snipe;
+                TickSnipeActionLaunch = snipeAction;
                 OnSnipe(NowTempSnipe);
             }
             else
@@ -429,6 +433,7 @@ namespace game_stuff
         }
 
         private Snipe? NowTempSnipe { get; set; }
+
 
         private void GoSnipe()
         {
@@ -675,8 +680,11 @@ namespace game_stuff
         private void TempMsgClear()
         {
             if (SkillLaunch != null) SkillLaunch = null;
+            if (TickSnipeActionLaunch != null) TickSnipeActionLaunch = null;
+
             if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
             if (IsHitSome) IsHitSome = false;
+            if (SilentChange) SilentChange = false;
         }
 
 
@@ -923,7 +931,7 @@ namespace game_stuff
                 {
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
 
-                    SkillLaunch = SkillAction.Switch;
+                    SilentChange = true;
                     CallSnipe(SnipeAction.SnipeOff);
                 }
                 // 发动当前武器技能组的起始技能0
@@ -1100,7 +1108,6 @@ namespace game_stuff
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
         {
-            
             LoadSkill(aim, catchAntiActBuffMaker.TrickSkill, SkillAction.CatchTrick, null);
             NextSkill = null;
         }

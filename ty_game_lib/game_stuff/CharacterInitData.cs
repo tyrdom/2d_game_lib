@@ -64,6 +64,9 @@ namespace game_stuff
                                                                        PlayingItemBag.InitByConfig(), passiveTraits,
                 WeaponMaxNum);
 
+            var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
+                AngleSight.StandardAngleSight(),
+                TeamId);
             foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
             {
 // #if DEBUG
@@ -75,9 +78,7 @@ namespace game_stuff
 #endif
             }
 
-            var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
-                AngleSight.StandardAngleSight(),
-                TeamId);
+            
             return characterBody;
         }
     }

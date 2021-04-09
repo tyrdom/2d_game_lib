@@ -175,7 +175,7 @@ namespace game_stuff
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome
-                , sightStandardScope.Theta
+                , sightStandardScope.Theta, CharacterStatus.TickSnipeActionLaunch,CharacterStatus.SilentChange
             );
         }
 

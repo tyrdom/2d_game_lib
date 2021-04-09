@@ -134,7 +134,7 @@ namespace game_stuff
                         return GenASkillGroup(skillGroup);
                     }
 
-                    throw new Exception($"not such a group name::{skillGroup} ");
+                    throw new Exception($"not such a group name::{skillGroup} in weapon {weapon.id} ");
                 }).ToImmutableDictionary();
 
 
