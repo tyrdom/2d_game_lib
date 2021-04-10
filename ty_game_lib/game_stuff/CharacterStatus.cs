@@ -388,14 +388,17 @@ namespace game_stuff
         {
             if (snipeAction != SnipeAction.SnipeOff)
             {
-                if (SnipeOnCallAct == snipeAction)
+                if (NowOnSnipeAct != snipeAction)
                 {
-                    SnipeCallStack += 1;
-                }
-                else
-                {
-                    SnipeOnCallAct = snipeAction;
-                    SnipeCallStack = 1;
+                    if (SnipeOnCallAct == snipeAction)
+                    {
+                        SnipeCallStack += 1;
+                    }
+                    else
+                    {
+                        SnipeOnCallAct = snipeAction;
+                        SnipeCallStack = 1;
+                    }
                 }
 
 
@@ -409,7 +412,7 @@ namespace game_stuff
                     return;
                 }
 
-                if (snipe.TrickTick >= SnipeCallStack)
+                if (snipe.TrickTick >= SnipeCallStack && SnipeOnCallAct != NowOnSnipeAct)
                 {
                     return;
                 }

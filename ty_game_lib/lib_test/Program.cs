@@ -40,7 +40,7 @@ namespace lib_test
             for (var i = 0; i < 300; i++)
             {
                 var twoDVector = new TwoDVector(1f, 0);
-                var operate = new Operate(aim: twoDVector);
+                var operate = new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1);
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
@@ -55,6 +55,7 @@ namespace lib_test
                 var genTickMsg = (CharTickMsg) firstOrDefault.GenTickMsg();
                 var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
+                Console.Out.WriteLine($"~~~~now on tick {i}");
                 if (mapChange)
                 {
                     Console.Out.WriteLine($"map change to {genByConfig.NowPlayMap.PlayGround.MgId}");

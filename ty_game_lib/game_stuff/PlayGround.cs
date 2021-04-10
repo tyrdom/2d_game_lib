@@ -210,7 +210,6 @@ namespace game_stuff
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
-
             var teleports = new Dictionary<int, TelePortMsg>();
             var playerBeHit = new Dictionary<int, HashSet<IRelationMsg>>();
             var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
@@ -349,7 +348,7 @@ namespace game_stuff
                                 .Where(t => t.CanBeSee);
 #if DEBUG
                         Console.Out.WriteLine(
-                            $" {characterBody.Team}:look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()}");
+                            $" {characterBody.Team}:look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()} now sight rad {characterBody.CharacterStatus.GetNowScope()?.MaxR ?? 0f}");
 #endif
 
                         characterBodies.UnionWith(bodies);
