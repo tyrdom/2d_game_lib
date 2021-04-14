@@ -40,7 +40,9 @@ namespace lib_test
             for (var i = 0; i < 300; i++)
             {
                 var twoDVector = new TwoDVector(1f, 0);
-                var operate = new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1);
+                var operate = i < 100
+                    ? new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1, skillAction: SkillAction.Op1)
+                    : new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOff);
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
@@ -61,7 +63,7 @@ namespace lib_test
                     Console.Out.WriteLine($"map change to {genByConfig.NowPlayMap.PlayGround.MgId}");
                 }
 
-                Console.Out.WriteLine($"$ ~~~~~{twoDPoint} {genTickMsg.Gid} pause :{genTickMsg.IsPause}");
+                Console.Out.WriteLine($"$ ~~~~~{twoDPoint} {genTickMsg.Gid} skill launch :{genTickMsg.SkillLaunch}");
 #endif
             }
         }

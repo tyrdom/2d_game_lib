@@ -320,10 +320,9 @@ namespace game_stuff
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
             LockingWho = null;
-            if (aim != null)
-            {
-                OpChangeAim(aim);
-            }
+
+            OpChangeAim(aim);
+
 
             if (!skill.Launch(NowSnipeStep, GetAmmo()))
             {
@@ -820,7 +819,7 @@ namespace game_stuff
                 {
                     status = 0;
                     toUse = (toUse + 1) % GetWeapons().Count;
-                    CallSnipe(SnipeAction.SnipeOff);
+                    ResetSnipe();
                 }
 
                 var nowWeapon = GetWeapons().TryGetValue(toUse, out var weapon)
@@ -917,11 +916,12 @@ namespace game_stuff
             }
 
             // 转换视野方向
-            if (operate.Aim != null)
-            {
-                OpChangeAim(operate.Aim);
-            }
 
+            OpChangeAim(operate.Aim);
+
+#if DEBUG
+            Console.Out.WriteLine($"is skill start? snipe {snipeAction} skill {opAction}");
+#endif
             //启动技能
             if (opAction != null)
             {
@@ -935,7 +935,7 @@ namespace game_stuff
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
 
                     SilentChange = true;
-                    CallSnipe(SnipeAction.SnipeOff);
+                    ResetSnipe();
                 }
                 // 发动当前武器技能组的起始技能0
                 else

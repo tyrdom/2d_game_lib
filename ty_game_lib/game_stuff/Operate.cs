@@ -52,7 +52,7 @@ namespace game_stuff
 
         public SkillAction? GetAction()
         {
-            return SnipeAction == null ? SkillAction : null;
+            return SkillAction;
         }
 
         public SnipeAction? GetSnipe()
