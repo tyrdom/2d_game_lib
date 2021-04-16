@@ -165,6 +165,11 @@ namespace game_bot
                 if (CheckVehicle() != null) return new BotOpAndThink(new Operate(specialAction: CheckVehicle()));
             }
 
+            if (CheckStun())
+            {
+                ComboCtrl.ComboLoss();
+                return new BotOpAndThink();
+            }
             switch (BotStatus)
             {
                 case BotStatus.OnPatrol:
@@ -179,6 +184,16 @@ namespace game_bot
                         var twoDPoints = pathTop.FindGoPts(BotBody.GetAnchor(), twoDPoint);
                         PathPoints.Clear();
                         PathPoints.AddRange(twoDPoints);
+                        BotStatus = BotStatus.GoMaybe;
+                        return new BotOpAndThink();
+                    }
+
+                    var characterStatusIsBeHitBySomeOne = BotBody.CharacterStatus.IsBeHitBySomeOne;
+                    if (characterStatusIsBeHitBySomeOne != null)
+                    {
+                        PathPoints.Clear();
+                        var twoDPoint = BotBody.GetAnchor().Move(characterStatusIsBeHitBySomeOne);
+                        PathPoints.Add(twoDPoint);
                         BotStatus = BotStatus.GoMaybe;
                         return new BotOpAndThink();
                     }
@@ -260,11 +275,6 @@ namespace game_bot
                         return new BotOpAndThink();
                     }
 
-                    if (CheckStun())
-                    {
-                        ComboCtrl.ComboLoss();
-                        return new BotOpAndThink();
-                    }
 
                     if (ComboCtrl.CanCombo())
                     {
@@ -279,6 +289,8 @@ namespace game_bot
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+       
 
         private bool CheckStartCombo()
         {
