@@ -1468,6 +1468,11 @@ namespace game_stuff
                 playingBuff.Stack -= 1;
             }
         }
+
+        public int GetNowSnipeStep()
+        {
+            return NowSnipeStep;
+        }
     }
 
     public enum TrickCond

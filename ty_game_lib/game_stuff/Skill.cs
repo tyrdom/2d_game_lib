@@ -20,7 +20,7 @@ namespace game_stuff
         public uint NowOnTick { get; set; }
         public int NowTough { get; set; }
 
-        private int SnipeStepNeed { get; }
+        public int SnipeStepNeed { get; }
         public int AmmoCost { get; }
 
         private int BaseTough { get; }

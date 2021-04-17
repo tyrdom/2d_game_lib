@@ -18,6 +18,8 @@ namespace game_bot
 
     public class SimpleBot
     {
+        private bool HavePeered { get; set; }
+
         public CharacterBody BotBody { get; }
 
         public PatrolCtrl PatrolCtrl { get; }
@@ -103,6 +105,7 @@ namespace game_bot
             PatrolCtrl = new PatrolCtrl(patrolPts);
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
+            HavePeered = true;
         }
 
 
@@ -170,6 +173,12 @@ namespace game_bot
                 ComboCtrl.ComboLoss();
                 return new BotOpAndThink();
             }
+
+            var botBodyCharacterStatus = BotBody.CharacterStatus;
+
+            var characterStatusNowWeapon = botBodyCharacterStatus.NowWeapon;
+            var weapon = botBodyCharacterStatus.Weapons[characterStatusNowWeapon];
+
             switch (BotStatus)
             {
                 case BotStatus.OnPatrol:
@@ -184,11 +193,12 @@ namespace game_bot
                         var twoDPoints = pathTop.FindGoPts(BotBody.GetAnchor(), twoDPoint);
                         PathPoints.Clear();
                         PathPoints.AddRange(twoDPoints);
+                        HavePeered = false;
                         BotStatus = BotStatus.GoMaybe;
                         return new BotOpAndThink();
                     }
 
-                    var characterStatusIsBeHitBySomeOne = BotBody.CharacterStatus.IsBeHitBySomeOne;
+                    var characterStatusIsBeHitBySomeOne = botBodyCharacterStatus.IsBeHitBySomeOne;
                     if (characterStatusIsBeHitBySomeOne != null)
                     {
                         PathPoints.Clear();
@@ -203,6 +213,7 @@ namespace game_bot
                 case BotStatus.GoMaybe:
                     if (beHit != null)
                     {
+                        HavePeered = true;
                         return new BotOpAndThink(SeeATargetAction(beHit));
                     }
 
@@ -212,11 +223,42 @@ namespace game_bot
                         ReturnOnPatrol(pathTop);
                     }
 
-                    return new BotOpAndThink();
+                    if (HavePeered || PathPoints.Count != 1)
+                        return new BotOpAndThink(new Operate(move: goPathDirection));
+                    var distance1 = PathPoints.First().GetDistance(BotBody.GetAnchor());
+                    var (inRange1, needSwitch1) = CheckWeaponAndAmmo(distance1);
+                    if (needSwitch1)
+                    {
+                        return new BotOpAndThink(new Operate(skillAction: SkillAction.Switch));
+                    }
+
+                    if (!inRange1) return new BotOpAndThink(new Operate(move: goPathDirection));
+                    var zoomStepScopes = weapon
+                        .ZoomStepScopes;
+                    if (botBodyCharacterStatus.GetNowSnipeStep() >= zoomStepScopes.Length)
+                    {
+                        HavePeered = true;
+                        return new BotOpAndThink(new Operate(move: goPathDirection,
+                            snipeAction: SnipeAction.SnipeOff));
+                    }
+
+                    if (!zoomStepScopes.Any()) return new BotOpAndThink(new Operate(move: goPathDirection));
+                    var keyValuePair = weapon.Snipes.Aggregate((KeyValuePair<SnipeAction, Snipe>?) null,
+                        (s, x) =>
+                            !s.HasValue
+                                ? x
+                                : x.Value.MaxStep > s.Value.Value.MaxStep
+                                    ? x
+                                    : s);
+                    if (keyValuePair == null) return new BotOpAndThink(new Operate(move: goPathDirection));
+                    var snipeAction = keyValuePair.Value.Key;
+                    return new BotOpAndThink(new Operate(move: goPathDirection,
+                        snipeAction: snipeAction));
+
                 case BotStatus.TargetApproach:
-                    var characterStatusProp = BotBody.CharacterStatus.Prop;
+                    var characterStatusProp = botBodyCharacterStatus.Prop;
                     if (characterStatusProp != null &&
-                        characterStatusProp.CheckAppStatusToBotPropUse(BotBody.CharacterStatus))
+                        characterStatusProp.CheckAppStatusToBotPropUse(botBodyCharacterStatus))
                     {
                         var botSimpleGoATick = new Operate(specialAction: SpecialAction.UseProp);
                         return new BotOpAndThink(botSimpleGoATick);
@@ -237,6 +279,12 @@ namespace game_bot
                         if (inRange)
                         {
                             var skillAction = FirstSkillCtrl.GetAction(Random);
+                            if (skillAction != null && CheckSkillSnipeNeed(skillAction.Value))
+                            {
+                                return new BotOpAndThink(
+                                    new Operate(snipeAction: GetSnipeActBySkillAct(skillAction)));
+                            }
+
                             BotStatus = BotStatus.EngageAct;
                             return new BotOpAndThink(new Operate(skillAction: skillAction), goATick);
                         }
@@ -278,8 +326,15 @@ namespace game_bot
 
                     if (ComboCtrl.CanCombo())
                     {
-                        ComboCtrl.ActACombo();
                         var comboAction = FirstSkillCtrl.GetComboAction(Random);
+                        var checkSkillSnipeNeed = CheckSkillSnipeNeed(comboAction);
+                        if (checkSkillSnipeNeed)
+                        {
+                            return new BotOpAndThink(
+                                new Operate(snipeAction: GetSnipeActBySkillAct(comboAction)));
+                        }
+
+                        ComboCtrl.ActACombo();
                         return new BotOpAndThink(new Operate(skillAction: comboAction));
                     }
 
@@ -290,7 +345,32 @@ namespace game_bot
             }
         }
 
-       
+        private bool CheckSkillSnipeNeed(SkillAction comboAction)
+        {
+            var botBodyCharacterStatus = BotBody.CharacterStatus;
+            var characterStatusWeapons = botBodyCharacterStatus.Weapons;
+            var nowWeapon = botBodyCharacterStatus.NowWeapon;
+            var size = BotBody.GetSize();
+            var immutableDictionary = characterStatusWeapons[nowWeapon].SkillGroups[size];
+            return immutableDictionary.TryGetValue(comboAction, out var skills) &&
+                   skills.Max(x => x.Value.SnipeStepNeed) >
+                   botBodyCharacterStatus.GetNowSnipeStep();
+        }
+
+        private static SnipeAction? GetSnipeActBySkillAct(SkillAction? skillAction)
+        {
+            return skillAction switch
+            {
+                SkillAction.Op1 => SnipeAction.SnipeOn1,
+                SkillAction.Op2 => SnipeAction.SnipeOn2,
+                SkillAction.Op3 => SnipeAction.SnipeOn3,
+                SkillAction.Switch => SnipeAction.SnipeOff,
+                SkillAction.CatchTrick => SnipeAction.SnipeOff,
+                null => null,
+                _ => throw new ArgumentOutOfRangeException(nameof(skillAction), skillAction, null)
+            };
+        }
+
 
         private bool CheckStartCombo()
         {
@@ -320,7 +400,7 @@ namespace game_bot
         public SpecialAction? CheckVehicle()
         {
             var characterStatusNowVehicle = BotBody.CharacterStatus.NowVehicle;
-            if (characterStatusNowVehicle == null || !characterStatusNowVehicle.IsDestroyOn) return null;
+            if (!(characterStatusNowVehicle is {IsDestroyOn: true})) return null;
             var rangeAmmoWeapon = GetRangeAmmoWeapon(BotBody.CharacterStatus.Weapons, BotBody.BodySize);
             RangeToWeapon = rangeAmmoWeapon;
             return SpecialAction.OutVehicle;
