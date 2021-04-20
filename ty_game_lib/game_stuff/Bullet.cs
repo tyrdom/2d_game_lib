@@ -35,6 +35,15 @@ namespace game_stuff
         private float DamageMulti { get; }
         private int Tough { get; }
         public ObjType TargetType { get; }
+        public bool HitNumLimit(out int num)
+        {
+            num = HitLimitNum;
+            return HitLimitNum > 0;
+        }
+
+        public int HitLimitNum { get; }
+
+        
 
         private hit_type HitType { get; }
         private int RestTick { get; set; }
@@ -125,14 +134,14 @@ namespace game_stuff
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bulletDamageMulti, bullet.ProtectValue,
-                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id);
+                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum);
         }
 
         private Bullet(Dictionary<size, BulletBox> sizeToBulletCollision,
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk, bool canOverBulletBlock, string bulletId)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock, string bulletId, int hitLimitNum)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -150,6 +159,7 @@ namespace game_stuff
             Tough = tough;
             RestTick = 1;
             BulletId = bulletId;
+            HitLimitNum = hitLimitNum;
             AmmoAddWhenSuccess = ammoAddWhenSuccess;
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
@@ -176,11 +186,15 @@ namespace game_stuff
 
         public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
         {
-            switch (targetBody)
+            if (!(targetBody is ICanBeHit canBeHit)) return null;
+            var isHit = IsHit(canBeHit, blockMap);
+
+            if (!isHit) return null;
+            switch (canBeHit)
             {
                 case CharacterBody targetCharacterBody:
-                    var isHit = IsHit(targetCharacterBody, blockMap);
-                    if (!isHit) return null;
+
+
                     var kill = HitOne(targetCharacterBody.CharacterStatus);
 
 #if DEBUG
@@ -192,13 +206,10 @@ namespace game_stuff
                         : (IRelationMsg?) null;
 
                 case Trap trap:
-                    var isHitBody = IsHit(trap, blockMap);
-                    if (!isHitBody) return null;
                     var dmgShow = HitOne(trap);
                     return Caster != null && dmgShow.HasValue
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
                         : (IRelationMsg?) null;
-
                 default:
                     throw new ArgumentOutOfRangeException(nameof(targetBody));
             }

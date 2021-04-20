@@ -488,9 +488,9 @@ namespace game_stuff
                     {
                         case ObjType.OtherTeam:
                             var selectMany = TeamToBodies.Where(pair => pair.Key != team)
-                                .SelectMany(x => hitMedias.SelectMany(aHitM => aHitM
+                                .SelectMany(x => hitMedia
                                     .HitTeam(x.Value.playerBodies, BulletBlockMap)
-                                    .Union(aHitM.HitTeam(x.Value.Traps, BulletBlockMap))));
+                                    .Union(hitMedia.HitTeam(x.Value.Traps, BulletBlockMap)));
 
                             foreach (var hr in selectMany)
                             {
@@ -512,9 +512,8 @@ namespace game_stuff
                             break;
                         case ObjType.AllTeam:
                             var results = TeamToBodies.Values.SelectMany(x =>
-                                hitMedias.SelectMany(bb =>
-                                    bb.HitTeam(x.playerBodies, BulletBlockMap)
-                                        .Union(bb.HitTeam(x.Traps, BulletBlockMap))));
+                                hitMedia.HitTeam(x.playerBodies, BulletBlockMap)
+                                    .Union(hitMedia.HitTeam(x.Traps, BulletBlockMap)));
 
                             foreach (var hitResult in results)
                             {

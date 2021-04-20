@@ -12,12 +12,18 @@ namespace game_stuff
         IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap);
         public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap);
         public ObjType TargetType { get; }
+        public bool HitNumLimit(out int num);
     }
 
     public static class HitAbleMediaStandard
     {
         public static IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, IHitMedia hitMedia, SightMap? blockMap)
         {
+            if (hitMedia.HitNumLimit(out var num))
+            {
+                
+                
+            }
             var mapToGidList = qSpace.MapToIEnumNotNullSth((body, aHitMedia) => aHitMedia.IsHitBody(body, blockMap),
                 hitMedia, hitMedia.RdZone.MoveToAnchor(hitMedia.Pos));
             return mapToGidList!;

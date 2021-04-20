@@ -207,6 +207,9 @@ namespace game_config
         /// <summary> 攻击成功给对手的硬直状态: </summary>
         public Buff[] SuccessAntiActBuffConfigToOpponent { get; set; }
 
+        /// <summary> 最大目标数量，由近到远：0表示无限制: </summary>
+        public int MaxHitNum { get; set; }
+
         /// <summary> : </summary>
         public bool CanOverBulletBlock { get; set; }
 
@@ -537,14 +540,14 @@ namespace game_config
         /// <summary> : </summary>
         public Dictionary<float, Media> LaunchTimeToEffectM { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 机器人使用条件: </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public bot_use_cond BotUseCondType { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 使用条件参数: </summary>
         public float[] BotUseCondParam { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 使用必须时间: </summary>
         public float PropMustTime { get; set; }
 
         /// <summary> 移动速度比率: </summary>
@@ -788,16 +791,16 @@ namespace game_config
         /// <summary> id: </summary>
         public int id { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 触发按住时间:0.1秒一个tick </summary>
         public int TrickTick { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 上限步数: </summary>
         public int TotalStep { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 打开速度: </summary>
         public int OnTickSpeed { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 关闭速度: </summary>
         public int OffTickSpeed { get; set; }
 
         /// <summary> 原始值: </summary>
@@ -949,16 +952,16 @@ namespace game_config
         /// <summary> j机器人使用射程: </summary>
         public float BotRange { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 最大放大倍数: </summary>
         public float MaxRangeMulti { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 总节数: </summary>
         public int ChangeRangeStep { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 瞄准1id: </summary>
         public int Snipe1 { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 瞄准2id: </summary>
         public int Snipe2 { get; set; }
 
         /// <summary> : </summary>
@@ -993,43 +996,43 @@ namespace game_config
     [Serializable]
     public enum ItemType
     {
-        @bag,
+        @money,
         @battle_exp,
-        @money
+        @bag
     }
 
     [Serializable]
     public enum size
     {
-        @default,
-        @medium,
+        @small,
         @tiny,
-        @big,
-        @small
+        @medium,
+        @default,
+        @big
     }
 
     [Serializable]
     public enum interactableType
     {
         @vehicle,
-        @prop,
-        @weapon
+        @weapon,
+        @prop
     }
 
     [Serializable]
     public enum botOp
     {
-        @op1,
+        @none,
         @op2,
-        @none
+        @op1
     }
 
     [Serializable]
     public enum raw_shape
     {
+        @round,
         @rectangle,
-        @sector,
-        @round
+        @sector
     }
 
     [Serializable]
@@ -1056,62 +1059,62 @@ namespace game_config
     [Serializable]
     public enum interactionAct
     {
+        @recycle_cage,
+        @kick_vehicle,
         @get_in_vehicle,
         @pick_up_cage,
         @apply,
-        @kick_vehicle,
-        @get_info,
-        @recycle_cage
+        @get_info
     }
 
     [Serializable]
     public enum passive_type
     {
-        @TickAdd,
         @TrapAbout,
+        @HitWinBuff,
+        @AbsorbAdd,
         @Regen,
-        @AddItem,
         @Attack,
         @Other,
         @Survive,
-        @AbsorbAdd,
-        @HitWinBuff
+        @TickAdd,
+        @AddItem
     }
 
     [Serializable]
     public enum play_buff_effect_type
     {
+        @Break,
         @Tough,
         @TakeDamageAdd,
-        @Break,
         @MakeDamageAdd
     }
 
     [Serializable]
     public enum stack_mode
     {
-        @Stack,
         @OverWrite,
+        @Stack,
         @Time
     }
 
     [Serializable]
     public enum effect_media_type
     {
+        @summon,
         @self,
         @radar_wave,
-        @bullet,
-        @summon
+        @bullet
     }
 
     [Serializable]
     public enum bot_use_cond
     {
         @ArmorBlowPercent,
-        @HpBlowPercent,
         @CantUse,
-        @OnPatrolRandom,
+        @HpBlowPercent,
         @EnemyOnSight,
+        @OnPatrolRandom,
         @ShieldBlowPercent
     }
 
@@ -1125,9 +1128,9 @@ namespace game_config
     [Serializable]
     public enum direction
     {
-        @West,
-        @North,
         @East,
+        @North,
+        @West,
         @South
     }
 
@@ -1258,10 +1261,7 @@ namespace game_config
 
             all_Immutable_dictionary = new IDictionary[]
             {
-                bad_wordss, base_attributes, battle_npcs, bodys, bullets, caught_buffs, characters, interactions, items,
-                lock_areas, other_configs, passives, play_buffs, props, push_buffs, radar_waves, rogue_game_chapters,
-                self_effects, show_texts, skills, skill_groups, snipes, standard_level_ups, summons, talents, traps,
-                vehicles, weapons, map_rawss
+               bad_wordss,base_attributes,battle_npcs,bodys,bullets,caught_buffs,characters,interactions,items,lock_areas,other_configs,passives,play_buffs,props,push_buffs,radar_waves,rogue_game_chapters,self_effects,show_texts,skills,skill_groups,snipes,standard_level_ups,summons,talents,traps,vehicles,weapons,map_rawss
             };
         }
 #endif
@@ -1294,61 +1294,30 @@ namespace game_config
         }
 
 #if NETCOREAPP
-        public void LoadAllByDll()
-        {
-            bad_wordss = GameConfigTools.GenConfigDict<int, bad_words>();
-            base_attributes =
-                GameConfigTools.GenConfigDict<int, base_attribute>();
-            battle_npcs =
-                GameConfigTools.GenConfigDict<int, battle_npc>();
-            bodys = GameConfigTools.GenConfigDict<size, body>();
-            bullets =
-                GameConfigTools.GenConfigDict<string, bullet>();
-            caught_buffs =
-                GameConfigTools.GenConfigDict<string, caught_buff>();
-            characters =
-                GameConfigTools.GenConfigDict<int, character>();
-            interactions =
-                GameConfigTools.GenConfigDict<interactionAct, interaction>();
-            items =
-                GameConfigTools.GenConfigDict<int, item>();
-            lock_areas =
-                GameConfigTools.GenConfigDict<string, lock_area>();
-            other_configs =
-                GameConfigTools.GenConfigDict<int, other_config>();
-            passives =
-                GameConfigTools.GenConfigDict<int, passive>();
-            play_buffs = GameConfigTools.GenConfigDict<int, play_buff>();
-            props =
-                GameConfigTools.GenConfigDict<int, prop>();
-            push_buffs =
-                GameConfigTools.GenConfigDict<string, push_buff>();
-            radar_waves =
-                GameConfigTools.GenConfigDict<string, radar_wave>();
-            rogue_game_chapters =
-                GameConfigTools.GenConfigDict<int, rogue_game_chapter>();
-            self_effects =
-                GameConfigTools.GenConfigDict<string, self_effect>();
-            show_texts =
-                GameConfigTools.GenConfigDict<string, show_text>();
-            skills =
-                GameConfigTools.GenConfigDict<string, skill>();
-            skill_groups =
-                GameConfigTools.GenConfigDict<string, skill_group>();
-            snipes =
-                GameConfigTools.GenConfigDict<int, snipe>();
-            standard_level_ups =
-                GameConfigTools.GenConfigDict<int, standard_level_up>();
-            summons =
-                GameConfigTools.GenConfigDict<string, summon>();
-            talents = GameConfigTools.GenConfigDict<int, talent>();
-            traps =
-                GameConfigTools.GenConfigDict<string, trap>();
-            vehicles = GameConfigTools.GenConfigDict<int, vehicle>();
-            weapons =
-                GameConfigTools.GenConfigDict<int, weapon>();
-            map_rawss = GameConfigTools.GenConfigDict<int, map_raws>();
-        }
+public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_words> ();base_attributes =
+ GameConfigTools.GenConfigDict <int,base_attribute> ();battle_npcs =
+ GameConfigTools.GenConfigDict <int,battle_npc> ();bodys = GameConfigTools.GenConfigDict <size,body> ();bullets =
+ GameConfigTools.GenConfigDict <string,bullet> ();caught_buffs =
+ GameConfigTools.GenConfigDict <string,caught_buff> ();characters =
+ GameConfigTools.GenConfigDict <int,character> ();interactions =
+ GameConfigTools.GenConfigDict <interactionAct,interaction> ();items =
+ GameConfigTools.GenConfigDict <int,item> ();lock_areas =
+ GameConfigTools.GenConfigDict <string,lock_area> ();other_configs =
+ GameConfigTools.GenConfigDict <int,other_config> ();passives =
+ GameConfigTools.GenConfigDict <int,passive> ();play_buffs = GameConfigTools.GenConfigDict <int,play_buff> ();props =
+ GameConfigTools.GenConfigDict <int,prop> ();push_buffs =
+ GameConfigTools.GenConfigDict <string,push_buff> ();radar_waves =
+ GameConfigTools.GenConfigDict <string,radar_wave> ();rogue_game_chapters =
+ GameConfigTools.GenConfigDict <int,rogue_game_chapter> ();self_effects =
+ GameConfigTools.GenConfigDict <string,self_effect> ();show_texts =
+ GameConfigTools.GenConfigDict <string,show_text> ();skills =
+ GameConfigTools.GenConfigDict <string,skill> ();skill_groups =
+ GameConfigTools.GenConfigDict <string,skill_group> ();snipes =
+ GameConfigTools.GenConfigDict <int,snipe> ();standard_level_ups =
+ GameConfigTools.GenConfigDict <int,standard_level_up> ();summons =
+ GameConfigTools.GenConfigDict <string,summon> ();talents = GameConfigTools.GenConfigDict <int,talent> ();traps =
+ GameConfigTools.GenConfigDict <string,trap> ();vehicles = GameConfigTools.GenConfigDict <int,vehicle> ();weapons =
+ GameConfigTools.GenConfigDict <int,weapon> ();map_rawss = GameConfigTools.GenConfigDict <int,map_raws> ();}
 #endif
         public void LoadAllByJson(string path = "")
         {

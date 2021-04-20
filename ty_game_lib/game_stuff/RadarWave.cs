@@ -81,7 +81,7 @@ namespace game_stuff
 
                     if (Caster == null || !IsHit(characterBody1)) return null;
                     if (Caster is Trap trap) trap.StartTrick();
-                
+
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif
@@ -99,6 +99,12 @@ namespace game_stuff
         }
 
         public ObjType TargetType { get; }
+
+        public bool HitNumLimit(out int num)
+        {
+            num = 0;
+            return false;
+        }
 
         public bool CanGoNextTick()
         {

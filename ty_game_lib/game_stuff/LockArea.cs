@@ -38,6 +38,11 @@ namespace game_stuff
         }
 
         public ObjType TargetType => ObjType.OtherTeam;
+        public bool HitNumLimit(out int num)
+        {
+            num = 0;
+            return false;
+        }
 
         public bool CanGoNextTick()
         {
