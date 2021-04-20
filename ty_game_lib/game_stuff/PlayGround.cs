@@ -489,8 +489,8 @@ namespace game_stuff
                         case ObjType.OtherTeam:
                             var selectMany = TeamToBodies.Where(pair => pair.Key != team)
                                 .SelectMany(x => hitMedia
-                                    .HitTeam(x.Value.playerBodies, BulletBlockMap)
-                                    .Union(hitMedia.HitTeam(x.Value.Traps, BulletBlockMap)));
+                                    .HitTeam(new[] {x.Value.playerBodies, x.Value.Traps}, BulletBlockMap)
+                                );
 
                             foreach (var hr in selectMany)
                             {
@@ -501,8 +501,9 @@ namespace game_stuff
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
-                                var enumerable = hitMedia.HitTeam(qSpace.playerBodies, BulletBlockMap)
-                                    .Union(hitMedia.HitTeam(qSpace.Traps, BulletBlockMap));
+                                var enumerable = hitMedia.HitTeam(new[] {qSpace.playerBodies, qSpace.Traps},
+                                        BulletBlockMap)
+                                    ;
                                 foreach (var hitResult in enumerable)
                                 {
                                     RecordHitResult(hitResult, gidHitBy, tidHitBy, teamRadarSee);
@@ -512,8 +513,7 @@ namespace game_stuff
                             break;
                         case ObjType.AllTeam:
                             var results = TeamToBodies.Values.SelectMany(x =>
-                                hitMedia.HitTeam(x.playerBodies, BulletBlockMap)
-                                    .Union(hitMedia.HitTeam(x.Traps, BulletBlockMap)));
+                                hitMedia.HitTeam(new[] {x.playerBodies, x.Traps}, BulletBlockMap));
 
                             foreach (var hitResult in results)
                             {

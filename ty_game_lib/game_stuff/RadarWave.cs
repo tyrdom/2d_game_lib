@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using collision_and_rigid;
@@ -64,6 +63,11 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
+        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
+        {
+            return IsHit(characterBody);
+        }
+
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
@@ -72,30 +76,26 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
+        public IRelationMsg? HitSth(ICanBeHit canBeHit)
         {
-            switch (targetBody)
+            switch (Caster)
             {
-                case ICanBeHit characterBody1:
-
-
-                    if (Caster == null || !IsHit(characterBody1)) return null;
-                    if (Caster is Trap trap) trap.StartTrick();
+                case null:
+                    return null;
+                case Trap trap:
+                    trap.StartTrick();
+                    break;
+            }
 
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif
-                    return new RadarHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
-
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(targetBody));
-            }
+            return new RadarHit(canBeHit, Caster.GetFinalCaster().CharacterStatus, this);
         }
 
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap)
+        public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
         {
-            return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
+            return HitAbleMediaStandard.HitTeam(qSpaces, this, blockMap);
         }
 
         public ObjType TargetType { get; }
@@ -105,6 +105,7 @@ namespace game_stuff
             num = 0;
             return false;
         }
+
 
         public bool CanGoNextTick()
         {

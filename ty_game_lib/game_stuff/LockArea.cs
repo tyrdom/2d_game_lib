@@ -10,6 +10,12 @@ namespace game_stuff
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
+
+        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
+        {
+            return IsHit(characterBody);
+        }
+
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
@@ -37,41 +43,43 @@ namespace game_stuff
             return new LockArea(genBulletShapes);
         }
 
+        public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
+        {
+            return HitAbleMediaStandard.HitTeam(qSpaces, this, blockMap);
+        }
+
         public ObjType TargetType => ObjType.OtherTeam;
+
         public bool HitNumLimit(out int num)
         {
             num = 0;
             return false;
         }
 
+
         public bool CanGoNextTick()
         {
             return false;
         }
 
-        public bool IsHit(ICanBeHit characterBody)
+        private bool IsHit(ICanBeHit characterBody)
         {
             return GameTools.IsHit(this, characterBody);
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
+        public IRelationMsg? HitSth(ICanBeHit canBeHit)
         {
-            switch (targetBody)
+            if (!(Caster is CharacterStatus characterStatus)) return null;
+            switch (canBeHit)
             {
                 case CharacterBody characterBody1:
-                    var isHit = IsHit(characterBody1);
-                    if (!isHit || !(Caster is CharacterStatus characterStatus)) return null;
-                    characterStatus.LockingWho =
-                        characterBody1.CharacterStatus;
-
+                    
+                    characterStatus.LockingWho = characterBody1.CharacterStatus;
                     return new LockHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
-
                 case Trap trap:
-                    if (Caster != null)
-                        return IsHit(trap) ? new LockHit(trap, Caster.GetFinalCaster().CharacterStatus, this) : null;
-                    return null;
+                    return new LockHit(trap, Caster.GetFinalCaster().CharacterStatus, this);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(targetBody));
+                    throw new ArgumentOutOfRangeException(nameof(canBeHit));
             }
         }
 
@@ -79,11 +87,6 @@ namespace game_stuff
         {
             return
                 PosMediaStandard.Active(casterPos, casterAim, this);
-        }
-
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap)
-        {
-            return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }
     }
 

@@ -34,16 +34,23 @@ namespace game_stuff
         private int PauseToOpponent { get; }
         private float DamageMulti { get; }
         private int Tough { get; }
+
+        public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
+        {
+            return HitAbleMediaStandard.HitTeam(qSpaces, this, blockMap);
+        }
+
         public ObjType TargetType { get; }
+
         public bool HitNumLimit(out int num)
         {
             num = HitLimitNum;
             return HitLimitNum > 0;
         }
 
+
         public int HitLimitNum { get; }
 
-        
 
         private hit_type HitType { get; }
         private int RestTick { get; set; }
@@ -175,7 +182,7 @@ namespace game_stuff
             return RestTick > 0;
         }
 
-        private bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
+        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
         {
             var isBlockSightLine =
                 blockMap?.IsBlockSightLine(new TwoDVectorLine(Pos, characterBody.GetAnchor())) ?? false;
@@ -184,12 +191,8 @@ namespace game_stuff
             //造成伤害需要不被阻挡
         }
 
-        public IRelationMsg? IsHitBody(IIdPointShape targetBody, SightMap? blockMap)
+        public IRelationMsg? HitSth(ICanBeHit canBeHit)
         {
-            if (!(targetBody is ICanBeHit canBeHit)) return null;
-            var isHit = IsHit(canBeHit, blockMap);
-
-            if (!isHit) return null;
             switch (canBeHit)
             {
                 case CharacterBody targetCharacterBody:
@@ -211,7 +214,7 @@ namespace game_stuff
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
                         : (IRelationMsg?) null;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(targetBody));
+                    throw new ArgumentOutOfRangeException(nameof(canBeHit));
             }
         }
 
@@ -537,11 +540,6 @@ namespace game_stuff
                     null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
                 bodyCaster.StunBuff = antiActBuff;
             }
-        }
-
-        public IEnumerable<IRelationMsg> HitTeam(IQSpace qSpace, SightMap? blockMap)
-        {
-            return HitAbleMediaStandard.HitTeam(qSpace, this, blockMap);
         }
 
         public BulletMsg GenMsg()
