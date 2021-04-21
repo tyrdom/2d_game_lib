@@ -425,9 +425,11 @@ namespace game_stuff
             }
             else
             {
+                TickSnipeActionLaunch = SnipeAction.SnipeOff;
                 if (NowTempSnipe != null)
                 {
                     NowOnSnipeAct = snipeAction;
+
                     OffSnipe(NowTempSnipe);
                 }
                 else ResetSnipe();
