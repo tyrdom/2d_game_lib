@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using collision_and_rigid;
 using cov_path_navi;
 using game_bot;
@@ -29,6 +30,19 @@ namespace lib_unit_test
             var selectMany = genAChapterMap.PointMaps.SelectMany(x => x.ToString());
             var s = new string(selectMany.ToArray());
             Assert.Pass(s);
+        }
+
+        [Test]
+        public void TestDir()
+        {
+            var currentDirectory = Environment.CurrentDirectory;
+            for (int i = 0; i < 4; i++)
+            {
+                var x = currentDirectory.LastIndexOf("\\", StringComparison.Ordinal);
+                currentDirectory = currentDirectory[..x];
+            }
+            
+            Assert.Pass(currentDirectory);
         }
 
         [Test]

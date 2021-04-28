@@ -1,4 +1,5 @@
 ﻿using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -6,15 +7,15 @@ namespace game_stuff
     {
         private TwoDPoint Pos;
         private TwoDVector Aim;
-        private string ResId;
-        private TwoDPoint? MastPos;
+        private bullet_id ResId;
+        private TwoDPoint? CastPos;
 
-        public BulletMsg(TwoDPoint pos, TwoDVector aim, string resId, TwoDPoint? mastPos)
+        public BulletMsg(TwoDPoint pos, TwoDVector aim, bullet_id resId, TwoDPoint? castPos)
         {
             Pos = pos;
             Aim = aim;
             ResId = resId;
-            MastPos = mastPos;
+            CastPos = castPos;
         }
     }
 }

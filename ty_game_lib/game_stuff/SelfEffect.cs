@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using collision_and_rigid;
@@ -9,11 +10,18 @@ namespace game_stuff
     {
         public static SelfEffect GenById(string id)
         {
+            var selfId = (self_id) Enum.Parse(typeof(self_id), id, true);
+            return GenById(selfId);
+        }
+
+        public static SelfEffect GenById(self_id id)
+        {
             return CommonConfig.Configs.self_effects.TryGetValue(id, out var selfEffect)
                 ? new SelfEffect(selfEffect)
                 : throw new KeyNotFoundException($"not such self effect id::{id}");
         }
-        public SelfEffect(self_effect selfEffect)
+
+        private SelfEffect(self_effect selfEffect)
         {
             var b = selfEffect.HealMulti == 0 && selfEffect.FixMulti == 0 && selfEffect.ShieldMulti == 0 &&
                     selfEffect.ReloadMulti == 0;

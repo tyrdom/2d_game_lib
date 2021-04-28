@@ -59,6 +59,12 @@ namespace game_stuff
 
         public static Summon GenById(string id)
         {
+            var summonId = (summon_id) Enum.Parse(typeof(summon_id), id, true);
+            return GenById(summonId);
+        }
+
+        public static Summon GenById(summon_id id)
+        {
             return CommonConfig.Configs.summons.TryGetValue(id, out var summon)
                 ? new Summon(summon)
                 : throw new KeyNotFoundException($"not such id {id}");

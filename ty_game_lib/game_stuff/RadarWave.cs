@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using collision_and_rigid;
@@ -44,6 +45,12 @@ namespace game_stuff
         }
 
         public static RadarWave GenById(string id)
+        {
+            var o = (radar_wave_id) Enum.Parse(typeof(radar_wave_id), id, true);
+            return GenById(o);
+        }
+
+        public static RadarWave GenById(radar_wave_id id)
         {
             if (CommonConfig.Configs.radar_waves.TryGetValue(id, out var radarWave))
             {

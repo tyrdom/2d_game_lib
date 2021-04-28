@@ -98,6 +98,12 @@ namespace game_stuff
 
         public static Skill GenSkillById(string id)
         {
+            var o = (skill_id) Enum.Parse(typeof(skill_id), id, true);
+            return GenSkillById(o);
+        }
+
+        public static Skill GenSkillById(skill_id id)
+        {
             if (CommonConfig.Configs.skills.TryGetValue(id, out var configsSkill))
             {
                 return GenSkillByConfig(configsSkill);
@@ -114,16 +120,12 @@ namespace game_stuff
                 pair =>
                 {
                     var pairValue = pair.Value;
-                    var immutableDictionary = CommonConfig.Configs.bullets;
-                    var bullet = immutableDictionary[pairValue];
-                    var genByConfig = Bullet.GenByConfig(bullet, CommonConfig.GetTickByTime(pair.Key));
+                    var genByConfig = Bullet.GenById(pairValue, CommonConfig.GetTickByTime(pair.Key));
                     return genByConfig;
                 });
 
-            var configsLockAreas = CommonConfig.Configs.lock_areas;
-
-            var byConfig = configsLockAreas.TryGetValue(skill.LockArea, out var lockArea)
-                ? LockArea.GenByConfig(lockArea)
+            var byConfig = LockArea.TryGenById(skill.LockArea, out var area)
+                ? area
                 : null;
             var skillBaseTough = skill.BaseTough == 0
                 ? (int) dictionary.Keys.Min()

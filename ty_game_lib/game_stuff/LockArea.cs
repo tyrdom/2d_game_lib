@@ -35,6 +35,28 @@ namespace game_stuff
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
         }
 
+        public static bool TryGenById(string id, out LockArea? lockArea)
+        {
+            var enumType = typeof(lock_area_id);
+            var isDefined = Enum.IsDefined(enumType, id);
+            if (isDefined)
+            {
+                var lockAreaId = (lock_area_id) Enum.Parse(enumType, id);
+                return TryGenById(lockAreaId, out lockArea);
+            }
+
+            lockArea = null;
+            return false;
+        }
+
+        public static bool TryGenById(lock_area_id id, out LockArea aLockArea)
+        {
+            var configsLockAreas = CommonConfig.Configs.lock_areas;
+            var tryGetValue = configsLockAreas.TryGetValue(id, out var lockArea);
+            aLockArea = GenByConfig(lockArea);
+            return tryGetValue;
+        }
+
         public static LockArea GenByConfig(lock_area lockArea)
         {
             var genBulletShapes = GameTools.GenBulletShapes(lockArea.ShapeParams, lockArea.LocalRotate,
@@ -73,7 +95,7 @@ namespace game_stuff
             switch (canBeHit)
             {
                 case CharacterBody characterBody1:
-                    
+
                     characterStatus.LockingWho = characterBody1.CharacterStatus;
                     return new LockHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
                 case Trap trap:

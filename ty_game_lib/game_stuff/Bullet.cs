@@ -54,18 +54,24 @@ namespace game_stuff
 
         private hit_type HitType { get; }
         private int RestTick { get; set; }
-        private string BulletId { get; }
+        private bullet_id BulletId { get; }
 
         private int ProtectValueAdd { get; }
 
-        public static Bullet GenById(string id)
+        public static Bullet GenById(bullet_id id, uint pairKey = 0)
         {
             if (CommonConfig.Configs.bullets.TryGetValue(id, out var bullet))
             {
-                return GenByConfig(bullet);
+                return GenByConfig(bullet, pairKey);
             }
 
             throw new ArgumentOutOfRangeException();
+        }
+
+        public static Bullet GenById(string id, uint pairKey = 0)
+        {
+            var o = (bullet_id) Enum.Parse(typeof(bullet_id), id, true);
+            return GenById(o, pairKey);
         }
 
         public void Sign(IBattleUnitStatus characterStatus)
@@ -91,7 +97,7 @@ namespace game_stuff
         }
 
 
-        public static Bullet GenByConfig(bullet bullet, uint pairKey = 0)
+        private static Bullet GenByConfig(bullet bullet, uint pairKey = 0)
         {
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
                 bullet.ShapeType);
@@ -148,7 +154,7 @@ namespace game_stuff
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, int pauseToCaster, int pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk, bool canOverBulletBlock, string bulletId, int hitLimitNum)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();

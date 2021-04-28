@@ -10,7 +10,7 @@ using rogue_game;
 
 namespace lib_test
 {
-    internal class Program
+    internal static class Program
     {
         public static void Main()
         {
@@ -72,10 +72,18 @@ namespace lib_test
         {
             var directorySeparatorChar = Path.DirectorySeparatorChar;
             var osVersionPlatform = Environment.OSVersion.Platform;
+            var currentDirectory = Environment.CurrentDirectory;
+            for (var i = 0; i < 4; i++)
+            {
+                var x = currentDirectory.LastIndexOf("\\", StringComparison.Ordinal);
+                currentDirectory = currentDirectory.Substring(0, x);
+            }
 
-            var currentDirectory = osVersionPlatform == PlatformID.MacOSX || osVersionPlatform == PlatformID.Unix
-                ? $"{directorySeparatorChar}Users{directorySeparatorChar}tianhao{directorySeparatorChar}Documents{directorySeparatorChar}ty_game{directorySeparatorChar}ty_game_lib"
-                : $"G:{directorySeparatorChar}workspace{directorySeparatorChar}RiderProjects{directorySeparatorChar}2d_game_lib{directorySeparatorChar}ty_game_lib";
+            //
+            //
+            // var currentDirectory = osVersionPlatform == PlatformID.MacOSX || osVersionPlatform == PlatformID.Unix
+            //     ? $"{directorySeparatorChar}Users{directorySeparatorChar}tianhao{directorySeparatorChar}Documents{directorySeparatorChar}ty_game{directorySeparatorChar}ty_game_lib"
+            //     : $"G:{directorySeparatorChar}workspace{directorySeparatorChar}RiderProjects{directorySeparatorChar}2d_game_lib{directorySeparatorChar}ty_game_lib";
             var p =
                 $"{currentDirectory}{directorySeparatorChar}game_config{directorySeparatorChar}Resources{directorySeparatorChar}{s}_s.json";
 
