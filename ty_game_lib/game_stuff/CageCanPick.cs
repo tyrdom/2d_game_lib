@@ -151,9 +151,10 @@ namespace game_stuff
         {
             return CharActOne.InMapInteractable switch
             {
-                PassiveTrait passiveTrait => new CageTickMsg(ContainType.PassiveC, passiveTrait.PassId, GetAnchor()),
-                Prop prop => new CageTickMsg(ContainType.PropC, prop.PId, GetAnchor()),
-                Weapon weapon => new CageTickMsg(ContainType.WeaponC, weapon.WId, GetAnchor()),
+                PassiveTrait passiveTrait => new CageTickMsg(ContainType.PassiveC, (int) passiveTrait.PassId,
+                    GetAnchor()),
+                Prop prop => new CageTickMsg(ContainType.PropC, (int) prop.PId, GetAnchor()),
+                Weapon weapon => new CageTickMsg(ContainType.WeaponC, (int) weapon.WId, GetAnchor()),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

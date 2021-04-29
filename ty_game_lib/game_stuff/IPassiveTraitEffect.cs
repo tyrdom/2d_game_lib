@@ -21,7 +21,7 @@ namespace game_stuff
 
     public static class PassiveEffectStandard
     {
-        public static IPassiveTraitEffect GenById(int id)
+        public static IPassiveTraitEffect GenById(passive_id id)
         {
             if (!CommonConfig.Configs.passives.TryGetValue(id, out var passive))
                 throw new KeyNotFoundException($"not such passive id {id}");

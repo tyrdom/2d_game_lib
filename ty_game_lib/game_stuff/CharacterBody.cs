@@ -168,7 +168,7 @@ namespace game_stuff
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             var isStun = CharacterStatus.StunBuff != null;
-            var skillAct = ((int?) CharacterStatus.NowCastAct?.NowOnTick ?? -1);
+            var skillAct = (int?) CharacterStatus.NowCastAct?.NowOnTick ?? -1;
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             var sightStandardScope = CharacterStatus.GetNowScope() ?? Sight.StandardScope;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,

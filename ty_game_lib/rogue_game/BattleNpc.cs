@@ -28,22 +28,26 @@ namespace rogue_game
         private static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
         {
             var characterInitData =
-                CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,battleNpc.MaxWeaponSlot);
+                CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,
+                    battleNpc.MaxWeaponSlot);
 
             var chooseRandCanSame = battleNpc.PassiveRange.ChooseRandCanSame(battleNpc.PassiveNum, random);
-            var passiveTraits = chooseRandCanSame.GroupBy(x => x).ToDictionary(p => p.Key,
+            var passiveTraits = chooseRandCanSame.GroupBy(x => x).ToDictionary(
+                p => p.Key.TryStringToEnum(out passive_id passiveId)
+                    ? passiveId
+                    : throw new Exception($"not such id {p.Key}"),
                 p => PassiveTrait.GenById(p.Key, (uint) p.Count()));
 
             var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero(), passiveTraits);
             var characterStatus = genCharacterBody.CharacterStatus;
             var battleNpcWithVehicleId = battleNpc.WithVehicleId;
-            if (battleNpcWithVehicleId!=0)
+            if (battleNpcWithVehicleId != "")
             {
                 var genById = Vehicle.GenById(battleNpcWithVehicleId);
-                
+
                 characterStatus.GetInAVehicle(genById);
             }
-          
+
             var battleNpcPropIds = battleNpc.PropIds;
             if (battleNpcPropIds.Any())
             {
@@ -52,7 +56,7 @@ namespace rogue_game
                 characterStatus.PickAProp(byId);
             }
 
-            static ICanPutInMapInteractable Func(interactableType t, int id)
+            static ICanPutInMapInteractable Func(interactableType t, string id)
             {
                 return t switch
                 {

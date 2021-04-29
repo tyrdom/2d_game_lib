@@ -126,7 +126,7 @@ namespace game_stuff
 
         //Passive
 
-        public Dictionary<int, PassiveTrait> PassiveTraits { get; }
+        public Dictionary<passive_id, PassiveTrait> PassiveTraits { get; }
 
         //playBuff
 
@@ -179,7 +179,7 @@ namespace game_stuff
 
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
-            Dictionary<int, PassiveTrait>? passiveTraits = null, int? maxWeaponNum = null)
+            Dictionary<passive_id, PassiveTrait>? passiveTraits = null, int? maxWeaponNum = null)
         {
             HaveChange = false;
             ScoreData = new CharKillData();
@@ -212,7 +212,7 @@ namespace game_stuff
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed.ValuePerSecToValuePerTick();
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed.ValuePerSecToValuePerTick();
             MaxProtectValue = CommonConfig.OtherConfig.trick_protect_value;
-            PassiveTraits = passiveTraits ?? new Dictionary<int, PassiveTrait>();
+            PassiveTraits = passiveTraits ?? new Dictionary<passive_id, PassiveTrait>();
 
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
@@ -1234,7 +1234,7 @@ namespace game_stuff
                 case AddItem _:
                     var itemId = (int) v[0];
                     var num = (int) v[1];
-                    var gameItem = new GameItem(itemId, num);
+                    var gameItem = new GameItem((item_id) itemId, num);
                     PickGameItem(gameItem);
                     break;
                 case AbsorbAboutPassiveEffect _:
@@ -1319,7 +1319,8 @@ namespace game_stuff
         {
             if (!CommonConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
-                passive.recycle_money.Select(x => new GameItem(x.item, (int) (x.num * (1 + GetRecycleMulti()))));
+                passive.recycle_money.Select(x =>
+                    GameItem.GenByConfigGain(new Gain {item = x.item, num = (int) (x.num * (1 + GetRecycleMulti()))}));
             foreach (var gameItem in passiveRecycleMoney)
             {
                 PickGameItem(gameItem);

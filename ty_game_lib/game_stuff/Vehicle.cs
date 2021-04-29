@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
@@ -13,7 +11,17 @@ namespace game_stuff
     {
         public float TrapAtkMulti { get; set; }
 
-        public static Vehicle GenById(int id)
+        public static Vehicle GenById(string id)
+        {
+            if (id.TryStringToEnum(out vehicle_id eId))
+            {
+                return GenById(eId);
+            }
+
+            throw new KeyNotFoundException();
+        }
+
+        public static Vehicle GenById(vehicle_id id)
         {
             if (CommonConfig.Configs.vehicles.TryGetValue(id, out var vehicle))
             {
@@ -58,7 +66,7 @@ namespace game_stuff
 
         private Vehicle(size size, Scope standardScope, Dictionary<int, Weapon> weapons, Bullet destroyBullet,
             uint destroyTick, int weaponCarryMax,
-            Skill outAct, int baseAttrId, int vId)
+            Skill outAct, int baseAttrId, vehicle_id vId)
         {
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
@@ -92,7 +100,7 @@ namespace game_stuff
 
         public uint MaxTrapNum { get; set; }
 
-        public int VId { get; }
+        public vehicle_id VId { get; }
         public CharacterStatus? WhoDriveOrCanDrive { get; set; }
         public size Size { get; }
 
@@ -233,7 +241,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return VId;
+            return (int) VId;
         }
 
         public int GetNum()
@@ -265,7 +273,7 @@ namespace game_stuff
         }
 
 
-        private void RefreshByPass(Dictionary<int, PassiveTrait> characterStatusPassiveTraits)
+        private void RefreshByPass(Dictionary<passive_id, PassiveTrait> characterStatusPassiveTraits)
         {
             var passiveTraits =
                 characterStatusPassiveTraits.Values.Where(x => x.PassiveTraitEffect

@@ -7,9 +7,9 @@ namespace game_stuff
 {
     public class VehicleCanInTickMsg : ISeeTickMsg
     {
-        public VehicleCanInTickMsg(int vId, bool isBroken, float sStatus, TwoDPoint pos)
+        public VehicleCanInTickMsg(vehicle_id vId, bool isBroken, float sStatus, TwoDPoint pos)
         {
-            VId = vId;
+            VId = (int) vId;
             IsBroken = isBroken;
             SStatus = sStatus;
             Pos = pos;

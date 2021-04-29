@@ -14,7 +14,6 @@ namespace game_stuff
         public SurvivalStatus SurvivalStatus { get; }
         public bool IsPause { get; }
         public float SightR { get; }
-
         public float SightRad { get; }
         public SkillAction? SkillLaunch { get; }
         public SnipeAction? SnipeActionLaunch { get; }
@@ -24,6 +23,7 @@ namespace game_stuff
         public bool IsHitSome { get; }
 
         public bool SilentChangeWeapon { get; }
+
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, int skillOnAct, TwoDVector? isBeHit,

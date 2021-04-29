@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
 {
-    public class Weapon : ISaleStuff, ICanPickDrop, ICanPutInMapInteractable, IPutInCage
+    public class Weapon : ISaleStuff, ICanPickDrop, IPutInCage
     {
-        public int WId { get; }
+        public weapon_id WId { get; }
 
         public ImmutableDictionary<size, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
             SkillGroups { get; }
@@ -28,7 +27,7 @@ namespace game_stuff
                 ImmutableDictionary<int, Skill>>> skillGroups,
             float botRanges,
             ImmutableDictionary<SnipeAction, Snipe> snipes,
-            int wId,
+            weapon_id wId,
             float[] zoomStepMulti,
             Scope[] zoomStepScopes)
         {
@@ -113,7 +112,17 @@ namespace game_stuff
         }
 
 
-        public static Weapon GenById(int id)
+        public static Weapon GenById(string id)
+        {
+            if (id.TryStringToEnum(out weapon_id weaponId))
+            {
+                return GenById(weaponId);
+            }
+
+            throw new KeyNotFoundException($"cant find weapon id {id}");
+        }
+
+        public static Weapon GenById(weapon_id id)
         {
             if (CommonConfig.Configs.weapons.TryGetValue(id, out var weapon))
             {
@@ -224,7 +233,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return WId;
+            return (int) WId;
         }
 
         public int GetNum()

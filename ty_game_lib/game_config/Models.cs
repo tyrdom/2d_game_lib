@@ -126,13 +126,13 @@ namespace game_config
         public int AttrId { get; set; }
 
         /// <summary> 携带武器: </summary>
-        public int[] Weapons { get; set; }
+        public string[] Weapons { get; set; }
 
         /// <summary> 武器组上限: </summary>
         public int MaxWeaponSlot { get; set; }
 
         /// <summary> : </summary>
-        public int[] PropIds { get; set; }
+        public string[] PropIds { get; set; }
 
         /// <summary> : </summary>
         public int PropPoint { get; set; }
@@ -143,18 +143,18 @@ namespace game_config
         /// <summary> 击杀奖励: </summary>
         public Gain[] KillDrops { get; set; }
 
-        /// <summary> 座驾 0表示没有: </summary>
-        public int WithVehicleId { get; set; }
+        /// <summary> 座驾 表示没有: </summary>
+        public string WithVehicleId { get; set; }
 
         /// <summary> 掉落交互物类型: </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public interactableType DropMapInteractableType { get; set; }
 
-        /// <summary> 掉落交互物类型: </summary>
-        public int DropMapInteractableId { get; set; }
+        /// <summary> 掉落交互物类下Id: </summary>
+        public string DropMapInteractableId { get; set; }
 
         /// <summary> 被动范围: </summary>
-        public int[] PassiveRange { get; set; }
+        public string[] PassiveRange { get; set; }
 
         /// <summary> 被动数量: </summary>
         public int PassiveNum { get; set; }
@@ -212,14 +212,14 @@ namespace game_config
         /// <summary> 最大目标数量，由近到远：0表示无限制: </summary>
         public int MaxHitNum { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 可以穿过子弹阻挡？: </summary>
         public bool CanOverBulletBlock { get; set; }
 
         /// <summary> j打击类型：range远程，失败触发吸收，melee近战，触发反击: </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public hit_type HitType { get; set; }
 
-        /// <summary> 攻击失败获得的硬直状态,每个类型角色可以不一样，找不到使用默认的： 0：默认 1小型 2：中型 3：大型 : </summary>
+        /// <summary> 近战攻击失败获得的硬直状态（远程为触发吸收机制，此字段无效）,每个类型角色可以不一样，找不到使用默认的： default：默认 small：小型 medium：中型 big：大型 : </summary>
         public Buff[] FailActBuffConfigToSelf { get; set; }
 
         /// <summary> 成功命中停顿帧数给自己: </summary>
@@ -241,10 +241,10 @@ namespace game_config
         /// <summary> 保护值: </summary>
         public int ProtectValue { get; set; }
 
-        /// <summary> : </summary>
+        /// <summary> 攻击成功增加ammo: </summary>
         public int SuccessAmmoAdd { get; set; }
 
-        /// <summary> 0为默认值为释放时间加成: </summary>
+        /// <summary> 0为释放时间加成值: </summary>
         public float DamageMulti { get; set; }
     }
 
@@ -305,7 +305,8 @@ namespace game_config
     public class item : IGameConfig
     {
         /// <summary> id: </summary>
-        public int id { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public item_id id { get; set; }
 
         /// <summary> 名字: </summary>
         public string Name { get; set; }
@@ -352,6 +353,31 @@ namespace game_config
 
         /// <summary> 本地旋转：度数: </summary>
         public int LocalRotate { get; set; }
+    }
+
+    [Serializable]
+    public class map_raws : IGameConfig
+    {
+        /// <summary> : </summary>
+        public int id { get; set; }
+
+        /// <summary> : </summary>
+        public string info { get; set; }
+
+        /// <summary> : </summary>
+        public Point[][] WalkRawMap { get; set; }
+
+        /// <summary> : </summary>
+        public Point[][] SightRawMap { get; set; }
+
+        /// <summary> : </summary>
+        public Point[][] BulletRawMap { get; set; }
+
+        /// <summary> : </summary>
+        public Point[][] StartPoints { get; set; }
+
+        /// <summary> : </summary>
+        public TelPoint[] TransPoint { get; set; }
     }
 
     [Serializable]
@@ -482,7 +508,8 @@ namespace game_config
     public class passive : IGameConfig
     {
         /// <summary> : </summary>
-        public int id { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public passive_id id { get; set; }
 
         /// <summary> : </summary>
         public string info { get; set; }
@@ -526,7 +553,8 @@ namespace game_config
     public class prop : IGameConfig
     {
         /// <summary> : </summary>
-        public int id { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public prop_id id { get; set; }
 
         /// <summary> : </summary>
         public string Info { get; set; }
@@ -732,10 +760,21 @@ namespace game_config
         [JsonConverter(typeof(StringEnumConverter))]
         public skill_id id { get; set; }
 
+        /// <summary> 动作表现分类: </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        public op_Act OpAct { get; set; }
+
+        /// <summary> 属于的动作表现号: </summary>
+        public int ActStatus { get; set; }
+
+        /// <summary> 从属武器，通用为：unarmed: </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        public weapon_id FromWeaponId { get; set; }
+
         /// <summary> 消费弹药: </summary>
         public int AmmoCost { get; set; }
 
-        /// <summary> 发动需要武器瞄准步数，: </summary>
+        /// <summary> 发动需要武器瞄准步数: </summary>
         public int SnipeStepNeed { get; set; }
 
         /// <summary> 基础坚韧:0值会根据子弹发射最快的自动计算: </summary>
@@ -856,7 +895,7 @@ namespace game_config
         public int id { get; set; }
 
         /// <summary> :被动技能Id </summary>
-        public int passive_id { get; set; }
+        public string passive_id { get; set; }
 
         /// <summary> : </summary>
         public int activeLevel { get; set; }
@@ -919,7 +958,8 @@ namespace game_config
     public class vehicle : IGameConfig
     {
         /// <summary> : </summary>
-        public int id { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public vehicle_id id { get; set; }
 
         /// <summary> 体型: </summary>
         [JsonConverter(typeof(StringEnumConverter))]
@@ -935,7 +975,7 @@ namespace game_config
         public string DestoryBullet { get; set; }
 
         /// <summary> : </summary>
-        public int[] Weapons { get; set; }
+        public string[] Weapons { get; set; }
 
         /// <summary> : </summary>
         public int MaxWeaponSlot { get; set; }
@@ -951,7 +991,8 @@ namespace game_config
     public class weapon : IGameConfig
     {
         /// <summary> id: </summary>
-        public int id { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public weapon_id id { get; set; }
 
         /// <summary> : </summary>
         public SimpleObj4[] BodySizeUseAndSnipeSpeedFix { get; set; }
@@ -976,70 +1017,66 @@ namespace game_config
     }
 
     [Serializable]
-    public class map_raws : IGameConfig
+    public enum item_id
     {
-        /// <summary> : </summary>
-        public int id { get; set; }
-
-        /// <summary> : </summary>
-        public string info { get; set; }
-
-        /// <summary> : </summary>
-        public Point[][] WalkRawMap { get; set; }
-
-        /// <summary> : </summary>
-        public Point[][] SightRawMap { get; set; }
-
-        /// <summary> : </summary>
-        public Point[][] BulletRawMap { get; set; }
-
-        /// <summary> : </summary>
-        public Point[][] StartPoints { get; set; }
-
-        /// <summary> : </summary>
-        public TelPoint[] TransPoint { get; set; }
+        [Description("金币")] @金币,
+        [Description("芯片_2")] @芯片_2,
+        [Description("战斗经验")] @战斗经验,
+        [Description("芯片_3")] @芯片_3,
+        [Description("芯片_4")] @芯片_4,
+        [Description("芯片")] @芯片,
+        [Description("代金券")] @代金券
     }
 
     [Serializable]
     public enum ItemType
     {
-        [Description("bag")] @bag,
         [Description("money")] @money,
+        [Description("bag")] @bag,
         [Description("battle_exp")] @battle_exp
     }
 
     [Serializable]
     public enum size
     {
-        [Description("tiny")] @tiny,
         [Description("big")] @big,
-        [Description("default")] @default,
+        [Description("medium")] @medium,
         [Description("small")] @small,
-        [Description("medium")] @medium
+        [Description("tiny")] @tiny,
+        [Description("default")] @default
     }
 
     [Serializable]
     public enum interactableType
     {
-        [Description("vehicle")] @vehicle,
         [Description("weapon")] @weapon,
-        [Description("prop")] @prop
+        [Description("prop")] @prop,
+        [Description("vehicle")] @vehicle
     }
 
     [Serializable]
     public enum botOp
     {
         [Description("none")] @none,
-        [Description("op2")] @op2,
-        [Description("op1")] @op1
+        [Description("op1")] @op1,
+        [Description("op2")] @op2
+    }
+
+    [Serializable]
+    public enum bullet_id
+    {
+        [Description("vehicle_boom")] @vehicle_boom,
+        [Description("test_h_1_b_1")] @test_h_1_b_1,
+        [Description("test_r_1_b_1")] @test_r_1_b_1,
+        [Description("test_l_1_b_1")] @test_l_1_b_1
     }
 
     [Serializable]
     public enum raw_shape
     {
-        [Description("round")] @round,
         [Description("rectangle")] @rectangle,
-        [Description("sector")] @sector
+        [Description("sector")] @sector,
+        [Description("round")] @round
     }
 
     [Serializable]
@@ -1059,57 +1096,122 @@ namespace game_config
     [Serializable]
     public enum target_type
     {
-        [Description("all_team")] @all_team,
-        [Description("other_team")] @other_team
+        [Description("other_team")] @other_team,
+        [Description("all_team")] @all_team
     }
 
     [Serializable]
     public enum interactionAct
     {
-        [Description("recycle_cage")] @recycle_cage,
-        [Description("kick_vehicle")] @kick_vehicle,
         [Description("get_in_vehicle")] @get_in_vehicle,
         [Description("pick_up_cage")] @pick_up_cage,
-        [Description("apply")] @apply,
-        [Description("get_info")] @get_info
+        [Description("recycle_cage")] @recycle_cage,
+        [Description("kick_vehicle")] @kick_vehicle,
+        [Description("get_info")] @get_info,
+        [Description("apply")] @apply
+    }
+
+    [Serializable]
+    public enum lock_area_id
+    {
+        [Description("test_l_1_lock")] @test_l_1_lock,
+        [Description("test_h_1_lock")] @test_h_1_lock
+    }
+
+    [Serializable]
+    public enum direction
+    {
+        [Description("South")] @South,
+        [Description("West")] @West,
+        [Description("East")] @East,
+        [Description("North")] @North
+    }
+
+    [Serializable]
+    public enum passive_id
+    {
+        [Description("back_stab_small")] @back_stab_small,
+        [Description("protect_absorb")] @protect_absorb,
+        [Description("defence_boost")] @defence_boost,
+        [Description("trap_atk")] @trap_atk,
+        [Description("max_ammo_boost")] @max_ammo_boost,
+        [Description("recycle_boost")] @recycle_boost,
+        [Description("shield_reg_boost")] @shield_reg_boost,
+        [Description("charge_boost")] @charge_boost,
+        [Description("protect_time_boost")] @protect_time_boost,
+        [Description("ammo_absorb")] @ammo_absorb,
+        [Description("fix_boost")] @fix_boost,
+        [Description("armor_boost")] @armor_boost,
+        [Description("main_atk")] @main_atk,
+        [Description("ticket_add")] @ticket_add,
+        [Description("shield_boost")] @shield_boost,
+        [Description("armor_absorb")] @armor_absorb,
+        [Description("trap_survive")] @trap_survive,
+        [Description("heal_effect_boost")] @heal_effect_boost,
+        [Description("reload_boost")] @reload_boost,
+        [Description("hp_boost")] @hp_boost,
+        [Description("hp_absorb")] @hp_absorb,
+        [Description("speed_boost")] @speed_boost,
+        [Description("back_stab")] @back_stab,
+        [Description("ticket_add_5")] @ticket_add_5,
+        [Description("sweep")] @sweep,
+        [Description("sharded_atk")] @sharded_atk,
+        [Description("tough_max")] @tough_max,
+        [Description("sharded_atk_small")] @sharded_atk_small,
+        [Description("main_atk_small")] @main_atk_small,
+        [Description("shield_absorb")] @shield_absorb,
+        [Description("prop_boost")] @prop_boost
     }
 
     [Serializable]
     public enum passive_type
     {
-        [Description("TrapAbout")] @TrapAbout,
-        [Description("HitWinBuff")] @HitWinBuff,
-        [Description("AbsorbAdd")] @AbsorbAdd,
-        [Description("Regen")] @Regen,
         [Description("Attack")] @Attack,
         [Description("Other")] @Other,
+        [Description("Regen")] @Regen,
+        [Description("AbsorbAdd")] @AbsorbAdd,
         [Description("Survive")] @Survive,
+        [Description("AddItem")] @AddItem,
         [Description("TickAdd")] @TickAdd,
-        [Description("AddItem")] @AddItem
+        [Description("TrapAbout")] @TrapAbout,
+        [Description("HitWinBuff")] @HitWinBuff
     }
 
     [Serializable]
     public enum play_buff_effect_type
     {
-        [Description("Break")] @Break,
         [Description("Tough")] @Tough,
+        [Description("MakeDamageAdd")] @MakeDamageAdd,
         [Description("TakeDamageAdd")] @TakeDamageAdd,
-        [Description("MakeDamageAdd")] @MakeDamageAdd
+        [Description("Break")] @Break
     }
 
     [Serializable]
     public enum stack_mode
     {
         [Description("OverWrite")] @OverWrite,
-        [Description("Stack")] @Stack,
-        [Description("Time")] @Time
+        [Description("Time")] @Time,
+        [Description("Stack")] @Stack
+    }
+
+    [Serializable]
+    public enum prop_id
+    {
+        [Description("ammos")] @ammos,
+        [Description("rocket_boost")] @rocket_boost,
+        [Description("radar")] @radar,
+        [Description("repair")] @repair,
+        [Description("trap")] @trap,
+        [Description("heal")] @heal,
+        [Description("battery")] @battery,
+        [Description("alert")] @alert
     }
 
     [Serializable]
     public enum effect_media_type
     {
-        [Description("summon")] @summon,
         [Description("self")] @self,
+        [Description("summon")] @summon,
         [Description("radar_wave")] @radar_wave,
         [Description("bullet")] @bullet
     }
@@ -1117,84 +1219,27 @@ namespace game_config
     [Serializable]
     public enum bot_use_cond
     {
-        [Description("ArmorBlowPercent")] @ArmorBlowPercent,
-        [Description("ShieldBlowPercent")] @ShieldBlowPercent,
-        [Description("HpBlowPercent")] @HpBlowPercent,
         [Description("OnPatrolRandom")] @OnPatrolRandom,
+        [Description("ShieldBlowPercent")] @ShieldBlowPercent,
         [Description("EnemyOnSight")] @EnemyOnSight,
+        [Description("ArmorBlowPercent")] @ArmorBlowPercent,
+        [Description("HpBlowPercent")] @HpBlowPercent,
         [Description("CantUse")] @CantUse
     }
 
     [Serializable]
     public enum PushType
     {
-        [Description("Center")] @Center,
-        [Description("Vector")] @Vector
-    }
-
-    [Serializable]
-    public enum direction
-    {
-        [Description("East")] @East,
-        [Description("North")] @North,
-        [Description("West")] @West,
-        [Description("South")] @South
-    }
-
-    [Serializable]
-    public enum skill_id
-    {
-        [Description("test_r_3")] @test_r_3,
-        [Description("test_h_3")] @test_h_3,
-        [Description("test_r_1")] @test_r_1,
-        [Description("test_s_1")] @test_s_1,
-        [Description("out_vehicle")] @out_vehicle,
-        [Description("test_h_1_caught")] @test_h_1_caught,
-        [Description("test_l_3")] @test_l_3,
-        [Description("test_h_2")] @test_h_2,
-        [Description("test_cought_skill")] @test_cought_skill,
-        [Description("test_r_2")] @test_r_2,
-        [Description("test_h_1")] @test_h_1,
-        [Description("test_l_1")] @test_l_1,
-        [Description("test_l_2")] @test_l_2
-    }
-
-    [Serializable]
-    public enum bullet_id
-    {
-        [Description("test_l_1_b_1")] @test_l_1_b_1,
-        [Description("rocket_punch")] @rocket_punch,
-        [Description("test_h_1_b_1")] @test_h_1_b_1,
-        [Description("test_r_1_b_1")] @test_r_1_b_1,
-        [Description("vehicle_boom")] @vehicle_boom
-    }
-
-    [Serializable]
-    public enum lock_area_id
-    {
-        [Description("r1")] @r1,
-        [Description("f1")] @f1,
-        [Description("test_h_1_lock")] @test_h_1_lock,
-        [Description("c1")] @c1,
-        [Description("h1")] @h1,
-        [Description("test_l_1_lock")] @test_l_1_lock
+        [Description("Vector")] @Vector,
+        [Description("Center")] @Center
     }
 
     [Serializable]
     public enum radar_wave_id
     {
-        [Description("r1")] @r1,
         [Description("alert_trick_r")] @alert_trick_r,
-        [Description("mine_trick_r")] @mine_trick_r
-    }
-
-    [Serializable]
-    public enum summon_id
-    {
-        [Description("s_a_alert")] @s_a_alert,
-        [Description("s_a_mine")] @s_a_mine,
-        [Description("alert")] @alert,
-        [Description("mine")] @mine
+        [Description("mine_trick_r")] @mine_trick_r,
+        [Description("r1")] @r1
     }
 
     [Serializable]
@@ -1202,8 +1247,59 @@ namespace game_config
     {
         [Description("r1")] @r1,
         [Description("h1")] @h1,
-        [Description("f1")] @f1,
-        [Description("c1")] @c1
+        [Description("c1")] @c1,
+        [Description("f1")] @f1
+    }
+
+    [Serializable]
+    public enum skill_id
+    {
+        [Description("test_r_2")] @test_r_2,
+        [Description("test_h_3")] @test_h_3,
+        [Description("out_vehicle")] @out_vehicle,
+        [Description("test_l_3")] @test_l_3,
+        [Description("test_h_1_caught")] @test_h_1_caught,
+        [Description("test_l_2")] @test_l_2,
+        [Description("test_r_3")] @test_r_3,
+        [Description("test_h_1")] @test_h_1,
+        [Description("test_s_1")] @test_s_1,
+        [Description("test_h_2")] @test_h_2,
+        [Description("test_r_1")] @test_r_1,
+        [Description("test_cought_skill")] @test_cought_skill,
+        [Description("test_l_1")] @test_l_1
+    }
+
+    [Serializable]
+    public enum op_Act
+    {
+        [Description("Op1")] @Op1,
+        [Description("BreakOut")] @BreakOut,
+        [Description("Op2")] @Op2,
+        [Description("CaughtTrick")] @CaughtTrick,
+        [Description("Switch")] @Switch
+    }
+
+    [Serializable]
+    public enum weapon_id
+    {
+        [Description("test_gun")] @test_gun,
+        [Description("test_sword")] @test_sword,
+        [Description("unarmed")] @unarmed
+    }
+
+    [Serializable]
+    public enum summon_id
+    {
+        [Description("s_a_mine")] @s_a_mine,
+        [Description("s_a_alert")] @s_a_alert
+    }
+
+    [Serializable]
+    public enum vehicle_id
+    {
+        [Description("type_c")] @type_c,
+        [Description("type_b")] @type_b,
+        [Description("type_a")] @type_a
     }
 
     public static class ResNames
@@ -1214,23 +1310,24 @@ namespace game_config
             {typeof(battle_npc), "battle_npc_s.json"}, {typeof(body), "body_s.json"}, {typeof(bullet), "bullet_s.json"},
             {typeof(caught_buff), "caught_buff_s.json"}, {typeof(character), "character_s.json"},
             {typeof(interaction), "interaction_s.json"}, {typeof(item), "item_s.json"},
-            {typeof(lock_area), "lock_area_s.json"}, {typeof(other_config), "other_config_s.json"},
-            {typeof(passive), "passive_s.json"}, {typeof(play_buff), "play_buff_s.json"}, {typeof(prop), "prop_s.json"},
+            {typeof(lock_area), "lock_area_s.json"}, {typeof(map_raws), "map_raws_s.json"},
+            {typeof(other_config), "other_config_s.json"}, {typeof(passive), "passive_s.json"},
+            {typeof(play_buff), "play_buff_s.json"}, {typeof(prop), "prop_s.json"},
             {typeof(push_buff), "push_buff_s.json"}, {typeof(radar_wave), "radar_wave_s.json"},
             {typeof(rogue_game_chapter), "rogue_game_chapter_s.json"}, {typeof(self_effect), "self_effect_s.json"},
             {typeof(show_text), "show_text_s.json"}, {typeof(skill), "skill_s.json"},
             {typeof(skill_group), "skill_group_s.json"}, {typeof(snipe), "snipe_s.json"},
             {typeof(standard_level_up), "standard_level_up_s.json"}, {typeof(summon), "summon_s.json"},
             {typeof(talent), "talent_s.json"}, {typeof(trap), "trap_s.json"}, {typeof(vehicle), "vehicle_s.json"},
-            {typeof(weapon), "weapon_s.json"}, {typeof(map_raws), "map_raws_s.json"}
+            {typeof(weapon), "weapon_s.json"}
         };
 
         public static string[] Names { get; } =
         {
             "bad_words", "base_attribute", "battle_npc", "body", "bullet", "caught_buff", "character", "interaction",
-            "item", "lock_area", "other_config", "passive", "play_buff", "prop", "push_buff", "radar_wave",
+            "item", "lock_area", "map_raws", "other_config", "passive", "play_buff", "prop", "push_buff", "radar_wave",
             "rogue_game_chapter", "self_effect", "show_text", "skill", "skill_group", "snipe", "standard_level_up",
-            "summon", "talent", "trap", "vehicle", "weapon", "map_raws"
+            "summon", "talent", "trap", "vehicle", "weapon"
         };
     }
 
@@ -1262,22 +1359,25 @@ namespace game_config
         public ImmutableDictionary<interactionAct, interaction> interactions { get; set; }
 
         /// <summary> 物品 </summary>
-        public ImmutableDictionary<int, item> items { get; set; }
+        public ImmutableDictionary<item_id, item> items { get; set; }
 
         /// <summary> 锁定媒介 </summary>
         public ImmutableDictionary<lock_area_id, lock_area> lock_areas { get; set; }
+
+        /// <summary> 地图 </summary>
+        public ImmutableDictionary<int, map_raws> map_rawss { get; set; }
 
         /// <summary> 其他 </summary>
         public ImmutableDictionary<int, other_config> other_configs { get; set; }
 
         /// <summary> 被动属性 </summary>
-        public ImmutableDictionary<int, passive> passives { get; set; }
+        public ImmutableDictionary<passive_id, passive> passives { get; set; }
 
         /// <summary> 普通buff </summary>
         public ImmutableDictionary<int, play_buff> play_buffs { get; set; }
 
         /// <summary> 道具技能 </summary>
-        public ImmutableDictionary<int, prop> props { get; set; }
+        public ImmutableDictionary<prop_id, prop> props { get; set; }
 
         /// <summary> 推动buff </summary>
         public ImmutableDictionary<string, push_buff> push_buffs { get; set; }
@@ -1316,13 +1416,10 @@ namespace game_config
         public ImmutableDictionary<string, trap> traps { get; set; }
 
         /// <summary> 载具 </summary>
-        public ImmutableDictionary<int, vehicle> vehicles { get; set; }
+        public ImmutableDictionary<vehicle_id, vehicle> vehicles { get; set; }
 
         /// <summary> 武器 </summary>
-        public ImmutableDictionary<int, weapon> weapons { get; set; }
-
-        /// <summary> 地图 </summary>
-        public ImmutableDictionary<int, map_raws> map_rawss { get; set; }
+        public ImmutableDictionary<weapon_id, weapon> weapons { get; set; }
 
         public IDictionary[] all_Immutable_dictionary { get; set; }
 #if NETCOREAPP
@@ -1333,7 +1430,7 @@ namespace game_config
 
             all_Immutable_dictionary = new IDictionary[]
             {
-               bad_wordss,base_attributes,battle_npcs,bodys,bullets,caught_buffs,characters,interactions,items,lock_areas,other_configs,passives,play_buffs,props,push_buffs,radar_waves,rogue_game_chapters,self_effects,show_texts,skills,skill_groups,snipes,standard_level_ups,summons,talents,traps,vehicles,weapons,map_rawss
+               bad_wordss,base_attributes,battle_npcs,bodys,bullets,caught_buffs,characters,interactions,items,lock_areas,map_rawss,other_configs,passives,play_buffs,props,push_buffs,radar_waves,rogue_game_chapters,self_effects,show_texts,skills,skill_groups,snipes,standard_level_ups,summons,talents,traps,vehicles,weapons
             };
         }
 #endif
@@ -1346,9 +1443,9 @@ namespace game_config
             all_Immutable_dictionary = new IDictionary[]
             {
                 bad_wordss, base_attributes, battle_npcs, bodys, bullets, caught_buffs, characters, interactions, items,
-                lock_areas, other_configs, passives, play_buffs, props, push_buffs, radar_waves, rogue_game_chapters,
-                self_effects, show_texts, skills, skill_groups, snipes, standard_level_ups, summons, talents, traps,
-                vehicles, weapons, map_rawss
+                lock_areas, map_rawss, other_configs, passives, play_buffs, props, push_buffs, radar_waves,
+                rogue_game_chapters, self_effects, show_texts, skills, skill_groups, snipes, standard_level_ups,
+                summons, talents, traps, vehicles, weapons
             };
         }
 
@@ -1359,9 +1456,9 @@ namespace game_config
             all_Immutable_dictionary = new IDictionary[]
             {
                 bad_wordss, base_attributes, battle_npcs, bodys, bullets, caught_buffs, characters, interactions, items,
-                lock_areas, other_configs, passives, play_buffs, props, push_buffs, radar_waves, rogue_game_chapters,
-                self_effects, show_texts, skills, skill_groups, snipes, standard_level_ups, summons, talents, traps,
-                vehicles, weapons, map_rawss
+                lock_areas, map_rawss, other_configs, passives, play_buffs, props, push_buffs, radar_waves,
+                rogue_game_chapters, self_effects, show_texts, skills, skill_groups, snipes, standard_level_ups,
+                summons, talents, traps, vehicles, weapons
             };
         }
 
@@ -1373,11 +1470,12 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
  GameConfigTools.GenConfigDict <string,caught_buff> ();characters =
  GameConfigTools.GenConfigDict <int,character> ();interactions =
  GameConfigTools.GenConfigDict <interactionAct,interaction> ();items =
- GameConfigTools.GenConfigDict <int,item> ();lock_areas =
- GameConfigTools.GenConfigDict <lock_area_id,lock_area> ();other_configs =
+ GameConfigTools.GenConfigDict <item_id,item> ();lock_areas =
+ GameConfigTools.GenConfigDict <lock_area_id,lock_area> ();map_rawss =
+ GameConfigTools.GenConfigDict <int,map_raws> ();other_configs =
  GameConfigTools.GenConfigDict <int,other_config> ();passives =
- GameConfigTools.GenConfigDict <int,passive> ();play_buffs = GameConfigTools.GenConfigDict <int,play_buff> ();props =
- GameConfigTools.GenConfigDict <int,prop> ();push_buffs =
+ GameConfigTools.GenConfigDict <passive_id,passive> ();play_buffs =
+ GameConfigTools.GenConfigDict <int,play_buff> ();props = GameConfigTools.GenConfigDict <prop_id,prop> ();push_buffs =
  GameConfigTools.GenConfigDict <string,push_buff> ();radar_waves =
  GameConfigTools.GenConfigDict <radar_wave_id,radar_wave> ();rogue_game_chapters =
  GameConfigTools.GenConfigDict <int,rogue_game_chapter> ();self_effects =
@@ -1388,8 +1486,8 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
  GameConfigTools.GenConfigDict <int,snipe> ();standard_level_ups =
  GameConfigTools.GenConfigDict <int,standard_level_up> ();summons =
  GameConfigTools.GenConfigDict <summon_id,summon> ();talents = GameConfigTools.GenConfigDict <int,talent> ();traps =
- GameConfigTools.GenConfigDict <string,trap> ();vehicles = GameConfigTools.GenConfigDict <int,vehicle> ();weapons =
- GameConfigTools.GenConfigDict <int,weapon> ();map_rawss = GameConfigTools.GenConfigDict <int,map_raws> ();}
+ GameConfigTools.GenConfigDict <string,trap> ();vehicles = GameConfigTools.GenConfigDict <vehicle_id,vehicle> ();weapons
+ = GameConfigTools.GenConfigDict <weapon_id,weapon> ();}
 #endif
         public void LoadAllByJson(string path = "")
         {
@@ -1401,12 +1499,13 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
             caught_buffs = GameConfigTools.GenConfigDictByJsonFile<string, caught_buff>(path);
             characters = GameConfigTools.GenConfigDictByJsonFile<int, character>(path);
             interactions = GameConfigTools.GenConfigDictByJsonFile<interactionAct, interaction>(path);
-            items = GameConfigTools.GenConfigDictByJsonFile<int, item>(path);
+            items = GameConfigTools.GenConfigDictByJsonFile<item_id, item>(path);
             lock_areas = GameConfigTools.GenConfigDictByJsonFile<lock_area_id, lock_area>(path);
+            map_rawss = GameConfigTools.GenConfigDictByJsonFile<int, map_raws>(path);
             other_configs = GameConfigTools.GenConfigDictByJsonFile<int, other_config>(path);
-            passives = GameConfigTools.GenConfigDictByJsonFile<int, passive>(path);
+            passives = GameConfigTools.GenConfigDictByJsonFile<passive_id, passive>(path);
             play_buffs = GameConfigTools.GenConfigDictByJsonFile<int, play_buff>(path);
-            props = GameConfigTools.GenConfigDictByJsonFile<int, prop>(path);
+            props = GameConfigTools.GenConfigDictByJsonFile<prop_id, prop>(path);
             push_buffs = GameConfigTools.GenConfigDictByJsonFile<string, push_buff>(path);
             radar_waves = GameConfigTools.GenConfigDictByJsonFile<radar_wave_id, radar_wave>(path);
             rogue_game_chapters = GameConfigTools.GenConfigDictByJsonFile<int, rogue_game_chapter>(path);
@@ -1419,9 +1518,8 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
             summons = GameConfigTools.GenConfigDictByJsonFile<summon_id, summon>(path);
             talents = GameConfigTools.GenConfigDictByJsonFile<int, talent>(path);
             traps = GameConfigTools.GenConfigDictByJsonFile<string, trap>(path);
-            vehicles = GameConfigTools.GenConfigDictByJsonFile<int, vehicle>(path);
-            weapons = GameConfigTools.GenConfigDictByJsonFile<int, weapon>(path);
-            map_rawss = GameConfigTools.GenConfigDictByJsonFile<int, map_raws>(path);
+            vehicles = GameConfigTools.GenConfigDictByJsonFile<vehicle_id, vehicle>(path);
+            weapons = GameConfigTools.GenConfigDictByJsonFile<weapon_id, weapon>(path);
         }
 
         public void LoadAllByJsonString(Dictionary<string, string> nameToJsonString)
@@ -1437,14 +1535,15 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
             characters = GameConfigTools.GenConfigDictByJsonString<int, character>(nameToJsonString["character"]);
             interactions =
                 GameConfigTools.GenConfigDictByJsonString<interactionAct, interaction>(nameToJsonString["interaction"]);
-            items = GameConfigTools.GenConfigDictByJsonString<int, item>(nameToJsonString["item"]);
+            items = GameConfigTools.GenConfigDictByJsonString<item_id, item>(nameToJsonString["item"]);
             lock_areas =
                 GameConfigTools.GenConfigDictByJsonString<lock_area_id, lock_area>(nameToJsonString["lock_area"]);
+            map_rawss = GameConfigTools.GenConfigDictByJsonString<int, map_raws>(nameToJsonString["map_raws"]);
             other_configs =
                 GameConfigTools.GenConfigDictByJsonString<int, other_config>(nameToJsonString["other_config"]);
-            passives = GameConfigTools.GenConfigDictByJsonString<int, passive>(nameToJsonString["passive"]);
+            passives = GameConfigTools.GenConfigDictByJsonString<passive_id, passive>(nameToJsonString["passive"]);
             play_buffs = GameConfigTools.GenConfigDictByJsonString<int, play_buff>(nameToJsonString["play_buff"]);
-            props = GameConfigTools.GenConfigDictByJsonString<int, prop>(nameToJsonString["prop"]);
+            props = GameConfigTools.GenConfigDictByJsonString<prop_id, prop>(nameToJsonString["prop"]);
             push_buffs = GameConfigTools.GenConfigDictByJsonString<string, push_buff>(nameToJsonString["push_buff"]);
             radar_waves =
                 GameConfigTools.GenConfigDictByJsonString<radar_wave_id, radar_wave>(nameToJsonString["radar_wave"]);
@@ -1464,16 +1563,15 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
             summons = GameConfigTools.GenConfigDictByJsonString<summon_id, summon>(nameToJsonString["summon"]);
             talents = GameConfigTools.GenConfigDictByJsonString<int, talent>(nameToJsonString["talent"]);
             traps = GameConfigTools.GenConfigDictByJsonString<string, trap>(nameToJsonString["trap"]);
-            vehicles = GameConfigTools.GenConfigDictByJsonString<int, vehicle>(nameToJsonString["vehicle"]);
-            weapons = GameConfigTools.GenConfigDictByJsonString<int, weapon>(nameToJsonString["weapon"]);
-            map_rawss = GameConfigTools.GenConfigDictByJsonString<int, map_raws>(nameToJsonString["map_raws"]);
+            vehicles = GameConfigTools.GenConfigDictByJsonString<vehicle_id, vehicle>(nameToJsonString["vehicle"]);
+            weapons = GameConfigTools.GenConfigDictByJsonString<weapon_id, weapon>(nameToJsonString["weapon"]);
         }
     }
 
     [Serializable]
     public class Gain : IGameConfig
     {
-        public int item { get; set; }
+        public string item { get; set; }
         public int num { get; set; }
     }
 
@@ -1520,6 +1618,15 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
     }
 
     [Serializable]
+    public class TelPoint : IGameConfig
+    {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public direction Direction { get; set; }
+
+        public Point[] Teleport { get; set; }
+    }
+
+    [Serializable]
     public class Media : IGameConfig
     {
         [JsonConverter(typeof(StringEnumConverter))]
@@ -1531,7 +1638,7 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
     [Serializable]
     public class Cost : IGameConfig
     {
-        public int item { get; set; }
+        public string item { get; set; }
         public int num { get; set; }
         public int first_use_pay { get; set; }
     }
@@ -1544,14 +1651,5 @@ public  void LoadAllByDll(){bad_wordss = GameConfigTools.GenConfigDict <int,bad_
 
         public float snipe_speed_fix { get; set; }
         public string skill_group { get; set; }
-    }
-
-    [Serializable]
-    public class TelPoint : IGameConfig
-    {
-        [JsonConverter(typeof(StringEnumConverter))]
-        public direction Direction { get; set; }
-
-        public Point[] Teleport { get; set; }
     }
 }

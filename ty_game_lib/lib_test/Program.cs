@@ -22,9 +22,12 @@ namespace lib_test
 #endif
 
 
-            var genPlayerByConfig = CharacterInitData.GenPlayerByConfig(1, 0, new[] {2}, size.small, 1);
-            var characterInitData = CharacterInitData.GenPlayerByConfig(2, 1, new[] {1}, size.small, 1);
-            var characterInitData2 = CharacterInitData.GenPlayerByConfig(3, 1, new[] {1}, size.small, 1);
+            var genPlayerByConfig =
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_gun}, size.small, 1);
+            var characterInitData =
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
+            var characterInitData2 =
+                CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
             var body = characterInitData2.GenCharacterBody(TwoDPoint.Zero());

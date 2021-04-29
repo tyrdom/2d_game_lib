@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
     public class PassiveTrait : ISaleStuff, IPutInCage
     {
-        public PassiveTrait(int passId, uint level, IPassiveTraitEffect passiveTraitEffect)
+        public PassiveTrait(passive_id passId, uint level, IPassiveTraitEffect passiveTraitEffect)
         {
             PassId = passId;
             Level = level;
@@ -14,7 +15,7 @@ namespace game_stuff
         }
 
 
-        public int PassId { get; }
+        public passive_id PassId { get; }
 
         public void AddLevel(uint num)
         {
@@ -68,7 +69,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return PassId;
+            return (int) PassId;
         }
 
         public int GetNum()
@@ -76,7 +77,17 @@ namespace game_stuff
             return 1;
         }
 
-        public static PassiveTrait GenById(int i, uint level)
+        public static PassiveTrait GenById(string i, uint level)
+        {
+            if (i.TryStringToEnum(out passive_id i1))
+            {
+                return GenById(i1, level);
+            }
+
+            throw new Exception($"not such passive id{i}");
+        }
+
+        public static PassiveTrait GenById(passive_id i, uint level)
         {
             return new PassiveTrait(i, level, PassiveEffectStandard.GenById(i));
         }

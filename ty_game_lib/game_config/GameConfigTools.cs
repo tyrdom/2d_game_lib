@@ -80,7 +80,7 @@ namespace game_config
 
         private static string GetNameSpace()
         {
-            var declaringType = MethodBase.GetCurrentMethod()?.DeclaringType;
+            var declaringType = MethodBase.GetCurrentMethod().DeclaringType;
             return declaringType?.Namespace ?? "";
         }
 
@@ -109,7 +109,7 @@ namespace game_config
         {
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(jsonSting);
             var jToken = deserializeObject["content"];
-
+            // Console.Out.WriteLine($"cov {jToken}");
             var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
             if (genConfigDict != null) return genConfigDict;
             throw new Exception("ErrorResource:::" + jsonSting);

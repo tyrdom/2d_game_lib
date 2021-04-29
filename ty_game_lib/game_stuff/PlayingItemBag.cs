@@ -7,9 +7,9 @@ namespace game_stuff
 {
     public class PlayingItemBag
     {
-        public Dictionary<int, int> GameItems { get; }
+        public Dictionary<item_id, int> GameItems { get; }
 
-        public PlayingItemBag(Dictionary<int, int> gameItems)
+        public PlayingItemBag(Dictionary<item_id, int> gameItems)
         {
             GameItems = gameItems;
         }
@@ -73,7 +73,7 @@ namespace game_stuff
             GameItems[gameItemItemId] = (int) min;
         }
 
-        private static uint GetMaxNum(int itemId)
+        private static uint GetMaxNum(item_id itemId)
         {
             if (CommonConfig.Configs.items.TryGetValue(itemId, out var item))
             {
@@ -91,7 +91,6 @@ namespace game_stuff
                 var gameItem = new GameItem(grouping.Key, sum);
                 Gain(gameItem);
             }
-
         }
     }
 
@@ -106,23 +105,25 @@ namespace game_stuff
 
         public static GameItem GenByConfigGain(Gain gain)
         {
-            return new GameItem(gain.item
-                , gain.num);
+            return gain.item.TryStringToEnum(out item_id itemId)
+                ? new GameItem(itemId
+                    , gain.num)
+                : throw new Exception($"not such item id {gain.item}");
         }
 
-        public GameItem(int itemId, int num)
+        public GameItem(item_id itemId, int num)
         {
             ItemId = itemId;
             Num = num;
         }
 
-        public int ItemId { get; }
+        public item_id ItemId { get; }
         public int Num { get; }
 
 
         public int GetId()
         {
-            return ItemId;
+            return (int) ItemId;
         }
 
         public int GetNum()

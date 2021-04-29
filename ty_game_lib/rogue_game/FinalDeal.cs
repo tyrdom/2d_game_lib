@@ -1,21 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
+using game_config;
 using game_stuff;
 
 namespace rogue_game
 {
     public class FinalDeal
     {
-        public Dictionary<int, int> Cost { get; }
-        public Dictionary<int, int> Gain { get; }
+        public IDictionary<item_id, int> Cost { get; }
+        public IDictionary<item_id, int> Gain { get; }
 
         public FinalDeal()
         {
-            Cost = new Dictionary<int, int>();
-            Gain = new Dictionary<int, int>();
+            Cost = new Dictionary<item_id, int>();
+            Gain = new Dictionary<item_id, int>();
         }
 
-        private static void Add(IEnumerable<GameItem> gameItems, IDictionary<int, int> add)
+        private static void Add(IEnumerable<GameItem> gameItems, IDictionary<item_id, int> add)
         {
             {
                 var sumSame = GameItem.SumSame(gameItems);

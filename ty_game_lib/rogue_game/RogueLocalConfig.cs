@@ -19,7 +19,7 @@ namespace rogue_game
             return (int) (CommonConfig.OtherConfig.rogueGameCheckTickTime / CommonConfig.OtherConfig.tick_time);
         }
 
-        public static bool CanEndRest(int itemId)
+        public static bool CanEndRest(item_id itemId)
         {
             if (CommonConfig.Configs.items.TryGetValue(itemId, out var item))
             {

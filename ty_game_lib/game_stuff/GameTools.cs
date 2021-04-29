@@ -8,6 +8,12 @@ namespace game_stuff
 {
     public static class GameTools
     {
+        public static bool TryStringToEnum<T>(this string id, out T eId) where T : struct
+        {
+            eId = default;
+            return Enum.IsDefined(typeof(T), id) && Enum.TryParse(id, out eId);
+        }
+
         public static base_attribute GenBaseAttrById(int baseAttrId)
         {
             if (!CommonConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
@@ -19,7 +25,8 @@ namespace game_stuff
             ,
             float RecycleMulti) GenOtherBaseStatusByAttr(base_attribute baseAttribute)
         {
-            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed.ValuePerSecToValuePerTick(), baseAttribute.MoveMinSpeed.ValuePerSecToValuePerTick(),
+            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed.ValuePerSecToValuePerTick(),
+                baseAttribute.MoveMinSpeed.ValuePerSecToValuePerTick(),
                 baseAttribute.MoveAddSpeed.ValuePerSecToValuePerTick(),
                 CommonConfig.OtherConfig.standard_max_prop_stack, baseAttribute.RecycleMulti);
         }
@@ -88,7 +95,7 @@ namespace game_stuff
                 return StuffLocalConfig.MaxUpSpeed;
             }
 
-            var maxHeight =  CommonConfig.OtherConfig.max_hegiht - height.Value;
+            var maxHeight = CommonConfig.OtherConfig.max_hegiht - height.Value;
             var f = 2f * CommonConfig.OtherConfig.g_acc * maxHeight;
             return MathTools.Sqrt(f);
         }

@@ -17,7 +17,7 @@ namespace game_stuff
 
         private int? WeaponMaxNum { get; }
 
-        public static CharacterInitData GenNpcByConfig(int gid, int teamId, int[] weapons, size size,
+        public static CharacterInitData GenNpcByConfig(int gid, int teamId, string[] weapons, size size,
             int baseAttrId, int battleNpcMaxWeaponSlot)
         {
             var dictionary = new Dictionary<int, Weapon>();
@@ -31,7 +31,7 @@ namespace game_stuff
             return new CharacterInitData(gid, teamId, dictionary, bz, baseAttrId, battleNpcMaxWeaponSlot);
         }
 
-        public static CharacterInitData GenPlayerByConfig(int gid, int teamId, int[] weapons, size size,
+        public static CharacterInitData GenPlayerByConfig(int gid, int teamId, weapon_id[] weapons, size size,
             int baseAttrId)
         {
             var dictionary = new Dictionary<int, Weapon>();
@@ -58,7 +58,7 @@ namespace game_stuff
 
 
         public CharacterBody GenCharacterBody(TwoDPoint startPos,
-            Dictionary<int, PassiveTrait>? passiveTraits = null, PlayingItemBag? playingItemBag = null)
+            Dictionary<passive_id, PassiveTrait>? passiveTraits = null, PlayingItemBag? playingItemBag = null)
         {
             var characterStatus = new CharacterStatus(Gid, BaseAttrId, playingItemBag ??
                                                                        PlayingItemBag.InitByConfig(), passiveTraits,

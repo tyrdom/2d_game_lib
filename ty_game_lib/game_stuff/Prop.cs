@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -10,7 +9,18 @@ namespace game_stuff
 {
     public class Prop : ICharAct, ISaleStuff, ICanPickDrop, ICanPutInMapInteractable, IPutInCage
     {
-        public static Prop GenById(int id)
+        public static Prop GenById(string id)
+        {
+            if (id.TryStringToEnum(out prop_id prop))
+
+            {
+                return GenById(prop);
+            }
+
+            throw new KeyNotFoundException($"not such id {id}");
+        }
+
+        public static Prop GenById(prop_id id)
         {
             if (CommonConfig.Configs.props.TryGetValue(id, out var prop)
             )
@@ -43,7 +53,7 @@ namespace game_stuff
                     firstOrDefault.y.ValuePerSecToValuePerTick());
         }
 
-        public int PId { get; }
+        public prop_id PId { get; }
         public int PropPointCost { get; }
         public uint TotalTick { get; }
         private float MoveMulti { get; }
@@ -147,7 +157,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return PId;
+            return (int) PId;
         }
 
         public int GetNum()
