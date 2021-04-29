@@ -202,7 +202,7 @@ namespace rogue_game
 
             var playGroundGoTickResult = NowPlayMap.PlayGroundGoATick(opDic);
             BotTeam.AllBotsGoATick(playGroundGoTickResult.PlayerSee);
-            var characterBeHit = playGroundGoTickResult.CharacterBeHit;
+            var characterBeHit = playGroundGoTickResult.CharacterGidBeHit;
 
             if (characterBeHit.Any())
             {

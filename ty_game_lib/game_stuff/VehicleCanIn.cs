@@ -71,7 +71,7 @@ namespace game_stuff
         {
             return new Interaction(interaction1.BaseTough,
                 CommonConfig.GetTickByTime(interaction1.TotalTime),
-                vehicle, twoDPoint, interact);
+                vehicle, twoDPoint, interact, interactionAct.get_in_vehicle);
         }
 
         public void WriteQuadRecord(Quad quad)

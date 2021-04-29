@@ -27,7 +27,7 @@ namespace game_stuff
         {
             return new Interaction(interaction.BaseTough,
                 CommonConfig.GetTickByTime(interaction.TotalTime),
-                canPutInMapInteractable, null, mapInteract);
+                canPutInMapInteractable, null, mapInteract, interactionAct.pick_up_cage);
         }
 
         public CageCanPick(IPutInCage canPutInMapInteractable, TwoDPoint pos)

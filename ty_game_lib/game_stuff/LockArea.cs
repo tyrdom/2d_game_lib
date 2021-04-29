@@ -112,18 +112,18 @@ namespace game_stuff
         }
     }
 
-    public class LockHit : IRelationMsg
+    public class LockHit : IHitMsg
     {
         public LockHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, IHitMedia lockArea1)
         {
             CasterOrOwner = casterOrOwner;
             WhoTake = whoTake;
-            LockArea = lockArea1;
+            HitMedia = lockArea1;
         }
 
         public CharacterStatus CasterOrOwner { get; }
         public ICanBeHit WhoTake { get; }
 
-        private IHitMedia LockArea { get; }
+        public IHitMedia HitMedia { get; }
     }
 }

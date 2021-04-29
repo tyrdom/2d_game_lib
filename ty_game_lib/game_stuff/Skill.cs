@@ -18,6 +18,13 @@ namespace game_stuff
     {
         private LockArea? LockArea { get; }
         public uint NowOnTick { get; set; }
+
+        public int GetIntId()
+        {
+            return (int) SkillId;
+        }
+
+        public skill_id SkillId { get; }
         public int NowTough { get; set; }
 
         public int SnipeStepNeed { get; }
@@ -53,7 +60,8 @@ namespace game_stuff
         private Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
-            LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove)
+            LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove,
+            skill_id skillId)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -84,6 +92,7 @@ namespace game_stuff
             SnipeStepNeed = snipeStepNeed;
             AmmoCost = ammoCost;
             CanInputMove = canInputMove;
+            SkillId = skillId;
         }
 
 
@@ -134,7 +143,7 @@ namespace game_stuff
                 CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
                 skillBaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
                 CommonConfig.GetTickByTime(skill.BreakSnipeTime),
-                skill.SnipeStepNeed - 1, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove));
+                skill.SnipeStepNeed - 1, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove), skill.id);
         }
 
 
@@ -151,10 +160,14 @@ namespace game_stuff
         public int? ComboInputRes() //可以连击，返回 下一个动作
         {
             // 返回连击id
-            var weaponSkillStatus = NextCombo;
             return NowOnTick >= ComboInputStartTick && NowOnTick < TotalTick
-                ? weaponSkillStatus
+                ? NextCombo
                 : (int?) null;
+        }
+
+        public action_type GetTypeEnum()
+        {
+            return action_type.skill;
         }
 
         public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract

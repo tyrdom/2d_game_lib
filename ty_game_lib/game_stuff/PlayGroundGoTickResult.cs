@@ -1,27 +1,40 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using collision_and_rigid;
 
 namespace game_stuff
 {
     public readonly struct PlayGroundGoTickResult
     {
-        public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> characterBeHit,
-            ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapBeHit,
+        public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> characterGidBeHit,
+            ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapGidTidBeHit,
             ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> playerSee,
             ImmutableDictionary<int, TelePortMsg> playerTeleportTo)
         {
-            CharacterBeHit = characterBeHit;
-            TrapBeHit = trapBeHit;
+            CharacterGidBeHit = characterGidBeHit;
+            TrapGidTidBeHit = trapGidTidBeHit;
             PlayerSee = playerSee;
             PlayerTeleportTo = playerTeleportTo;
+            var hitSomeThing = characterGidBeHit.Values.SelectMany(x => x);
+            var relationMsgS = trapGidTidBeHit.Values.SelectMany(x => x.Values.SelectMany(x => x));
+            var characterHitSomeThing = hitSomeThing.Union(relationMsgS);
+            var immutableDictionary = characterHitSomeThing.OfType<IHitMsg>().GroupBy(x => x.CasterOrOwner.GetId())
+                .ToImmutableDictionary(x => x.Key, x => x.ToImmutableHashSet());
+            CharacterHitSomeThing = immutableDictionary;
         }
 
         public ImmutableDictionary<int, TelePortMsg> PlayerTeleportTo { get; }
-        public ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> CharacterBeHit { get; }
-        public ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> TrapBeHit { get; }
+        public ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> CharacterGidBeHit { get; }
+
+        public ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> TrapGidTidBeHit
+        {
+            get;
+        }
+
         public ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> PlayerSee { get; }
 
+        public ImmutableDictionary<int, ImmutableHashSet<IHitMsg>> CharacterHitSomeThing { get; }
 
         public static PlayGroundGoTickResult Sum(IEnumerable<PlayGroundGoTickResult> playGroundGoTickResults)
         {
@@ -33,8 +46,8 @@ namespace game_stuff
                 playGroundGoTickResults.Aggregate((hit, trap, see, ints), (s, x) =>
                 {
                     var (dictionary, dictionary1, see1, ins) = s;
-                    var keyValuePairs = dictionary1.Union(x.TrapBeHit);
-                    var valuePairs = dictionary.Union(x.CharacterBeHit);
+                    var keyValuePairs = dictionary1.Union(x.TrapGidTidBeHit);
+                    var valuePairs = dictionary.Union(x.CharacterGidBeHit);
                     var enumerable = see1.Union(x.PlayerSee);
                     var union = ins.Union(x.PlayerTeleportTo);
                     return ((Dictionary<int, ImmutableHashSet<IRelationMsg>> hit,
@@ -53,8 +66,8 @@ namespace game_stuff
             out ImmutableDictionary<int, TelePortMsg> playerTeleportTo)
         {
             playerSee = PlayerSee;
-            trapBeHit = TrapBeHit;
-            playerBeHit = CharacterBeHit;
+            trapBeHit = TrapGidTidBeHit;
+            playerBeHit = CharacterGidBeHit;
             playerTeleportTo = PlayerTeleportTo;
         }
     }

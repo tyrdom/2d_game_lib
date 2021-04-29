@@ -14,6 +14,7 @@ namespace game_stuff
             return Enum.IsDefined(typeof(T), id) && Enum.TryParse(id, out eId);
         }
 
+      
         public static base_attribute GenBaseAttrById(int baseAttrId)
         {
             if (!CommonConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))

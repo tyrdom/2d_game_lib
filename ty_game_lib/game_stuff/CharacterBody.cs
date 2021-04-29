@@ -168,15 +168,21 @@ namespace game_stuff
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             var isStun = CharacterStatus.StunBuff != null;
-            var skillAct = (int?) CharacterStatus.NowCastAct?.NowOnTick ?? -1;
+            var characterStatusNowCastAct = CharacterStatus.NowCastAct;
+            var skillAct = (int?) characterStatusNowCastAct?.NowOnTick ?? -1;
+            var a = characterStatusNowCastAct == null
+                ? ((action_type, int, uint NowOnTick)?) null
+                : (characterStatusNowCastAct.GetTypeEnum(), characterStatusNowCastAct.GetIntId(),
+                    characterStatusNowCastAct.NowOnTick);
+
             var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
             var sightStandardScope = CharacterStatus.GetNowScope() ?? Sight.StandardScope;
             return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
                 CharacterStatus.IsPause,
                 skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome
-                , sightStandardScope.Theta, CharacterStatus.TickSnipeActionLaunch,CharacterStatus.SilentChange
-            );
+                , sightStandardScope.Theta, CharacterStatus.TickSnipeActionLaunch, CharacterStatus.SilentChange
+                , a);
         }
 
         public CharInitMsg GenInitMsg()

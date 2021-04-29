@@ -126,17 +126,17 @@ namespace game_stuff
         }
     }
 
-    public class RadarHit : IRelationMsg
+    public class RadarHit : IHitMsg
     {
-        public RadarHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, RadarWave radarWave)
+        public RadarHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, IHitMedia hitMedia)
         {
             WhoTake = whoTake;
             CasterOrOwner = casterOrOwner;
-            RadarWave = radarWave;
+            HitMedia = hitMedia;
         }
 
         public CharacterStatus CasterOrOwner { get; }
         public ICanBeHit WhoTake { get; }
-        public RadarWave RadarWave { get; }
+        public IHitMedia HitMedia { get; }
     }
 }

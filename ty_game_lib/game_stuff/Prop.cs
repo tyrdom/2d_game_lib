@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Prop : ICharAct, ISaleStuff, ICanPickDrop, ICanPutInMapInteractable, IPutInCage
+    public class Prop : ICharAct, ISaleStuff, ICanPickDrop, IPutInCage
     {
         public static Prop GenById(string id)
         {
@@ -95,6 +95,11 @@ namespace game_stuff
             return (antiClockwiseTurn, bullet, b, null, MapInteract.PickCall);
         }
 
+        public int GetIntId()
+        {
+            return this.GetId();
+        }
+
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }
 
@@ -106,6 +111,11 @@ namespace game_stuff
         public int? ComboInputRes()
         {
             return null;
+        }
+
+        public action_type GetTypeEnum()
+        {
+            return action_type.prop;
         }
 
         public bool Launch(int nowStack)

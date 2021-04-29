@@ -8,13 +8,17 @@ namespace game_stuff
         public ICanBeHit WhoTake { get; }
     }
 
+    public interface IHitMsg : IRelationMsg
+    {
+        public IHitMedia HitMedia { get; }
+    }
+
     public interface IDamageMsg : IRelationMsg
     {
-      
         DmgShow DmgShow { get; }
     }
 
-    public readonly struct BulletHit : IDamageMsg
+    public readonly struct BulletHit : IDamageMsg, IHitMsg
     {
         public BulletHit(ICanBeHit whoTake, DmgShow dmgShow, CharacterStatus casterOrOwner, IHitMedia hitMedia)
         {
@@ -22,15 +26,13 @@ namespace game_stuff
             DmgShow = dmgShow;
             CasterOrOwner = casterOrOwner;
             HitMedia = hitMedia;
-          
         }
 
-     
+
         public DmgShow DmgShow { get; }
 
         public CharacterStatus CasterOrOwner { get; }
         public ICanBeHit WhoTake { get; }
-
         public IHitMedia HitMedia { get; }
     }
 }

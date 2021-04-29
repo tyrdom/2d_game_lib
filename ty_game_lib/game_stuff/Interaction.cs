@@ -5,14 +5,16 @@ namespace game_stuff
 {
     public class Interaction : ICharAct
     {
-        public Interaction(int nowTough, uint totalTick, ICanPutInMapInteractable inMapInteractable, TwoDPoint? interactionPos,
-            MapInteract mapInteract)
+        public Interaction(int nowTough, uint totalTick, ICanPutInMapInteractable inMapInteractable,
+            TwoDPoint? interactionPos,
+            MapInteract mapInteract, interactionAct id)
         {
             NowTough = nowTough;
             TotalTick = totalTick;
             InMapInteractable = inMapInteractable;
             InteractionPos = interactionPos;
             Interact = mapInteract;
+            IId = id;
             NowOnTick = 0;
         }
 
@@ -28,8 +30,14 @@ namespace game_stuff
             return (twd, null, b, inCage, Interact);
         }
 
-        private MapInteract Interact { get;  }
+        public int GetIntId()
+        {
+            return (int) IId;
+        }
 
+        private MapInteract Interact { get; }
+
+        public interactionAct IId { get; }
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }
         public uint TotalTick { get; }
@@ -44,6 +52,11 @@ namespace game_stuff
         public int? ComboInputRes()
         {
             return null;
+        }
+
+        public action_type GetTypeEnum()
+        {
+            return action_type.interaction;
         }
 
         public void Launch()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -22,12 +23,14 @@ namespace game_stuff
         public TwoDVector? IsBeHit { get; }
         public bool IsHitSome { get; }
 
+        public (action_type, int, uint NowOnTick)? SkillActing { get; }
         public bool SilentChangeWeapon { get; }
 
         public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
             SkillAction? skillLaunch,
             bool antiBuff, float speed, float sightR, bool isPause, int skillOnAct, TwoDVector? isBeHit,
-            bool isHitSome, float sightRad, SnipeAction? snipeActionLaunch, bool silentChangeWeapon)
+            bool isHitSome, float sightRad, SnipeAction? snipeActionLaunch, bool silentChangeWeapon,
+            (action_type, int, uint NowOnTick)? skillActing)
         {
             Gid = gid;
             Pos = pos;
@@ -44,6 +47,7 @@ namespace game_stuff
             SightRad = sightRad;
             SnipeActionLaunch = snipeActionLaunch;
             SilentChangeWeapon = silentChangeWeapon;
+            SkillActing = skillActing;
         }
 
         public override string ToString()
