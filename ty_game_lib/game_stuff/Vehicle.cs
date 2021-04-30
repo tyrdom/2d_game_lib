@@ -34,7 +34,7 @@ namespace game_stuff
         private static Vehicle GenByConfig(vehicle vehicle)
         {
             var bodySize = vehicle.BodyId;
-            var tickByTime = CommonConfig.GetTickByTime(vehicle.DestoryDelayTime);
+            var tickByTime = vehicle.DestoryDelayTime;
 
             var genByBulletId = Bullet.GenById(vehicle.DestoryBullet);
             var genSkillById = Skill.GenSkillById(vehicle.OutActSkill);
@@ -77,7 +77,7 @@ namespace game_stuff
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
             Size = size;
-            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed.ValuePerSecToValuePerTick();
+            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
             StandardScope = standardScope;

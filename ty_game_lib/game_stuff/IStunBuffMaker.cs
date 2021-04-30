@@ -31,11 +31,11 @@ namespace game_stuff
             if (pushBuff.UpForce > 0)
             {
                 return new PushAirStunBuffMaker(pushBuff.PushForce, pushType, pushBuff.UpForce, pushAboutVector,
-                    CommonConfig.GetTickByTime(pushBuff.LastTime));
+                    pushBuff.LastTime);
             }
 
             return new PushEarthStunBuffMaker(pushBuff.PushForce, pushType, pushAboutVector,
-                CommonConfig.GetTickByTime(pushBuff.LastTime));
+                pushBuff.LastTime);
         }
 
         private static IStunBuffMaker GenBuffByConfig(caught_buff caughtBuff)
@@ -48,7 +48,7 @@ namespace game_stuff
                         // Console.Out.WriteLine($"time is {CommonConfig.GetTickByTime(x.key_time)}");
 #endif
 
-                        return CommonConfig.GetTickByTime(x.key_time);
+                        return x.key_time;
                     },
                     x => GameTools.GenVectorByConfig(x.key_point))
                 .Select(pair => (pair.Key, pair.Value))
@@ -63,7 +63,7 @@ namespace game_stuff
             var nk = key;
             var nowVector = value;
             if (twoDVectors.Count <= 1)
-                return new CatchStunBuffMaker(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
+                return new CatchStunBuffMaker(vectors.ToArray(), caughtBuff.LastTime,
                     Skill.GenSkillById(caughtBuff.TrickSkill));
             for (var index = 1; index < twoDVectors.Count; index++)
             {
@@ -79,7 +79,7 @@ namespace game_stuff
                 }
             }
 
-            return new CatchStunBuffMaker(vectors.ToArray(), CommonConfig.GetTickByTime(caughtBuff.LastTime),
+            return new CatchStunBuffMaker(vectors.ToArray(), caughtBuff.LastTime,
                 Skill.GenSkillById(caughtBuff.TrickSkill));
         }
 

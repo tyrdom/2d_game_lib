@@ -56,7 +56,7 @@ namespace lib_test
                 }
 
                 var characterBodies = playerSee[1].OfType<CharacterBody>();
-                var firstOrDefault = characterBodies.FirstOrDefault();
+                var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
                 var genTickMsg = (CharTickMsg) firstOrDefault.GenTickMsg();
                 var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
@@ -66,7 +66,9 @@ namespace lib_test
                     Console.Out.WriteLine($"map change to {genByConfig.NowPlayMap.PlayGround.MgId}");
                 }
 
-                Console.Out.WriteLine($"$ ~~~~~{twoDPoint} {genTickMsg.Gid} skill launch :{genTickMsg.SkillLaunch}");
+                if (genTickMsg.SkillActing != null)
+                    Console.Out.WriteLine(
+                        $"$ ~~~~~{twoDPoint} {genTickMsg.Gid} act launch :{genTickMsg.SkillActing.Value.Item1} , {(skill_id) genTickMsg.SkillActing.Value.Item2}");
 #endif
             }
         }
@@ -74,7 +76,6 @@ namespace lib_test
         private static string GetStringByFile(string s)
         {
             var directorySeparatorChar = Path.DirectorySeparatorChar;
-            var osVersionPlatform = Environment.OSVersion.Platform;
             var currentDirectory = Environment.CurrentDirectory;
             for (var i = 0; i < 4; i++)
             {

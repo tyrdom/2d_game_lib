@@ -136,15 +136,15 @@ namespace game_stuff
 
             var configsOtherConfig = CommonConfig.OtherConfig;
             MaxUpSpeed = MathTools.Sqrt(2f * CommonConfig.OtherConfig.g_acc * CommonConfig.OtherConfig.max_hegiht);
-            HitWallTickParam = CommonConfig.GetTickByTime(configsOtherConfig.hit_wall_add_time_by_speed_param);
-            HitWallCatchTickParam = CommonConfig.GetTickByTime(configsOtherConfig.hit_wall_catch_time_param);
+            HitWallTickParam = configsOtherConfig.hit_wall_add_time_by_speed_param;
+            HitWallCatchTickParam = configsOtherConfig.hit_wall_catch_time_param;
             StandardSightVector =
                 new TwoDVector(configsOtherConfig.sight_length, configsOtherConfig.sight_width);
             CommonBuffMaker =
                 StunBuffStandard.GenBuffByConfig(
                     CommonConfig.Configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
-            MaxCallActTwoTick = CommonConfig.GetTickByTime(configsOtherConfig.interaction_act2_call_time);
-            ProtectTick = CommonConfig.GetIntTickByTime(configsOtherConfig.protect_time);
+            MaxCallActTwoTick = configsOtherConfig.interaction_act2_call_time;
+            ProtectTick = (int)configsOtherConfig.protect_time;
         }
 
 #if NETCOREAPP

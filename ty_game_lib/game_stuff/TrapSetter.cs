@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -37,10 +36,10 @@ namespace game_stuff
             CanBeSee = trap.CanBeSee;
             FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
             BodySize = trap.BodyId;
-            CallTrapTick = CommonConfig.GetTickByTime(trap.CallTrapRoundTime);
+            CallTrapTick = (trap.CallTrapRoundTime);
             TrapMedia = StuffLocalConfig.GenHitMedia(trap.TrapMedia);
             BaseAttrId = trap.AttrId;
-            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : CommonConfig.GetTickByTime(trap.MaxLifeTime);
+            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : (trap.MaxLifeTime);
 
             var firstOrDefault = trap.LauchMedia.FirstOrDefault();
             if (firstOrDefault == null)
@@ -54,7 +53,7 @@ namespace game_stuff
             var genHitMedia = StuffLocalConfig.GenHitMedia(firstOrDefault);
             LaunchMedia = genHitMedia;
             TrickStack = (int?) trap.TrickStack;
-            TrickDelayTick = CommonConfig.GetTickByTime(trap.TrickDelayTime);
+            TrickDelayTick = trap.TrickDelayTime;
         }
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)

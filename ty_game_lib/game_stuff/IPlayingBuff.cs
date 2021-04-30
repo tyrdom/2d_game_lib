@@ -59,7 +59,7 @@ namespace game_stuff
         public static IPlayingBuff GenById(int id)
         {
             var playBuff = GetBuffConfig(id);
-            var intTickByTime = CommonConfig.GetIntTickByTime(playBuff.LastTime);
+            var intTickByTime = (int)(playBuff.LastTime);
             var playBuffUseStack = playBuff.UseStack;
             return playBuff.EffectType switch
             {

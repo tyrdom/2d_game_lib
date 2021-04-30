@@ -71,9 +71,9 @@ namespace game_bot
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
                 .Select(x => (x.weight, CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
-                CommonConfig.GetIntTickByTime(battleNpc.DoNotMinMaxTime.item2),
-                CommonConfig.GetIntTickByTime(battleNpc.DoNotMinMaxTime.item1),
-                CommonConfig.GetIntTickByTime(battleNpc.ActShowDelayTime));
+                (int)(battleNpc.DoNotMinMaxTime.item2),
+                (int)(battleNpc.DoNotMinMaxTime.item1),
+                (int)(battleNpc.ActShowDelayTime));
 
             return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleNpc.MaxCombo);
         }

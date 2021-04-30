@@ -207,7 +207,7 @@ namespace game_stuff
                     var kill = HitOne(targetCharacterBody.CharacterStatus);
 
 #if DEBUG
-                    Console.Out.WriteLine($"bullet hit::{isHit}");
+                    Console.Out.WriteLine($"bullet hit::{kill.HasValue}");
 #endif
                     return Caster != null && kill.HasValue
                         ? new BulletHit(targetCharacterBody, kill.Value,

@@ -125,11 +125,11 @@ namespace game_stuff
         {
             var twoDVectors = skill.Moves.Select(GameTools.GenVectorByConfig).ToArray();
 
-            var dictionary = skill.LaunchTimeToBullet.ToDictionary(pair => CommonConfig.GetTickByTime(pair.Key),
+            var dictionary = skill.LaunchTimeToBullet.ToDictionary(pair => pair.Key,
                 pair =>
                 {
                     var pairValue = pair.Value;
-                    var genByConfig = Bullet.GenById(pairValue, CommonConfig.GetTickByTime(pair.Key));
+                    var genByConfig = Bullet.GenById(pairValue, pair.Key);
                     return genByConfig;
                 });
 
@@ -139,11 +139,11 @@ namespace game_stuff
             var skillBaseTough = skill.BaseTough == 0
                 ? (int) dictionary.Keys.Min()
                 : skill.BaseTough;
-            return new Skill(dictionary, twoDVectors, CommonConfig.GetTickByTime(skill.MoveStartTime),
-                CommonConfig.GetTickByTime(skill.SkillMustTime), CommonConfig.GetTickByTime(skill.SkillMaxTime),
-                skillBaseTough, CommonConfig.GetTickByTime(skill.ComboInputStartTime), skill.NextCombo, byConfig,
-                CommonConfig.GetTickByTime(skill.BreakSnipeTime),
-                skill.SnipeStepNeed - 1, skill.AmmoCost, CommonConfig.GetIntTickByTime(skill.CanInputMove), skill.id);
+            return new Skill(dictionary, twoDVectors, skill.MoveStartTime,
+                skill.SkillMustTime, skill.SkillMaxTime,
+                skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
+                skill.BreakSnipeTime,
+                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id);
         }
 
 

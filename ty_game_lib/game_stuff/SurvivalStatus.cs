@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
 using game_config;
@@ -233,9 +230,9 @@ namespace game_stuff
             var baseAttributeMaxArmor = (uint) (baseAttribute.MaxArmor * multi);
             var baseAttributeArmorDefence = baseAttribute.ArmorDefence;
             var baseAttributeMaxShield = (uint) (baseAttribute.MaxShield * multi);
-            var baseAttributeShieldRecover = baseAttribute.ShieldRecover.ValuePerSecToValuePerTick();
+            var baseAttributeShieldRecover = (uint) Math.Round(baseAttribute.ShieldRecover);
             var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
-            var baseAttributeShieldDelayTime = CommonConfig.GetTickByTime(baseAttribute.ShieldDelayTime);
+            var baseAttributeShieldDelayTime = baseAttribute.ShieldDelayTime;
 
             return new SurvivalStatus(baseAttributeMaxHp, baseAttributeMaxHp, baseAttributeMaxArmor,
                 baseAttributeMaxArmor, baseAttributeMaxShield, baseAttributeMaxShield,

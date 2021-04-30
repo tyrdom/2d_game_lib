@@ -33,18 +33,18 @@ namespace game_stuff
 
         private Prop(prop prop)
         {
-            var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => CommonConfig.GetTickByTime(p.Key),
+            var dictionary = prop.LaunchTimeToEffectM.ToDictionary(p => p.Key,
                 p => StuffLocalConfig.GenMedia(p.Value));
             PropBullets = dictionary.ToImmutableDictionary();
             RecyclePropStack = CommonConfig.OtherConfig.standard_recycle_prop_stack;
             PropPointCost = prop.PropPointCost;
             MoveMulti = prop.MoveSpeedMulti;
             PId = prop.id;
-            TotalTick = CommonConfig.GetTickByTime(prop.PropMustTime);
+            TotalTick = prop.PropMustTime;
             LockAim = prop.LockAim;
             BotUseCond = prop.BotUseCondType;
             CondParam = prop.BotUseCondParam.FirstOrDefault();
-            var tickByTime = CommonConfig.GetTickByTime(prop.MoveAddStartTime);
+            var tickByTime = prop.MoveAddStartTime;
             StartAddSpeedTick = tickByTime == 0 ? (uint?) null : tickByTime;
             var firstOrDefault = prop.MoveAdds.FirstOrDefault();
             AddSpeed = firstOrDefault == null

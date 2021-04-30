@@ -70,7 +70,7 @@ namespace game_stuff
             MapInteract interact, TwoDPoint twoDPoint)
         {
             return new Interaction(interaction1.BaseTough,
-                CommonConfig.GetTickByTime(interaction1.TotalTime),
+                interaction1.TotalTime,
                 vehicle, twoDPoint, interact, interactionAct.get_in_vehicle);
         }
 

@@ -14,7 +14,7 @@ namespace game_stuff
             return Enum.IsDefined(typeof(T), id) && Enum.TryParse(id, out eId);
         }
 
-      
+
         public static base_attribute GenBaseAttrById(int baseAttrId)
         {
             if (!CommonConfig.Configs.base_attributes.TryGetValue(baseAttrId, out var baseAttribute))
@@ -26,9 +26,9 @@ namespace game_stuff
             ,
             float RecycleMulti) GenOtherBaseStatusByAttr(base_attribute baseAttribute)
         {
-            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed.ValuePerSecToValuePerTick(),
-                baseAttribute.MoveMinSpeed.ValuePerSecToValuePerTick(),
-                baseAttribute.MoveAddSpeed.ValuePerSecToValuePerTick(),
+            return (baseAttribute.MaxAmmo, baseAttribute.MoveMaxSpeed,
+                baseAttribute.MoveMinSpeed,
+                baseAttribute.MoveAddSpeed,
                 CommonConfig.OtherConfig.standard_max_prop_stack, baseAttribute.RecycleMulti);
         }
 
@@ -75,6 +75,8 @@ namespace game_stuff
                     rotate),
                 raw_shape.sector => new Sector(bulletShapeParams[0], bulletShapeParams[1], twoDPoint, rotate),
                 raw_shape.round => new Round(twoDPoint.ToPt(), bulletShapeParams[0]),
+                raw_shape.line => new TwoDVectorLine(new TwoDPoint(0, 0).Move(twoDPoint),
+                    new TwoDPoint(bulletShapeParams[0], bulletShapeParams[1]).Move(twoDPoint)),
                 _ => throw new ArgumentOutOfRangeException()
             };
             return

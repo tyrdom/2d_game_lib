@@ -195,7 +195,7 @@ namespace game_stuff
             Traps = new Queue<Trap>();
 
             CharacterBody = null!;
-            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed.ValuePerSecToValuePerTick();
+            MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
             BuffTrick = new Dictionary<TrickCond, HashSet<IPlayingBuff>>();
             GId = gId;
             PauseTick = 0;
@@ -209,8 +209,8 @@ namespace game_stuff
             PlayingBuffs = new Dictionary<int, IPlayingBuff>();
 
             NowProtectTick = 0;
-            AddMoveSpeed = genBaseAttrById.MoveAddSpeed.ValuePerSecToValuePerTick();
-            MinMoveSpeed = genBaseAttrById.MoveMinSpeed.ValuePerSecToValuePerTick();
+            AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
+            MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             MaxProtectValue = CommonConfig.OtherConfig.trick_protect_value;
             PassiveTraits = passiveTraits ?? new Dictionary<passive_id, PassiveTrait>();
 
