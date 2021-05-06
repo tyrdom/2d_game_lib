@@ -16,7 +16,7 @@ namespace game_stuff
 
 
         public float BotRanges { get; }
-
+        public float KeepDistance { get; }
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
 
         public float[] ZoomStepMulti { get; }
@@ -29,13 +29,14 @@ namespace game_stuff
             ImmutableDictionary<SnipeAction, Snipe> snipes,
             weapon_id wId,
             float[] zoomStepMulti,
-            Scope[] zoomStepScopes)
+            Scope[] zoomStepScopes, float keepDistance)
         {
             SkillGroups = skillGroups;
             BotRanges = botRanges;
             Snipes = snipes;
             WId = wId;
             ZoomStepScopes = zoomStepScopes;
+            KeepDistance = keepDistance;
             ZoomStepMulti = zoomStepMulti;
             InWhichMapInteractive = null;
         }
@@ -187,7 +188,7 @@ namespace game_stuff
             var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
 
             var weapon1 = new Weapon(immutableDictionary, weapon.BotRange, snipes.ToImmutableDictionary(), weapon.id,
-                enumerable, scopes);
+                enumerable, scopes, weapon.KeepDistance);
             return weapon1;
         }
 

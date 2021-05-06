@@ -554,7 +554,9 @@ namespace game_stuff
                     ? null
                     : TwoDVector.TwoDVectorByPt(GetPos(), LockingWho.GetPos())
                         .ClockwiseTurn(CharacterBody.Sight.Aim)
-                        .AddX(-GetRr() - LockingWho.GetRr())
+                        .AddX(-GetRr() - LockingWho.GetRr() - (GetWeapons().TryGetValue(NowWeapon, out var aWeapon)
+                            ? aWeapon.KeepDistance
+                            : 0f))
                         .MaxFixX(0), //在有锁定目标时，会根据与当前目标的向量调整，有一定程度防止穿模型
                 _ => throw new ArgumentOutOfRangeException(nameof(charAct))
             };
