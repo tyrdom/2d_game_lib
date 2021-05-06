@@ -57,17 +57,12 @@ namespace game_stuff
 
         public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
-            switch (interactive)
+            return interactive switch
             {
-                case MapInteract.GetInfoCall:
-                    return null;
-                case MapInteract.BuyOrApplyCall:
-
-                    return new TelePortMsg(ToPlayGround.MgId, ToPos);
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
-            }
+                MapInteract.GetInfoCall => null,
+                MapInteract.BuyOrApplyCall => new TelePortMsg(ToPlayGround.MgId, ToPos),
+                _ => throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null)
+            };
         }
 
         public float GetMaxR()

@@ -531,7 +531,7 @@ namespace game_stuff
             }
         }
 
-        private static readonly Func<IAaBbBox, bool> IsS = x => x is ApplyDevice;
+        private static readonly Func<IAaBbBox, bool> IsD = x => x is ApplyDevice;
 
 
         private static readonly Func<IAaBbBox, bool> IsC = x => x is CageCanPick;
@@ -641,10 +641,10 @@ namespace game_stuff
                             MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
                                 interactCaller.GetAnchor(), IsV), true),
                             MapInteract.GetInfoCall => (
-                                MapInteractableThings.InteractiveFirstSingleBox(interactCaller.GetAnchor(), IsS),
+                                MapInteractableThings.InteractiveFirstSingleBox(interactCaller.GetAnchor(), IsD),
                                 false),
                             MapInteract.BuyOrApplyCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                interactCaller.GetAnchor(), IsS), true),
+                                interactCaller.GetAnchor(), IsD), true),
                             null => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg)),
                             _ => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg))
                         };
@@ -652,10 +652,18 @@ namespace game_stuff
                         switch (singleBox)
                         {
                             case null:
+                                interactCaller.CharacterStatus.ResetCastAct();
                                 break;
                             case IMapInteractable mapInteractable:
-                                if (needContinueCall) mapInteractable.StartActTwoBySomeBody(interactCaller);
-                                else mapInteractable.StartActOneBySomeBody(interactCaller);
+                                if (needContinueCall)
+                                {
+                                    mapInteractable.StartActTwoBySomeBody(interactCaller);
+                                }
+                                else
+                                {
+                                    mapInteractable.StartActOneBySomeBody(interactCaller);
+                                }
+
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException(nameof(singleBox));

@@ -92,6 +92,8 @@ namespace game_stuff
 
         private int MaxPropPoint { get; set; }
 
+        private Skill DefaultTakeOutWeapon { get; }
+
         //Vehicle
         public Vehicle? NowVehicle { get; private set; }
 
@@ -216,6 +218,7 @@ namespace game_stuff
 
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
+            DefaultTakeOutWeapon = Skill.GenSkillById(CommonConfig.OtherConfig.default_take_out_skill);
             NowMoveSpeed = 0f;
             SkillLaunch = null;
 
@@ -935,7 +938,7 @@ namespace game_stuff
                 if (opAction == SkillAction.Switch)
                 {
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
-
+                    LoadSkill(operate.Aim, DefaultTakeOutWeapon, SkillAction.Switch, operate.Move);
                     SilentChange = true;
                     ResetSnipe();
                 }
@@ -1019,16 +1022,17 @@ namespace game_stuff
             NowCallLongStack = 0;
         }
 
-        private bool CallLongTouch(MapInteract kickVehicleCall)
+        private bool CallLongTouch(MapInteract mapInteract)
         {
-            var b1 = NowMapInteractive == kickVehicleCall;
+            var b1 = NowMapInteractive == mapInteract;
             if (b1)
             {
                 NowCallLongStack++;
             }
             else
             {
-                NowMapInteractive = kickVehicleCall;
+                NowMapInteractive = mapInteract;
+                NowCallLongStack = 0;
             }
 
             var b = NowCallLongStack > MaxCallLongStack;
@@ -1382,7 +1386,7 @@ namespace game_stuff
             AddProtect(protectValueAdd);
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
-            if (takeDamage.HasValue && takeDamage.Value.IsKill && b)
+            if (takeDamage is {IsKill: true} && b)
             {
                 bodyCaster.AddAKillScore(CharacterBody);
             }

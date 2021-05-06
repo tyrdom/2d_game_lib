@@ -73,8 +73,8 @@ namespace game_stuff
 
         public static void StartActTwoBySomeBody(CharacterBody characterBody, IMapInteractable mapInteractable)
         {
-            var actOne = mapInteractable.GetActTwo(characterBody.CharacterStatus);
-            if (actOne == null)
+            var actTwo = mapInteractable.GetActTwo(characterBody.CharacterStatus);
+            if (actTwo == null)
             {
                 return;
             }

@@ -14,7 +14,7 @@ namespace game_stuff
             InMapInteractable = inMapInteractable;
             InteractionPos = interactionPos;
             Interact = mapInteract;
-            IId = id;
+            Id = id;
             NowOnTick = 0;
         }
 
@@ -32,12 +32,12 @@ namespace game_stuff
 
         public int GetIntId()
         {
-            return (int) IId;
+            return (int) Id;
         }
 
         private MapInteract Interact { get; }
 
-        public interactionAct IId { get; }
+        public interactionAct Id { get; }
         public int NowTough { get; set; }
         public uint NowOnTick { get; set; }
         public uint TotalTick { get; }
