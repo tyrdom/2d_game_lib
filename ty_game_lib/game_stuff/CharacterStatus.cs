@@ -940,9 +940,10 @@ namespace game_stuff
                 if (opAction == SkillAction.Switch)
                 {
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
+                    ResetSnipe();
                     LoadSkill(operate.Aim, DefaultTakeOutWeapon, SkillAction.Switch, operate.Move);
                     SilentChange = true;
-                    ResetSnipe();
+                    
                 }
                 // 发动当前武器技能组的起始技能0
                 else
