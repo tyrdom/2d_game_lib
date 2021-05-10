@@ -582,7 +582,7 @@ namespace game_stuff
                 .GoATick(GetPos(), GetAim(), fixMove, limitV);
             if (snipeOff)
             {
-                CallSnipe(SnipeAction.SnipeOff);
+                ResetSnipe();
             }
 
             var selfEffectFilter = SelfEffectFilter(bullet);
@@ -858,6 +858,8 @@ namespace game_stuff
             }
 
             // 没有技能在释放
+            // 首先运行现有存在的瞄准
+            GoSnipe();
             // 没有任何操作
             if (operate == null)
             {
@@ -919,7 +921,6 @@ namespace game_stuff
             }
             else
             {
-                GoSnipe();
             }
 
             // 转换视野方向
@@ -943,7 +944,6 @@ namespace game_stuff
                     ResetSnipe();
                     LoadSkill(operate.Aim, DefaultTakeOutWeapon, SkillAction.Switch, operate.Move);
                     SilentChange = true;
-                    
                 }
                 // 发动当前武器技能组的起始技能0
                 else
