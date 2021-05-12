@@ -71,9 +71,9 @@ namespace game_bot
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
                 .Select(x => (x.weight, CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
-                (int)(battleNpc.DoNotMinMaxTime.item2),
-                (int)(battleNpc.DoNotMinMaxTime.item1),
-                (int)(battleNpc.ActShowDelayTime));
+                (int) (battleNpc.DoNotMinMaxTime.item2),
+                (int) (battleNpc.DoNotMinMaxTime.item1),
+                (int) (battleNpc.ActShowDelayTime));
 
             return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleNpc.MaxCombo);
         }
@@ -256,6 +256,9 @@ namespace game_bot
                         snipeAction: snipeAction));
 
                 case BotStatus.TargetApproach:
+#if DEBUG
+                    Console.Out.WriteLine("TargetApproach");
+#endif
                     var characterStatusProp = botBodyCharacterStatus.Prop;
                     if (characterStatusProp != null &&
                         characterStatusProp.CheckAppStatusToBotPropUse(botBodyCharacterStatus))
@@ -278,7 +281,7 @@ namespace game_bot
 
                         if (inRange)
                         {
-                            var skillAction = FirstSkillCtrl.GetAction(Random);
+                            var skillAction = FirstSkillCtrl.GetAction();
                             if (skillAction != null && CheckSkillSnipeNeed(skillAction.Value))
                             {
                                 return new BotOpAndThink(
@@ -315,6 +318,9 @@ namespace game_bot
 
                     if (!ActFin())
                     {
+#if DEBUG
+                        Console.Out.WriteLine("now acting");
+#endif
                         if (CheckStartCombo())
                         {
                             ComboCtrl.ComboTurnOn();
@@ -327,6 +333,9 @@ namespace game_bot
                     if (ComboCtrl.CanCombo())
                     {
                         var comboAction = FirstSkillCtrl.GetComboAction(Random);
+#if DEBUG
+                        Console.Out.WriteLine($"rand skill is {comboAction}");
+#endif
                         var checkSkillSnipeNeed = CheckSkillSnipeNeed(comboAction);
                         if (checkSkillSnipeNeed)
                         {

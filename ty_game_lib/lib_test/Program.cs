@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
+using game_bot;
 using game_config;
 using game_stuff;
 using rogue_game;
@@ -23,9 +24,9 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_gun}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(1002, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData2 =
                 CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
@@ -35,20 +36,23 @@ namespace lib_test
                 RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody, body},
                     genCharacterBody);
 
+            genByConfig.ForceSpawnNpc();
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
             var any = mapApplyDevices.Any(x => x.IsActive);
             // Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
-            for (var i = 0; i < 300; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var twoDVector = new TwoDVector(1f, 0);
-                var operate = i < 100
-                    ? new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1, skillAction: SkillAction.Op1)
+                var operate = i < 50
+                    ? new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1)
                     : new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOff);
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
+
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
+
                 var mapChange = rogueGameGoTickResult.MapChange;
                 if (i % 5 == 0)
                 {

@@ -24,54 +24,64 @@ namespace game_bot
             NowThinkAction = null;
             ShowDelayNow = 0;
             ShowDelayMax = showDelayMax;
-            DoNotRestTick = 0;
+            DoNothingRestTick = 0;
         }
 
         private ImmutableArray<(int, SkillAction)> StackWeightToSkillActions { get; }
         private int Total { get; }
         private int ComboTotal { get; }
-        public int DoNotRestTick { get; set; }
+        private int DoNothingRestTick { get; set; }
         private int DoNotMaxTick { get; }
         private int DoNotMinTick { get; }
-        public SkillAction? NowThinkAction { get; set; }
+        private SkillAction? NowThinkAction { get; set; }
         private int ShowDelayNow { get; set; }
         private int ShowDelayMax { get; }
 
-        internal bool NeedThink()
+        private bool NeedThink()
         {
-            return DoNotRestTick <= 0 && NowThinkAction == null;
+            var needThink = DoNothingRestTick <= 0 && NowThinkAction == null;
+#if DEBUG
+            Console.Out.WriteLine($"think is {needThink} {NowThinkAction} ");
+#endif
+            return needThink;
         }
 
         internal SkillAction GetComboAction(Random random)
         {
+
             return StackWeightToSkillActions.GetWeightThings(random.Next(ComboTotal)).things;
         }
 
 
-        internal SkillAction? GetAction(Random random)
+        internal SkillAction? GetAction()
         {
-            return DoNotRestTick > 0 ? null : NowThinkAction;
+            var nowThinkAction = NowThinkAction;
+            NowThinkAction = null;
+            return DoNothingRestTick > 0 ? null : nowThinkAction;
         }
 
         private void ThinkAAct(Random random)
         {
             var next = random.Next(Total);
             var (isGetOk, things) = StackWeightToSkillActions.GetWeightThings(next);
+
+
             if (isGetOk)
             {
-                ShowDelayNow = 0;
                 NowThinkAction = things;
             }
             else
             {
                 var i = random.Next(DoNotMinTick, DoNotMaxTick);
-                DoNotRestTick = i;
-                ShowDelayNow = 0;
+                DoNothingRestTick = i;
+
                 NowThinkAction = null;
             }
+
+            ShowDelayNow = 0;
         }
 
-        public SkillAction? ShowThink()
+        private SkillAction? ShowThink()
         {
             return NowThinkAction;
         }
@@ -86,11 +96,14 @@ namespace game_bot
         {
             if (NeedThink())
             {
+#if DEBUG
+                Console.Out.WriteLine($"think is ");
+#endif
                 ThinkAAct(random);
             }
 
             if (ShowDelayNow <= ShowDelayMax) ShowDelayNow++;
-            if (DoNotRestTick > 0) DoNotRestTick--;
+            if (DoNothingRestTick > 0) DoNothingRestTick--;
             return CanShowThinkAction() ? ShowThink() : null;
         }
     }

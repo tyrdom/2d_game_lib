@@ -63,7 +63,7 @@ namespace rogue_game
             var genBattleNpcAndBot = Enumerable.Range(0, ints.Count)
                 .Select(x =>
                 {
-                    var genById = BattleNpc.GenById(ints[x], (1+PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 1,
+                    var genById = BattleNpc.GenById(ints[x], (1+PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 100,
                         random);
                     var simpleBot = SimpleBot.GenById(ints[x], genById.CharacterBody, random,
                         botTeam.GetNaviMap(genById.CharacterBody.GetSize()));

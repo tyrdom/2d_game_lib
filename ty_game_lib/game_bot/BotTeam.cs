@@ -38,19 +38,20 @@ namespace game_bot
         }
 
 
-        public void SetBots(IEnumerable<(int, CharacterBody)> valueTuples, Random random)
+        public void SetBots(IEnumerable<(int id, CharacterBody characterBody)> valueTuples, Random random)
         {
             var simpleBots = valueTuples.Select(x =>
                 SimpleBot.GenById(x.Item1, x.Item2, random,
                     SizeToNaviMap.TryGetValue(x.Item2.GetSize(), out var top)
                         ? top
                         : throw new KeyNotFoundException()));
+            
+            
             SimpleBots = simpleBots.IeToHashSet();
         }
 
         public void AllBotsGoATick(ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> perceivable)
         {
-
             var botOpAndThinks = SimpleBots.ToDictionary(bot => bot.BotBody.GetId(), bot =>
             {
                 var key = bot.BotBody.GetId();

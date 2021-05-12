@@ -38,7 +38,7 @@ namespace rogue_game
 
     public class RogueGame
     {
-        private BotTeam BotTeam { get; }
+        public BotTeam BotTeam { get; }
         private Queue<int> ChapterIds { get; }
         private Chapter NowChapter { get; set; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
@@ -240,9 +240,16 @@ namespace rogue_game
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
-            
+
             NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
             return new RogueGameGoTickResult(playGroundGoTickResult, true);
+        }
+
+        public void ForceSpawnNpc()
+        {
+            BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
+
+            NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
         }
     }
 

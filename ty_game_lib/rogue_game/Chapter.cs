@@ -55,8 +55,10 @@ namespace rogue_game
                 MapType.BigStart => (new int[] { }, new int[] { }),
                 MapType.BigEnd => (union.ToArray(),
                     gameChapter.BigBossCreepRandIn.ChooseRandCanSame(1, random).ToArray()),
+
                 MapType.Small => (enumerable.ToArray(), new int[] { }),
                 MapType.Big => (union.ToArray(), new int[] { }),
+
                 MapType.SmallStart => (new int[] { }, new int[] { }),
                 MapType.SmallEnd => (enumerable.ToArray(),
                     gameChapter.SmallBossCreepRandIn.ChooseRandCanSame(1, random).ToArray()),

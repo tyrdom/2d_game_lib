@@ -919,9 +919,6 @@ namespace game_stuff
             {
                 CallSnipe(snipeAction.Value);
             }
-            else
-            {
-            }
 
             // 转换视野方向
 
