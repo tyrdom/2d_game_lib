@@ -31,12 +31,13 @@ namespace game_stuff
             }
         }
 
-        public static IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical,
+        public static IEnumerable<(int, IAaBbBox)> SplitByQuads(Zone zone,
             IMapInteractable mapInteractable)
         {
+            var (horizon, vertical) = zone.GetMid();
             var splitByQuads = mapInteractable.Zone.InWhichQ(horizon, vertical);
             mapInteractable.RecordQuad(splitByQuads);
-            return new List<(int, IAaBbBox)>()
+            return new List<(int, IAaBbBox)>
             {
                 (splitByQuads,
                     mapInteractable)

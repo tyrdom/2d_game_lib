@@ -75,6 +75,13 @@ namespace game_stuff
 
         public bool InSight(IHaveAnchor another, SightMap? map)
         {
+#if DEBUG
+            if (GetId()==1)
+            {
+                
+                Console.Out.WriteLine($"pos {NowPos} want see {another.GetAnchor()}");
+            }
+#endif
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map, CharacterStatus.GetNowScope());
         }
 
@@ -123,6 +130,11 @@ namespace game_stuff
 
         public (ITwoDTwoP pt, BuffDmgMsg? buffDmgMsg)? RelocateWithBlock(WalkBlock walkBlock)
         {
+            if (NowPos.Same(LastPos))
+            {
+                return null;
+            }
+
             var (isHitWall, pt) =
                 walkBlock.PushOutToPt(LastPos, NowPos);
 
@@ -132,8 +144,15 @@ namespace game_stuff
             // Console.Out.WriteLine(
             //     $" lastPos:: {LastPos} nowPos::{NowPos} :: is hit wall ::{isHitWall}");
 #endif
-            if (!isHitWall) return null;
-            if (CharacterStatus.StunBuff == null)
+
+            if (!isHitWall)
+            {
+                return (NowPos, null);
+            }
+
+            NowPos = pt;
+            var b = CharacterStatus.StunBuff == null;
+            if (b)
             {
                 return (pt, null);
             }

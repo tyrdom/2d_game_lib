@@ -73,6 +73,7 @@ namespace collision_and_rigid
             return new Zone[4] {z1, z2, z3, z4};
         }
 
+     
         public int InWhichQ(float horizon, float vertical)
         {
             if (Left >= vertical)
@@ -284,7 +285,7 @@ namespace collision_and_rigid
                    Up <= anotherZone.Down || anotherZone.Up <= Down;
         }
 
-        public string LogSide()
+        public override string ToString()
         {
             return $"[{Up}|{Down}|{Left}|{Right}]";
         }

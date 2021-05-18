@@ -54,28 +54,28 @@ namespace game_bot
 
         public static SimpleBot GenById(int npcId, CharacterBody body, Random random, PathTop pathTop)
         {
-            return CommonConfig.Configs.battle_npcs.TryGetValue(npcId, out var battleNpc)
+            return CommonConfig.Configs.battle_bots.TryGetValue(npcId, out var battleNpc)
                 ? GenByConfig(battleNpc, body, random, pathTop)
                 : throw new KeyNotFoundException($"not found id :: {npcId}");
         }
 
-        public static SimpleBot GenByConfig(battle_npc battleNpc, CharacterBody body, Random random,
+        public static SimpleBot GenByConfig(battle_bot battleBot, CharacterBody body, Random random,
             PathTop pathTop)
         {
             var polyCount = pathTop.GetPolyCount();
             var next = random.Next((int) (polyCount * BotLocalConfig.PatrolMin),
                 (int) (polyCount * BotLocalConfig.PatrolMax + 1));
             var twoDPoints = pathTop.GetPatrolPts(random, next);
-            var battleNpcActWeight = battleNpc.ActWeight;
+            var battleNpcActWeight = battleBot.ActWeight;
             var weight = battleNpcActWeight.FirstOrDefault(x => x.op == botOp.none)?.weight ?? 0;
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
                 .Select(x => (x.weight, CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
-                (int) (battleNpc.DoNotMinMaxTime.item2),
-                (int) (battleNpc.DoNotMinMaxTime.item1),
-                (int) (battleNpc.ActShowDelayTime));
+                (int) (battleBot.DoNotMinMaxTime.item2),
+                (int) (battleBot.DoNotMinMaxTime.item1),
+                (int) (battleBot.ActShowDelayTime));
 
-            return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleNpc.MaxCombo);
+            return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleBot.MaxCombo);
         }
 
         private static SkillAction CovOp(botOp botOp)

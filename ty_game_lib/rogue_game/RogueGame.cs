@@ -106,14 +106,16 @@ namespace rogue_game
 
         private void GoNextChapter()
         {
+            NowPlayMap.TelePortOut();
+            BotTeam.ClearBot();
             var dequeue = ChapterIds.Dequeue();
             NowChapter = Chapter.GenMapsById(dequeue, Random);
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
-            NowPlayMap.TelePortOut();
+
             NowPlayMap = nowChapterEntrance;
-            BotTeam.ClearBot();
+           
         }
 
         private bool IsPlayerAllDead()
@@ -239,9 +241,11 @@ namespace rogue_game
             NowPlayMap.TelePortOut();
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
+            if (NowPlayMap.IsClear) return new RogueGameGoTickResult(playGroundGoTickResult, true);
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
 
             NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
+
             return new RogueGameGoTickResult(playGroundGoTickResult, true);
         }
 

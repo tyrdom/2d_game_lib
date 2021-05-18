@@ -18,14 +18,16 @@ namespace rogue_game
         public CharacterBody CharacterBody { get; }
         public WantedBonus WantedBonus { get; }
 
-        public static BattleNpc GenById(int id, int gid, int team, Random random)
+    
+
+        public static (BattleNpc, int boId) GenById(int id, int gid, int team, Random random)
         {
             return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
                 ? GenByConfig(battleNpc, gid, team, random)
                 : throw new KeyNotFoundException();
         }
 
-        private static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
+        private static (BattleNpc, int boId) GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
         {
             var characterInitData =
                 CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,
@@ -73,7 +75,8 @@ namespace rogue_game
             var gameItems = battleNpc.KillDrops.Select(GameItem.GenByConfigGain).ToArray();
             var array = battleNpc.AllDrops.Select(GameItem.GenByConfigGain).ToArray();
             var wantedBonus = new WantedBonus(array, gameItems, mapInteractable);
-            return new BattleNpc(genCharacterBody, wantedBonus);
+            var genByConfig = new BattleNpc(genCharacterBody, wantedBonus);
+            return (genByConfig, battleNpc.botId);
         }
     }
 }

@@ -52,11 +52,7 @@ namespace collision_and_rigid
         public Quad WhichQ(QSpaceBranch qSpaceBranch)
         {
             var zone = qSpaceBranch.Zone;
-            var (h, v) = zone.GetMid();
-            var b = X < v;
-            if (b)
-                return Y > h ? Quad.Two : Quad.Three;
-            return Y > h ? Quad.One : Quad.Four;
+            return WhichQ(zone);
         }
 
         public Quad WhichQ(Zone zone)

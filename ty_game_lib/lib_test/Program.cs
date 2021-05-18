@@ -26,14 +26,22 @@ namespace lib_test
             var genPlayerByConfig =
                 CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(1002, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData2 =
                 CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
+            var characterInitData3 =
+                CharacterInitData.GenPlayerByConfig(4, 1, new[] {weapon_id.test_sword}, size.small, 1);
+
+            var characterInitData4 =
+                CharacterInitData.GenPlayerByConfig(5, 1, new[] {weapon_id.test_sword}, size.small, 1);
+
             var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
             var body = characterInitData2.GenCharacterBody(TwoDPoint.Zero());
+            var body1 = characterInitData3.GenCharacterBody(TwoDPoint.Zero());
+            var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody, body},
+                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody, body, body1, body2},
                     genCharacterBody);
 
             genByConfig.ForceSpawnNpc();
@@ -42,13 +50,22 @@ namespace lib_test
             var any = mapApplyDevices.Any(x => x.IsActive);
             // Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 30; i++)
             {
-                var twoDVector = new TwoDVector(1f, 0);
-                var operate = i < 50
-                    ? new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1)
-                    : new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOff);
-                var rogueGameGoTickResult = genByConfig.GamePlayGoATick(new Dictionary<int, Operate>() {{1, operate}});
+                var twoDVector = new TwoDVector(0, 1f);
+                var dVector1 = new TwoDVector(0, -0.5f);
+                var dVector = new TwoDVector(0, -1f);
+                var operate = i < 100
+                    ? new Operate(aim: twoDVector)
+                    : new Operate(aim: twoDVector, move: dVector);
+
+                var operate1 = new Operate(move: dVector1);
+                var opDic = i < 100
+                    ? new Dictionary<int, Operate>()
+                        {{1, operate}}
+                    : new Dictionary<int, Operate>()
+                        {{1, operate}, {5, operate1}};
+                var rogueGameGoTickResult = genByConfig.GamePlayGoATick(opDic);
 
                 var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
@@ -60,8 +77,8 @@ namespace lib_test
                 }
 
                 var characterBodies = playerSee[1].OfType<CharacterBody>();
-                var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
-                var genTickMsg = (CharTickMsg) firstOrDefault.GenTickMsg();
+                var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 5);
+                var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
                 var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
                 Console.Out.WriteLine($"~~~~now on tick {i}");
@@ -70,9 +87,14 @@ namespace lib_test
                     Console.Out.WriteLine($"map change to {genByConfig.NowPlayMap.PlayGround.MgId}");
                 }
 
-                if (genTickMsg.SkillActing != null)
+                if (firstOrDefault != null)
+                {
+                    Console.Out.WriteLine($"id 5 pos see is {twoDPoint}");
+                }
+
+                if (genTickMsg?.SkillActing != null)
                     Console.Out.WriteLine(
-                        $"$ ~~~~~{twoDPoint} {genTickMsg.Gid} act launch :{genTickMsg.SkillActing.Value.Item1} , {(skill_id) genTickMsg.SkillActing.Value.Item2}");
+                        $"$ ~~~~~{twoDPoint} {genTickMsg.Value.Gid} act launch :{genTickMsg.Value.SkillActing.Value.Item1} , {(skill_id) genTickMsg.Value.SkillActing.Value.Item2}");
 #endif
             }
         }

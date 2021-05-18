@@ -57,18 +57,21 @@ namespace rogue_game
         public int[] CreepIdToSpawn { get; }
         public int[] BossIdToSpawn { get; }
 
-        private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints, Random random,
+        private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints,
+            Random random,
             BotTeam botTeam, bool isBoss)
         {
             var genBattleNpcAndBot = Enumerable.Range(0, ints.Count)
                 .Select(x =>
                 {
-                    var genById = BattleNpc.GenById(ints[x], (1+PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 100,
+                    var (battleNpc, boId) = BattleNpc.GenById(ints[x],
+                        (1 + PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 100,
                         random);
-                    var simpleBot = SimpleBot.GenById(ints[x], genById.CharacterBody, random,
-                        botTeam.GetNaviMap(genById.CharacterBody.GetSize()));
+                    var simpleBot = SimpleBot.GenById(boId, battleNpc.CharacterBody, random,
+                        botTeam.GetNaviMap(battleNpc.CharacterBody.GetSize()));
 
-                    return (simpleBot, genById);
+
+                    return (simpleBot, battleNpc);
                 }).IeToHashSet();
             return genBattleNpcAndBot;
         }
@@ -109,6 +112,8 @@ namespace rogue_game
                 return true;
             }
 
+            
+            
             var immutableDictionary = kill.GroupBy(x => x.Item1).ToImmutableDictionary(p => p.Key,
                 p => p.SelectMany(x => x.Item2).ToImmutableList());
             switch (PveWinCond)
@@ -127,6 +132,8 @@ namespace rogue_game
                     if (ii > 0)
                     {
                         IsClear = !Bosses.Any();
+                        
+                        
                     }
 
                     return (all.ToImmutableList(), immutableDictionary, mapInteractableS.ToImmutableList());

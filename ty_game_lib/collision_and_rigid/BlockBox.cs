@@ -31,6 +31,12 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(Zone zone)
+        {
+            var (horizon, vertical) = zone.GetMid();
+            return SplitByQuads(horizon, vertical);
+        }
+
 
         public BlockBox(Zone zone, IBlockShape shape)
         {
@@ -84,7 +90,7 @@ namespace collision_and_rigid
                 {
 //
 #if DEBUG
-                    Console.Out.WriteLine($"{z.LogSide()}");
+                    Console.Out.WriteLine($"{z.ToString()}");
                     Console.Out.WriteLine($"{Shape.ToString()}:::{vertical}");
 #endif
 
@@ -101,7 +107,7 @@ namespace collision_and_rigid
                     }
                     else
                     {
-                        throw new Exception($"lz no good zone{z.LogSide()} v {vertical} {z.Right <= vertical}");
+                        throw new Exception($"lz no good zone{z.ToString()} v {vertical} {z.Right <= vertical}");
                     }
                 }
             }

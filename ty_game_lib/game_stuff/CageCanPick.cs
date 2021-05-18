@@ -137,9 +137,10 @@ namespace game_stuff
 
         public Zone Zone { get; set; }
 
-        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(Zone zone)
         {
-            return MapInteractableDefault.SplitByQuads(horizon, vertical, this);
+            
+            return MapInteractableDefault.SplitByQuads(zone, this);
         }
 
         public TwoDPoint GetAnchor()

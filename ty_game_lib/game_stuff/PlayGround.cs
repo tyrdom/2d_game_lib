@@ -134,8 +134,8 @@ namespace game_stuff
                 {
                     var hashSet = p.Value;
                     var aabbBoxShapes =
-                        hashSet.Select(x => x.InBox).IeToHashSet();
-                    emptyRootBranch.AddIdPointBoxes(aabbBoxShapes, CommonConfig.OtherConfig.qspace_max_per_level);
+                        hashSet.Select(x => x.InBox).OfType<IAaBbBox>().IeToHashSet();
+                    emptyRootBranch.AddRangeAabbBoxes(aabbBoxShapes, CommonConfig.OtherConfig.qspace_max_per_level);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
             var emptyRootBranch3 = SomeTools.CreateEmptyRootBranch(zone);
@@ -229,7 +229,7 @@ namespace game_stuff
                 }
             }
 
-            BodiesQSpaceReplace(playerBeHit);
+            BodiesQSpaceReplace(playerBeHit, gidToOperates);
 
             var playerSee = GetPlayerSee();
             var playerPerceivable =
@@ -258,7 +258,7 @@ namespace game_stuff
 
         private void MapInteractableGoATick()
         {
-            var mapInteractables = new List<IHitMedia>();
+            var mapInteractableS = new List<IHitMedia>();
 
             var vehicleCanIns = new List<VehicleCanIn>();
 
@@ -283,8 +283,8 @@ namespace game_stuff
                     List<VehicleCanIn> vehicleCanIns,
                     List<(TwoDPoint pos, Weapon[] weapons)> weaponsDrop
                     ), VehicleCanIn>(Act,
-                    (mapInteractables, vehicleCanIns, tuples));
-            TeamToHitMedia[-1] = mapInteractables;
+                    (mapInteractableS, vehicleCanIns, tuples));
+            TeamToHitMedia[-1] = mapInteractableS;
 
             foreach (var vehicleCanIn in vehicleCanIns)
             {
@@ -325,9 +325,11 @@ namespace game_stuff
                     if (characterBody.Team == bTeam)
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((x, y) => true, true).OfType<ICanBeSaw>();
+                            qSpace.FilterToBoxList<IdPointBox, bool>((x, y) => true, true).Select(x => x.IdPointShape)
+                                .OfType<ICanBeSaw>();
 
-                        var ofType = traps.FilterToGIdPsList((a, b) => true, true)
+                        var ofType = traps.FilterToBoxList<IdPointBox, bool>((x, y) => true, true)
+                            .Select(x => x.IdPointShape)
                             .OfType<ICanBeSaw>();
                         // #if DEBUG
 //                         Console.Out.WriteLine($"list::{filterToGIdPsList.ToArray().Length}");
@@ -338,17 +340,19 @@ namespace game_stuff
                     else
                     {
                         var filterToGIdPsList =
-                            qSpace.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
+                            qSpace.FilterToBoxList<IdPointBox, CharacterBody>((idp, acb) => acb.InSight(idp, SightMap),
                                 characterBody, sightZone);
-                        var bodies = filterToGIdPsList.OfType<CharacterBody>();
+
+                        var bodies = filterToGIdPsList.Select(x => x.IdPointShape).OfType<CharacterBody>();
                         var trapsSee =
-                            traps.FilterToGIdPsList((idp, acb) => acb.InSight(idp, SightMap),
+                            traps.FilterToBoxList<IdPointBox, CharacterBody>((idp, acb) => acb.InSight(idp, SightMap),
                                     characterBody, sightZone)
-                                .OfType<Trap>()
+                                .Select(x => x.IdPointShape).OfType<Trap>()
                                 .Where(t => t.CanBeSee);
 #if DEBUG
                         Console.Out.WriteLine(
-                            $" {characterBody.Team}:look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()} now sight rad {characterBody.CharacterStatus.GetNowScope()?.MaxR ?? 0f}");
+                            $" {characterBody.GetId()} : pos {characterBody.GetAnchor()}in t {characterBody.Team}:" +
+                            $"look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
 #endif
 
                         characterBodies.UnionWith(bodies);
@@ -362,7 +366,8 @@ namespace game_stuff
             return gidToCharacterBodies;
         }
 
-        private void BodiesQSpaceReplace(IDictionary<int, HashSet<IRelationMsg>> playerBeHit)
+        private void BodiesQSpaceReplace(IDictionary<int, HashSet<IRelationMsg>> playerBeHit,
+            Dictionary<int, Operate> gidToOperates)
         {
             foreach (var (playerBodies, _) in TeamToBodies.Select(kv => kv.Value))
             {
@@ -373,7 +378,8 @@ namespace game_stuff
                         {
                             case CharacterBody characterBody:
                                 var characterBodyBodySize = characterBody.GetSize();
-                                if (dic!.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
+                                var id = characterBody.GetId();
+                                if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
                                     return characterBody.RelocateWithBlock(walkBlock);
                                 }
@@ -387,8 +393,8 @@ namespace game_stuff
                     }, WalkMap);
 
                 var dd = mapToDicGidToSth.Where(x => x.Value.HasValue)
-                    .ToDictionary(x =>
-                        x.Key, x => x.Value!.Value.pt);
+                    .Select(x => x.Key).ToArray();
+
                 var buffDmgMsgs = mapToDicGidToSth.ToDictionary(
                     x => x.Key, x => x.Value!.Value.buffDmgMsg);
                 foreach (var keyValuePair in buffDmgMsgs)
@@ -401,7 +407,7 @@ namespace game_stuff
 #if DEBUG
                 Console.Out.WriteLine($"team~ bf {TeamToBodies[1].playerBodies.Count()}");
 #endif
-                playerBodies.MoveIdPointBoxes(dd, CommonConfig.OtherConfig.qspace_max_per_level);
+                playerBodies.ReLocateIdBoxInQuadTree(dd, CommonConfig.OtherConfig.qspace_max_per_level);
 #if DEBUG
                 Console.Out.WriteLine($"team~ af {TeamToBodies[1].playerBodies.Count()}");
 #endif
@@ -676,7 +682,8 @@ namespace game_stuff
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
-                traps.AddIdPointBoxes(idPointBoxesToAdd, CommonConfig.OtherConfig.qspace_max_per_level, true);
+                traps.AddRangeAabbBoxes(idPointBoxesToAdd.OfType<IAaBbBox>().IeToHashSet(),
+                    CommonConfig.OtherConfig.qspace_max_per_level);
             }
 
             return twoDTwoPs;
@@ -755,6 +762,7 @@ namespace game_stuff
             return selectMany;
         }
 
+
         public IEnumerable<CharacterBody> RemoveBodies(HashSet<CharacterBody> characterBodies)
         {
             if (!characterBodies.Any()) return characterBodies;
@@ -774,7 +782,7 @@ namespace game_stuff
             )
             {
                 return GidToBody.Remove(gid) &&
-                       valueTuple.playerBodies.RemoveAIdPointBox(gidCharacterBody.InBox);
+                       valueTuple.playerBodies.RemoveSingleAaBbBox(gidCharacterBody.InBox);
             }
 
             return false;
@@ -828,15 +836,16 @@ namespace game_stuff
         {
             if (TeamToBodies.TryGetValue(team, out var qTuple))
             {
-                qTuple.playerBodies.AddIdPointBoxes(
-                    enumerableToHashSet,
+                qTuple.playerBodies.AddRangeAabbBoxes(
+                    enumerableToHashSet.OfType<IAaBbBox>().IeToHashSet(),
                     CommonConfig.OtherConfig.qspace_max_per_level);
             }
             else
             {
                 var playerBodies = SomeTools.CreateEmptyRootBranch(MoveZone);
                 var traps = SomeTools.CreateEmptyRootBranch(MoveZone);
-                playerBodies.AddIdPointBoxes(enumerableToHashSet, CommonConfig.OtherConfig.qspace_max_per_level);
+                playerBodies.AddRangeAabbBoxes(enumerableToHashSet.OfType<IAaBbBox>().IeToHashSet(),
+                    CommonConfig.OtherConfig.qspace_max_per_level);
                 var emptyRootBranch = (playerBodies,
                     traps);
                 TeamToBodies[team] = emptyRootBranch;
@@ -899,12 +908,19 @@ namespace game_stuff
 
         public void RemoveAllBodies()
         {
-            var array = GidToBody.Values.IeToHashSet();
-            var removeBodies = RemoveBodies(array);
-            if (removeBodies.Any())
+            GidToBody.Clear();
+            foreach (var valueTuple in TeamToBodies.Values)
             {
-                throw new Exception("sb not rm success");
+                valueTuple.playerBodies.Clear();
+                valueTuple.Traps.Clear();
             }
+
+            // var array = GidToBody.Values.IeToHashSet();
+            // var removeBodies = RemoveBodies(array);
+            // if (removeBodies.Any())
+            // {
+            //     throw new Exception("sb not rm success");
+            // }
         }
     }
 }

@@ -45,6 +45,12 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(Zone zone)
+        {
+            var (horizon, vertical) = zone.GetMid();
+            return SplitByQuads(horizon, vertical);
+        }
+
         public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             return Zone.SplitByQuads(horizon, vertical)

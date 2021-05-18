@@ -15,10 +15,11 @@ namespace collision_and_rigid
         public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false);
 
         public void AddAIdPointBox(IdPointBox idPointBox, int limit, bool needRecord = false);
-        public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit);
+        public void ReLocateIdBoxInQuadTree(int[] gidToMove, int limit);
 
         public bool RemoveAIdPointBox(IdPointBox idPointBox);
         public IEnumerable<IdPointBox> RemoveIdPointBoxes(IEnumerable<IdPointBox> idPointBoxes);
+
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true);
 
@@ -44,20 +45,11 @@ namespace collision_and_rigid
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
             T t);
 
-        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
-            T t, Zone zone);
-
-        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
-            T t, Zone zone);
-
         public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func,
             T t, Zone zone);
 
-        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
+        public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func,
             T t);
-
-        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
-            T t, Zone zone);
 
         public Dictionary<int, T> MapToIDict<T>(Func<IIdPointShape, T> funcWithIIdPtsShape);
 
@@ -65,5 +57,7 @@ namespace collision_and_rigid
 
 
         public AreaBox? PointInWhichArea(TwoDPoint pt);
+        void Clear();
+        bool NeedCov(int count, int limit);
     }
 }

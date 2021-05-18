@@ -3,9 +3,9 @@ namespace collision_and_rigid
 {
     public enum Quad
     {
-        One,
-        Two,
-        Three,
-        Four
+        One=1,
+        Two=2,
+        Three=3,
+        Four=4
     }
 }

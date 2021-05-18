@@ -25,14 +25,17 @@ namespace cov_path_navi
         {
             return PolygonsTop.Count;
         }
-        
+
 
         public List<TwoDPoint> GetPatrolPts(Random random, int polyNum)
         {
             var pathNodeCovPolygons = PolygonsTop.Values.ToArray();
+            if (!pathNodeCovPolygons.Any()) return new List<TwoDPoint>();
             var pathNodeCovPolygon = pathNodeCovPolygons.ChooseRandOne(random);
+
+
             var twoDPoints = new List<TwoDPoint> {pathNodeCovPolygon.GetCenterPt()};
-            for (int i = 0; i < polyNum; i++)
+            for (var i = 0; i < polyNum; i++)
             {
                 var any = pathNodeCovPolygon.Links.Any();
                 if (any)

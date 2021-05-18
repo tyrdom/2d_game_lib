@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace collision_and_rigid
 {
-    public class IdPointBox : IAaBbBox
+    public class IdPointBox : IAaBbBox, IRecordQuadBox
     {
         public IdPointBox(Zone zone, IIdPointShape idPointShape)
         {
@@ -62,10 +62,16 @@ namespace collision_and_rigid
 
         public Zone Zone { get; set; }
 
-        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        public IEnumerable<(int, IAaBbBox)> SplitByQuads(Zone zone)
         {
-            var whichQ = IdPointShape.GetAnchor().WhichQ(horizon, vertical);
+            var (horizon, vertical) = zone.GetMid();
+            var twoDPoint = IdPointShape.GetAnchor();
+            var whichQ = zone.IncludePt(twoDPoint) ? twoDPoint.WhichQ(horizon, vertical) : -1;
             return new List<(int, IAaBbBox)> {(whichQ, this)};
         }
+    }
+
+    public interface IRecordQuadBox
+    {
     }
 }

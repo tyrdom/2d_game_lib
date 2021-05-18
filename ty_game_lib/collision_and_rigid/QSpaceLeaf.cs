@@ -65,6 +65,11 @@ namespace collision_and_rigid
 
         public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false)
         {
+            if (!idPointBox.Any()) return;
+#if DEBUG
+            var aggregate = idPointBox.Select(x => x.GetId()).Aggregate("", (s, x) => s + "|" + x);
+            Console.Out.WriteLine($"this q is {TheQuad}, {aggregate} id num {idPointBox.Count()} limit is {limit}");
+#endif
             var rawCount = AaBbPackBox.Count;
             if (rawCount + idPointBox.Count <= limit)
             {
@@ -98,7 +103,6 @@ namespace collision_and_rigid
                                         q1.Add(pointBox);
                                         break;
                                     case Quad.Two:
-
                                         q2.Add(pointBox);
                                         break;
                                     case Quad.Three:
@@ -189,19 +193,28 @@ namespace collision_and_rigid
             }
         }
 
-        public void MoveIdPointBoxes(Dictionary<int, ITwoDTwoP> gidToMove, int limit)
+        public void ReLocateIdBoxInQuadTree(int[] gidToMove, int limit)
         {
-            var (inZone, outZone) =
-                SomeTools.MovePtsReturnInAndOut(gidToMove, AaBbPackBox.OfType<IdPointBox>(), Zone);
+            var outZone = AaBbPackBox.OfType<IdPointBox>()
+                .Where(x => gidToMove.Contains(x.GetId()) && !Zone.IncludePt(x.GetAnchor())).ToArray();
 
-            AaBbPackBox = inZone;
-            if (Father != null)
+            // AaBbPackBox = inZone;
+            if (!outZone.Any()) return;
             {
-                Father.AddIdPointBoxes(outZone, limit);
-            }
-            else
-            {
-                AaBbPackBox.UnionWith(outZone);
+                if (Father != null)
+                {
+#if DEBUG
+                    var aggregate = outZone.Select(x => x.GetAnchor()).Aggregate("", (s, x) =>
+                        s + "|" + x);
+                    Console.Out.WriteLine($"out of zone l {TheQuad}:: {aggregate} this {Zone}");
+#endif
+                    AaBbPackBox.ExceptWith(outZone);
+                    Father.AddRangeAabbBoxes(outZone.OfType<IAaBbBox>().IeToHashSet(), limit);
+                }
+                else
+                {
+                    AaBbPackBox.UnionWith(outZone);
+                }
             }
         }
 
@@ -252,32 +265,25 @@ namespace collision_and_rigid
 
         public void AddSingleAaBbBox(IAaBbBox aaBbBox, int limit)
         {
-            if (AaBbPackBox.Count < limit)
+            AaBbPackBox.Add(aaBbBox);
+            if (AaBbPackBox.Count <= limit)
             {
-                AaBbPackBox.Add(aaBbBox);
                 return;
             }
 
-            var tryCovToBranch = TryCovToBranch(limit);
+            TryCovToBranch(limit);
 
-            tryCovToBranch.AddSingleAaBbBox(aaBbBox, limit);
+            // tryCovToBranch.AddSingleAaBbBox(aaBbBox, limit);
         }
 
         public void AddRangeAabbBoxes(HashSet<IAaBbBox> aaBbBoxes, int limit)
         {
-            var intPtr = AaBbPackBox.Count + aaBbBoxes.Count;
-            if (intPtr <= limit)
-            {
-                AaBbPackBox.UnionWith(aaBbBoxes);
-                return;
-            }
-
-            var count = limit - AaBbPackBox.Count;
-            var bbBoxes = aaBbBoxes.Take(count).ToList();
-            AaBbPackBox.UnionWith(bbBoxes);
-            var tryCovToBranch = TryCovToBranch(limit);
-            aaBbBoxes.ExceptWith(bbBoxes);
-            tryCovToBranch.AddRangeAabbBoxes(aaBbBoxes, limit);
+#if DEBUG
+            var aggregate = aaBbBoxes.Select(box => box.GetAnchor()).Aggregate("", (s, x) => s + "|" + x);
+            Console.Out.WriteLine($"to add {aggregate} to l zone {Zone}");
+#endif
+            AaBbPackBox.UnionWith(aaBbBoxes);
+            TryCovToLimitQSpace(limit);
         }
 
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox)
@@ -318,17 +324,34 @@ namespace collision_and_rigid
 
         public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t)
         {
-            foreach (var shape in AaBbPackBox.OfType<TK>())
+            foreach (var box in AaBbPackBox.OfType<TK>())
             {
-                action(shape, t);
+                action(box, t);
             }
         }
 
         public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t, Zone zone)
         {
+            if (Zone.RealNotCross(zone))
+            {
+#if DEBUG
+                Console.Out.WriteLine($"zone not cross so skip {zone} -- {Zone}");
+#endif
+                return;
+            }
+
             foreach (var shape in AaBbPackBox)
             {
-                if (!zone.NotCross(shape.Zone) && shape is TK tt)
+//                 var realNotCross = zone.RealNotCross(shape.Zone);
+// #if DEBUG
+//                 if (realNotCross)
+//                 {
+//                     
+//                     Console.Out.WriteLine($"shape zone not cross so skip {zone} -- {shape.Zone}");
+//                 }
+// #endif  
+
+                if (shape is TK tt)
                 {
                     action(tt, t);
                 }
@@ -367,7 +390,7 @@ namespace collision_and_rigid
 
 
             foreach (var intTBoxShapes in AaBbPackBox.SelectMany(aabbBoxShape =>
-                aabbBoxShape.SplitByQuads(horizon, vertical)))
+                aabbBoxShape.SplitByQuads(Zone)))
             {
                 var (i, aabbBoxShape1) = intTBoxShapes;
                 switch (i)
@@ -457,12 +480,22 @@ namespace collision_and_rigid
         {
             var blockShapes =
                 AaBbPackBox.OfType<BlockBox>().Select(x => x.Shape).ToList();
-            return SomeTools.IeToHashSet(blockShapes);
+            return blockShapes.IeToHashSet();
         }
 
         public AreaBox? PointInWhichArea(TwoDPoint pt)
         {
             return AaBbPackBox.OfType<AreaBox>().FirstOrDefault(x => x.IsInArea(pt));
+        }
+
+        public void Clear()
+        {
+            AaBbPackBox.Clear();
+        }
+
+        public bool NeedCov(int count, int limit)
+        {
+            return AaBbPackBox.Count + count > limit;
         }
 
         public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
@@ -471,27 +504,14 @@ namespace collision_and_rigid
             return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t);
         }
 
-        public Dictionary<int, TU> MapToDicGidToSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t,
-            Zone zone)
-        {
-            return SomeTools.MapToDicGidToSthTool(this, funcWithIIdPtsShape, t, zone);
-        }
-
-        public IEnumerable<TU> MapToIEnumNotNullSth<TU, T>(Func<IIdPointShape, T, TU> funcWithIIdPtsShape, T t,
-            Zone zone)
-        {
-            return SomeTools.MapToIEnumSthTool(this, funcWithIIdPtsShape, t, zone);
-        }
-
         public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func, T t, Zone zone)
         {
             return SomeTools.FilterToBoxList(this, func, t, zone);
         }
 
-        public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
-            T t)
+        public IEnumerable<TK> FilterToBoxList<TK, T>(Func<TK, T, bool> func, T t)
         {
-            return SomeTools.FilterToGIdPsList(this, funcWithIIdPtsShape, t);
+            return SomeTools.FilterToBoxList(this, func, t, null);
         }
 
         public IQSpace TryCovToLimitQSpace(int limit)
@@ -500,7 +520,10 @@ namespace collision_and_rigid
             {
                 return this;
             }
-
+#if DEBUG
+            var aggregate = AaBbPackBox.Select(x => x.GetAnchor()).Aggregate("", (s, x) => s + "|" + x);
+            Console.Out.WriteLine($"limit over {aggregate}  try to cov to b {Zone}");
+#endif
             var tryCovToBranch = TryCovToBranch(limit);
             return tryCovToBranch;
         }

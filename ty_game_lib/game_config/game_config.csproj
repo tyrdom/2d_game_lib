@@ -78,6 +78,8 @@
       <EmbeddedResource Include="Resources\map_raws_s.json" />
       <None Remove="Resources\battle_npc_s.json" />
       <EmbeddedResource Include="Resources\battle_npc_s.json" />
+      <None Remove="Resources\battle_bot_s.json" />
+      <EmbeddedResource Include="Resources\battle_bot_s.json" />
     </ItemGroup>
 
 </Project>

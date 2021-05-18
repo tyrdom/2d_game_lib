@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace collision_and_rigid
 {
@@ -71,13 +70,14 @@ namespace collision_and_rigid
                 if (withIIdPtsShape) dicIntToTu.Add(id);
             }
 
-            qSpace.ForeachDoWithOutMove(Act, t, zone);
+            qSpace.ForeachBoxDoWithOutMove<T, IIdPointShape>(Act, t, zone);
+
             return dicIntToTu;
         }
 
         public static IEnumerable<TK> FilterToBoxList<TK, T>(IQSpace qSpace,
             Func<TK, T, bool> func,
-            T t, Zone zone)
+            T t, Zone? zone)
         {
             var hs = new HashSet<TK>();
 
@@ -87,49 +87,16 @@ namespace collision_and_rigid
                 if (b) hs.Add(id);
             }
 
-            qSpace.ForeachBoxDoWithOutMove<T, TK>(Act, t, zone);
-            return hs;
-        }
-
-        public static IEnumerable<IIdPointShape> FilterToGIdPsList<T>(IQSpace qSpace,
-            Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
-            T t)
-        {
-            var hs = new HashSet<IIdPointShape>();
-
-            void Act(IIdPointShape id, T tt)
+            if (zone.HasValue)
             {
-                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-                if (withIIdPtsShape) hs.Add(id);
-            }
-
-            qSpace.ForeachDoWithOutMove(Act, t);
-            return hs;
-        }
-
-        public static IEnumerable<TU> MapToIEnumSthTool<TU, T>(IQSpace qSpaceBranch,
-            Func<IIdPointShape, T, TU> funcWithIIdPtsShape,
-            T t, Zone? zone = null)
-        {
-            var dicIntToTu = new HashSet<TU>();
-
-            void Act(IIdPointShape id, T tt)
-            {
-                var withIIdPtsShape = funcWithIIdPtsShape(id, tt);
-                if (withIIdPtsShape == null) return;
-                dicIntToTu.Add(withIIdPtsShape);
-            }
-
-            if (zone == null)
-            {
-                qSpaceBranch.ForeachDoWithOutMove(Act, t);
+                qSpace.ForeachBoxDoWithOutMove<T, TK>(Act, t, zone.Value);
             }
             else
             {
-                qSpaceBranch.ForeachDoWithOutMove(Act, t, zone.Value);
+                qSpace.ForeachBoxDoWithOutMove<T, TK>(Act, t);
             }
 
-            return dicIntToTu;
+            return hs;
         }
 
         public static Dictionary<int, TU> MapToDicGidToSthTool<TU, T>(IQSpace qSpaceBranch,
@@ -213,38 +180,6 @@ namespace collision_and_rigid
                 , raw.GetRange(i + 1, raw.Count - i - 1));
         }
 
-
-        public static (HashSet<IAaBbBox>, HashSet<IdPointBox>) MovePtsReturnInAndOut(
-            Dictionary<int, ITwoDTwoP> gidToMove,
-            IEnumerable<IdPointBox> aabbBoxShapes, Zone zone)
-        {
-            var inZone = new HashSet<IAaBbBox>();
-            var outZone = new HashSet<IdPointBox>();
-
-            foreach (var aabbPackBoxShape in aabbBoxShapes)
-            {
-                var idPointShape = aabbPackBoxShape.IdPointShape;
-                var id = idPointShape.GetId();
-                if (gidToMove.TryGetValue(id, out var vector))
-                {
-                    var twoDPoint = idPointShape.Move(vector);
-                    if (zone.IncludePt(twoDPoint))
-                    {
-                        inZone.Add(aabbPackBoxShape);
-                    }
-                    else
-                    {
-                        outZone.Add(aabbPackBoxShape);
-                    }
-                }
-                else
-                {
-                    inZone.Add(aabbPackBoxShape);
-                }
-            }
-
-            return (inZone, outZone);
-        }
 
         public static string ZoneLog(Zone zone)
         {
@@ -430,7 +365,7 @@ namespace collision_and_rigid
                 var b = block1.RealCoverPoint(endPt);
                 var cond = b ? CondAfterCross.ToIn : CondAfterCross.ToOut;
 #if DEBUG
-                Console.Out.WriteLine($"stPt {startPt.ToString()} is {startCond} edPt {endPt.ToString()} is {cond}");
+                Console.Out.WriteLine($"stPt {startPt} is {startCond} edPt {endPt} is {cond}");
 #endif
                 var (blockShapes, _, item3) =
                     blockShape.CutByPointReturnGoodBlockCondAndTemp(startCond, ptsAndCond2, temp2, cond);

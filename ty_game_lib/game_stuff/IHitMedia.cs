@@ -23,11 +23,12 @@ namespace game_stuff
         public static IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpace, IHitMedia hitMedia,
             SightMap? blockMap)
         {
-            var idPointShapes = qSpace.SelectMany(x => x.FilterToGIdPsList((bd, aHitMedia) =>
-                    bd is ICanBeHit canBeHit && aHitMedia.IsHit(canBeHit, blockMap), hitMedia,
+            var idPointShapes = qSpace.SelectMany(x => x.FilterToBoxList<IdPointBox, IHitMedia>((bd, aHitMedia) =>
+                    bd.IdPointShape is ICanBeHit canBeHit && aHitMedia.IsHit(canBeHit, blockMap), hitMedia,
                 hitMedia.RdZone.MoveToAnchor(hitMedia.Pos)));
             if (!hitMedia.HitNumLimit(out var num))
-                return idPointShapes.OfType<ICanBeHit>().Select(hitMedia.HitSth).Where(x => x != null)!;
+                return idPointShapes.Select(x => x.IdPointShape).OfType<ICanBeHit>().Select(hitMedia.HitSth)
+                    .Where(x => x != null)!;
 
             var shapes = idPointShapes.ToList();
             shapes.Sort((shape, pointShape) => shape.GetAnchor().GetDistance(hitMedia.Pos)
