@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -20,7 +22,6 @@ namespace game_stuff
 
         public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
         {
-            
             return new ApplyDevice(this, pos, isActive);
         }
 
@@ -58,6 +59,26 @@ namespace game_stuff
         public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             return SaleUnitStandard.ActWhichChar(characterStatus, interactive, this);
+        }
+
+        public static ISaleUnit GenByConfig(sale_unit saleUnit)
+        {
+            var firstOrDefault = saleUnit.Cost.FirstOrDefault();
+            var genByConfigGain = firstOrDefault == null
+                ? new GameItem(item_id.coin, 0)
+                : GameItem.GenByConfigGain(firstOrDefault);
+            var chooseRandCanSame = saleUnit.LimitIdRange.ChooseRandOne();
+            ISaleStuff saleStuff = saleUnit.SaleType switch
+            {
+                sale_type.prop => Prop.GenById(chooseRandCanSame),
+                sale_type.passive => PassiveTrait.GenById(chooseRandCanSame, 1),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            var gameItems = new GameItem[] { };
+            var unit = new SaleUnit(null, genByConfigGain, new[] {saleStuff}, saleUnit.Stack,
+                gameItems);
+            return unit;
         }
     }
 }

@@ -50,9 +50,8 @@ namespace game_stuff
             return SaleUnitStandard.GetRestStack(gid, this);
         }
 
-        public IMapInteractable PutInteractable(TwoDPoint pos,bool isActive)
+        public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
         {
-            
             return new ApplyDevice(this, pos, isActive);
         }
 
@@ -91,5 +90,29 @@ namespace game_stuff
         private ImmutableArray<(int weightOver, ISaleStuff[] good)> RandomGood { get; }
 
         private Random Random { get; }
+
+        public static ISaleUnit GenByConfig(sale_unit saleUnit)
+        {
+            var firstOrDefault = saleUnit.Cost.FirstOrDefault();
+            var genByConfigGain = firstOrDefault == null
+                ? new GameItem(item_id.coin, 0)
+                : GameItem.GenByConfigGain(firstOrDefault);
+            var chooseRandCanSame = saleUnit.LimitIdRange;
+            var saleStuff = saleUnit.SaleType switch
+            {
+                sale_type.prop => chooseRandCanSame.Select(x => (1, new ISaleStuff[] {Prop.GenById(x)}))
+                    .ToImmutableArray(),
+
+                sale_type.passive => chooseRandCanSame.Select(x => (1, new ISaleStuff[] {PassiveTrait.GenById(x, 1)}))
+                    .ToImmutableArray(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            var gameItems = new GameItem[] { };
+
+            var saleRandom = new SaleRandom(null, genByConfigGain, saleUnit.Stack, saleStuff, RandTools.StandardRandom,
+                gameItems);
+            return saleRandom;
+        }
     }
 }

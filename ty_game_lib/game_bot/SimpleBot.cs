@@ -202,8 +202,9 @@ namespace game_bot
                     if (characterStatusIsBeHitBySomeOne != null)
                     {
                         PathPoints.Clear();
-                        var twoDPoint = BotBody.GetAnchor().Move(characterStatusIsBeHitBySomeOne);
+                        var twoDPoint = BotBody.GetAnchor().Move(characterStatusIsBeHitBySomeOne.Multi(2f));
                         PathPoints.Add(twoDPoint);
+                        HavePeered = false;
                         BotStatus = BotStatus.GoMaybe;
                         return new BotOpAndThink();
                     }

@@ -104,12 +104,17 @@ namespace rogue_game
                     var chooseInts = ChooseInts(pointMap.MapType, gameChapter);
                     var next = chooseInts.ChooseRandCanSame(1, random).First();
                     var (creep, boss) = ChooseNpcId(pointMap.MapType, gameChapter, random);
-
+                    var selectMany = gameChapter.SaleUnits
+                        .SelectMany(x =>
+                            x.Range.ChooseRandCanSame(x.Num, random)
+                                .Select(SaleUnitStandard.GenById)
+                        );
 #if DEBUG
                     Console.Out.WriteLine(
                         $"creep {creep.Aggregate("", (s, x) => s + x + ",")} and boss {boss.Aggregate("", (s, x) => s + x + ",")}");
 #endif
-                    return PveMap.GenEmptyPveMap(pointMap, next, value, creep, boss);
+
+                    return PveMap.GenEmptyPveMap(pointMap, next, value, creep, boss,selectMany);
                 }
             );
             var start = pointMaps.FirstOrDefault(x => x.MapType == MapType.BigStart || x.MapType == MapType.SmallStart);

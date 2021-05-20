@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -715,6 +716,17 @@ namespace game_stuff
             }
         }
 
+        public void AddSaleUnitsToMap(IEnumerable<ISaleUnit> interactableSet, int teamStartId)
+        {
+            if (!Entrance.TryGetValue(teamStartId, out var startPts))
+                throw new DirectoryNotFoundException($"not such start id {teamStartId}");
+            var enumerable = interactableSet.ToArray();
+            var min = Math.Min(startPts.GetPtNum(), enumerable.Count());
+            var twoDPoints = startPts.GenPt(min);
+            var saleUnits = enumerable.Take(min);
+            var applyDevices = twoDPoints.Zip(saleUnits, (x, y) => new ApplyDevice(y, x, false));
+            AddRangeMapInteractable(applyDevices);
+        }
 
         public void AddRangeMapInteractable(IEnumerable<IMapInteractable> interactableSet)
         {

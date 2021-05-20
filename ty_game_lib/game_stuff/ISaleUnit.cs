@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
@@ -22,6 +24,7 @@ namespace game_stuff
         ISaleStuff[] GetGood();
 
         int GetRestStack(int? gid);
+    
     }
 
 
@@ -113,6 +116,26 @@ namespace game_stuff
             }
 
             return null;
+        }
+
+        public static ISaleUnit GenById(int i)
+        {
+            
+            if(CommonConfig.Configs.sale_units.TryGetValue(i,out var saleUnit))
+            {
+                return GenByConfig(saleUnit);
+            }
+
+            throw new DirectoryNotFoundException($"not such id {i}");
+        }
+
+        private static ISaleUnit GenByConfig(sale_unit saleUnit)
+        {
+            return saleUnit.IsRandomSale switch
+            {
+                true => SaleRandom.GenByConfig(saleUnit),
+                false => SaleUnit.GenByConfig(saleUnit)
+            };
         }
     }
 }

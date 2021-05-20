@@ -40,10 +40,18 @@ namespace rogue_game
             };
         }
 
-        public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid, int[] bNpc, int[] boss)
+        public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid, int[] bNpc, int[] boss,
+            IEnumerable<ISaleUnit> saleUnits = null!)
         {
             var (winCond, isClear) = GetWinCond(pointMap.MapType);
             var genEmptyPlayGround = PlayGround.GenEmptyPlayGround(resId, gmMid);
+
+            if (pointMap.MapType == MapType.Vendor)
+            {
+                genEmptyPlayGround.AddSaleUnitsToMap(saleUnits, 0);
+            }
+
+
             var pveMap = new PveMap(genEmptyPlayGround, new HashSet<BattleNpc>(), new HashSet<BattleNpc>(), winCond,
                 isClear, bNpc, boss);
             return pveMap;
@@ -51,11 +59,12 @@ namespace rogue_game
 
         public bool IsClear { get; private set; }
         public PlayGround PlayGround { get; }
-        public HashSet<BattleNpc> Bosses { get; private set; }
-        public HashSet<BattleNpc> Creeps { get; private set; }
-        public PveWinCond PveWinCond { get; }
-        public int[] CreepIdToSpawn { get; }
-        public int[] BossIdToSpawn { get; }
+        private HashSet<BattleNpc> Bosses { get; set; }
+        private HashSet<BattleNpc> Creeps { get; set; }
+        private PveWinCond PveWinCond { get; }
+        private int[] CreepIdToSpawn { get; }
+        private int[] BossIdToSpawn { get; }
+
 
         private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints,
             Random random,
@@ -112,8 +121,7 @@ namespace rogue_game
                 return true;
             }
 
-            
-            
+
             var immutableDictionary = kill.GroupBy(x => x.Item1).ToImmutableDictionary(p => p.Key,
                 p => p.SelectMany(x => x.Item2).ToImmutableList());
             switch (PveWinCond)
@@ -132,8 +140,6 @@ namespace rogue_game
                     if (ii > 0)
                     {
                         IsClear = !Bosses.Any();
-                        
-                        
                     }
 
                     return (all.ToImmutableList(), immutableDictionary, mapInteractableS.ToImmutableList());

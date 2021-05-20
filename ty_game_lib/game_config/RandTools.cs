@@ -6,11 +6,21 @@ namespace game_config
 {
     public static class RandTools
     {
+        public static Random StandardRandom { get; } = new Random();
+
         public static T ChooseRandOne<T>(this IList<T> array, Random random)
         {
             return (array.Any()
                 ? array.Count > 1
                     ? array[random.Next(array.Count)]
+                    : array[0]
+                : default)!;
+        }   
+        public static T ChooseRandOne<T>(this IList<T> array)
+        {
+            return (array.Any()
+                ? array.Count > 1
+                    ? array[StandardRandom.Next(array.Count)]
                     : array[0]
                 : default)!;
         }

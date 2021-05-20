@@ -24,6 +24,11 @@ namespace game_stuff
             return enumerable.ToArray();
         }
 
+        public int GetPtNum()
+        {
+            return Pts.Length;
+        }
+
         public TwoDPoint GenPt()
         {
             var ptsLength = Pts.Length;
