@@ -1,15 +1,41 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 
 namespace game_stuff
 {
+    public readonly struct PlayerTickSee
+    {
+        public ImmutableHashSet<IPerceivable> OnChange { get; }
+        public ImmutableHashSet<INotMoveCanBeSew> Appear { get; }
+        public ImmutableHashSet<INotMoveCanBeSew> Vanish { get; }
+
+        public PlayerTickSee(ImmutableHashSet<IPerceivable> onChange, ImmutableHashSet<INotMoveCanBeSew> appear,
+            ImmutableHashSet<INotMoveCanBeSew> vanish) : this()
+        {
+            OnChange = onChange;
+            Appear = appear;
+            Vanish = vanish;
+        }
+
+        public static PlayerTickSee GenPlayerSee(ImmutableHashSet<IPerceivable> thisTickSee,
+            ImmutableHashSet<INotMoveCanBeSew> lastTickSee)
+        {
+            var notMoveCanBeSews = thisTickSee.OfType<INotMoveCanBeSew>();
+            var immutableHashSet = thisTickSee.Except(notMoveCanBeSews);
+            var appear = thisTickSee.Except(lastTickSee).OfType<INotMoveCanBeSew>().ToImmutableHashSet();
+            var vanish = lastTickSee.Except(thisTickSee).OfType<INotMoveCanBeSew>().ToImmutableHashSet();
+            var playerTickSee = new PlayerTickSee(immutableHashSet, appear, vanish);
+            return playerTickSee;
+        }
+    }
+
+
     public readonly struct PlayGroundGoTickResult
     {
         public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> characterGidBeHit,
             ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapGidTidBeHit,
-            ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> playerSee,
+            ImmutableDictionary<int, PlayerTickSee> playerSee,
             ImmutableDictionary<int, TelePortMsg> playerTeleportTo)
         {
             CharacterGidBeHit = characterGidBeHit;
@@ -28,41 +54,17 @@ namespace game_stuff
         public ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> CharacterGidBeHit { get; }
 
         public ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> TrapGidTidBeHit
-        {
-            get;
+        { get;
         }
-
-        public ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> PlayerSee { get; }
+        public ImmutableDictionary<int, PlayerTickSee> PlayerSee { get; }
 
         public ImmutableDictionary<int, ImmutableHashSet<IHitMsg>> CharacterHitSomeThing { get; }
 
-        public static PlayGroundGoTickResult Sum(IEnumerable<PlayGroundGoTickResult> playGroundGoTickResults)
-        {
-            var hit = new Dictionary<int, ImmutableHashSet<IRelationMsg>>();
-            var trap = new Dictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>>();
-            var see = new Dictionary<int, ImmutableHashSet<IPerceivable>>();
-            var ints = new Dictionary<int, TelePortMsg>();
-            var (hit1, trap1, see2, dic) =
-                playGroundGoTickResults.Aggregate((hit, trap, see, ints), (s, x) =>
-                {
-                    var (dictionary, dictionary1, see1, ins) = s;
-                    var keyValuePairs = dictionary1.Union(x.TrapGidTidBeHit);
-                    var valuePairs = dictionary.Union(x.CharacterGidBeHit);
-                    var enumerable = see1.Union(x.PlayerSee);
-                    var union = ins.Union(x.PlayerTeleportTo);
-                    return ((Dictionary<int, ImmutableHashSet<IRelationMsg>> hit,
-                        Dictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trap,
-                        Dictionary<int, ImmutableHashSet<IPerceivable>> see, Dictionary<int, TelePortMsg> ints)) (
-                        valuePairs,
-                        keyValuePairs, enumerable, union);
-                });
-            return new PlayGroundGoTickResult(hit1.ToImmutableDictionary(), trap1.ToImmutableDictionary(),
-                see2.ToImmutableDictionary(), dic.ToImmutableDictionary());
-        }
+        // public static  
 
         public void Deconstruct(out ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit,
             out ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapBeHit,
-            out ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> playerSee,
+            out ImmutableDictionary<int, PlayerTickSee> playerSee,
             out ImmutableDictionary<int, TelePortMsg> playerTeleportTo)
         {
             playerSee = PlayerSee;

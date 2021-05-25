@@ -48,6 +48,7 @@ namespace rogue_game
 
         public PveMap NowPlayMap { get; set; }
 
+        public bool NeedCheckClear { get; set; }
         public Random Random { get; }
 
 
@@ -76,6 +77,7 @@ namespace rogue_game
             NowPlayMap = NowChapter.Entrance;
             BotTeam = new BotTeam();
             NowChapter.Entrance.AddCharacterBodiesToStart(characterBodies);
+            NeedCheckClear = true;
         }
 
         private bool Reborn(int seat, int toSeat)
@@ -115,7 +117,6 @@ namespace rogue_game
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
 
             NowPlayMap = nowChapterEntrance;
-           
         }
 
         private bool IsPlayerAllDead()
@@ -128,7 +129,7 @@ namespace rogue_game
         private bool IsFail()
         {
             var any = NowGamePlayers.Any();
-            if (any)
+            if (!any)
             {
                 return true;
             }
@@ -169,25 +170,25 @@ namespace rogue_game
             if (NowChapter.IsPass())
             {
                 GoNextChapter();
-                gameRespSet.Add(new ChapterPass());
+                gameRespSet.Add(new GameMsgPush(GamePushMsg.ChapterPass));
             }
 #if DEBUG
             // Console.Out.WriteLine($" clear!!~~~~~~~~~{NowPlayMap.IsClear}");
 #endif
-            if (NowPlayMap.IsClear)
+            if (NeedCheckClear && NowPlayMap.IsClear)
             {
                 NowPlayMap.PlayGround.ActiveApplyDevice();
 #if DEBUG
                 // Console.Out.WriteLine(
                 //     $" app!!~~~~~~~~~{NowPlayMap.PlayGround.GetMapApplyDevices().All(x => x.IsActive)}");
 #endif
-
-                gameRespSet.Add(new MapClear());
+                NeedCheckClear = false;
+                gameRespSet.Add(new GameMsgPush(GamePushMsg.MapClear));
             }
 
             if (IsFail())
             {
-                gameRespSet.Add(new GameFail());
+                gameRespSet.Add(new GameMsgPush(GamePushMsg.GameFail));
             }
 
             return gameRespSet;
@@ -241,6 +242,7 @@ namespace rogue_game
             NowPlayMap.TelePortOut();
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
+            NeedCheckClear = true;
             if (NowPlayMap.IsClear) return new RogueGameGoTickResult(playGroundGoTickResult, true);
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
 
@@ -274,17 +276,24 @@ namespace rogue_game
     {
     }
 
-    public class GameFail : IGameResp
+    public class GameMsgPush : IGameResp
     {
+        public GameMsgPush(GamePushMsg gameMsgToPush)
+        {
+            GameMsgToPush = gameMsgToPush;
+        }
+
+        public GamePushMsg GameMsgToPush { get; }
     }
 
-    public class MapClear : IGameResp
+    public enum GamePushMsg
     {
+        GameFail,
+        MapClear,
+        ChapterPass
     }
 
-    public class ChapterPass : IGameResp
-    {
-    }
+ 
 
     public class RequestResult : IGameResp
     {

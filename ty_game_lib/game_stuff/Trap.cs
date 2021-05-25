@@ -3,13 +3,14 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Trap : ICanBeHit, IBattleUnitStatus
+    public class Trap : ICanBeHit, IBattleUnitStatus, INotMoveCanBeSew
     {
         public Trap(CharacterStatus characterStatus, SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos,
             int tid,
             size bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
             uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChanceStack,
-            float damageMulti)
+            float damageMulti,
+            int instanceId)
         {
             NotOverFlow = true;
             Owner = characterStatus;
@@ -33,6 +34,7 @@ namespace game_stuff
             TrapMedia.Sign(this);
             LaunchMedia?.Sign(this);
             InBox = CovToIdBox();
+            MapInstanceId = instanceId ;
         }
 
         public override string ToString()
@@ -227,6 +229,8 @@ namespace game_stuff
             else
                 return (DmgShow?) null;
         }
+
+        public int MapInstanceId { get; set; }
     }
 
     public class TrapTickMsg : ISeeTickMsg

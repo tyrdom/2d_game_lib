@@ -29,7 +29,7 @@ namespace game_stuff
         }
     }
 
-    public class VehicleCanIn : IMapInteractable
+    public class VehicleCanIn : IMapInteractable, INotMoveCanBeSew
     {
         private VehicleCanIn(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
         {
@@ -64,6 +64,7 @@ namespace game_stuff
             CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
+            MapInstanceId = -1;
         }
 
         private static Interaction GenInteractionByConfig(ICanPutInMapInteractable vehicle, interaction interaction1,
@@ -150,6 +151,11 @@ namespace game_stuff
             return new VehicleCanInTickMsg(vehicleVId, vehicleIsDsOn, genShortStatus, GetAnchor());
         }
 
+        public ISeeTickMsg GenNotMoveTickMsg(int? gid = null)
+        {
+            return GenTickMsg(gid);
+        }
+
         public TwoDPoint GetAnchor()
         {
             return CanInterActiveRound.O;
@@ -161,5 +167,7 @@ namespace game_stuff
             var (_, destroyBullet, weapons) = vehicle.GoATickCheckSurvival();
             return (destroyBullet, weapons);
         }
+
+        public int MapInstanceId { get; set; }
     }
 }

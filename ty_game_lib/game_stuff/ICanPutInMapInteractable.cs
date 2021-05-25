@@ -40,7 +40,7 @@ namespace game_stuff
 
     public static class CanPutInMapInteractableStandard
     {
-        public static IMapInteractable PutInMapInteractable(TwoDPoint pos,
+        public static CageCanPick PutInMapInteractable(TwoDPoint pos,
             IPutInCage putInCage)
         {
             switch (putInCage.InWhichMapInteractive)

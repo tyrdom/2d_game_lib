@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 
@@ -25,6 +26,10 @@ namespace game_stuff
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
 
+        private Dictionary<int, ImmutableHashSet<INotMoveCanBeSew>> LastTickRecord { get; }
+
+        private int NowMapInstanceInteractableId { get; set; }
+
         public List<ApplyDevice> GetMapApplyDevices()
         {
             var applyDevices = new List<ApplyDevice>();
@@ -32,6 +37,29 @@ namespace game_stuff
             MapInteractableThings.ForeachBoxDoWithOutMove<List<ApplyDevice>, ApplyDevice>(
                 (idp, aps) => { aps.Add(idp); }, applyDevices);
             return applyDevices;
+        }
+
+        private int GenAMapInstanceId()
+        {
+            NowMapInstanceInteractableId++;
+            if (NowMapInstanceInteractableId >= int.MaxValue)
+            {
+                NowMapInstanceInteractableId = 0;
+            }
+
+            return NowMapInstanceInteractableId;
+        }
+
+        private int[] GenALotInstanceId(int count)
+        {
+            var ints = new List<int>();
+            for (var i = 0; i < count; i++)
+            {
+                var mapApplyDevices = GenAMapInstanceId();
+                ints.Add(mapApplyDevices);
+            }
+
+            return ints.ToArray();
         }
 
         private PlayGround(Dictionary<int, (IQSpace playerBodies, IQSpace Traps)> teamToBodies, SightMap? sightMap,
@@ -50,6 +78,8 @@ namespace game_stuff
             Entrance = entrance;
             BulletBlockMap = bulletBlockMap;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
+            LastTickRecord = new Dictionary<int, ImmutableHashSet<INotMoveCanBeSew>>();
+            NowMapInstanceInteractableId = 0;
         }
 
         public static PlayGround GenEmptyPlayGround(int resId, int genId)
@@ -151,14 +181,8 @@ namespace game_stuff
             var playGround = new PlayGround(spaces, mapInitData.SightMap, mapInitData.WalkMap, characterBodies,
                 emptyRootBranch3, genMapId, mapResId, zone, mapInitData.TeamToStartPt, mapInitData.BulletBlockMap);
 
-            foreach (var applyDevice in mapInitData.StandardMapInteractableList)
-            {
-                applyDevice.SetInPlayGround(playGround);
-            }
+            playGround.AddRangeMapInteractable(mapInitData.StandardMapInteractableList);
 
-            var aaBbBoxes = mapInitData.StandardMapInteractableList.OfType<IAaBbBox>().IeToHashSet();
-            playGround.MapInteractableThings.AddRangeAabbBoxes(aaBbBoxes,
-                CommonConfig.OtherConfig.qspace_max_per_level);
 
             return playGround;
         }
@@ -246,13 +270,24 @@ namespace game_stuff
                             .ToImmutableHashSet();
                     });
 
+            var playerTickSees = playerPerceivable.ToImmutableDictionary(x => x.Key,
+                x => PlayerTickSee.GenPlayerSee(x.Value,
+                    LastTickRecord.TryGetValue(x.Key, out var t) ? t : ImmutableHashSet<INotMoveCanBeSew>.Empty));
+
+            foreach (var keyValuePair in playerPerceivable)
+            {
+                var key = keyValuePair.Key;
+                var notMoveCanBeSews = keyValuePair.Value.OfType<INotMoveCanBeSew>();
+                LastTickRecord[key] = notMoveCanBeSews.ToImmutableHashSet();
+            }
+
             var valueTuple =
                 new PlayGroundGoTickResult(
                     playerBeHit.ToImmutableDictionary(p => p.Key,
                         p => p.Value.ToImmutableHashSet()), trapBeHit.ToImmutableDictionary(pa => pa.Key,
                         pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
                             pp => pp.Value.ToImmutableHashSet())),
-                    playerPerceivable, teleports.ToImmutableDictionary());
+                    playerTickSees, teleports.ToImmutableDictionary());
 
             return valueTuple;
         }
@@ -292,9 +327,8 @@ namespace game_stuff
                 MapInteractableThings.RemoveSingleAaBbBox(vehicleCanIn);
             }
 
-            var selectMany = tuples.SelectMany(x => x.weapons.Select(w => (IAaBbBox) w.DropAsIMapInteractable(x.pos)));
-            var enumerableToHashSet = selectMany.IeToHashSet();
-            MapInteractableThings.AddRangeAabbBoxes(enumerableToHashSet, CommonConfig.OtherConfig.qspace_max_per_level);
+            var selectMany = tuples.SelectMany(x => x.weapons.Select(w => w.DropAsIMapInteractable(x.pos)));
+            AddRangeMapInteractable(selectMany);
         }
 
 
@@ -628,11 +662,7 @@ namespace game_stuff
                     }
 
                     var mapInteractive = aCharGoTickMsg.DropThing;
-                    foreach (var aInteractable in mapInteractive)
-                    {
-                        MapInteractableThings.AddSingleAaBbBox(aInteractable,
-                            CommonConfig.OtherConfig.qspace_max_per_level);
-                    }
+                    AddRangeMapInteractable(mapInteractive);
 
                     var interactCaller = aCharGoTickMsg.WhoInteractCall;
                     if (interactCaller != null)
@@ -707,8 +737,8 @@ namespace game_stuff
 
                     return null;
                 case Summon summons:
-
-                    var aTrap = summons.SetATrap();
+                    var genAMapInstanceId = GenAMapInstanceId();
+                    var aTrap = summons.SetATrap(genAMapInstanceId);
                     return aTrap;
 
                 default:
@@ -731,20 +761,32 @@ namespace game_stuff
         public void AddRangeMapInteractable(IEnumerable<IMapInteractable> interactableSet)
         {
             var mapInteractables = interactableSet.IeToHashSet();
+            var notMoveCanBeSews = mapInteractables.OfType<INotMoveCanBeSew>();
             foreach (var applyDevice in mapInteractables.OfType<ApplyDevice>())
             {
                 applyDevice.SetInPlayGround(this);
             }
 
-            MapInteractableThings.AddRangeAabbBoxes(mapInteractables.Cast<IAaBbBox>().IeToHashSet(),
+            foreach (var notMoveCanBeSew in notMoveCanBeSews)
+            {
+                notMoveCanBeSew.MapInstanceId = GenAMapInstanceId();
+            }
+
+            MapInteractableThings.AddRangeAabbBoxes(mapInteractables.OfType<IAaBbBox>().IeToHashSet(),
                 CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
+
         public void AddMapInteractable(IMapInteractable interactable)
         {
-            if (interactable is ApplyDevice applyDevice)
+            switch (interactable)
             {
-                applyDevice.SetInPlayGround(this);
+                case ApplyDevice applyDevice:
+                    applyDevice.SetInPlayGround(this);
+                    break;
+                case INotMoveCanBeSew notMoveCanBeSew:
+                    notMoveCanBeSew.MapInstanceId = GenAMapInstanceId();
+                    break;
             }
 
             MapInteractableThings.AddSingleAaBbBox(interactable, CommonConfig.OtherConfig.qspace_max_per_level);

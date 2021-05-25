@@ -594,7 +594,7 @@ namespace game_stuff
 
             var actResult = getThing.ActWhichChar(this, interactive);
 
-            HashSet<IAaBbBox>? dropThings1DropSet = null;
+            HashSet<IMapInteractable>? dropThings1DropSet = null;
             TelePortMsg? t = null;
             var mapInteractive = getThing is IApplyUnit ? null : getThing.InWhichMapInteractive;
             switch (actResult)
@@ -602,7 +602,7 @@ namespace game_stuff
                 case null:
                     break;
                 case DropThings dropThings1:
-                    dropThings1DropSet = dropThings1.DropSet.OfType<IAaBbBox>().IeToHashSet();
+                    dropThings1DropSet = dropThings1.DropSet.IeToHashSet();
                     break;
                 case TelePortMsg telePort:
                     t = telePort;
@@ -764,7 +764,7 @@ namespace game_stuff
 
                     var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
                     return new CharGoTickResult(launchBullet: destroyBullet,
-                        dropThing: mapInteractables.OfType<IAaBbBox>().IeToHashSet());
+                        dropThing: mapInteractables.IeToHashSet());
                 }
             }
 
@@ -937,7 +937,13 @@ namespace game_stuff
                 // 非连击状态切换武器
                 if (opAction == SkillAction.Switch)
                 {
+#if DEBUG
+                    Console.Out.WriteLine($"Now Weapon {NowWeapon} switch to");
+#endif
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
+#if DEBUG
+                    Console.Out.WriteLine($"Now Weapon {NowWeapon} in {GetWeapons().Count()}");
+#endif
                     ResetSnipe();
                     LoadSkill(operate.Aim, DefaultTakeOutWeapon, SkillAction.Switch, operate.Move);
                     SilentChange = true;
@@ -1012,7 +1018,7 @@ namespace game_stuff
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                 NowVehicle = null;
 
-                return new CharGoTickResult(dropThing: new HashSet<IAaBbBox> {genIMapInteractable});
+                return new CharGoTickResult(dropThing: new HashSet<IMapInteractable> {genIMapInteractable});
             }
         }
 

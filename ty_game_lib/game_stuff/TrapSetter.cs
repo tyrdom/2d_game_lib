@@ -56,7 +56,7 @@ namespace game_stuff
             TrickDelayTick = trap.TrickDelayTime;
         }
 
-        public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos)
+        public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos ,int mapInstanceId)
         {
             var id = characterStatus.GetId() * CommonConfig.OtherConfig.up_trap_max + characterStatus.Traps.Count;
 
@@ -65,13 +65,13 @@ namespace game_stuff
                     CallTrapTick,
                     MaxLifeTimeTick, 0,
                     TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
-                    characterStatus.TrapAtkMulti);
+                    characterStatus.TrapAtkMulti,mapInstanceId);
             var (baseSurvivalStatus, _) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value));
             var trap = new Trap(characterStatus, baseSurvivalStatus, CanBeSee, pos, id, BodySize,
                 CallTrapTick,
                 MaxLifeTimeTick, 0,
                 TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
-                characterStatus.TrapAtkMulti);
+                characterStatus.TrapAtkMulti,mapInstanceId);
             return trap;
         }
 

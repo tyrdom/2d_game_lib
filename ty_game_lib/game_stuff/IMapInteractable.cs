@@ -4,7 +4,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface IMapInteractable : IAaBbBox, ICanBeSaw
+    public interface IMapInteractable : IAaBbBox,ICanBeSaw
     {
         public void RecordQuad(int qI);
 

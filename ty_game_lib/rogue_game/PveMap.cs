@@ -59,8 +59,8 @@ namespace rogue_game
 
         public bool IsClear { get; private set; }
         public PlayGround PlayGround { get; }
-        private HashSet<BattleNpc> Bosses { get; set; }
-        private HashSet<BattleNpc> Creeps { get; set; }
+        public HashSet<BattleNpc> Bosses { get; private set; }
+        public HashSet<BattleNpc> Creeps { get; private set; }
         private PveWinCond PveWinCond { get; }
         private int[] CreepIdToSpawn { get; }
         private int[] BossIdToSpawn { get; }
@@ -167,7 +167,7 @@ namespace rogue_game
             PlayGround.RemoveAllBodies();
         }
 
-
+        
         public void TeleportToThisMap(IEnumerable<(CharacterBody, TwoDPoint)> characterBodiesToPt)
         {
             PlayGround.AddBodies(characterBodiesToPt);

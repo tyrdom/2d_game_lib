@@ -11,6 +11,11 @@ namespace game_stuff
     {
     }
 
+    public interface INotMoveCanBeSew : ICanBeSaw
+    {
+        int MapInstanceId { get; set; }
+    }
+
     public interface ICanBeEnemy : IPerceivable
     {
     }

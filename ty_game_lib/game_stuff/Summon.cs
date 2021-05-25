@@ -35,14 +35,14 @@ namespace game_stuff
         private TrapSetter TrapSetter { get; }
 
 
-        public IdPointBox? SetATrap()
+        public IdPointBox? SetATrap(int genAMapInstanceId)
         {
             switch (Caster)
             {
                 case null:
                     return null;
                 case CharacterStatus characterStatus:
-                    var genATrap = TrapSetter.GenATrap(characterStatus, Pos);
+                    var genATrap = TrapSetter.GenATrap(characterStatus, Pos, genAMapInstanceId);
                     characterStatus.AddTrap(genATrap);
                     return genATrap.InBox;
                 case Trap _:

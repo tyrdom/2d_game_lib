@@ -45,18 +45,18 @@ namespace game_bot
                     SizeToNaviMap.TryGetValue(x.Item2.GetSize(), out var top)
                         ? top
                         : throw new KeyNotFoundException()));
-            
-            
+
+
             SimpleBots = simpleBots.IeToHashSet();
         }
 
-        public void AllBotsGoATick(ImmutableDictionary<int, ImmutableHashSet<IPerceivable>> perceivable)
+        public void AllBotsGoATick(ImmutableDictionary<int, PlayerTickSee> perceivable)
         {
             var botOpAndThinks = SimpleBots.ToDictionary(bot => bot.BotBody.GetId(), bot =>
             {
                 var key = bot.BotBody.GetId();
                 var canBeEnemies = perceivable.TryGetValue(key, out var enumerable)
-                    ? enumerable.OfType<ICanBeEnemy>()
+                    ? enumerable.OnChange.OfType<ICanBeEnemy>()
                     : new ICanBeEnemy[] { };
                 var botSimpleGoATick = bot.BotSimpleGoATick(canBeEnemies,
                     SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)

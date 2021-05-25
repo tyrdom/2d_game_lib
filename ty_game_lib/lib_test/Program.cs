@@ -24,7 +24,8 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
+                    1);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData2 =
@@ -56,7 +57,7 @@ namespace lib_test
                 var dVector1 = new TwoDVector(0, -0.5f);
                 var dVector = new TwoDVector(0, -1f);
                 var operate = i < 100
-                    ? new Operate(aim: twoDVector)
+                    ? new Operate(aim: twoDVector, skillAction: SkillAction.Switch)
                     : new Operate(aim: twoDVector, move: dVector);
 
                 var operate1 = new Operate(move: dVector1);
@@ -76,7 +77,7 @@ namespace lib_test
                     genByConfig.GameConsoleGoATick(new Dictionary<int, IGameRequest>());
                 }
 
-                var characterBodies = playerSee[1].OfType<CharacterBody>();
+                var characterBodies = playerSee[1].OnChange.OfType<CharacterBody>();
                 var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 5);
                 var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
                 var twoDPoint = firstOrDefault?.GetAnchor();

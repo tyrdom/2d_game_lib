@@ -32,6 +32,7 @@ namespace game_stuff
             NowR = nowR;
         }
 
+        
 
         public bool InSight(TwoDVectorLine sLine, SightMap? map, Scope? scope)
         {

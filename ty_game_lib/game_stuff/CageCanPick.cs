@@ -6,21 +6,8 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CageCanPick : IMapInteractable
+    public class CageCanPick : IMapInteractable, INotMoveCanBeSew
     {
-        private CageCanPick(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
-        {
-            CharActOne = charActOne;
-            CharActOne.InMapInteractable.InWhichMapInteractive = this;
-            CharActTwo = charActTwo;
-            CharActTwo.InMapInteractable.InWhichMapInteractive = this;
-            CanInterActiveRound = canInterActiveRound;
-            Zone = zone;
-            NowInterCharacterBody = null;
-            LocateRecord = new Queue<Quad>();
-        }
-
-
         public static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable,
             interaction interaction,
             MapInteract mapInteract)
@@ -57,6 +44,7 @@ namespace game_stuff
             CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
+            MapInstanceId = -1;
         }
 
 
@@ -139,7 +127,6 @@ namespace game_stuff
 
         public IEnumerable<(int, IAaBbBox)> SplitByQuads(Zone zone)
         {
-            
             return MapInteractableDefault.SplitByQuads(zone, this);
         }
 
@@ -159,6 +146,8 @@ namespace game_stuff
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+
+        public int MapInstanceId { get; set; }
     }
 
     public enum ContainType
