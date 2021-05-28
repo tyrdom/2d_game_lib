@@ -151,11 +151,6 @@ namespace game_stuff
             return new VehicleCanInTickMsg(vehicleVId, vehicleIsDsOn, genShortStatus, GetAnchor());
         }
 
-        public ISeeTickMsg GenNotMoveTickMsg(int? gid = null)
-        {
-            return GenTickMsg(gid);
-        }
-
         public TwoDPoint GetAnchor()
         {
             return CanInterActiveRound.O;

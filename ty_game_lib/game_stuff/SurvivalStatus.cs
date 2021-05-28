@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
 using game_config;
@@ -34,6 +36,7 @@ namespace game_stuff
         private uint ShieldInstability { get; set; }
         private uint ShieldRecover { get; set; }
 
+        public HashSet<SurvivalChangeMark> SurvivalChangeMarks { get; }
 
         private SurvivalStatus(uint maxHp, uint nowHp, uint nowArmor, uint maxArmor, uint nowShield, uint maxShield,
             uint shieldDelayTick, uint armorDefence, uint shieldRecover, uint shieldInstability)
@@ -49,6 +52,7 @@ namespace game_stuff
             ShieldRecover = shieldRecover;
             ShieldInstability = shieldInstability;
             NowDelayTick = 0;
+            SurvivalChangeMarks = new HashSet<SurvivalChangeMark>();
         }
 
         public static SurvivalStatus StartTestSurvivalStatus()
@@ -141,7 +145,7 @@ namespace game_stuff
             if (NowShield > 0)
             {
                 var nowShield = (int) NowShield - (int) ShieldInstability - rest;
-
+                SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
                 if (nowShield > 0)
                 {
                     NowShield = (uint) nowShield;
@@ -157,7 +161,7 @@ namespace game_stuff
             if (NowArmor > 0)
             {
                 var nowArmor = (int) NowArmor - (int) MathTools.Max(0, rest - (int) ArmorDefence);
-
+                SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
                 if (nowArmor > 0)
                 {
                     NowArmor = (uint) nowArmor;
@@ -170,6 +174,7 @@ namespace game_stuff
                 }
             }
 
+            SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
             if ((uint) rest >= NowHp)
             {
                 NowHp = 0;
@@ -188,16 +193,30 @@ namespace game_stuff
 
         private void GetHeal(float regenerationHealMulti, float healMulti)
         {
+            if (NowHp >= MaxHp)
+            {
+                return;
+            }
+
+            SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
+
             NowHp = (uint) MathTools.Min(NowHp + regenerationHealMulti * MaxHp * healMulti, MaxHp);
         }
 
         private void FixArmor(float regenerationFixMulti, float fixMulti)
         {
+            if (NowArmor >= MaxArmor)
+            {
+                return;
+            }
+
+            SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
             NowArmor = (uint) MathTools.Min(NowArmor + regenerationFixMulti * MaxArmor * fixMulti, MaxArmor);
         }
 
         private void ChargeShield(float regenerationShieldMulti, float chargeMulti)
         {
+            SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
             var maxShield = (uint) (regenerationShieldMulti * MaxShield * chargeMulti);
             NowShield += maxShield;
         }
@@ -210,6 +229,7 @@ namespace game_stuff
 
             if (NowShield < MaxShield && NowDelayTick == 0)
             {
+                SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
                 NowShield = Math.Min(NowShield + ShieldRecover, MaxShield);
             }
 
@@ -276,17 +296,20 @@ namespace game_stuff
         {
             var shieldInstability = damage + hit * ShieldInstability;
             NowShield = (uint) (NowShield + shieldInstability * absorbStatusShieldAbs);
+            SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
         }
 
         private void ArmorAbs(float absorbStatusArmorAbs, uint damage, uint hit, uint damageShardedDamage)
         {
             var shieldInstability = damage - hit * Math.Min(ArmorDefence, damageShardedDamage);
             NowShield = (uint) (NowShield + shieldInstability * absorbStatusArmorAbs);
+            SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
         }
 
         private void HpAbs(float absorbStatusHpAbs, uint damage)
         {
             NowHp = (uint) (NowShield + damage * absorbStatusHpAbs);
+            SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
         }
 
         public void Full()
@@ -309,5 +332,61 @@ namespace game_stuff
         {
             return (float) NowShield / MaxShield;
         }
+
+        public IEnumerable<ICharEvent> GenSurvivalEvents()
+        {
+            return SurvivalChangeMarks.Select(x =>
+            {
+                ICharEvent charEvent = x switch
+                {
+                    SurvivalChangeMark.ShieldChange => new ShieldChange(NowShield),
+                    SurvivalChangeMark.ArmorChange => new ArmorChange(NowArmor),
+                    SurvivalChangeMark.HpChange => new HpChange(NowHp),
+                    _ => throw new ArgumentOutOfRangeException(nameof(x), x, null)
+                };
+                return charEvent;
+            });
+        }
+    }
+
+    public class HpChange : ICharEvent
+    {
+        public HpChange(uint nowHp)
+        {
+            NowHp = nowHp;
+        }
+
+        public uint NowHp { get; }
+    }
+
+    public class ShieldChange : ICharEvent
+    {
+        public ShieldChange(uint nowShield)
+        {
+            NowShield = nowShield;
+        }
+
+        public uint NowShield { get; }
+    }
+
+    public class ArmorChange : ICharEvent
+    {
+        public ArmorChange(uint nowArmor)
+        {
+            NowArmor = nowArmor;
+        }
+
+        public uint NowArmor { get; }
+    }
+
+    public enum SurvivalChangeMark
+    {
+        ShieldChange,
+        ArmorChange,
+        HpChange,
+        ShieldMaxChange,
+        ArmorMaxChange,
+        HpMaxChange
+
     }
 }

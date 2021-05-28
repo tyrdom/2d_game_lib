@@ -380,16 +380,16 @@ namespace game_stuff
 
                 void InitBuff()
                 {
-                    targetCharacterStatus.PauseTick = Math.Max(PauseToOpponent, targetCharacterStatus.PauseTick);
+                    targetCharacterStatus.SetPauseTick(Math.Max(PauseToOpponent, targetCharacterStatus.PauseTick));
 #if DEBUG
                     Console.Out.WriteLine($"bullet hit!! target pause tick {targetCharacterStatus.PauseTick}");
 #endif
-                    targetCharacterStatus.StunBuff = antiActBuffConfig
+                    targetCharacterStatus.SetStunBuff(antiActBuffConfig
                         .GenBuff(Pos,
                             targetCharacterStatus.GetPos(),
                             Aim,
                             null, 0,
-                            targetCharacterBodyBodySize, caster);
+                            targetCharacterBodyBodySize, caster));
                     //初始化buff时，如果是抓取技能，会触发技能
                     switch (antiActBuffConfig)
                     {
@@ -418,7 +418,7 @@ namespace game_stuff
                     case PushOnAir pushOnAir:
                         if (PauseToOpponent > targetCharacterStatus.PauseTick)
                         {
-                            targetCharacterStatus.PauseTick = PauseToOpponent;
+                            targetCharacterStatus.SetPauseTick(PauseToOpponent);
                         }
 
                         var height = pushOnAir.Height;
@@ -427,7 +427,7 @@ namespace game_stuff
                             Aim,
                             height,
                             pushOnAir.UpSpeed, targetCharacterBodyBodySize, caster);
-                        targetCharacterStatus.StunBuff = antiActBuff;
+                        targetCharacterStatus.SetStunBuff(antiActBuff);
                         break;
                     case PushOnEarth _:
 
@@ -497,11 +497,11 @@ namespace game_stuff
             var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                 bodyCaster.GetPos(), Aim,
                 null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
-            bodyCaster.StunBuff = antiActBuff;
+            bodyCaster.SetStunBuff(antiActBuff);
             var antiActBuff2 = StuffLocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
                 targetCharacterStatus.GetPos(), Aim,
                 null, 0, targetCharacterStatus.CharacterBody.GetSize(), bodyCaster);
-            targetCharacterStatus.StunBuff = antiActBuff2;
+            targetCharacterStatus.SetStunBuff(antiActBuff2);
         }
 
 
@@ -512,10 +512,10 @@ namespace game_stuff
             bodyCaster.ResetSnipe();
             bodyCaster.ResetCastAct();
             //生成击中受击消息数据缓存
-            bodyCaster.IsBeHitBySomeOne =
-                TwoDVector.TwoDVectorByPt(bodyCaster.GetPos(), targetCharacterStatus.GetPos());
 
-            targetCharacterStatus.IsHitSome = true;
+            bodyCaster.SetHitMark(
+                TwoDVector.TwoDVectorByPt(bodyCaster.GetPos(), targetCharacterStatus.GetPos()));
+
 
             if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
             {
@@ -534,7 +534,7 @@ namespace game_stuff
                     targetCharacterStatus.GetAim(),
                     null,
                     0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
-                bodyCaster.StunBuff = antiActBuff;
+                bodyCaster.SetStunBuff(antiActBuff);
             }
             else //对手在攻击状态，通过通用失败buff读取
             {
@@ -544,7 +544,7 @@ namespace game_stuff
                 var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                     bodyCaster.GetPos(), TwoDVector.Zero(),
                     null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
-                bodyCaster.StunBuff = antiActBuff;
+                bodyCaster.SetStunBuff(antiActBuff);
             }
         }
 

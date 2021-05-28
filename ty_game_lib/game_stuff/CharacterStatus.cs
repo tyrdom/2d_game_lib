@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
@@ -81,6 +82,9 @@ namespace game_stuff
         {
             NowProtectValue = 0;
             NowCastAct = charAct;
+            var startAct = new StartAct(charAct.GetTypeEnum(), charAct.GetIntId(),
+                charAct.NowOnTick);
+            CharEvents.Add(startAct);
         }
 
         private (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
@@ -115,9 +119,24 @@ namespace game_stuff
         private uint MaxCallLongStack { get; }
 
         //be hit status
-        public int PauseTick { get; set; }
+        public int PauseTick { get; private set; }
 
-        public IStunBuff? StunBuff { get; set; }
+        public void SetPauseTick(int tick)
+        {
+            if (PauseTick <= 0) return;
+            PauseTick = tick;
+            var getPauseTick = new GetPauseTick(tick);
+            CharEvents.Add(getPauseTick);
+        }
+
+        public IStunBuff? StunBuff { get; private set; }
+
+        public void SetStunBuff(IStunBuff stunBuff)
+        {
+            StunBuff = stunBuff;
+            var getStunBuff = new GetStunBuff(stunBuff.RestTick);
+            CharEvents.Add(getStunBuff);
+        }
 
         //protect status
         private int NowProtectValue { get; set; }
@@ -134,7 +153,7 @@ namespace game_stuff
 
         public Dictionary<TrickCond, HashSet<IPlayingBuff>> BuffTrick { get; }
 
-        private Dictionary<int, IPlayingBuff> PlayingBuffs { get; set; }
+        private Dictionary<int, IPlayingBuff> PlayingBuffs { get; }
 
         // Status
         public AttackStatus AttackStatus { get; }
@@ -157,6 +176,11 @@ namespace game_stuff
 
         public SurvivalStatus SurvivalStatus { get; }
 
+        public SurvivalStatus GetNowSurvivalStatus()
+        {
+            return NowVehicle != null ? NowVehicle.SurvivalStatus : SurvivalStatus;
+        }
+
         public RegenEffectStatus RegenEffectStatus { get; }
 
         public AbsorbStatus AbsorbStatus { get; }
@@ -169,21 +193,13 @@ namespace game_stuff
 
 
         // for_tick_msg
-        public bool HaveChange { get; set; } //todo to change an use
-        public SkillAction? SkillLaunch { get; private set; }
-        public SnipeAction? TickSnipeActionLaunch { get; private set; }
-        public bool IsPause { get; private set; }
-        public TwoDVector? IsBeHitBySomeOne { get; set; }
-        public bool IsHitSome { get; set; }
-        public bool SilentChange { get; private set; }
-
-        // drops_bonus
+        public List<ICharEvent> CharEvents { get; }
+        private HashSet<BaseChangeMark> BaseChangeMarks { get; }
 
 
         public CharacterStatus(int gId, int baseAttrId, PlayingItemBag playingItemBag,
             Dictionary<passive_id, PassiveTrait>? passiveTraits = null, int? maxWeaponNum = null)
         {
-            HaveChange = false;
             ScoreData = new CharKillData();
             var genBaseAttrById = GameTools.GenBaseAttrById(baseAttrId);
             SurvivalStatus = SurvivalStatus.GenByConfig(genBaseAttrById);
@@ -220,11 +236,9 @@ namespace game_stuff
             PlayingItemBag = playingItemBag;
             DefaultTakeOutWeapon = Skill.GenSkillById(CommonConfig.OtherConfig.default_take_out_skill);
             NowMoveSpeed = 0f;
-            SkillLaunch = null;
+            CharEvents = new List<ICharEvent>();
+            BaseChangeMarks = new HashSet<BaseChangeMark>();
 
-            IsPause = false;
-            IsBeHitBySomeOne = null;
-            IsHitSome = false;
 
             ResetSnipe();
             Prop = null;
@@ -280,12 +294,22 @@ namespace game_stuff
 
         private void OpChangeAim(TwoDVector? aim)
         {
+            if (aim != null)
+            {
+                BaseChangeMarks.Add(BaseChangeMark.AimC);
+            }
+
             var twoSToSeePerTick =
                 NowVehicle == null
                     ? CommonConfig.OtherConfig.two_s_to_see_pertick
                     : CommonConfig.OtherConfig.two_s_to_see_pertick_medium_vehicle;
 
-            CharacterBody.Sight.OpChangeAim(aim, GetNowScope(), twoSToSeePerTick);
+            var nowScope = GetNowScope();
+            var opChangeAim = CharacterBody.Sight.OpChangeAim(aim, nowScope, twoSToSeePerTick);
+            if (opChangeAim)
+            {
+                BaseChangeMarks.Add(BaseChangeMark.NowRc);
+            }
         }
 
         public void Reborn()
@@ -300,13 +324,11 @@ namespace game_stuff
             SurvivalStatus.Full();
             NowProtectTick = 30;
             NowMoveSpeed = 0f;
-            SkillLaunch = null;
-            IsPause = false;
-            IsBeHitBySomeOne = null;
-            IsHitSome = false;
+
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;
+            TempMsgClear();
         }
 
         public Scope? GetNowScope()
@@ -314,6 +336,9 @@ namespace game_stuff
             if (NowOnSnipeAct == null || NowSnipeStep < 0 || !GetWeapons().TryGetValue(NowWeapon, out var weapon))
                 return NowVehicle?.StandardScope ?? null;
             var weaponZoomStepScope = weapon.ZoomStepScopes[NowSnipeStep];
+#if DEBUG
+            Console.Out.WriteLine($"weapon Now Scope theta {weaponZoomStepScope.Theta}");
+#endif
             return weaponZoomStepScope;
         }
 
@@ -332,7 +357,7 @@ namespace game_stuff
                 return new CharGoTickResult();
             }
 
-            SkillLaunch = skillAction;
+
             SetAct(skill);
 
             var (posMedia, canInputMove) = skill.GetSkillStart(GetPos(), GetAim());
@@ -408,8 +433,7 @@ namespace game_stuff
                     !weapon.Snipes.TryGetValue(snipeAction, out var snipe))
                 {
                     if (NowTempSnipe == null) return;
-                    NowOnSnipeAct = SnipeAction.SnipeOff;
-                    TickSnipeActionLaunch = SnipeAction.SnipeOff;
+                    SetNowOnSnipAct(SnipeAction.SnipeOff);
                     OffSnipe(NowTempSnipe);
                     return;
                 }
@@ -419,24 +443,28 @@ namespace game_stuff
                     return;
                 }
 
-
-                NowOnSnipeAct = snipeAction;
                 SnipeCallStack = 0;
                 NowTempSnipe = snipe;
-                TickSnipeActionLaunch = snipeAction;
+                SetNowOnSnipAct(snipeAction);
                 OnSnipe(NowTempSnipe);
             }
             else
             {
-                TickSnipeActionLaunch = SnipeAction.SnipeOff;
                 if (NowTempSnipe != null)
                 {
-                    NowOnSnipeAct = snipeAction;
+                    SetNowOnSnipAct(snipeAction);
 
                     OffSnipe(NowTempSnipe);
                 }
                 else ResetSnipe();
             }
+        }
+
+        private void SetNowOnSnipAct(SnipeAction snipeAction)
+        {
+            NowOnSnipeAct = snipeAction;
+            var tickSnipeActionLaunch = new TickSnipeActionLaunch(snipeAction);
+            CharEvents.Add(tickSnipeActionLaunch);
         }
 
         private Snipe? NowTempSnipe { get; set; }
@@ -471,21 +499,30 @@ namespace game_stuff
         //开镜
         private void OnSnipe(Snipe snipe)
         {
+            var temp = NowSnipeStep;
             NowSnipeStep = NowSnipeStep < snipe.MaxStep
                 ? Math.Min(NowSnipeStep + snipe.AddStepPerTick, snipe.MaxStep)
                 : Math.Max(NowSnipeStep - snipe.OffStepPerTick, snipe.MaxStep);
+            if (temp == NowSnipeStep) return;
+            BaseChangeMarks.Add(BaseChangeMark.ThetaC);
         }
 
         //关镜
         private void OffSnipe(Snipe snipe)
         {
+            var temp = NowSnipeStep;
             var snipeOffStepPerTick = NowSnipeStep - snipe.OffStepPerTick;
+
             if (snipeOffStepPerTick < 0)
             {
                 ResetSnipe();
+                return;
             }
 
             NowSnipeStep = snipeOffStepPerTick;
+
+            if (temp == NowSnipeStep) return;
+            BaseChangeMarks.Add(BaseChangeMark.ThetaC);
         }
 
         //重置
@@ -497,7 +534,9 @@ namespace game_stuff
             NowTempSnipe = null;
             NowOnSnipeAct = null;
 
+            if (NowSnipeStep == -1) return;
             NowSnipeStep = -1;
+            BaseChangeMarks.Add(BaseChangeMark.ThetaC);
         }
 
         private CharGoTickResult ActNowActATick(
@@ -631,7 +670,10 @@ namespace game_stuff
 
         public IMapInteractable? PicAWeapon(Weapon weapon)
         {
-            return weapon.PickedBySomebody(this);
+            var pickedBySomebody = weapon.PickedBySomebody(this);
+            var pickWeapon = new PickWeapon(weapon.WId);
+            CharEvents.Add(pickWeapon);
+            return pickedBySomebody;
         }
 
 
@@ -688,12 +730,9 @@ namespace game_stuff
 
         private void TempMsgClear()
         {
-            if (SkillLaunch != null) SkillLaunch = null;
-            if (TickSnipeActionLaunch != null) TickSnipeActionLaunch = null;
-
-            if (IsBeHitBySomeOne != null) IsBeHitBySomeOne = null;
-            if (IsHitSome) IsHitSome = false;
-            if (SilentChange) SilentChange = false;
+            CharEvents.Clear();
+            BaseChangeMarks.Clear();
+            GetNowSurvivalStatus().SurvivalChangeMarks.Clear();
         }
 
 
@@ -712,7 +751,7 @@ namespace game_stuff
             BuffsGoATick();
             // 命中停帧 输入无效
             var b1 = PauseTick > 0;
-            IsPause = b1;
+
             if (b1)
             {
                 PauseTick -= 1;
@@ -946,7 +985,6 @@ namespace game_stuff
 #endif
                     ResetSnipe();
                     LoadSkill(operate.Aim, DefaultTakeOutWeapon, SkillAction.Switch, operate.Move);
-                    SilentChange = true;
                 }
                 // 发动当前武器技能组的起始技能0
                 else
@@ -1099,14 +1137,13 @@ namespace game_stuff
 
         public void BaseBulletAtkOk(int pauseToCaster, int ammoAddWhenSuccess, IBattleUnitStatus targetCharacterStatus)
         {
-            PauseTick = pauseToCaster;
+            SetPauseTick(pauseToCaster);
 #if DEBUG
             Console.Out.WriteLine($"bullet hit!! caster pause tick {PauseTick}");
 #endif
             AddAmmo(ammoAddWhenSuccess);
             //如果没有锁定目标，则锁定当前命中的目标
             LockingWho ??= targetCharacterStatus;
-            IsHitSome = true;
         }
 
         public TwoDVector GetAim()
@@ -1345,8 +1382,7 @@ namespace game_stuff
         public void AbsorbRangeBullet(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
             float damageMulti, bool back)
         {
-            IsBeHitBySomeOne =
-                TwoDVector.TwoDVectorByPt(GetPos(), pos);
+            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos));
             var pa = GetProtectAbsorb();
             var valueAdd = (int) (protectValueAdd * (1 + pa));
             AddProtect(valueAdd);
@@ -1379,13 +1415,12 @@ namespace game_stuff
             ResetSpeed();
             ResetSnipe();
             ResetCastAct();
-            IsBeHitBySomeOne =
-                TwoDVector.TwoDVectorByPt(GetPos(), pos);
+            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos));
 
 
             if (CatchingWho != null)
             {
-                CatchingWho.StunBuff = StuffLocalConfig.OutCaught(this);
+                CatchingWho.SetStunBuff(StuffLocalConfig.OutCaught(this));
                 CatchingWho = null;
             }
 
@@ -1414,7 +1449,7 @@ namespace game_stuff
             {
                 var isDead = SurvivalStatus.IsDead();
 
-                this.SurvivalStatus.TakeDamage(genDamage);
+                SurvivalStatus.TakeDamage(genDamage);
 
                 var after = SurvivalStatus.IsDead();
 #if DEBUG
@@ -1486,47 +1521,40 @@ namespace game_stuff
         {
             return NowSnipeStep;
         }
+
+        public void SetHitMark(TwoDVector twoDVectorByPt)
+        {
+            var hitMark = new HitMark(twoDVectorByPt);
+            CharEvents.Add(hitMark);
+        }
+
+        public void NewPt()
+        {
+            BaseChangeMarks.Add(BaseChangeMark.PosC);
+        }
+
+        public IEnumerable<ICharEvent> GenBaseChangeMarksEvents()
+        {
+            var genBaseChangeMarksEvents = BaseChangeMarks.Select(x =>
+            {
+                ICharEvent charEvent = x switch
+                {
+                    BaseChangeMark.PosC => new PosChange(CharacterBody.NowPos),
+                    BaseChangeMark.AimC => new AimChange(CharacterBody.Sight.Aim),
+                    BaseChangeMark.NowRc => new SightRChange(CharacterBody.Sight.NowR),
+                    BaseChangeMark.ThetaC => new SightAngleChange(GetNowScope()?.Theta ?? GetStandardScope().Theta),
+                    _ => throw new ArgumentOutOfRangeException(nameof(x), x, null)
+                };
+                return charEvent;
+            });
+            return genBaseChangeMarksEvents;
+        }
     }
+
 
     public enum TrickCond
     {
         MyAtkOk,
         OpponentAtkFail
-    }
-
-
-    public struct AbsorbStatus
-    {
-        private AbsorbStatus(float hpAbs, float armorAbs, float shieldAbs, float ammoAbs, float protectAbs)
-        {
-            HpAbs = hpAbs;
-            ArmorAbs = armorAbs;
-            ShieldAbs = shieldAbs;
-            ProtectAbs = protectAbs;
-            AmmoAbs = ammoAbs;
-        }
-
-        public float HpAbs { get; private set; }
-        public float ArmorAbs { get; private set; }
-        public float ShieldAbs { get; private set; }
-        public float AmmoAbs { get; private set; }
-        public float ProtectAbs { get; private set; }
-
-
-        public static AbsorbStatus GenBaseByAttr(base_attribute genBaseAttrById)
-        {
-            return new AbsorbStatus(genBaseAttrById.HPAbsorb, genBaseAttrById.ArmorAbsorb, genBaseAttrById.ShieldAbsorb,
-                genBaseAttrById.AmmoAbsorb, genBaseAttrById.ProtectAbsorb
-            );
-        }
-
-        public void PassiveEffectChange(Vector<float> vector, AbsorbStatus regenBaseAttr)
-        {
-            HpAbs = regenBaseAttr.HpAbs * (1 + vector[0]);
-            ArmorAbs = regenBaseAttr.ArmorAbs * (1 + vector[1]);
-            ShieldAbs = regenBaseAttr.ShieldAbs * (1 + vector[2]);
-            AmmoAbs = regenBaseAttr.AmmoAbs * (1 + vector[3]);
-            ProtectAbs = regenBaseAttr.ProtectAbs * (1 + vector[4]);
-        }
     }
 }

@@ -50,18 +50,22 @@ namespace game_bot
             SimpleBots = simpleBots.IeToHashSet();
         }
 
-        public void AllBotsGoATick(ImmutableDictionary<int, PlayerTickSee> perceivable)
+        public void AllBotsGoATick(PlayGroundGoTickResult perceivable)
         {
             var botOpAndThinks = SimpleBots.ToDictionary(bot => bot.BotBody.GetId(), bot =>
             {
                 var key = bot.BotBody.GetId();
-                var canBeEnemies = perceivable.TryGetValue(key, out var enumerable)
+                var canBeEnemies = perceivable.PlayerSee.TryGetValue(key, out var enumerable)
                     ? enumerable.OnChange.OfType<ICanBeEnemy>()
                     : new ICanBeEnemy[] { };
-                var botSimpleGoATick = bot.BotSimpleGoATick(canBeEnemies,
-                    SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)
-                        ? top
-                        : throw new KeyNotFoundException($"size {bot.BotBody.GetSize()}"));
+                var immutableHashSet = perceivable.CharacterHitSomeThing.TryGetValue(key, out var enumerable1)
+                    ? enumerable1
+                    : ImmutableHashSet<IHitMsg>.Empty;
+                var pathTop = SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)
+                    ? top
+                    : throw new KeyNotFoundException($"size {bot.BotBody.GetSize()}");
+                var botSimpleGoATick = bot.BotSimpleGoATick(canBeEnemies,immutableHashSet,
+                    pathTop);
 
 #if DEBUG
                 Console.Out.WriteLine($" id{key} op move {botSimpleGoATick.Operate?.Move}");

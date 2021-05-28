@@ -41,7 +41,7 @@ namespace lib_unit_test
                 var x = currentDirectory.LastIndexOf("\\", StringComparison.Ordinal);
                 currentDirectory = currentDirectory[..x];
             }
-            
+
             Assert.Pass(currentDirectory);
         }
 
@@ -134,7 +134,7 @@ namespace lib_unit_test
                     botTeamTempOpThink.Value.Operate != null).ToDictionary(p => p.Key, p => p.Value.Operate!);
                 Console.Out.WriteLine($"~~~~{keyValuePairs.FirstOrDefault().Value?.GetMove() ?? TwoDVector.Zero()}");
                 var playGroundGoTickResult = genEmptyPveMap.PlayGroundGoATick(keyValuePairs);
-                botTeam.AllBotsGoATick(playGroundGoTickResult.PlayerSee);
+                botTeam.AllBotsGoATick(playGroundGoTickResult);
             }
 
             Assert.Pass($"fin");

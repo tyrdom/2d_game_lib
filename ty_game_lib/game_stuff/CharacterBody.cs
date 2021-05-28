@@ -115,6 +115,7 @@ namespace game_stuff
             };
 
             NowPos = twoDPoint;
+            CharacterStatus.NewPt();
             return NowPos;
         }
 
@@ -151,13 +152,14 @@ namespace game_stuff
             }
 
             NowPos = pt;
-            var b = CharacterStatus.StunBuff == null;
-            if (b)
+            var characterStatusStunBuff = CharacterStatus.StunBuff;
+
+            if (characterStatusStunBuff == null)
             {
                 return (pt, null);
             }
 
-            var hitWall = CharacterStatus.StunBuff.HitWall();
+            var hitWall = characterStatusStunBuff.HitWall();
 
             var takeDamage = CharacterStatus.TakeDamage(hitWall);
             if (takeDamage == null)
@@ -165,7 +167,7 @@ namespace game_stuff
                 return (pt, null);
             }
 
-            var buffDmgMsg = new BuffDmgMsg(CharacterStatus.StunBuff.Caster.GetFinalCaster().CharacterStatus,
+            var buffDmgMsg = new BuffDmgMsg(characterStatusStunBuff.Caster.GetFinalCaster().CharacterStatus,
                 takeDamage.Value, this);
             return (pt, buffDmgMsg);
         }
@@ -186,22 +188,11 @@ namespace game_stuff
 
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            var isStun = CharacterStatus.StunBuff != null;
-            var characterStatusNowCastAct = CharacterStatus.NowCastAct;
-            var skillAct = (int?) characterStatusNowCastAct?.NowOnTick ?? -1;
-            var a = characterStatusNowCastAct == null
-                ? ((action_type, int, uint NowOnTick)?) null
-                : (characterStatusNowCastAct.GetTypeEnum(), characterStatusNowCastAct.GetIntId(),
-                    characterStatusNowCastAct.NowOnTick);
+            var characterStatusCharEvents = CharacterStatus.CharEvents;
+            characterStatusCharEvents.AddRange(CharacterStatus.GenBaseChangeMarksEvents());
+            characterStatusCharEvents.AddRange(CharacterStatus.GetNowSurvivalStatus().GenSurvivalEvents());
 
-            var characterStatusIsOnHitBySomeOne = CharacterStatus.IsBeHitBySomeOne;
-            var sightStandardScope = CharacterStatus.GetNowScope() ?? Sight.StandardScope;
-            return new CharTickMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
-                CharacterStatus.SkillLaunch, isStun, CharacterStatus.NowMoveSpeed, Sight.NowR,
-                CharacterStatus.IsPause,
-                skillAct, characterStatusIsOnHitBySomeOne, CharacterStatus.IsHitSome
-                , sightStandardScope.Theta, CharacterStatus.TickSnipeActionLaunch, CharacterStatus.SilentChange
-                , a);
+            return new CharTickMsg(GetId(), characterStatusCharEvents);
         }
 
         public CharInitMsg GenInitMsg()

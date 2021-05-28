@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using cov_path_navi;
@@ -141,7 +142,8 @@ namespace game_bot
             return twoDVector;
         }
 
-        public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable, PathTop pathTop)
+        public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable,
+            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop pathTop)
         {
             var canBeEnemies = perceivable.ToList();
             var canBeHits = canBeEnemies.OfType<ICanBeHit>()
@@ -198,7 +200,8 @@ namespace game_bot
                         return new BotOpAndThink();
                     }
 
-                    var characterStatusIsBeHitBySomeOne = botBodyCharacterStatus.IsBeHitBySomeOne;
+                    var characterStatusIsBeHitBySomeOne =
+                        botBodyCharacterStatus.CharEvents.OfType<HitMark>().FirstOrDefault()?.HitDirV;
                     if (characterStatusIsBeHitBySomeOne != null)
                     {
                         PathPoints.Clear();
@@ -322,7 +325,7 @@ namespace game_bot
 #if DEBUG
                         Console.Out.WriteLine("now acting");
 #endif
-                        if (CheckStartCombo())
+                        if (CheckStartCombo(immutableHashSet))
                         {
                             ComboCtrl.ComboTurnOn();
                         }
@@ -382,9 +385,9 @@ namespace game_bot
         }
 
 
-        private bool CheckStartCombo()
+        private static bool CheckStartCombo(ImmutableHashSet<IHitMsg> immutableHashSet)
         {
-            return BotBody.CharacterStatus.IsHitSome;
+            return immutableHashSet.Any();
         }
 
         private bool CheckStun()

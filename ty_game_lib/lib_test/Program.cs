@@ -24,7 +24,7 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_gun, weapon_id.test_gun}, size.small,
                     1);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
@@ -57,7 +57,7 @@ namespace lib_test
                 var dVector1 = new TwoDVector(0, -0.5f);
                 var dVector = new TwoDVector(0, -1f);
                 var operate = i < 100
-                    ? new Operate(aim: twoDVector, skillAction: SkillAction.Switch)
+                    ? new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1)
                     : new Operate(aim: twoDVector, move: dVector);
 
                 var operate1 = new Operate(move: dVector1);
@@ -79,7 +79,9 @@ namespace lib_test
 
                 var characterBodies = playerSee[1].OnChange.OfType<CharacterBody>();
                 var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 5);
+
                 var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
+
                 var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
                 Console.Out.WriteLine($"~~~~now on tick {i}");
@@ -93,9 +95,11 @@ namespace lib_test
                     Console.Out.WriteLine($"id 5 pos see is {twoDPoint}");
                 }
 
-                if (genTickMsg?.SkillActing != null)
-                    Console.Out.WriteLine(
-                        $"$ ~~~~~{twoDPoint} {genTickMsg.Value.Gid} act launch :{genTickMsg.Value.SkillActing.Value.Item1} , {(skill_id) genTickMsg.Value.SkillActing.Value.Item2}");
+                if (genTickMsg != null)
+                {
+                    var theta = genTickMsg.Value.CharEvents.OfType<SightAngleChange>().FirstOrDefault()?.Theta;
+                    Console.Out.WriteLine($"out put angle change {theta}");
+                }
 #endif
             }
         }

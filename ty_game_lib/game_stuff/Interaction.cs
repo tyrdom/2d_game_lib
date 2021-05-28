@@ -25,8 +25,9 @@ namespace game_stuff
         {
             var b = NowOnTick == 0;
             var twd = b ? InteractionPos : null;
-            var inCage = NowOnTick == TotalTick - 1 ? InMapInteractable : null;
             NowOnTick++;
+            var inCage = NowOnTick == TotalTick - 1 ? InMapInteractable : null;
+
             return (twd, null, b, inCage, Interact);
         }
 

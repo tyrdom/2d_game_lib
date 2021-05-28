@@ -1,60 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
 {
     public readonly struct CharTickMsg : ISeeTickMsg
-        //todo only change to set value
     {
-        public int Gid { get; }
-        public TwoDPoint Pos { get; }
-        public TwoDVector Aim { get; }
-        public float Speed { get; }
-        public SurvivalStatus SurvivalStatus { get; }
-        public bool IsPause { get; }
-        public float SightR { get; }
-        public float SightRad { get; }
-        public SkillAction? SkillLaunch { get; }
-        public SnipeAction? SnipeActionLaunch { get; }
-        public int SkillOnAct { get; }
-        public bool IsStun { get; }
-        public TwoDVector? IsBeHit { get; }
-        public bool IsHitSome { get; }
-
-        public (action_type, int, uint NowOnTick)? SkillActing { get; }
-        public bool SilentChangeWeapon { get; }
-
-        public CharTickMsg(int gid, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
-            SkillAction? skillLaunch,
-            bool antiBuff, float speed, float sightR, bool isPause, int skillOnAct, TwoDVector? isBeHit,
-            bool isHitSome, float sightRad, SnipeAction? snipeActionLaunch, bool silentChangeWeapon,
-            (action_type, int, uint NowOnTick)? skillActing)
+        public CharTickMsg(int getId, List<ICharEvent> characterStatusCharEvents)
         {
-            Gid = gid;
-            Pos = pos;
-            Aim = aim;
-            SurvivalStatus = survivalStatus;
-            SkillLaunch = skillLaunch;
-            IsStun = antiBuff;
-            Speed = speed;
-            SightR = sightR;
-            IsPause = isPause;
-            SkillOnAct = skillOnAct;
-            IsBeHit = isBeHit;
-            IsHitSome = isHitSome;
-            SightRad = sightRad;
-            SnipeActionLaunch = snipeActionLaunch;
-            SilentChangeWeapon = silentChangeWeapon;
-            SkillActing = skillActing;
+            Gid = getId;
+            CharEvents = characterStatusCharEvents;
         }
+
+        public int Gid { get; }
+
+        public List<ICharEvent> CharEvents { get; }
 
         public override string ToString()
         {
+            var pos = CharEvents.OfType<PosChange>().FirstOrDefault()?.Pos;
+            var aim = CharEvents.OfType<AimChange>().FirstOrDefault()?.Aim;
+            var sightR = CharEvents.OfType<SightRChange>().FirstOrDefault()?.SightR;
+            var hpChange = CharEvents.OfType<HpChange>().FirstOrDefault()?.NowHp;
+            var amc = CharEvents.OfType<ArmorChange>().FirstOrDefault()?.NowArmor;
+            var sc = CharEvents.OfType<ShieldChange>().FirstOrDefault()?.NowShield;
+            var hdv = CharEvents.OfType<HitMark>().FirstOrDefault()?.HitDirV;
+            var getS = CharEvents.OfType<GetStunBuff>().FirstOrDefault()?.RestTick;
+            var startAct = CharEvents.OfType<StartAct>().FirstOrDefault();
             return
-                $"gid: {Gid} Pos: {Pos} Aim {Aim} SightR {SightR} \n {SurvivalStatus}\n" +
-                $" is on hit::{IsBeHit} , is stun :: {IsStun},skill act {SkillOnAct} launch {SkillLaunch} IsHitSth{IsHitSome}";
+                $"gid: {Gid} Pos: {pos} Aim {aim} SightR {sightR} \n Hp:{hpChange} Armor:{amc} Shield:{sc}\n" +
+                $" is on hit::{hdv} , is get stun :: {getS},skill act {startAct?.TypeEnum} launch {startAct?.IntId} ";
         }
     }
 }

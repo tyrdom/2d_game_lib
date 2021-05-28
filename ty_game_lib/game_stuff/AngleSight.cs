@@ -32,7 +32,6 @@ namespace game_stuff
             NowR = nowR;
         }
 
-        
 
         public bool InSight(TwoDVectorLine sLine, SightMap? map, Scope? scope)
         {
@@ -56,8 +55,9 @@ namespace game_stuff
         }
 
 
-        public void OpChangeAim(TwoDVector? newAim, Scope? scope, float twoSToSeePerTick)
+        public bool OpChangeAim(TwoDVector? newAim, Scope? scope, float twoSToSeePerTick)
         {
+            var temp = NowR;
             var useScope = scope ?? StandardScope;
 
             var oldAim = Aim;
@@ -83,6 +83,9 @@ namespace game_stuff
                 var sqrt = MathTools.Sqrt(rSquare);
                 NowR = MathTools.Min(useScope.MaxR, sqrt);
             }
+
+            var b = MathTools.Abs(temp - NowR) > 0.001f;
+            return b;
         }
 
         public Zone GenZone(TwoDPoint getAnchor)

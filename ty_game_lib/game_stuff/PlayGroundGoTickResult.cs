@@ -54,8 +54,10 @@ namespace game_stuff
         public ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> CharacterGidBeHit { get; }
 
         public ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> TrapGidTidBeHit
-        { get;
+        {
+            get;
         }
+
         public ImmutableDictionary<int, PlayerTickSee> PlayerSee { get; }
 
         public ImmutableDictionary<int, ImmutableHashSet<IHitMsg>> CharacterHitSomeThing { get; }
