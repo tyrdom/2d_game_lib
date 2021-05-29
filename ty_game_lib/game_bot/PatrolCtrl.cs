@@ -12,11 +12,17 @@ namespace game_bot
 
         public PatrolCtrl(List<TwoDPoint> rawPoints)
         {
+            if (rawPoints.Count < 2)
+            {
+                Points = new TwoDPoint[] { };
+                NowToPt = 0;
+                return;
+            }
+
             var twoDPoints = rawPoints.GetRange(1, rawPoints.Count - 2);
             twoDPoints.Reverse();
             rawPoints.AddRange(twoDPoints);
             Points = rawPoints.ToArray();
-            NowToPt = 0;
         }
 
         public TwoDPoint GetNowPt()
@@ -30,14 +36,14 @@ namespace game_bot
             return Points.Length;
         }
 
-        public TwoDPoint NextPt()
-        {
-            NowToPt = (1 + NowToPt) % Points.Length;
-            return Points[NowToPt];
-        }
 
-        public TwoDPoint[] NextPt(int num)
+        public IEnumerable<TwoDPoint> NextPt(int num)
         {
+            if (!Points.Any())
+            {
+                return Points;
+            }
+
             var start = NowToPt;
 
             var end = NowToPt + num;

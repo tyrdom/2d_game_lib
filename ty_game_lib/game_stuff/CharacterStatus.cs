@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
@@ -730,6 +729,9 @@ namespace game_stuff
 
         private void TempMsgClear()
         {
+#if DEBUG
+            Console.Out.WriteLine("temp msg clear~~~");
+#endif
             CharEvents.Clear();
             BaseChangeMarks.Clear();
             GetNowSurvivalStatus().SurvivalChangeMarks.Clear();
@@ -1524,6 +1526,9 @@ namespace game_stuff
 
         public void SetHitMark(TwoDVector twoDVectorByPt)
         {
+#if DEBUG
+            Console.Out.WriteLine($"gid:{GId} be hit form {twoDVectorByPt}");
+#endif
             var hitMark = new HitMark(twoDVectorByPt);
             CharEvents.Add(hitMark);
         }

@@ -53,20 +53,20 @@ namespace game_bot
             return valueTuples;
         }
 
-        public static SimpleBot GenById(int npcId, CharacterBody body, Random random, PathTop pathTop)
+        public static SimpleBot GenById(int botId, CharacterBody body, Random random, PathTop? pathTop)
         {
-            return CommonConfig.Configs.battle_bots.TryGetValue(npcId, out var battleNpc)
+            return CommonConfig.Configs.battle_bots.TryGetValue(botId, out var battleNpc)
                 ? GenByConfig(battleNpc, body, random, pathTop)
-                : throw new KeyNotFoundException($"not found id :: {npcId}");
+                : throw new KeyNotFoundException($"not found id :: {botId}");
         }
 
-        public static SimpleBot GenByConfig(battle_bot battleBot, CharacterBody body, Random random,
-            PathTop pathTop)
+        private static SimpleBot GenByConfig(battle_bot battleBot, CharacterBody body, Random random,
+            PathTop? pathTop)
         {
-            var polyCount = pathTop.GetPolyCount();
+            var polyCount = pathTop?.GetPolyCount() ?? 0;
             var next = random.Next((int) (polyCount * BotLocalConfig.PatrolMin),
                 (int) (polyCount * BotLocalConfig.PatrolMax + 1));
-            var twoDPoints = pathTop.GetPatrolPts(random, next);
+            var twoDPoints = pathTop?.GetPatrolPts(random, next) ?? new List<TwoDPoint>();
             var battleNpcActWeight = battleBot.ActWeight;
             var weight = battleNpcActWeight.FirstOrDefault(x => x.op == botOp.none)?.weight ?? 0;
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
@@ -125,11 +125,11 @@ namespace game_bot
             return null;
         }
 
-        private void ReturnOnPatrol(PathTop pathTop)
+        private void ReturnOnPatrol(PathTop? pathTop)
         {
             BotStatus = BotStatus.OnPatrol;
             var twoDPoint = PatrolCtrl.GetNowPt();
-            var twoDPoints = pathTop.FindGoPts(BotBody.GetAnchor(), twoDPoint);
+            var twoDPoints = pathTop?.FindGoPts(BotBody.GetAnchor(), twoDPoint) ?? new TwoDPoint[] { };
             PathPoints.AddRange(twoDPoints);
         }
 
@@ -143,13 +143,13 @@ namespace game_bot
         }
 
         public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable,
-            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop pathTop)
+            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop? pathTop)
         {
             var canBeEnemies = perceivable.ToList();
             var canBeHits = canBeEnemies.OfType<ICanBeHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
 
-            var beHit = canBeHits.Aggregate((ICanBeHit?) null, (s, x) =>
+            var targets = canBeHits.Aggregate((ICanBeHit?) null, (s, x) =>
             {
                 if (s == null)
                 {
@@ -170,13 +170,32 @@ namespace game_bot
                 if (CheckVehicle() != null) return new BotOpAndThink(new Operate(specialAction: CheckVehicle()));
             }
 
+            var botBodyCharacterStatus = BotBody.CharacterStatus;
+            var charEvents = botBodyCharacterStatus.CharEvents;
+#if DEBUG
+            Console.Out.WriteLine($"char Events Count {charEvents.Count}");
+#endif
+            var characterStatusIsBeHitBySomeOne =
+                charEvents.OfType<HitMark>().FirstOrDefault()?.HitDirV;
+            if (characterStatusIsBeHitBySomeOne != null && BotStatus == BotStatus.OnPatrol)
+            {
+#if DEBUG
+                Console.Out.WriteLine($"hit by someOne not in sight? {characterStatusIsBeHitBySomeOne}");
+#endif
+                PathPoints.Clear();
+                var twoDPoint = BotBody.GetAnchor().Move(characterStatusIsBeHitBySomeOne.GetUnit().Multi(2f));
+                PathPoints.Add(twoDPoint);
+                HavePeered = false;
+                BotStatus = BotStatus.GoMaybe;
+                return new BotOpAndThink();
+            }
+
             if (CheckStun())
             {
                 ComboCtrl.ComboLoss();
                 return new BotOpAndThink();
             }
 
-            var botBodyCharacterStatus = BotBody.CharacterStatus;
 
             var characterStatusNowWeapon = botBodyCharacterStatus.NowWeapon;
             var weapon = botBodyCharacterStatus.Weapons[characterStatusNowWeapon];
@@ -184,29 +203,17 @@ namespace game_bot
             switch (BotStatus)
             {
                 case BotStatus.OnPatrol:
-                    if (beHit != null)
+                    if (targets != null)
                     {
-                        return new BotOpAndThink(SeeATargetAction(beHit));
+                        return new BotOpAndThink(SeeATargetAction(targets));
                     }
 
                     if (radarSees.Any())
                     {
                         var twoDPoint = NearPt(radarSees);
-                        var twoDPoints = pathTop.FindGoPts(BotBody.GetAnchor(), twoDPoint);
+                        var twoDPoints = pathTop?.FindGoPts(BotBody.GetAnchor(), twoDPoint) ?? new TwoDPoint[] { };
                         PathPoints.Clear();
                         PathPoints.AddRange(twoDPoints);
-                        HavePeered = false;
-                        BotStatus = BotStatus.GoMaybe;
-                        return new BotOpAndThink();
-                    }
-
-                    var characterStatusIsBeHitBySomeOne =
-                        botBodyCharacterStatus.CharEvents.OfType<HitMark>().FirstOrDefault()?.HitDirV;
-                    if (characterStatusIsBeHitBySomeOne != null)
-                    {
-                        PathPoints.Clear();
-                        var twoDPoint = BotBody.GetAnchor().Move(characterStatusIsBeHitBySomeOne.Multi(2f));
-                        PathPoints.Add(twoDPoint);
                         HavePeered = false;
                         BotStatus = BotStatus.GoMaybe;
                         return new BotOpAndThink();
@@ -215,10 +222,10 @@ namespace game_bot
                     var doPatrol = DoPatrol();
                     return new BotOpAndThink(doPatrol);
                 case BotStatus.GoMaybe:
-                    if (beHit != null)
+                    if (targets != null)
                     {
                         HavePeered = true;
-                        return new BotOpAndThink(SeeATargetAction(beHit));
+                        return new BotOpAndThink(SeeATargetAction(targets));
                     }
 
                     var goPathDirection = GoPathDirection();
@@ -271,10 +278,10 @@ namespace game_bot
                         return new BotOpAndThink(botSimpleGoATick);
                     }
 
-                    if (beHit != null)
+                    if (targets != null)
                     {
                         var goATick = FirstSkillCtrl.GoATick(Random);
-                        var twoDPoint = beHit.GetAnchor();
+                        var twoDPoint = targets.GetAnchor();
 
                         var distance = twoDPoint.GetDistance(BotBody.GetAnchor());
                         var (inRange, needSwitch) = CheckWeaponAndAmmo(distance);

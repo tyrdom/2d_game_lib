@@ -67,12 +67,14 @@ namespace game_stuff
         public void Deconstruct(out ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> playerBeHit,
             out ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapBeHit,
             out ImmutableDictionary<int, PlayerTickSee> playerSee,
-            out ImmutableDictionary<int, TelePortMsg> playerTeleportTo)
+            out ImmutableDictionary<int, TelePortMsg> playerTeleportTo,
+            out ImmutableDictionary<int, ImmutableHashSet<IHitMsg>> hitSomething)
         {
             playerSee = PlayerSee;
             trapBeHit = TrapGidTidBeHit;
             playerBeHit = CharacterGidBeHit;
             playerTeleportTo = PlayerTeleportTo;
+            hitSomething = CharacterHitSomeThing;
         }
     }
 }

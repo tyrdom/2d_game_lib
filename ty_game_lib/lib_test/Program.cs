@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -24,7 +25,7 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_gun, weapon_id.test_gun}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
                     1);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
@@ -42,7 +43,7 @@ namespace lib_test
             var body1 = characterInitData3.GenCharacterBody(TwoDPoint.Zero());
             var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody, body, body1, body2},
+                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody},
                     genCharacterBody);
 
             genByConfig.ForceSpawnNpc();
@@ -51,26 +52,31 @@ namespace lib_test
             var any = mapApplyDevices.Any(x => x.IsActive);
             // Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
-            for (var i = 0; i < 30; i++)
+            var genById = SimpleBot.GenById(1, characterBody, new Random(), null);
+            for (var i = 0; i < 100; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
-                var dVector1 = new TwoDVector(0, -0.5f);
-                var dVector = new TwoDVector(0, -1f);
-                var operate = i < 100
-                    ? new Operate(aim: twoDVector, snipeAction: SnipeAction.SnipeOn1)
-                    : new Operate(aim: twoDVector, move: dVector);
 
-                var operate1 = new Operate(move: dVector1);
-                var opDic = i < 100
-                    ? new Dictionary<int, Operate>()
-                        {{1, operate}}
-                    : new Dictionary<int, Operate>()
-                        {{1, operate}, {5, operate1}};
+                var dVector = new TwoDVector(0, -1f);
+                var operate = i < 3
+                    ? new Operate(aim: twoDVector, skillAction: SkillAction.Op1)
+                    : new Operate(aim: twoDVector);
+                var dVector1 = new TwoDVector(0, 1f);
+                var operate1 = new Operate(aim: dVector1);
+                var opDic = new Dictionary<int, Operate>()
+                    {{1, operate}, {2, operate1}};
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(opDic);
 
-                var (playerBeHit, trapBeHit, playerSee, playerTeleportTo) =
+                var (beHit, trapBeHit,
+                        playerSee, playerTeleportTo, hitSomething) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
-
+                var canBeEnemies = playerSee.TryGetValue(2, out var enumerable)
+                    ? enumerable.OnChange.OfType<ICanBeEnemy>()
+                    : new ICanBeEnemy[] { };
+                var immutableHashSet = hitSomething.TryGetValue(2, out var enumerable1)
+                    ? enumerable1
+                    : ImmutableHashSet<IHitMsg>.Empty;
+                genById.BotSimpleGoATick(canBeEnemies, immutableHashSet, null);
                 var mapChange = rogueGameGoTickResult.MapChange;
                 if (i % 5 == 0)
                 {

@@ -8,6 +8,10 @@ using game_stuff;
 
 namespace rogue_game
 {
+    public readonly struct GoNextChapter : IGameRequest
+    {
+    }
+
     public readonly struct Leave : IGameRequest
     {
     }
@@ -43,6 +47,8 @@ namespace rogue_game
         private Chapter NowChapter { get; set; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
         public int RebornCountDownTick { get; set; }
+
+        public int ChapterCountDownTick { get; set; }
         public GameItem[] RebornCost { get; }
         public int PlayerLeaderGid { get; private set; }
 
@@ -73,6 +79,7 @@ namespace rogue_game
             NowChapter = Chapter.GenMapsById(ChapterIds.Dequeue(), Random);
             NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
             RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
+            ChapterCountDownTick = -1;
             PlayerLeaderGid = playerLeader;
             NowPlayMap = NowChapter.Entrance;
             BotTeam = new BotTeam();
@@ -106,7 +113,7 @@ namespace rogue_game
             return leaveGame;
         }
 
-        private void GoNextChapter()
+        private bool GoNextChapter(ISet<IGameResp> gameResps)
         {
             NowPlayMap.TelePortOut();
             BotTeam.ClearBot();
@@ -115,8 +122,10 @@ namespace rogue_game
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
-
             NowPlayMap = nowChapterEntrance;
+            ChapterCountDownTick = -1;
+            gameResps.Add(new GameMsgPush(GamePushMsg.ChapterGoNext));
+            return true;
         }
 
         private bool IsPlayerAllDead()
@@ -144,13 +153,16 @@ namespace rogue_game
             return false;
         }
 
-        private bool DoGameRequest(int callSeat, IGameRequest gameRequest)
+
+        private bool DoGameRequest(int callSeat, IGameRequest gameRequest, ISet<IGameResp> collector)
         {
             return gameRequest switch
             {
+                GoNextChapter _ => ChapterCountDownTick > 0 && GoNextChapter(collector),
                 KickPlayer kickPlayer => callSeat == PlayerLeaderGid && LeaveGame(kickPlayer.Seat),
                 Leave _ => LeaveGame(callSeat),
                 RebornPlayer rebornPlayer => Reborn(callSeat, rebornPlayer.Seat),
+
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
             };
         }
@@ -161,16 +173,30 @@ namespace rogue_game
             var gameRespSet = new HashSet<IGameResp>();
             var enumerable = gameRequests
                 .ToImmutableDictionary(x => x.Key,
-                    x => DoGameRequest(x.Key, x.Value));
+                    x => DoGameRequest(x.Key, x.Value, gameRespSet));
             if (enumerable != null && enumerable.Any())
             {
                 gameRespSet.Add(new RequestResult(enumerable));
             }
 
+            if (ChapterCountDownTick > 0)
+            {
+                ChapterCountDownTick--;
+                return gameRespSet;
+            }
+
+            if (ChapterCountDownTick == 0)
+            {
+                GoNextChapter(gameRespSet);
+                
+                return gameRespSet;
+            }
+
             if (NowChapter.IsPass())
             {
-                GoNextChapter();
+                ChapterCountDownTick = RogueLocalConfig.ChapterPassTick;
                 gameRespSet.Add(new GameMsgPush(GamePushMsg.ChapterPass));
+                return gameRespSet;
             }
 #if DEBUG
             // Console.Out.WriteLine($" clear!!~~~~~~~~~{NowPlayMap.IsClear}");
@@ -290,10 +316,10 @@ namespace rogue_game
     {
         GameFail,
         MapClear,
-        ChapterPass
+        ChapterPass,
+        ChapterGoNext
     }
 
- 
 
     public class RequestResult : IGameResp
     {
