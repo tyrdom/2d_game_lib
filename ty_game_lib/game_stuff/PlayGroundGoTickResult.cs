@@ -7,25 +7,31 @@ namespace game_stuff
     public readonly struct PlayerTickSee
     {
         public ImmutableHashSet<IPerceivable> OnChange { get; }
+        public ImmutableHashSet<CharacterBody> NewCharBodies { get; }
         public ImmutableHashSet<INotMoveCanBeSew> Appear { get; }
         public ImmutableHashSet<INotMoveCanBeSew> Vanish { get; }
 
-        public PlayerTickSee(ImmutableHashSet<IPerceivable> onChange, ImmutableHashSet<INotMoveCanBeSew> appear,
-            ImmutableHashSet<INotMoveCanBeSew> vanish) : this()
+        private PlayerTickSee(ImmutableHashSet<IPerceivable> onChange, ImmutableHashSet<INotMoveCanBeSew> appear,
+            ImmutableHashSet<INotMoveCanBeSew> vanish, ImmutableHashSet<CharacterBody> newCharBodies)
         {
             OnChange = onChange;
             Appear = appear;
             Vanish = vanish;
+            NewCharBodies = newCharBodies;
         }
 
         public static PlayerTickSee GenPlayerSee(ImmutableHashSet<IPerceivable> thisTickSee,
-            ImmutableHashSet<INotMoveCanBeSew> lastTickSee)
+            (ImmutableHashSet<INotMoveCanBeSew> lastTickSee, ImmutableHashSet<CharacterBody> characterBodies)
+                lastTickSee)
         {
+            var characterBodies = thisTickSee.OfType<CharacterBody>();
+            var (moveCanBeSews, immutableHashSet1) = lastTickSee;
+            var enumerable = characterBodies.Except(immutableHashSet1).ToImmutableHashSet();
             var notMoveCanBeSews = thisTickSee.OfType<INotMoveCanBeSew>();
             var immutableHashSet = thisTickSee.Except(notMoveCanBeSews);
-            var appear = thisTickSee.Except(lastTickSee).OfType<INotMoveCanBeSew>().ToImmutableHashSet();
-            var vanish = lastTickSee.Except(thisTickSee).OfType<INotMoveCanBeSew>().ToImmutableHashSet();
-            var playerTickSee = new PlayerTickSee(immutableHashSet, appear, vanish);
+            var appear = thisTickSee.Except(moveCanBeSews).OfType<INotMoveCanBeSew>().ToImmutableHashSet();
+            var vanish = moveCanBeSews.Except(thisTickSee).OfType<INotMoveCanBeSew>().ToImmutableHashSet();
+            var playerTickSee = new PlayerTickSee(immutableHashSet, appear, vanish, enumerable);
             return playerTickSee;
         }
     }

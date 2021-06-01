@@ -14,6 +14,8 @@ namespace rogue_chapter_maker
             CanLinks = new HashSet<Link>();
         }
 
+      
+
         public override string ToString()
         {
             var valueTuples = PointMaps.Select(x => (x.To3Strings(), x.Slot)).ToArray();

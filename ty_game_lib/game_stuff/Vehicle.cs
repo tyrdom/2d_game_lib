@@ -282,12 +282,8 @@ namespace game_stuff
             foreach (var grouping in groupBy)
             {
                 var firstOrDefault = grouping.FirstOrDefault();
-                if (firstOrDefault == null)
-                {
-                    continue;
-                }
 
-                if (firstOrDefault.PassiveTraitEffect is IPassiveTraitEffectForVehicle passiveTraitEffect)
+                if (firstOrDefault?.PassiveTraitEffect is IPassiveTraitEffectForVehicle passiveTraitEffect)
                 {
                     var aggregate = grouping.Aggregate(new float[]{},
                         (s, x) => s.Plus( x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));

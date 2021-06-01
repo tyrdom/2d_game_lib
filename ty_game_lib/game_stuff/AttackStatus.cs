@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 using game_config;
 
@@ -49,6 +50,10 @@ namespace game_stuff
         public void PassiveEffectChangeAtk(float[] passiveTrait,
             AttackStatus baseAtkStatus)
         {
+            if (!passiveTrait.Any())
+            {
+                return;
+            }
             MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + passiveTrait[0]));
             ShardedNum = (uint) (baseAtkStatus.ShardedNum + passiveTrait[1]);
             BackStabAdd += baseAtkStatus.BackStabAdd + passiveTrait[2];

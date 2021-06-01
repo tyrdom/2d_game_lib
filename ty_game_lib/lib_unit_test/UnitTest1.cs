@@ -103,7 +103,7 @@ namespace lib_unit_test
         {
             var characterBodies = Players();
             var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First());
-            Assert.Pass(genByConfig.PlayerLeaderGid.ToString());
+            Assert.Pass(genByConfig.genByConfig.PlayerLeaderGid.ToString());
         }
 
         [Test]
@@ -120,7 +120,7 @@ namespace lib_unit_test
         public void BotTest()
         {
             var pointMap = new PointMap(MapType.Small, 1, 1, 1, 1, (0, 0));
-            var genEmptyPveMap = PveMap.GenEmptyPveMap(pointMap, 1, 1, new[] {4,8}, new int[] { });
+            var genEmptyPveMap = PveMap.GenEmptyPveMap(pointMap, 1, 1, new[] {4, 8}, new int[] { });
             var botTeam = new BotTeam();
             botTeam.SetNaviMaps(genEmptyPveMap.PlayGround.ResMId);
             genEmptyPveMap.SpawnNpcWithBot(new Random(), botTeam, 5);
@@ -181,7 +181,6 @@ namespace lib_unit_test
         [Test]
         public void NpcTest()
         {
-            
         }
 
         private static string PathTest(WalkBlock genWalkBlockByPolys)

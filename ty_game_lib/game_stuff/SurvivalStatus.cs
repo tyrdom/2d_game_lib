@@ -100,7 +100,7 @@ namespace game_stuff
                     NowShield = (uint) nowShield;
                     return;
                 }
-                
+
                 var lossTimes = (int) (NowShield / shieldInstability);
                 NowShield = 0;
                 restTime -= lossTimes;
@@ -276,6 +276,7 @@ namespace game_stuff
             MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
             ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[4]));
             ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));
+            SurvivalChangeMarks.Add(SurvivalChangeMark.MaxValueChange);
         }
 
         public float GenShortStatus()
@@ -311,6 +312,11 @@ namespace game_stuff
             SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
         }
 
+        public NewSurvivalStatus GenNewMsg()
+        {
+            return new NewSurvivalStatus(NowHp, NowArmor, NowShield, MaxHp, MaxArmor, MaxShield);
+        }
+
         public void Full()
         {
             NowArmor = MaxArmor;
@@ -341,11 +347,54 @@ namespace game_stuff
                     SurvivalChangeMark.ShieldChange => new ShieldChange(NowShield),
                     SurvivalChangeMark.ArmorChange => new ArmorChange(NowArmor),
                     SurvivalChangeMark.HpChange => new HpChange(NowHp),
+                    SurvivalChangeMark.MaxValueChange => new SurvivalMaxValueChange(MaxHp, MaxArmor, MaxShield),
                     _ => throw new ArgumentOutOfRangeException(nameof(x), x, null)
                 };
                 return charEvent;
             });
         }
+    }
+
+    public class SurvivalMaxValueChange : ICharEvent
+    {
+        public SurvivalMaxValueChange(uint maxHp, uint maxArmor, uint maxShield)
+        {
+            MaxHp = maxHp;
+            MaxArmor = maxArmor;
+            MaxShield = maxShield;
+        }
+
+        public uint MaxShield { get; }
+
+        public uint MaxArmor { get; }
+
+        public uint MaxHp { get; }
+    }
+
+    public class NewSurvivalStatus : ICharEvent
+    {
+        public NewSurvivalStatus(uint nowHp, uint nowArmor, uint nowShield, uint maxHp, uint maxArmor, uint maxShield)
+        {
+            NowHp = nowHp;
+            NowArmor = nowArmor;
+            NowShield = nowShield;
+            MaxHp = maxHp;
+            MaxArmor = maxArmor;
+            MaxShield = maxShield;
+        }
+
+        public uint MaxShield { get; }
+
+        public uint MaxArmor { get; }
+
+        public uint MaxHp { get; }
+
+
+        public uint NowShield { get; }
+
+        public uint NowArmor { get; }
+
+        public uint NowHp { get; }
     }
 
     public class HpChange : ICharEvent
@@ -383,8 +432,6 @@ namespace game_stuff
         ShieldChange,
         ArmorChange,
         HpChange,
-        ShieldMaxChange,
-        ArmorMaxChange,
-        HpMaxChange
+        MaxValueChange
     }
 }

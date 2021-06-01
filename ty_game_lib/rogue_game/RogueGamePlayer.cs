@@ -22,7 +22,7 @@ namespace rogue_game
 
         public void AddItem(ImmutableList<GameItem> gameItems)
         {
-            Player.CharacterStatus.PlayingItemBag.Gain(gameItems);
+            Player.CharacterStatus.PickGameItem(gameItems);
             FinalBill.AddGain(gameItems);
         }
 

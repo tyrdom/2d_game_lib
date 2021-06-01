@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Numerics;
 using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
 {
-    //(TwoDVector? move, IHitStuff? launchBullet, IMapInteractive? dropThing)
-
     public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
         public CharacterBody CharacterBody;
@@ -694,6 +692,8 @@ namespace game_stuff
         public IMapInteractable? PickAProp(Prop prop)
         {
             prop.Sign(this);
+            var pickAProp = new PickAProp(prop.PId);
+            CharEvents.Add(pickAProp);
             if (Prop != null) return prop.DropAsIMapInteractable(GetPos());
             Prop = prop;
             return null;
@@ -765,6 +765,8 @@ namespace game_stuff
             {
                 NowProtectTick = (int) (StuffLocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
                 NowProtectValue = 0;
+                var inProtect = new InProtect(NowProtectTick);
+                CharEvents.Add(inProtect);
             }
 
             //  被硬直状态 输入无效
@@ -1259,6 +1261,11 @@ namespace game_stuff
         private void RefreshStatusByAKindOfPass(PassiveTrait passiveTrait, float[] vector)
         {
             var v = vector;
+            if (!v.Any())
+            {
+                return;
+            }
+
             switch (passiveTrait.PassiveTraitEffect)
             {
                 case OtherAttrPassiveEffect _:
@@ -1349,6 +1356,9 @@ namespace game_stuff
                     (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
             }
 
+            var level = PassiveTraits[passiveTraitPassId].Level;
+            var getPassive = new GetPassive(passiveTraitPassId, level);
+            CharEvents.Add(getPassive);
 
             RefreshStatusByAKindOfPass(passiveTrait, v);
         }
@@ -1379,6 +1389,16 @@ namespace game_stuff
         private void PickGameItem(GameItem gameItem)
         {
             PlayingItemBag.Gain(gameItem);
+
+            var item = PlayingItemBag.GetNum(gameItem.ItemId);
+        }
+
+        public void PickGameItem(ImmutableList<GameItem> gameItems)
+        {
+            PlayingItemBag.Gain(gameItems);
+            var enumerable = gameItems.Select(x => x.ItemId);
+            var itemChange = new ItemChange(enumerable.ToArray());
+            CharEvents.Add(itemChange);
         }
 
         public void AbsorbRangeBullet(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
@@ -1554,7 +1574,35 @@ namespace game_stuff
             });
             return genBaseChangeMarksEvents;
         }
+
+        public bool PlayingItemBagCost(ISaleUnit saleUnit)
+        {
+            var saleUnitCost = saleUnit.Cost;
+            var playingItemBagCost = PlayingItemBag.Cost(saleUnitCost);
+            if (playingItemBagCost)
+            {
+                var gameItem = saleUnitCost.ItemId;
+                var itemChange = new ItemChange(new[] {gameItem});
+                CharEvents.Add(itemChange);
+                return playingItemBagCost;
+            }
+
+
+            foreach (var saleUnitOrCost in saleUnit.OrCosts)
+            {
+                var cost = PlayingItemBag.Cost(saleUnitOrCost);
+                if (!cost) continue;
+                var num = saleUnitOrCost.ItemId;
+                var itemChange = new ItemChange(new[] {num});
+                CharEvents.Add(itemChange);
+                return true;
+            }
+
+            return false;
+        }
     }
+
+  
 
 
     public enum TrickCond

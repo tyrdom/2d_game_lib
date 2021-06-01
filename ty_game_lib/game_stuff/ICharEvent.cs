@@ -7,6 +7,59 @@ namespace game_stuff
     {
     }
 
+    public class InProtect : ICharEvent
+    {
+        public InProtect(int nowProtectTick)
+        {
+            NowProtectTick = nowProtectTick;
+        }
+
+        public int NowProtectTick { get; }
+    }
+
+    public class ItemDetailChange : ICharEvent
+    {
+        public ItemDetailChange(GameItem[] gameItems)
+        {
+            ItemNow = gameItems;
+        }
+
+        public GameItem[] ItemNow { get; }
+    }
+
+    public class ItemChange : ICharEvent
+    {
+        public ItemChange(item_id[] gameItems)
+        {
+            ItemNow = gameItems;
+        }
+
+        public item_id[] ItemNow { get; }
+    }
+
+    public class PickAProp : ICharEvent
+    {
+        public PickAProp(prop_id propPId)
+        {
+            PropId = propPId;
+        }
+
+        public prop_id PropId { get; }
+    }
+
+    public class GetPassive : ICharEvent
+    {
+        public GetPassive(passive_id passiveTraitPassId, uint passiveTraitNowLevel)
+        {
+            PassiveId = passiveTraitPassId;
+            NowLevel = passiveTraitNowLevel;
+        }
+
+        public uint NowLevel { get; }
+
+        public passive_id PassiveId { get; }
+    }
+
     public class PickWeapon : ICharEvent
     {
         public PickWeapon(weapon_id weaponWId)

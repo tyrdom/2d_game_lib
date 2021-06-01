@@ -189,6 +189,16 @@ namespace game_stuff
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
             var characterStatusCharEvents = CharacterStatus.CharEvents;
+            var gameItems = characterStatusCharEvents.OfType<ItemChange>().SelectMany(x => x.ItemNow).IeToHashSet()
+                .Select(
+                    x => CharacterStatus.PlayingItemBag.GetNum(x)
+                ).ToArray();
+            if (gameItems.Any())
+            {
+                var itemDetailChange = new ItemDetailChange(gameItems);
+                characterStatusCharEvents.Add(itemDetailChange);
+            }
+
             characterStatusCharEvents.AddRange(CharacterStatus.GenBaseChangeMarksEvents());
             characterStatusCharEvents.AddRange(CharacterStatus.GetNowSurvivalStatus().GenSurvivalEvents());
 
@@ -217,6 +227,7 @@ namespace game_stuff
             CharacterStatus.Reborn();
         }
     }
+
 
     public readonly struct BuffDmgMsg : IDamageMsg
     {

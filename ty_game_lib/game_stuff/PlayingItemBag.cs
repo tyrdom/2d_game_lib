@@ -14,6 +14,13 @@ namespace game_stuff
             GameItems = gameItems;
         }
 
+        public GameItem GetNum(item_id id)
+        {
+            var value = GameItems.TryGetValue(id, out var i) ? i : 0;
+            var gameItem = new GameItem(id, value);
+            return gameItem;
+        }
+
         public static PlayingItemBag InitByConfig()
         {
             var dictionary = CommonConfig.Configs.items.Values.Where(x => x.IsPlayingItem)
@@ -38,7 +45,8 @@ namespace game_stuff
         public bool Cost(ISaleUnit saleUnit)
         {
             var cost = Cost(saleUnit.Cost);
-            return cost || saleUnit.OrCosts.Any(Cost);
+            var any = saleUnit.OrCosts.Any(Cost);
+            return cost || any;
         }
 
         public bool CanCost(IEnumerable<GameItem> gameItem)
@@ -55,7 +63,7 @@ namespace game_stuff
             return all;
         }
 
-        private bool Cost(GameItem gameItem)
+        public bool Cost(GameItem gameItem)
         {
             var gameItemItemId = gameItem.ItemId;
             if (!GameItems.TryGetValue(gameItemItemId, out var num)) return false;

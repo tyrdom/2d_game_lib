@@ -14,7 +14,8 @@ namespace rogue_chapter_maker
         SmallStart,
         SmallEnd,
         Vendor,
-        Hangar
+        Hangar,
+        Nothing
     }
 
     public class PointMap
@@ -38,7 +39,7 @@ namespace rogue_chapter_maker
         public (string t, string c, string b ) To3Strings()
         {
             var enumerable = Links.Where(x => x.LinkTo != null).ToArray();
-            var nn = enumerable.Count(a => a.Side ==   direction.North);
+            var nn = enumerable.Count(a => a.Side == direction.North);
             var en = enumerable.Count(a => a.Side == direction.East);
             var wn = enumerable.Count(a => a.Side == direction.West);
             var sn = enumerable.Count(a => a.Side == direction.South);

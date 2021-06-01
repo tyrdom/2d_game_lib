@@ -5,6 +5,7 @@ using System.Linq;
 using game_bot;
 using game_config;
 using game_stuff;
+using rogue_chapter_maker;
 
 namespace rogue_game
 {
@@ -58,14 +59,22 @@ namespace rogue_game
         public Random Random { get; }
 
 
-        public static RogueGame GenByConfig(HashSet<CharacterBody> characterBodies, CharacterBody leader)
+        public static (RogueGame genByConfig, ImmutableHashSet<IGameResp> gameResps) GenByConfig(
+            HashSet<CharacterBody> characterBodies,
+            CharacterBody leader)
         {
+            var gameResps = new HashSet<IGameResp>();
             var otherConfig = CommonConfig.OtherConfig;
             var otherConfigRogueChapters = otherConfig.RogueChapters;
-            return new RogueGame(characterBodies, leader.GetId(), otherConfigRogueChapters);
+            var genByConfig = new RogueGame(characterBodies, leader.GetId(), otherConfigRogueChapters,
+                out var ySlotArray);
+            var pushChapterGoNext = new PushChapterGoNext(ySlotArray);
+            gameResps.Add(pushChapterGoNext);
+            return (genByConfig, gameResps.ToImmutableHashSet());
         }
 
-        private RogueGame(HashSet<CharacterBody> characterBodies, int playerLeader, IEnumerable<int> chapterIds)
+        private RogueGame(HashSet<CharacterBody> characterBodies, int playerLeader, IEnumerable<int> chapterIds,
+            out (int x, MapType MapType, int GId)[][] ySlotArray)
         {
             ChapterIds =
                 chapterIds
@@ -76,7 +85,9 @@ namespace rogue_game
                     });
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
-            NowChapter = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
+            var genChapterById = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
+            NowChapter = genChapterById.genByConfig;
+            ySlotArray = genChapterById.ySlotArray;
             NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
             RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             ChapterCountDownTick = -1;
@@ -113,19 +124,21 @@ namespace rogue_game
             return leaveGame;
         }
 
-        private bool GoNextChapter(ISet<IGameResp> gameResps)
+        private IGameResp GoNextChapter()
         {
             NowPlayMap.TelePortOut();
             BotTeam.ClearBot();
             var dequeue = ChapterIds.Dequeue();
-            NowChapter = Chapter.GenChapterById(dequeue, Random);
+            var genChapterById = Chapter.GenChapterById(dequeue, Random);
+            NowChapter = genChapterById.genByConfig;
+            var ySlotArray = genChapterById.ySlotArray;
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
             NowPlayMap = nowChapterEntrance;
             ChapterCountDownTick = -1;
-            gameResps.Add(new GameMsgPush(GamePushMsg.ChapterGoNext));
-            return true;
+            var pushChapterGoNext = new PushChapterGoNext(ySlotArray);
+            return pushChapterGoNext;
         }
 
         private bool IsPlayerAllDead()
@@ -154,14 +167,20 @@ namespace rogue_game
         }
 
 
-        private bool DoGameRequest(int callSeat, IGameRequest gameRequest, ISet<IGameResp> collector)
+        private IGameResp DoGameRequest(int callSeat, IGameRequest gameRequest, ISet<IGameResp> collector)
         {
             return gameRequest switch
             {
-                GoNextChapter _ => ChapterCountDownTick > 0 && GoNextChapter(collector),
-                KickPlayer kickPlayer => callSeat == PlayerLeaderGid && LeaveGame(kickPlayer.Seat),
-                Leave _ => LeaveGame(callSeat),
-                RebornPlayer rebornPlayer => Reborn(callSeat, rebornPlayer.Seat),
+                GoNextChapter _ => ChapterCountDownTick > 0 ? GoNextChapter() : new QuestFail(callSeat),
+                KickPlayer kickPlayer => callSeat == PlayerLeaderGid && LeaveGame(kickPlayer.Seat)
+                    ? (IGameResp) new QuestOkResult(callSeat, kickPlayer)
+                    : new QuestFail(callSeat),
+                Leave leave => LeaveGame(callSeat)
+                    ? (IGameResp) new QuestOkResult(callSeat, leave)
+                    : new QuestFail(callSeat),
+                RebornPlayer rebornPlayer => Reborn(callSeat, rebornPlayer.Seat)
+                    ? (IGameResp) new QuestOkResult(callSeat, rebornPlayer)
+                    : new QuestFail(callSeat),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
             };
@@ -172,11 +191,11 @@ namespace rogue_game
         {
             var gameRespSet = new HashSet<IGameResp>();
             var enumerable = gameRequests
-                .ToImmutableDictionary(x => x.Key,
-                    x => DoGameRequest(x.Key, x.Value, gameRespSet));
-            if (enumerable != null && enumerable.Any())
+                .Select(
+                    x => DoGameRequest(x.Key, x.Value, gameRespSet)).ToArray();
+            if (enumerable.Any())
             {
-                gameRespSet.Add(new RequestResult(enumerable));
+                gameRespSet.UnionWith(enumerable);
             }
 
             if (ChapterCountDownTick > 0)
@@ -187,8 +206,8 @@ namespace rogue_game
 
             if (ChapterCountDownTick == 0)
             {
-                GoNextChapter(gameRespSet);
-
+                var goNextChapter = GoNextChapter();
+                gameRespSet.Add(goNextChapter);
                 return gameRespSet.ToImmutableHashSet();
             }
 
@@ -302,6 +321,54 @@ namespace rogue_game
     {
     }
 
+    public enum GameRequestType
+    {
+        KickPlayer,
+        Leave,
+        RebornPlayer
+    }
+
+    public class QuestFail : IGameResp
+    {
+        public int PlayerGid;
+
+        public QuestFail(int playerGid)
+        {
+            PlayerGid = playerGid;
+        }
+    }
+
+    public class QuestOkResult : IGameResp
+    {
+        public QuestOkResult(int playerGid, IGameRequest gameRequest)
+        {
+            PlayerGid = playerGid;
+            var gameRequestType = gameRequest switch
+            {
+                KickPlayer kickPlayer => rogue_game.GameRequestType.KickPlayer,
+                Leave leave => rogue_game.GameRequestType.Leave,
+                RebornPlayer rebornPlayer => rogue_game.GameRequestType.RebornPlayer,
+                _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
+            };
+
+            GameRequestType = gameRequestType;
+        }
+
+        public GameRequestType GameRequestType { get; }
+
+        public int PlayerGid { get; }
+    }
+
+    public class PushChapterGoNext : IGameResp
+    {
+        public PushChapterGoNext((int x, MapType MapType, int GMid)[][] ySlotArray)
+        {
+            YSlotArray = ySlotArray;
+        }
+
+        public (int x, MapType MapType, int GMid)[][] YSlotArray { get; }
+    }
+
     public class GameMsgPush : IGameResp
     {
         public GameMsgPush(GamePushMsg gameMsgToPush)
@@ -317,17 +384,5 @@ namespace rogue_game
         GameFail,
         MapClear,
         ChapterPass,
-        ChapterGoNext
-    }
-
-
-    public class RequestResult : IGameResp
-    {
-        public ImmutableDictionary<int, bool> GidToOk { get; }
-
-        public RequestResult(ImmutableDictionary<int, bool> gidToOk)
-        {
-            GidToOk = gidToOk;
-        }
     }
 }

@@ -43,7 +43,7 @@ namespace game_stuff
         {
             var (baseSurvivalStatus, _) =
                 GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
-            moveBattleAttrModel.SurvivalStatus
+                moveBattleAttrModel.SurvivalStatus
                 .SurvivalPassiveEffectChange(survivalAboutPassiveEffects,
                     baseSurvivalStatus);
         }

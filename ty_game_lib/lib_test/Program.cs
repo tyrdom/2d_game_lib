@@ -44,7 +44,7 @@ namespace lib_test
             var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
                 RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody},
-                    genCharacterBody);
+                    genCharacterBody).genByConfig;
 
             genByConfig.ForceSpawnNpc();
 #if DEBUG

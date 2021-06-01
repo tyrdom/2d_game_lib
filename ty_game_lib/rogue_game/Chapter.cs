@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -32,7 +33,8 @@ namespace rogue_game
         }
 
 
-        public static Chapter GenChapterById(int id, Random random)
+        public static (Chapter genByConfig, (int x, MapType MapType, int GId)[][] ySlotArray) GenChapterById(int id,
+            Random random)
         {
             return CommonConfig.Configs.rogue_game_chapters.TryGetValue(id, out var chapter)
                 ? GenByConfig(chapter, random)
@@ -42,28 +44,37 @@ namespace rogue_game
         public static (int[] creep, int[] boss) ChooseNpcId(MapType mapType, rogue_game_chapter gameChapter,
             Random random)
         {
-            var chooseRandCanSame = gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.SmallEliteNum, random);
-            var enumerable = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.SmallCreepNum, random).ToList();
-            enumerable.AddRange(chooseRandCanSame);
-            var randCanSame = gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.BigEliteNum, random);
-            var union = gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.BigCreepNum, random).ToList();
-            union.AddRange(randCanSame);
+            var chooseRandCanSame = gameChapter.EliteRandomIn.Any()
+                ? gameChapter.EliteRandomIn.ChooseRandCanSame(gameChapter.SmallEliteNum, random)
+                : ImmutableArray<int>.Empty;
+            var smallCreep = gameChapter.CreepRandIn.Any()
+                ? gameChapter.CreepRandIn.ChooseRandCanSame(gameChapter.SmallCreepNum, random).ToList()
+                : new List<int>();
+            smallCreep.AddRange(chooseRandCanSame);
+
+            var randCanSame = gameChapter.BigEliteRandomIn.Any()
+                ? gameChapter.BigMapResRandIn.ChooseRandCanSame(gameChapter.BigEliteNum, random)
+                : ImmutableArray<int>.Empty;
+            var bigCreep = gameChapter.BigCreepRandIn.Any()
+                ? gameChapter.BigCreepRandIn.ChooseRandCanSame(gameChapter.BigCreepNum, random).ToList()
+                : new List<int>();
+            bigCreep.AddRange(randCanSame);
 #if DEBUG
             Console.Out.WriteLine(
                 $"small creep{gameChapter.SmallCreepNum + gameChapter.SmallEliteNum} | big creep {gameChapter.BigCreepNum + gameChapter.BigEliteNum}");
-            Console.Out.WriteLine($"so small {enumerable.Count()}  big {union.Count()}");
+            Console.Out.WriteLine($"so small {smallCreep.Count()}  big {bigCreep.Count()}");
 #endif
             return mapType switch
             {
                 MapType.BigStart => (new int[] { }, new int[] { }),
-                MapType.BigEnd => (union.ToArray(),
+                MapType.BigEnd => (bigCreep.ToArray(),
                     gameChapter.BigBossCreepRandIn.ChooseRandCanSame(1, random).ToArray()),
 
-                MapType.Small => (enumerable.ToArray(), new int[] { }),
-                MapType.Big => (union.ToArray(), new int[] { }),
+                MapType.Small => (smallCreep.ToArray(), new int[] { }),
+                MapType.Big => (bigCreep.ToArray(), new int[] { }),
 
                 MapType.SmallStart => (new int[] { }, new int[] { }),
-                MapType.SmallEnd => (enumerable.ToArray(),
+                MapType.SmallEnd => (smallCreep.ToArray(),
                     gameChapter.SmallBossCreepRandIn.ChooseRandCanSame(1, random).ToArray()),
                 MapType.Vendor => (new int[] { }, new int[] { }),
                 MapType.Hangar => (new int[] { }, new int[] { }),
@@ -87,18 +98,66 @@ namespace rogue_game
             };
         }
 
-        public static Chapter GenByConfig(rogue_game_chapter gameChapter, Random random)
+        public static (MapType MapType, (int x, int y) Slot, int Value)[] GenChapterTuples(
+            Dictionary<PointMap, int> charMapTop)
+        {
+            var valueTuples = charMapTop.Select(x => (x.Key.MapType, x.Key.Slot, x.Value)).ToArray();
+            return valueTuples;
+        }
+
+        public static (int x, MapType MapType, int GId)[][] ToYSlotArray(
+            (MapType MapType, (int x, int y) Slot, int GId)[] valueTuples)
+        {
+            var maxX = valueTuples.Select(tuple => tuple.Slot.x).Max();
+            var minX = valueTuples.Select(tuple => tuple.Slot.x).Min();
+            var enumerableX = Enumerable.Range(minX, maxX - minX + 1);
+            var list = valueTuples.GroupBy(t => t.Slot.y).ToList();
+            list.Sort((x, y) => x.Key.CompareTo(y.Key));
+            var enumerable = list.Select(x =>
+                    x.Select(xx => (xx.Slot.x, xx.MapType, xx.GId))
+                        .ToArray())
+                ;
+            return enumerable.ToArray();
+        }
+
+        public static (MapType mapType, int mgid)[][] YSlotsToMapTypeMatrix(
+            (int x, MapType MapType, int GId)[][] list)
+        {
+            var selectMany = list.SelectMany(x => x.Select(xx => xx.x)).ToArray();
+            var maxX = selectMany.Max();
+            var minX = selectMany.Min();
+            var enumerableX = Enumerable.Range(minX, maxX - minX + 1);
+
+
+            var enumerable = list.Select(x =>
+            {
+                var dictionary = x.ToDictionary(p => p.x, p => (p.MapType, p.GId));
+
+                return enumerableX.Select(xx => dictionary.TryGetValue(xx, out var mapType)
+                        ? mapType
+                        : (MapType.Nothing, -1))
+                    .ToArray();
+            }).ToArray();
+            return enumerable;
+        }
+
+        public static (Chapter genByConfig, (int x, MapType MapType, int GId)[][] ySlotArray) GenByConfig(
+            rogue_game_chapter gameChapter, Random random)
         {
             var chapterMapTop = ChapterMapTop.GenAChapterTopByConfig(gameChapter);
 #if DEBUG
             Console.Out.WriteLine($"{chapterMapTop}");
 #endif
+
             var dictionary = new Dictionary<PointMap, int>();
             var pointMaps = chapterMapTop.PointMaps.ToList();
             for (var i = 0; i < pointMaps.Count; i++)
             {
                 dictionary[pointMaps[i]] = i;
             }
+
+            var genChapterTuples = GenChapterTuples(dictionary);
+            var ySlotArray = ToYSlotArray(genChapterTuples);
 
             var pveEmptyMaps = dictionary.ToDictionary(pair => pair.Value, pair =>
                 {
@@ -166,7 +225,8 @@ namespace rogue_game
                 value.PlayGround.AddRangeMapInteractable(applyDevices);
             }
 
-            return new Chapter(pveEmptyMaps, startMap, endMap, gameChapter.ExtraPassiveNum);
+            var genByConfig = new Chapter(pveEmptyMaps, startMap, endMap, gameChapter.ExtraPassiveNum);
+            return (genByConfig, ySlotArray);
         }
     }
 }

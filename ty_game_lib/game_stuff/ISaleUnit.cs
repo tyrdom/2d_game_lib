@@ -72,7 +72,7 @@ namespace game_stuff
                 case MapInteract.GetInfoCall:
                     return null;
                 case MapInteract.BuyOrApplyCall:
-                    var cost = characterStatus.PlayingItemBag.Cost(saleUnit);
+                    var cost = characterStatus.PlayingItemBagCost(saleUnit);
                     var characterStatusGId = characterStatus.GId;
                     var b = saleUnit.GetRestStack(characterStatusGId) > 0;
                     if (cost && b)

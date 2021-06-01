@@ -26,7 +26,11 @@ namespace game_stuff
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
 
-        private Dictionary<int, ImmutableHashSet<INotMoveCanBeSew>> LastTickRecord { get; }
+        private Dictionary<int, (ImmutableHashSet<INotMoveCanBeSew>, ImmutableHashSet<CharacterBody>)> LastTickRecord
+        {
+            get;
+        }
+
 
         private int NowMapInstanceInteractableId { get; set; }
 
@@ -78,7 +82,7 @@ namespace game_stuff
             Entrance = entrance;
             BulletBlockMap = bulletBlockMap;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
-            LastTickRecord = new Dictionary<int, ImmutableHashSet<INotMoveCanBeSew>>();
+            LastTickRecord = new Dictionary<int, (ImmutableHashSet<INotMoveCanBeSew>, ImmutableHashSet<CharacterBody>)>();
             NowMapInstanceInteractableId = 0;
         }
 
@@ -272,13 +276,17 @@ namespace game_stuff
 
             var playerTickSees = playerPerceivable.ToImmutableDictionary(x => x.Key,
                 x => PlayerTickSee.GenPlayerSee(x.Value,
-                    LastTickRecord.TryGetValue(x.Key, out var t) ? t : ImmutableHashSet<INotMoveCanBeSew>.Empty));
+                    LastTickRecord.TryGetValue(x.Key, out var t)
+                        ? t
+                        : (ImmutableHashSet<INotMoveCanBeSew>.Empty, ImmutableHashSet<CharacterBody>.Empty)));
 
             foreach (var keyValuePair in playerPerceivable)
             {
                 var key = keyValuePair.Key;
-                var notMoveCanBeSews = keyValuePair.Value.OfType<INotMoveCanBeSew>();
-                LastTickRecord[key] = notMoveCanBeSews.ToImmutableHashSet();
+                var immutableHashSet = keyValuePair.Value;
+                var notMoveCanBeSews = immutableHashSet.OfType<INotMoveCanBeSew>();
+                var characterBodies = immutableHashSet.OfType<CharacterBody>();
+                LastTickRecord[key] = (notMoveCanBeSews.ToImmutableHashSet(), characterBodies.ToImmutableHashSet());
             }
 
             var valueTuple =
