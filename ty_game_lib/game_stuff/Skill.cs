@@ -202,6 +202,7 @@ namespace game_stuff
 
             // GenBullet 生成子弹
             IPosMedia? bullet = null;
+
             if (NowOnTick == 0 && LockArea != null)
             {
                 bullet = LockArea.Active(casterPos, casterAim);
@@ -211,6 +212,10 @@ namespace game_stuff
 
             if (LaunchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
             {
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"to launch a bullet ~~~ {LaunchTickToBullet.Keys.Aggregate("", ((s, u) => s + "." + u))}");
+#endif
                 bullet = nowBullet.Active(casterPos, casterAim);
             }
 

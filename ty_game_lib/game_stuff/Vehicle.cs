@@ -146,19 +146,19 @@ namespace game_stuff
             return (IsDestroyOn, null, new Weapon[] { });
         }
 
-        public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
+        public void SurvivalStatusRefresh(float[] survivalAboutPassiveEffects)
         {
             BattleUnitMoverStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
         }
 
         public AttackStatus AttackStatus { get; }
 
-        public void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects)
+        public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
         {
             BattleUnitMoverStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
         }
 
-        public void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects)
+        public void OtherStatusRefresh(float[] otherAttrPassiveEffects)
         {
             BattleUnitMoverStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
         }
@@ -174,7 +174,7 @@ namespace game_stuff
             NowAmmo = (int) Math.Min(MaxAmmo, NowAmmo + MaxAmmo * reloadMulti * RegenEffectStatus.ReloadEffect);
         }
 
-        public void PassiveEffectChangeOther(Vector<float> otherAttrPassiveEffects,
+        public void PassiveEffectChangeOther(float[] otherAttrPassiveEffects,
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
                 RecycleMulti) otherBaseStatus)
         {
@@ -189,7 +189,7 @@ namespace game_stuff
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
 
-        public void PassiveEffectChangeTrap(Vector<float> trapAdd,
+        public void PassiveEffectChangeTrap(float[] trapAdd,
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
         {
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);
@@ -289,8 +289,8 @@ namespace game_stuff
 
                 if (firstOrDefault.PassiveTraitEffect is IPassiveTraitEffectForVehicle passiveTraitEffect)
                 {
-                    var aggregate = grouping.Aggregate(Vector<float>.Zero,
-                        (s, x) => s + x.PassiveTraitEffect.GenEffect(x.Level).GetVector());
+                    var aggregate = grouping.Aggregate(new float[]{},
+                        (s, x) => s.Plus( x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
                     switch (passiveTraitEffect)
                     {
                         case AbsorbAboutPassiveEffect _:
@@ -318,12 +318,12 @@ namespace game_stuff
             }
         }
 
-        public void TrapAboutRefresh(Vector<float> trapAdd)
+        public void TrapAboutRefresh(float[] trapAdd)
         {
             BattleUnitMoverStandard.TrapAboutRefresh(trapAdd, this);
         }
 
-        public void RegenStatusRefresh(Vector<float> rPassiveEffects)
+        public void RegenStatusRefresh(float[] rPassiveEffects)
         {
             BattleUnitMoverStandard.RegenStatusRefresh(rPassiveEffects, this);
         }
@@ -334,7 +334,7 @@ namespace game_stuff
             SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
         }
 
-        public void AbsorbStatusRefresh(Vector<float> vector)
+        public void AbsorbStatusRefresh(float[] vector)
         {
             BattleUnitMoverStandard.AbsorbStatusRefresh(vector, this);
         }

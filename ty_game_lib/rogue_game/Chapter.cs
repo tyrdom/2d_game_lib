@@ -16,11 +16,14 @@ namespace rogue_game
         public PveMap Entrance { get; }
         public PveMap Finish { get; }
 
-        public Chapter(Dictionary<int, PveMap> mGidToMap, PveMap entrance, PveMap finish)
+        public int ExtraPassiveNum { get; }
+
+        public Chapter(Dictionary<int, PveMap> mGidToMap, PveMap entrance, PveMap finish, int extraPassiveNum)
         {
             MGidToMap = mGidToMap;
             Entrance = entrance;
             Finish = finish;
+            ExtraPassiveNum = extraPassiveNum;
         }
 
         public bool IsPass()
@@ -29,7 +32,7 @@ namespace rogue_game
         }
 
 
-        public static Chapter GenMapsById(int id, Random random)
+        public static Chapter GenChapterById(int id, Random random)
         {
             return CommonConfig.Configs.rogue_game_chapters.TryGetValue(id, out var chapter)
                 ? GenByConfig(chapter, random)
@@ -114,7 +117,7 @@ namespace rogue_game
                         $"creep {creep.Aggregate("", (s, x) => s + x + ",")} and boss {boss.Aggregate("", (s, x) => s + x + ",")}");
 #endif
 
-                    return PveMap.GenEmptyPveMap(pointMap, next, value, creep, boss,selectMany);
+                    return PveMap.GenEmptyPveMap(pointMap, next, value, creep, boss, selectMany);
                 }
             );
             var start = pointMaps.FirstOrDefault(x => x.MapType == MapType.BigStart || x.MapType == MapType.SmallStart);
@@ -163,7 +166,7 @@ namespace rogue_game
                 value.PlayGround.AddRangeMapInteractable(applyDevices);
             }
 
-            return new Chapter(pveEmptyMaps, startMap, endMap);
+            return new Chapter(pveEmptyMaps, startMap, endMap, gameChapter.ExtraPassiveNum);
         }
     }
 }

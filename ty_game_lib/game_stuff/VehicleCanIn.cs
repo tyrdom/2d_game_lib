@@ -72,7 +72,7 @@ namespace game_stuff
         {
             return new Interaction(interaction1.BaseTough,
                 interaction1.TotalTime,
-                vehicle, twoDPoint, interact, interactionAct.get_in_vehicle);
+                vehicle, twoDPoint, interact, interaction1.id);
         }
 
         public void WriteQuadRecord(Quad quad)

@@ -76,7 +76,7 @@ namespace rogue_game
                     });
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
-            NowChapter = Chapter.GenMapsById(ChapterIds.Dequeue(), Random);
+            NowChapter = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
             NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
             RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             ChapterCountDownTick = -1;
@@ -118,7 +118,7 @@ namespace rogue_game
             NowPlayMap.TelePortOut();
             BotTeam.ClearBot();
             var dequeue = ChapterIds.Dequeue();
-            NowChapter = Chapter.GenMapsById(dequeue, Random);
+            NowChapter = Chapter.GenChapterById(dequeue, Random);
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
@@ -168,7 +168,7 @@ namespace rogue_game
         }
 
         // rogue游戏控制台包含核心玩法外的规则，应该与玩法异步运行
-        public HashSet<IGameResp> GameConsoleGoATick(Dictionary<int, IGameRequest> gameRequests)
+        public ImmutableHashSet<IGameResp> GameConsoleGoATick(Dictionary<int, IGameRequest> gameRequests)
         {
             var gameRespSet = new HashSet<IGameResp>();
             var enumerable = gameRequests
@@ -182,21 +182,21 @@ namespace rogue_game
             if (ChapterCountDownTick > 0)
             {
                 ChapterCountDownTick--;
-                return gameRespSet;
+                return gameRespSet.ToImmutableHashSet();
             }
 
             if (ChapterCountDownTick == 0)
             {
                 GoNextChapter(gameRespSet);
-                
-                return gameRespSet;
+
+                return gameRespSet.ToImmutableHashSet();
             }
 
             if (NowChapter.IsPass())
             {
                 ChapterCountDownTick = RogueLocalConfig.ChapterPassTick;
                 gameRespSet.Add(new GameMsgPush(GamePushMsg.ChapterPass));
-                return gameRespSet;
+                return gameRespSet.ToImmutableHashSet();
             }
 #if DEBUG
             // Console.Out.WriteLine($" clear!!~~~~~~~~~{NowPlayMap.IsClear}");
@@ -217,7 +217,7 @@ namespace rogue_game
                 gameRespSet.Add(new GameMsgPush(GamePushMsg.GameFail));
             }
 
-            return gameRespSet;
+            return gameRespSet.ToImmutableHashSet();
         }
 
         // roguelike接入核心玩法，
@@ -272,7 +272,7 @@ namespace rogue_game
             if (NowPlayMap.IsClear) return new RogueGameGoTickResult(playGroundGoTickResult, true);
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
 
-            NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
+            NowPlayMap.SpawnNpcWithBot(Random, BotTeam, NowChapter.ExtraPassiveNum);
 
             return new RogueGameGoTickResult(playGroundGoTickResult, true);
         }
@@ -281,7 +281,7 @@ namespace rogue_game
         {
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
 
-            NowPlayMap.SpawnNpcWithBot(Random, BotTeam);
+            NowPlayMap.SpawnNpcWithBot(Random, BotTeam, NowChapter.ExtraPassiveNum);
         }
     }
 

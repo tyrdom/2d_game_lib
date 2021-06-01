@@ -219,7 +219,7 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
-                    characterStatus.RecycleWeapon();
+                    characterStatus.FullAmmo();
                     return null;
                 case MapInteract.PickCall:
                     var picAWeapon = characterStatus.PicAWeapon(this);

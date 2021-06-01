@@ -100,8 +100,7 @@ namespace game_stuff
                     NowShield = (uint) nowShield;
                     return;
                 }
-
-
+                
                 var lossTimes = (int) (NowShield / shieldInstability);
                 NowShield = 0;
                 restTime -= lossTimes;
@@ -261,20 +260,20 @@ namespace game_stuff
         }
 
 
-        public void SurvivalPassiveEffectChange(Vector<float> v,
+        public void SurvivalPassiveEffectChange(float[] v,
             SurvivalStatus baseSurvivalStatus)
 
         {
             var lossHp = MaxHp - NowHp;
-            MaxHp = (uint) (baseSurvivalStatus.MaxHp * (1 + v[0]));
+            MaxHp = (uint) MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
 
             NowHp = MaxHp <= lossHp ? 1 : MaxHp - lossHp;
 
             var lossAr = MaxArmor - NowArmor;
-            MaxArmor = (uint) (baseSurvivalStatus.MaxArmor * (1 + v[1]));
+            MaxArmor = (uint) MathTools.Max(0, baseSurvivalStatus.MaxArmor * (1 + v[1]));
             NowArmor = MaxArmor < lossAr ? 0 : MaxArmor - lossAr;
-            ArmorDefence = (uint) (baseSurvivalStatus.ArmorDefence * (1 + v[2]));
-            MaxShield = (uint) (baseSurvivalStatus.MaxShield * (1 + v[3]));
+            ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
+            MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
             ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[4]));
             ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));
         }
@@ -387,6 +386,5 @@ namespace game_stuff
         ShieldMaxChange,
         ArmorMaxChange,
         HpMaxChange
-
     }
 }

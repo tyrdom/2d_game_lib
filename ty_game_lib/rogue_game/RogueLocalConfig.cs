@@ -57,7 +57,6 @@ namespace rogue_game
             };
         }
 
-        public static int GameRuleCheckTickPerSec { get; private set; } = 1;
         public static GameItem[] RogueRebornCost { get; private set; } = { };
         public static int RogueRebornTick { get; private set; } = 10;
 
@@ -67,8 +66,8 @@ namespace rogue_game
             game_bot.BotLocalConfig.ReLoadP(configs);
             var configsOtherConfig = CommonConfig.OtherConfig;
             RogueRebornCost = configsOtherConfig.rogue_reborn_cost.Select(GameItem.GenByConfigGain).ToArray();
-            RogueRebornTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogue_reborn_limit_time);
-            ChapterPassTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueRebornCountDownTime);
+            RogueRebornTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueRebornCountDownTime);
+            ChapterPassTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueChapterPassCountDownTime);
         }
 #if NETCOREAPP
         public static void LoadConfig()

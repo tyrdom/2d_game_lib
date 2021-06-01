@@ -6,9 +6,9 @@ namespace rogue_game
     {
         public GameItem[] AllBonus { get; }
         public GameItem[] KillBonus { get; }
-        public IMapInteractable MapInteractableDrop { get; }
+        public IMapInteractable? MapInteractableDrop { get; }
 
-        public WantedBonus(GameItem[] allBonus, GameItem[] killBonus, IMapInteractable mapInteractableDrop)
+        public WantedBonus(GameItem[] allBonus, GameItem[] killBonus, IMapInteractable? mapInteractableDrop)
         {
             AllBonus = allBonus;
             KillBonus = killBonus;

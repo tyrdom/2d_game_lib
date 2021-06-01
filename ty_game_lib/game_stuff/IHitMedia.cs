@@ -33,9 +33,15 @@ namespace game_stuff
             var shapes = idPointShapes.ToList();
             shapes.Sort((shape, pointShape) => shape.GetAnchor().GetDistance(hitMedia.Pos)
                 .CompareTo(pointShape.GetAnchor().GetDistance(hitMedia.Pos)));
-            var pointShapes = shapes.Take(num).OfType<ICanBeHit>();
+            var pointShapes = shapes.Take(num).Select(box => box.IdPointShape).OfType<ICanBeHit>();
+#if DEBUG
+            var i = shapes.Count();
+            var count = pointShapes.Count();
+            Console.Out.WriteLine($"hit some body {i} num {num} after {count}");
+#endif
             var relationMsgS =
                 pointShapes.Select(hitMedia.HitSth).Where(x => x != null);
+
             return relationMsgS!;
         }
     }

@@ -146,7 +146,6 @@ namespace rogue_chapter_maker
         {
             var findFarMap = FindFarMaps(start, MapType.Small, rate, rangeCount, num);
 
-
             foreach (var pointMap in findFarMap)
             {
                 pointMap.SetVendor();

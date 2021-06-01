@@ -18,22 +18,24 @@ namespace rogue_game
         public CharacterBody CharacterBody { get; }
         public WantedBonus WantedBonus { get; }
 
-    
 
-        public static (BattleNpc, int boId) GenById(int id, int gid, int team, Random random)
+        public static (BattleNpc, int boId) GenById(int id, int gid, int team, Random random,
+            int nowChapterExtraPassiveNum)
         {
             return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
-                ? GenByConfig(battleNpc, gid, team, random)
+                ? GenByConfig(battleNpc, gid, team, random, nowChapterExtraPassiveNum)
                 : throw new KeyNotFoundException();
         }
 
-        private static (BattleNpc, int boId) GenByConfig(battle_npc battleNpc, int gid, int team, Random random)
+        private static (BattleNpc, int boId) GenByConfig(battle_npc battleNpc, int gid, int team, Random random,
+            int nowChapterExtraPassiveNum)
         {
             var characterInitData =
                 CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,
                     battleNpc.MaxWeaponSlot);
 
-            var chooseRandCanSame = battleNpc.PassiveRange.ChooseRandCanSame(battleNpc.PassiveNum, random);
+            var chooseRandCanSame =
+                battleNpc.PassiveRange.ChooseRandCanSame(battleNpc.PassiveNum + nowChapterExtraPassiveNum, random);
             var passiveTraits = chooseRandCanSame.GroupBy(x => x).ToDictionary(
                 p => p.Key.TryStringToEnum(out passive_id passiveId)
                     ? passiveId
@@ -42,6 +44,7 @@ namespace rogue_game
 
             var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero(), passiveTraits);
             var characterStatus = genCharacterBody.CharacterStatus;
+            characterStatus.FullAmmo();
             var battleNpcWithVehicleId = battleNpc.WithVehicleId;
             if (battleNpcWithVehicleId != "")
             {
@@ -58,25 +61,34 @@ namespace rogue_game
                 characterStatus.PickAProp(byId);
             }
 
-            static ICanPutInMapInteractable Func(interactableType t, string id)
+            static ICanPutInMapInteractable? Func(interactableType t, string id)
             {
                 return t switch
                 {
                     interactableType.weapon => Weapon.GenById(id),
                     interactableType.prop => Prop.GenById(id),
                     interactableType.vehicle => Vehicle.GenById(id),
-                    _ => throw new ArgumentOutOfRangeException(nameof(t), t, null)
+                    _ => null
                 };
             }
 
-            ICanPutInMapInteractable canPutInMapInteractable =
-                Func(battleNpc.DropMapInteractableType, battleNpc.DropMapInteractableId);
-            var mapInteractable = canPutInMapInteractable.PutInteractable(TwoDPoint.Zero(), true);
             var gameItems = battleNpc.KillDrops.Select(GameItem.GenByConfigGain).ToArray();
             var array = battleNpc.AllDrops.Select(GameItem.GenByConfigGain).ToArray();
+            var canPutInMapInteractable =
+                Func(battleNpc.DropMapInteractableType, battleNpc.DropMapInteractableId);
+            var mapInteractable = canPutInMapInteractable?.PutInteractable(TwoDPoint.Zero(), true);
+
             var wantedBonus = new WantedBonus(array, gameItems, mapInteractable);
             var genByConfig = new BattleNpc(genCharacterBody, wantedBonus);
-            return (genByConfig, battleNpc.botId);
+            var battleNpcBotId = battleNpc.botId;
+
+            var b = battleNpc.botId == 0;
+            if (b)
+            {
+                throw new Exception($"no good bot id in {battleNpc.id}");
+            }
+
+            return (genByConfig, battleNpcBotId);
         }
     }
 }

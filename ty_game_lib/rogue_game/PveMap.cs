@@ -68,14 +68,14 @@ namespace rogue_game
 
         private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints,
             Random random,
-            BotTeam botTeam, bool isBoss)
+            BotTeam botTeam, bool isBoss, int nowChapterExtraPassiveNum)
         {
             var genBattleNpcAndBot = Enumerable.Range(0, ints.Count)
                 .Select(x =>
                 {
                     var (battleNpc, boId) = BattleNpc.GenById(ints[x],
                         (1 + PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 100,
-                        random);
+                        random, nowChapterExtraPassiveNum);
                     var simpleBot = SimpleBot.GenById(boId, battleNpc.CharacterBody, random,
                         botTeam.GetNaviMap(battleNpc.CharacterBody.GetSize()));
 
@@ -85,11 +85,11 @@ namespace rogue_game
             return genBattleNpcAndBot;
         }
 
-        public void SpawnNpcWithBot(Random random, BotTeam botTeam)
+        public void SpawnNpcWithBot(Random random, BotTeam botTeam, int nowChapterExtraPassiveNum)
         {
-            var genBattleNpc = GenBattleNpcWithBot(CreepIdToSpawn, random, botTeam, false);
+            var genBattleNpc = GenBattleNpcWithBot(CreepIdToSpawn, random, botTeam, false, nowChapterExtraPassiveNum);
             Creeps = genBattleNpc.Select(x => x.Item2).IeToHashSet();
-            var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam, true);
+            var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam, true, nowChapterExtraPassiveNum);
             Bosses = battleNpc.Select(x => x.Item2).IeToHashSet();
             var valueTuples = genBattleNpc.Union(battleNpc)
                 .Select(x => (x.simpleBot, x.battleNpc.CharacterBody, x.simpleBot.GetStartPt())).IeToHashSet();
@@ -116,8 +116,11 @@ namespace rogue_game
                 var creepWantedBonus = creep.WantedBonus;
                 all.AddRange(creepWantedBonus.AllBonus);
                 kill.Add((gId, creepWantedBonus.KillBonus));
-                creepWantedBonus.MapInteractableDrop.ReLocate(creep.CharacterBody.GetAnchor());
-                mapInteractableS.Add(creepWantedBonus.MapInteractableDrop);
+                var mapInteractableDrop = creepWantedBonus.MapInteractableDrop;
+                if (mapInteractableDrop == null) return true;
+                mapInteractableDrop.ReLocate(creep.CharacterBody.GetAnchor());
+                mapInteractableS.Add(mapInteractableDrop);
+
                 return true;
             }
 
@@ -167,7 +170,7 @@ namespace rogue_game
             PlayGround.RemoveAllBodies();
         }
 
-        
+
         public void TeleportToThisMap(IEnumerable<(CharacterBody, TwoDPoint)> characterBodiesToPt)
         {
             PlayGround.AddBodies(characterBodiesToPt);

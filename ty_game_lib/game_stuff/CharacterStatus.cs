@@ -157,17 +157,17 @@ namespace game_stuff
         // Status
         public AttackStatus AttackStatus { get; }
 
-        public void AttackStatusRefresh(Vector<float> atkAboutPassiveEffects)
+        public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
         {
             BattleUnitMoverStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
         }
 
-        private void RegenStatusRefresh(Vector<float> regenAttrPassiveEffects)
+        private void RegenStatusRefresh(float[] regenAttrPassiveEffects)
         {
             BattleUnitMoverStandard.RegenStatusRefresh(regenAttrPassiveEffects, this);
         }
 
-        public void OtherStatusRefresh(Vector<float> otherAttrPassiveEffects)
+        public void OtherStatusRefresh(float[] otherAttrPassiveEffects)
         {
             BattleUnitMoverStandard.OtherStatusRefresh(otherAttrPassiveEffects, this);
         }
@@ -284,8 +284,8 @@ namespace game_stuff
                 Console.Out.WriteLine(
                     $"key: {firstOrDefault.PassId} enum {passiveTraits.Count()} type : {firstOrDefault.PassiveTraitEffect.GetType()}");
 #endif
-                var aggregate = passiveTraits.Aggregate(Vector<float>.Zero,
-                    (s, x) => s + x.PassiveTraitEffect.GenEffect(x.Level).GetVector());
+                var aggregate = passiveTraits.Aggregate(new float[] { },
+                    (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
 
                 RefreshStatusByAKindOfPass(firstOrDefault, aggregate);
             }
@@ -1194,7 +1194,7 @@ namespace game_stuff
         }
 
 
-        public void PassiveEffectChangeOther(Vector<float> otherAttrPassiveEffects,
+        public void PassiveEffectChangeOther(float[] otherAttrPassiveEffects,
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
                 RecycleMulti) otherBaseStatus)
         {
@@ -1222,7 +1222,7 @@ namespace game_stuff
             return b;
         }
 
-        public void RecycleWeapon()
+        public void FullAmmo()
         {
             NowAmmo = MaxAmmo;
             NowVehicle?.FullAmmo();
@@ -1238,25 +1238,25 @@ namespace game_stuff
             PlayBuffStandard.AddABuff(PlayingBuffs, playingBuff);
         }
 
-        public Vector<float> GetPassiveEffects<T>() where T : IPassiveTraitEffect
+        public float[] GetPassiveEffects<T>() where T : IPassiveTraitEffect
         {
             var passiveTraits = PassiveTraits.Values.Where(x => x.PassiveTraitEffect is T);
             var passiveTraitEffects = passiveTraits.Select(x => x.PassiveTraitEffect.GenEffect(x.Level));
             var traitEffects = passiveTraitEffects.ToList();
             var firstOrDefault = traitEffects.FirstOrDefault();
-            if (firstOrDefault == null) return Vector<float>.Zero;
-            var r = traitEffects.Aggregate(Vector<float>.Zero, (s, x) => s + x.GetVector());
+            if (firstOrDefault == null) return new float[] { };
+            var r = traitEffects.Aggregate(new float[] { }, (s, x) => s.Plus(x.GetVector()));
             return r;
         }
 
 
-        public void SurvivalStatusRefresh(Vector<float> survivalAboutPassiveEffects)
+        public void SurvivalStatusRefresh(float[] survivalAboutPassiveEffects)
         {
             BattleUnitMoverStandard.SurvivalStatusRefresh(survivalAboutPassiveEffects, this);
         }
 
 
-        private void RefreshStatusByAKindOfPass(PassiveTrait passiveTrait, Vector<float> vector)
+        private void RefreshStatusByAKindOfPass(PassiveTrait passiveTrait, float[] vector)
         {
             var v = vector;
             switch (passiveTrait.PassiveTraitEffect)
@@ -1303,7 +1303,7 @@ namespace game_stuff
         }
 
 
-        private void HitBuffTrickRefresh(Vector<float> vector)
+        private void HitBuffTrickRefresh(float[] vector)
         {
             var passiveEffect = (int) vector[0];
             var genById = PlayBuffStandard.GenById(CommonConfig.OtherConfig.atkPassBuffId);
@@ -1318,7 +1318,7 @@ namespace game_stuff
             BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> {genById};
         }
 
-        private void AbsorbStatusRefresh(Vector<float> vector)
+        private void AbsorbStatusRefresh(float[] vector)
         {
             BattleUnitMoverStandard.AbsorbStatusRefresh(vector, this);
         }
@@ -1335,7 +1335,7 @@ namespace game_stuff
                 PassiveTraits.Add(passiveTraitPassId, passiveTrait);
             }
 
-            Vector<float> v;
+            float[] v;
             if (passiveTrait.PassiveTraitEffect is AddItem addItem)
             {
                 v = addItem.GetVector();
@@ -1345,20 +1345,20 @@ namespace game_stuff
                 var passiveTraits =
                     PassiveTraits.Values.Where(x =>
                         x.PassiveTraitEffect.GetType() == passiveTrait.GetType());
-                v = passiveTraits.Aggregate(Vector<float>.Zero,
-                    (s, x) => s + x.PassiveTraitEffect.GenEffect(x.Level).GetVector());
+                v = passiveTraits.Aggregate(new float[] { },
+                    (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
             }
 
 
             RefreshStatusByAKindOfPass(passiveTrait, v);
         }
 
-        private void TickAboutRefresh(Vector<float> tickAdds)
+        private void TickAboutRefresh(float[] tickAdds)
         {
             ProtectTickMultiAdd = tickAdds[0];
         }
 
-        private void TrapAboutRefresh(Vector<float> trapAdd)
+        private void TrapAboutRefresh(float[] trapAdd)
         {
             BattleUnitMoverStandard.TrapAboutRefresh(trapAdd, this);
         }
@@ -1484,7 +1484,7 @@ namespace game_stuff
             Traps.Enqueue(genATrap);
         }
 
-        public void PassiveEffectChangeTrap(Vector<float> trapAdd,
+        public void PassiveEffectChangeTrap(float[] trapAdd,
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr)
         {
             BattleUnitMoverStandard.PassiveEffectChangeTrap(trapAdd, trapBaseAttr, this);

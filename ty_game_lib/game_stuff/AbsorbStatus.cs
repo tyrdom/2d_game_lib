@@ -28,7 +28,7 @@ namespace game_stuff
             );
         }
 
-        public void PassiveEffectChange(Vector<float> vector, AbsorbStatus regenBaseAttr)
+        public void PassiveEffectChange(float[] vector, AbsorbStatus regenBaseAttr)
         {
             HpAbs = regenBaseAttr.HpAbs * (1 + vector[0]);
             ArmorAbs = regenBaseAttr.ArmorAbs * (1 + vector[1]);

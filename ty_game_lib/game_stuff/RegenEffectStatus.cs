@@ -28,7 +28,7 @@ namespace game_stuff
                 baseAttributeShieldChargeEffect, baseAttributeReloadMulti);
         }
 
-        public void PassiveEffectChange(Vector<float> regenAttrPassiveEffects, RegenEffectStatus regenBaseAttr)
+        public void PassiveEffectChange(float[] regenAttrPassiveEffects, RegenEffectStatus regenBaseAttr)
         {
             HealEffect = regenBaseAttr.HealEffect * (1 + regenAttrPassiveEffects[0]);
             FixEffect = regenBaseAttr.FixEffect * (1 + regenAttrPassiveEffects[1]);

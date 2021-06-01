@@ -25,7 +25,7 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_gun, weapon_id.test_gun}, size.small,
                     1);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
@@ -58,8 +58,8 @@ namespace lib_test
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(0, -1f);
-                var operate = i < 3
-                    ? new Operate(aim: twoDVector, skillAction: SkillAction.Op1)
+                var operate = i < 20
+                    ? new Operate(mapInteractive: MapInteract.BuyOrApplyCall)
                     : new Operate(aim: twoDVector);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);

@@ -46,7 +46,7 @@ namespace game_stuff
             return new AttackStatus(baseAttributeAtk, baseAttributeShardedNum, baseAttributeBackStabAdd);
         }
 
-        public void PassiveEffectChangeAtk(Vector<float> passiveTrait,
+        public void PassiveEffectChangeAtk(float[] passiveTrait,
             AttackStatus baseAtkStatus)
         {
             MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + passiveTrait[0]));

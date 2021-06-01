@@ -140,13 +140,29 @@ namespace game_stuff
                 tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
+            var bulletProtectValue = bullet.ProtectValue;
+            var valuePerSecToValuePerTick = ((float) pairKey).ValuePerSecToValuePerTick();
+
 
             var bulletDamageMulti = bullet.DamageMulti <= 0
-                ? ((float) pairKey).ValuePerSecToValuePerTick()
+                ? valuePerSecToValuePerTick
                 : bullet.DamageMulti;
 
+            if (bulletProtectValue == -1)
+            {
+                bulletProtectValue = (int) (bulletDamageMulti *
+                                            CommonConfig.OtherConfig.protect_standardMulti);
+            }
+
+
+            var bulletSuccessAmmoAdd = bullet.SuccessAmmoAdd;
+            if (bulletSuccessAmmoAdd == -1)
+            {
+                bulletSuccessAmmoAdd = (int) (pairKey * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+            }
+
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
-                bullet.PauseToOpponent, objType, tough, bullet.SuccessAmmoAdd, bulletDamageMulti, bullet.ProtectValue,
+                bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum);
         }
 
@@ -192,7 +208,11 @@ namespace game_stuff
         {
             var isBlockSightLine =
                 blockMap?.IsBlockSightLine(new TwoDVectorLine(Pos, characterBody.GetAnchor())) ?? false;
-            return GameTools.IsHit(this, characterBody) && (CanOverBulletBlock || !isBlockSightLine);
+            var isHit = GameTools.IsHit(this, characterBody);
+#if DEBUG
+            Console.Out.WriteLine($"bullet hit? id {BulletId} ~ {isHit} and {!isBlockSightLine}");
+#endif
+            return isHit && (CanOverBulletBlock || !isBlockSightLine);
 
             //造成伤害需要不被阻挡
         }

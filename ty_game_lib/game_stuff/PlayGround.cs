@@ -440,11 +440,11 @@ namespace game_stuff
                     }
                 }
 #if DEBUG
-                Console.Out.WriteLine($"team~ bf {TeamToBodies[1].playerBodies.Count()}");
+                // Console.Out.WriteLine($"team~ bf {TeamToBodies[1].playerBodies.Count()}");
 #endif
                 playerBodies.ReLocateIdBoxInQuadTree(dd, CommonConfig.OtherConfig.qspace_max_per_level);
 #if DEBUG
-                Console.Out.WriteLine($"team~ af {TeamToBodies[1].playerBodies.Count()}");
+                // Console.Out.WriteLine($"team~ af {TeamToBodies[1].playerBodies.Count()}");
 #endif
             }
         }
