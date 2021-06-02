@@ -1390,7 +1390,9 @@ namespace game_stuff
         {
             PlayingItemBag.Gain(gameItem);
 
-            var item = PlayingItemBag.GetNum(gameItem.ItemId);
+
+            var itemChange = new ItemChange(new[] {gameItem.ItemId});
+            CharEvents.Add(itemChange);
         }
 
         public void PickGameItem(ImmutableList<GameItem> gameItems)
@@ -1601,8 +1603,6 @@ namespace game_stuff
             return false;
         }
     }
-
-  
 
 
     public enum TrickCond

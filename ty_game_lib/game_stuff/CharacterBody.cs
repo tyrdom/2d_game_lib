@@ -195,6 +195,9 @@ namespace game_stuff
                 ).ToArray();
             if (gameItems.Any())
             {
+#if DEBUG
+                Console.Out.WriteLine("");
+#endif
                 var itemDetailChange = new ItemDetailChange(gameItems);
                 characterStatusCharEvents.Add(itemDetailChange);
             }
