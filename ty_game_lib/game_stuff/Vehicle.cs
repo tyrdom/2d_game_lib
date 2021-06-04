@@ -285,8 +285,14 @@ namespace game_stuff
 
                 if (firstOrDefault?.PassiveTraitEffect is IPassiveTraitEffectForVehicle passiveTraitEffect)
                 {
-                    var aggregate = grouping.Aggregate(new float[]{},
-                        (s, x) => s.Plus( x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
+                    var aggregate = grouping.Aggregate(new float[] { },
+                        (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
+
+                    if (!aggregate.Any())
+                    {
+                        continue;
+                    }
+
                     switch (passiveTraitEffect)
                     {
                         case AbsorbAboutPassiveEffect _:

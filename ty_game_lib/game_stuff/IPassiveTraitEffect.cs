@@ -227,11 +227,6 @@ namespace game_stuff
 
         private float[] TickAddMulti { get; }
 
-        public Vector<float> GetZero()
-        {
-            return Vector<float>.Zero;
-        }
-
         public float[] GetVector()
         {
             return TickAddMulti;

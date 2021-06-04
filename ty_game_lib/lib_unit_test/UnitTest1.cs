@@ -181,6 +181,9 @@ namespace lib_unit_test
         [Test]
         public void NpcTest()
         {
+            var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2);
+            
+            Assert.Pass($"fin");
         }
 
         private static string PathTest(WalkBlock genWalkBlockByPolys)

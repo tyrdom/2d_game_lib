@@ -11,17 +11,6 @@ namespace game_stuff
     {
         public ContainType Title { get; }
 
-        public static ContainType GetTitle(ISaleStuff saleStuff)
-        {
-            return saleStuff switch
-            {
-                PassiveTrait _ => ContainType.PassiveC,
-                Prop _ => ContainType.PropC,
-                Vehicle _ => ContainType.VehicleC,
-                Weapon _ => ContainType.WeaponC,
-                _ => throw new ArgumentOutOfRangeException(nameof(saleStuff))
-            };
-        }
 
         public SaleRandom(IMapInteractable? inWhichMapInteractive, GameItem cost, int stack,
             ImmutableArray<(int weight, ISaleStuff[] good)> randomGood, Random random, GameItem[] orCosts)
@@ -37,7 +26,7 @@ namespace game_stuff
             var firstOrDefault = randomGood.FirstOrDefault().good.FirstOrDefault();
             if (firstOrDefault != null)
             {
-                Title = GetTitle(firstOrDefault);
+                Title = SaleStuffStandard.GetTitle(firstOrDefault);
             }
 
             Title = ContainType.PropC;

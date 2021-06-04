@@ -138,9 +138,10 @@ namespace game_stuff
                     var saleRandomTitle = saleRandom.Title;
                     return new SaleRandomTickMsg(saleRandom.Cost, saleRandomTitle, saleRandom.GetRestStack(gid));
                 case SaleUnit saleUnit:
-                    return new SaleBoxTickMsg(saleUnit.Cost,
-                        saleUnit.Good.Select(x => (SaleRandom.GetTitle(x), x.GetId())).ToArray(),
+                    var saleBoxTickMsg = new SaleBoxTickMsg(saleUnit.Cost,
+                        saleUnit.Good.Select(x => (SaleStuffStandard.GetTitle(x), x.GetId())).ToArray(),
                         saleUnit.GetRestStack(gid), GetAnchor());
+                    return saleBoxTickMsg;
                 case TeleportUnit _:
                     return new TelePortTickMsg(GetAnchor());
 

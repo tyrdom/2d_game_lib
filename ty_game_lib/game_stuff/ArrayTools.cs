@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace game_stuff
@@ -16,6 +17,9 @@ namespace game_stuff
         {
             if (!a.Any()) return b;
             var enumerable = a.Zip(b, (x, y) => x + y).ToArray();
+#if DEBUG
+            Console.Out.WriteLine($"plus two array {a.Length} {b.Length} === {enumerable.Length}");
+#endif
             return enumerable;
         }
     }

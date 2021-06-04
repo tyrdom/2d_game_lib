@@ -264,6 +264,12 @@ namespace game_stuff
             SurvivalStatus baseSurvivalStatus)
 
         {
+            // if (v.Length < 6)
+            // {
+            //     var aggregate = v.Aggregate("", (s, x) => s + x + "|");
+            //     throw new Exception($"no good array : {aggregate}:: {v.Length}");
+            // }
+
             var lossHp = MaxHp - NowHp;
             MaxHp = (uint) MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
 

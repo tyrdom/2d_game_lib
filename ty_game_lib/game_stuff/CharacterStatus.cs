@@ -267,24 +267,29 @@ namespace game_stuff
 
         private void StartPassiveInitRefresh()
         {
-            var groupBy = PassiveTraits.Values.GroupBy(x => x.GetType());
+            var groupBy = PassiveTraits.Values.GroupBy(x => x.PassiveTraitEffect.GetType());
 
             foreach (var passiveTraits in groupBy)
             {
                 var firstOrDefault = passiveTraits.FirstOrDefault();
+
                 if (firstOrDefault == null)
                 {
                     continue;
                 }
 
-
 #if DEBUG
+                var aggregate1 = passiveTraits.Aggregate("",
+                    ((s, trait) => s + trait.PassiveTraitEffect.GetType() + ""));
                 Console.Out.WriteLine(
-                    $"key: {firstOrDefault.PassId} enum {passiveTraits.Count()} type : {firstOrDefault.PassiveTraitEffect.GetType()}");
+                    $"key: {firstOrDefault.PassId} enum {passiveTraits.Count()} types : {aggregate1}");
 #endif
                 var aggregate = passiveTraits.Aggregate(new float[] { },
                     (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
-
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"array:{aggregate.Length} type : {firstOrDefault.PassiveTraitEffect.GetType()}");
+#endif
                 RefreshStatusByAKindOfPass(firstOrDefault, aggregate);
             }
         }
