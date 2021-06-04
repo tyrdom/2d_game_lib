@@ -291,11 +291,11 @@ namespace game_stuff
             return nowShield;
         }
 
-        public void AbsorbDamage(uint damage, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage)
+        public void AbsorbDamage(uint total, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage)
         {
-            HpAbs(absorbStatus.HpAbs, damage);
-            ArmorAbs(absorbStatus.ArmorAbs, damage, hit, damageShardedDamage);
-            ShieldAbs(absorbStatus.ShieldAbs, damage, hit);
+            HpAbs(absorbStatus.HpAbs, total);
+            ArmorAbs(absorbStatus.ArmorAbs, total, hit, damageShardedDamage);
+            ShieldAbs(absorbStatus.ShieldAbs, total, hit);
         }
 
         private void ShieldAbs(float absorbStatusShieldAbs, uint damage, uint hit)
@@ -307,14 +307,14 @@ namespace game_stuff
 
         private void ArmorAbs(float absorbStatusArmorAbs, uint damage, uint hit, uint damageShardedDamage)
         {
-            var shieldInstability = damage - hit * Math.Min(ArmorDefence, damageShardedDamage);
-            NowShield = (uint) (NowShield + shieldInstability * absorbStatusArmorAbs);
+            var shieldInstability = Math.Max(0, (damage - hit * Math.Min(ArmorDefence, damageShardedDamage)));
+            NowArmor = (uint) (NowArmor + shieldInstability * absorbStatusArmorAbs);
             SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
         }
 
         private void HpAbs(float absorbStatusHpAbs, uint damage)
         {
-            NowHp = (uint) (NowShield + damage * absorbStatusHpAbs);
+            NowHp = (uint) (NowHp + damage * absorbStatusHpAbs);
             SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
         }
 

@@ -1417,15 +1417,15 @@ namespace game_stuff
             AddProtect(valueAdd);
 
             var genDamage = bodyCaster.GenDamage(damageMulti, back);
-            var genDamageShardedDamage = genDamage.MainDamage + genDamage.ShardedDamage * genDamage.ShardedNum;
-            var genDamageShardedNum = genDamage.ShardedNum + 1;
+            var total = genDamage.MainDamage + genDamage.ShardedDamage * genDamage.ShardedNum;
+            var times = genDamage.ShardedNum;
 
             var ammoAbsorb = GetAmmoAbsorb();
-            AddAmmo((int) (genDamageShardedDamage * ammoAbsorb));
+            AddAmmo((int) (total * ammoAbsorb));
             if (NowVehicle != null)
-                NowVehicle.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, genDamage.ShardedDamage);
+                NowVehicle.AbsorbDamage(total, times, genDamage.ShardedDamage);
             else
-                AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, genDamage.ShardedDamage);
+                AbsorbDamage(total, times, genDamage.ShardedDamage);
         }
 
         private float GetAmmoAbsorb()
@@ -1433,9 +1433,9 @@ namespace game_stuff
             return NowVehicle?.AbsorbStatus.AmmoAbs ?? AbsorbStatus.AmmoAbs;
         }
 
-        private void AbsorbDamage(uint genDamageShardedDamage, uint genDamageShardedNum, uint shardedDamage)
+        private void AbsorbDamage(uint total, uint times, uint shardedDamage)
         {
-            SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
+            SurvivalStatus.AbsorbDamage(total, times, AbsorbStatus, shardedDamage);
         }
 
         public DmgShow? BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
