@@ -10,12 +10,12 @@ namespace game_stuff
     {
         public Zone RdZone { get; }
 
-        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap);
+        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap);
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap);
         public ObjType TargetType { get; }
         public bool HitNumLimit(out int num);
-        IRelationMsg? HitSth(ICanBeHit canBeHit);
+        IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit);
     }
 
     public static class HitAbleMediaStandard
@@ -24,16 +24,16 @@ namespace game_stuff
             SightMap? blockMap)
         {
             var idPointShapes = qSpace.SelectMany(x => x.FilterToBoxList<IdPointBox, IHitMedia>((bd, aHitMedia) =>
-                    bd.IdPointShape is ICanBeHit canBeHit && aHitMedia.IsHit(canBeHit, blockMap), hitMedia,
+                    bd.IdPointShape is ICanBeAndNeedHit canBeHit && aHitMedia.IsHit(canBeHit, blockMap), hitMedia,
                 hitMedia.RdZone.MoveToAnchor(hitMedia.Pos)));
             if (!hitMedia.HitNumLimit(out var num))
-                return idPointShapes.Select(x => x.IdPointShape).OfType<ICanBeHit>().Select(hitMedia.HitSth)
+                return idPointShapes.Select(x => x.IdPointShape).OfType<ICanBeAndNeedHit>().Select(hitMedia.HitSth)
                     .Where(x => x != null)!;
 
             var shapes = idPointShapes.ToList();
             shapes.Sort((shape, pointShape) => shape.GetAnchor().GetDistance(hitMedia.Pos)
                 .CompareTo(pointShape.GetAnchor().GetDistance(hitMedia.Pos)));
-            var pointShapes = shapes.Take(num).Select(box => box.IdPointShape).OfType<ICanBeHit>();
+            var pointShapes = shapes.Take(num).Select(box => box.IdPointShape).OfType<ICanBeAndNeedHit>();
 #if DEBUG
             var i = shapes.Count();
             var count = pointShapes.Count();

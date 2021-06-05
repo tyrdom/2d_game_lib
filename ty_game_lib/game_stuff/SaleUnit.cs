@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -56,7 +57,7 @@ namespace game_stuff
             return SaleUnitStandard.CanInterActTwoBy(characterStatus, this);
         }
 
-        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public ImmutableArray<IActResult> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             return SaleUnitStandard.ActWhichChar(characterStatus, interactive, this);
         }

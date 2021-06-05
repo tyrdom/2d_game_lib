@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -55,13 +56,14 @@ namespace game_stuff
             return contains;
         }
 
-        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public ImmutableArray<IActResult> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             return interactive switch
             {
-                MapInteract.GetInfoCall => null,
-                MapInteract.BuyOrApplyCall => new TelePortMsg(ToPlayGround.MgId, ToPos),
-                _ => throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null)
+                MapInteract.GetInfoCall => ImmutableArray<IActResult>.Empty,
+                MapInteract.BuyOrApplyCall => new IActResult[]
+                    {new TelePortMsg(ToPlayGround.MgId, ToPos)}.ToImmutableArray(),
+                _ => ImmutableArray<IActResult>.Empty
             };
         }
 

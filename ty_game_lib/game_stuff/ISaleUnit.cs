@@ -2,7 +2,10 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 
@@ -24,7 +27,6 @@ namespace game_stuff
         ISaleStuff[] GetGood();
 
         int GetRestStack(int? gid);
-    
     }
 
 
@@ -63,18 +65,19 @@ namespace game_stuff
             return IsStackOk(characterStatus, saleUnit) && characterStatus.PlayingItemBag.CanCost(saleUnit);
         }
 
-        public static IActResult? ActWhichChar(CharacterStatus characterStatus,
+        public static ImmutableArray<IActResult> ActWhichChar(CharacterStatus characterStatus,
             MapInteract interactive, ISaleUnit saleUnit
         )
         {
             switch (interactive)
             {
                 case MapInteract.GetInfoCall:
-                    return null;
+                    return ImmutableArray<IActResult>.Empty;
                 case MapInteract.BuyOrApplyCall:
                     var cost = characterStatus.PlayingItemBagCost(saleUnit);
                     var characterStatusGId = characterStatus.GId;
-                    var b = saleUnit.GetRestStack(characterStatusGId) > 0;
+                    var restStack = saleUnit.GetRestStack(characterStatusGId);
+                    var b = restStack > 0;
                     if (cost && b)
                     {
                         if (saleUnit.DoneDictionary.TryGetValue(characterStatusGId, out var haveUsed))
@@ -86,42 +89,57 @@ namespace game_stuff
                             saleUnit.DoneDictionary[characterStatusGId] = 1;
                         }
 
+
                         var saleStuffs = saleUnit.GetGood();
-                        foreach (var saleStuff in saleStuffs)
+
+                        var selectMany = saleStuffs.SelectMany(x =>
                         {
-                            switch (saleStuff)
+                            switch (x)
                             {
                                 case PassiveTrait passiveTrait:
-                                    return passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                    var immutableArray =
+                                        passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                    return immutableArray;
                                 case Prop prop:
-                                    return prop.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                    var actResults = prop.ActWhichChar(characterStatus, MapInteract.PickCall);
+                                    return actResults;
                                 case Vehicle vehicle:
                                     vehicle.WhoDriveOrCanDrive = characterStatus;
                                     var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ??
                                                     characterStatus.GetPos();
 
                                     var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
-                                    return new DropThings(new List<IMapInteractable> {dropAsIMapInteractable});
+                                    var actWhichChar = new DropThings(new List<IMapInteractable>
+                                        {dropAsIMapInteractable});
+                                    var results = new IActResult[] {actWhichChar};
+                                    return results.ToImmutableArray();
                                 case Weapon weapon:
                                     return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
                                 default:
-                                    throw new ArgumentOutOfRangeException(nameof(saleUnit.GetGood));
+                                    return ImmutableArray<IActResult>.Empty;
                             }
+                        });
+                        var mapMarkId = saleUnit.InWhichMapInteractive?.MapMarkId;
+                        if (!mapMarkId.HasValue)
+                        {
+                            return selectMany.ToImmutableArray();
                         }
+
+                        var saleStackChange = new SaleStackChange(mapMarkId.Value, restStack - 1);
+                        var enumerable = selectMany.Append(saleStackChange).ToImmutableArray();
+                        return enumerable;
                     }
 
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+                default: return ImmutableArray<IActResult>.Empty;
             }
 
-            return null;
+            return ImmutableArray<IActResult>.Empty;
         }
 
         public static ISaleUnit GenById(int i)
         {
-            
-            if(CommonConfig.Configs.sale_units.TryGetValue(i,out var saleUnit))
+            if (CommonConfig.Configs.sale_units.TryGetValue(i, out var saleUnit))
             {
                 return GenByConfig(saleUnit);
             }
@@ -137,5 +155,18 @@ namespace game_stuff
                 false => SaleUnit.GenByConfig(saleUnit)
             };
         }
+    }
+
+    public readonly struct SaleStackChange : IToOutPutResult
+    {
+        public SaleStackChange(int mapMarkId, int restStack)
+        {
+            MapMarkId = mapMarkId;
+            RestStack = restStack;
+        }
+
+        public int RestStack { get; }
+
+        public int MapMarkId { get; }
     }
 }

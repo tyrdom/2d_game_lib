@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using collision_and_rigid;
 using game_config;
 
@@ -15,6 +16,10 @@ namespace game_stuff
         }
     }
 
+    public interface IToOutPutResult : IActResult
+    {
+        
+    }
 
     public interface IActResult
     {
@@ -35,7 +40,7 @@ namespace game_stuff
         IMapInteractable? InWhichMapInteractive { get; set; }
         bool CanInterActOneBy(CharacterStatus characterStatus);
         bool CanInterActTwoBy(CharacterStatus characterStatus);
-        IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive);
+        ImmutableArray<IActResult> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive);
     }
 
     public static class CanPutInMapInteractableStandard

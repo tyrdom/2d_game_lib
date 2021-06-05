@@ -162,7 +162,7 @@ namespace rogue_game
 
         public void AddCharacterBodiesToStart(IEnumerable<CharacterBody> characterBodies)
         {
-            PlayGround.AddBodies(characterBodies);
+            PlayGround.AddBodiesToStart(characterBodies);
         }
 
         public void TelePortOut()

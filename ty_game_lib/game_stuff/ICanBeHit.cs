@@ -3,7 +3,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface ICanBeHit : IIdPointShape, ICanBeSaw, ICanBeEnemy
+    public interface ICanBeAndNeedHit : IIdPointShape, ICanBeAndNeedSaw, ICanBeEnemy
     {
         int GetTeam();
         IdPointBox InBox { get; set; }

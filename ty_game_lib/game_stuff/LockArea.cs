@@ -11,7 +11,7 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
 
-        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
+        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
         {
             return IsHit(characterBody);
         }
@@ -84,15 +84,15 @@ namespace game_stuff
             return false;
         }
 
-        private bool IsHit(ICanBeHit characterBody)
+        private bool IsHit(ICanBeAndNeedHit characterBody)
         {
             return GameTools.IsHit(this, characterBody);
         }
 
-        public IRelationMsg? HitSth(ICanBeHit canBeHit)
+        public IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit)
         {
             if (!(Caster is CharacterStatus characterStatus)) return null;
-            switch (canBeHit)
+            switch (canBeAndNeedHit)
             {
                 case CharacterBody characterBody1:
 
@@ -101,7 +101,7 @@ namespace game_stuff
                 case Trap trap:
                     return new LockHit(trap, Caster.GetFinalCaster().CharacterStatus, this);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(canBeHit));
+                    throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));
             }
         }
 
@@ -114,7 +114,7 @@ namespace game_stuff
 
     public class LockHit : IHitMsg
     {
-        public LockHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, IHitMedia lockArea1)
+        public LockHit(ICanBeAndNeedHit whoTake, CharacterStatus casterOrOwner, IHitMedia lockArea1)
         {
             CasterOrOwner = casterOrOwner;
             WhoTake = whoTake;
@@ -122,7 +122,7 @@ namespace game_stuff
         }
 
         public CharacterStatus CasterOrOwner { get; }
-        public ICanBeHit WhoTake { get; }
+        public ICanBeAndNeedHit WhoTake { get; }
 
         public IHitMedia HitMedia { get; }
     }

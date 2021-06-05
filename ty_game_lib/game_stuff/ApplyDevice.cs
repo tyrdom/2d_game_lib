@@ -139,7 +139,7 @@ namespace game_stuff
                     return new SaleRandomTickMsg(saleRandom.Cost, saleRandomTitle, saleRandom.GetRestStack(gid));
                 case SaleUnit saleUnit:
                     var saleBoxTickMsg = new SaleBoxTickMsg(saleUnit.Cost,
-                        saleUnit.Good.Select(x => (SaleStuffStandard.GetTitle(x), x.GetId())).ToArray(),
+                        saleUnit.Good.Select(x => (x.GetTitle(), x.GetId())).ToArray(),
                         saleUnit.GetRestStack(gid), GetAnchor());
                     return saleBoxTickMsg;
                 case TeleportUnit _:
@@ -149,6 +149,8 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public int MapMarkId { get; set; }
     }
 
     public class TelePortTickMsg : ISeeTickMsg

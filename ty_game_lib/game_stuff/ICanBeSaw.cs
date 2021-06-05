@@ -2,7 +2,7 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public interface ICanBeSaw : IPerceivable
+    public interface ICanBeAndNeedSaw : IPerceivable
     {
         ISeeTickMsg GenTickMsg(int? gid = null);
     }
@@ -11,9 +11,13 @@ namespace game_stuff
     {
     }
 
-    public interface INotMoveCanBeSew : ICanBeSaw
+    public interface IMapMarkId
     {
-        int MapInstanceId { get; set; }
+        int MapMarkId { get; set; }
+    }
+
+    public interface INotMoveCanBeAndNeedSew : ICanBeAndNeedSaw, IMapMarkId
+    {
     }
 
     public interface ICanBeEnemy : IPerceivable

@@ -2,7 +2,7 @@
 
 namespace game_stuff
 {
-    public readonly struct TelePortMsg : IActResult
+    public readonly struct TelePortMsg : IToOutPutResult
     {
         public TelePortMsg(int mgId, TwoDPoint toPos)
         {

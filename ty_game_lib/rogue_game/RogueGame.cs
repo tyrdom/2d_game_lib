@@ -277,9 +277,16 @@ namespace rogue_game
                 }
             }
 
-            var playerTeleportTo = playGroundGoTickResult.PlayerTeleportTo;
+            var playerTeleportTo = playGroundGoTickResult.ActOutPut;
             if (!playerTeleportTo.Any()) return new RogueGameGoTickResult(playGroundGoTickResult, false);
-            var (map, toPos) = playerTeleportTo.Values.First();
+            var toOutPutResults = playerTeleportTo.Values.First();
+            var telePortMsgS = toOutPutResults.OfType<TelePortMsg>().ToArray();
+            if (!telePortMsgS.Any())
+            {
+                return new RogueGameGoTickResult(playGroundGoTickResult, false);
+            }
+
+            var (map, toPos) = telePortMsgS.First();
             if (NowPlayMap.PlayGround.MgId == map) return new RogueGameGoTickResult(playGroundGoTickResult, false);
 #if DEBUG
             Console.Out.WriteLine($"map change ~~~~{map} ~~ {toPos}");

@@ -36,7 +36,7 @@ namespace game_bot
         private Random Random { get; }
         private bool InVehicle { get; }
 
-        private ICanBeHit? LockBody { get; set; }
+        private ICanBeAndNeedHit? LockBody { get; set; }
 
 
         private static List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons,
@@ -110,9 +110,9 @@ namespace game_bot
         }
 
 
-        private Operate? SeeATargetAction(ICanBeHit canBeHit)
+        private Operate? SeeATargetAction(ICanBeAndNeedHit canBeAndNeedHit)
         {
-            LockBody = canBeHit;
+            LockBody = canBeAndNeedHit;
             BotStatus = BotStatus.TargetApproach;
             var botBodyCharacterStatus = BotBody.CharacterStatus;
             var valueTuple = botBodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(
@@ -146,10 +146,10 @@ namespace game_bot
             ImmutableHashSet<IHitMsg> immutableHashSet, PathTop? pathTop)
         {
             var canBeEnemies = perceivable.ToList();
-            var canBeHits = canBeEnemies.OfType<ICanBeHit>()
+            var canBeHits = canBeEnemies.OfType<ICanBeAndNeedHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
 
-            var targets = canBeHits.Aggregate((ICanBeHit?) null, (s, x) =>
+            var targets = canBeHits.Aggregate((ICanBeAndNeedHit?) null, (s, x) =>
             {
                 if (s == null)
                 {

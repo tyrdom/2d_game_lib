@@ -204,7 +204,7 @@ namespace game_stuff
             return RestTick > 0;
         }
 
-        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
+        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
         {
             var isBlockSightLine =
                 blockMap?.IsBlockSightLine(new TwoDVectorLine(Pos, characterBody.GetAnchor())) ?? false;
@@ -217,9 +217,9 @@ namespace game_stuff
             //造成伤害需要不被阻挡
         }
 
-        public IRelationMsg? HitSth(ICanBeHit canBeHit)
+        public IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit)
         {
-            switch (canBeHit)
+            switch (canBeAndNeedHit)
             {
                 case CharacterBody targetCharacterBody:
 
@@ -240,7 +240,7 @@ namespace game_stuff
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
                         : (IRelationMsg?) null;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(canBeHit));
+                    throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));
             }
         }
 

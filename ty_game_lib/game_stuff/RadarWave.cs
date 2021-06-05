@@ -70,7 +70,7 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public bool IsHit(ICanBeHit characterBody, SightMap? blockMap)
+        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
         {
             return IsHit(characterBody);
         }
@@ -83,7 +83,7 @@ namespace game_stuff
             Caster = characterStatus;
         }
 
-        public IRelationMsg? HitSth(ICanBeHit canBeHit)
+        public IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit)
         {
             switch (Caster)
             {
@@ -97,7 +97,7 @@ namespace game_stuff
 // #if DEBUG
 //                     Console.Out.WriteLine($"bullet hit::{isHit}");
 // #endif
-            return new RadarHit(canBeHit, Caster.GetFinalCaster().CharacterStatus, this);
+            return new RadarHit(canBeAndNeedHit, Caster.GetFinalCaster().CharacterStatus, this);
         }
 
         public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
@@ -120,7 +120,7 @@ namespace game_stuff
         }
 
 
-        private bool IsHit(ICanBeHit characterBody)
+        private bool IsHit(ICanBeAndNeedHit characterBody)
         {
             return GameTools.IsHit(this, characterBody);
         }
@@ -128,7 +128,7 @@ namespace game_stuff
 
     public class RadarHit : IHitMsg
     {
-        public RadarHit(ICanBeHit whoTake, CharacterStatus casterOrOwner, IHitMedia hitMedia)
+        public RadarHit(ICanBeAndNeedHit whoTake, CharacterStatus casterOrOwner, IHitMedia hitMedia)
         {
             WhoTake = whoTake;
             CasterOrOwner = casterOrOwner;
@@ -136,7 +136,7 @@ namespace game_stuff
         }
 
         public CharacterStatus CasterOrOwner { get; }
-        public ICanBeHit WhoTake { get; }
+        public ICanBeAndNeedHit WhoTake { get; }
         public IHitMedia HitMedia { get; }
     }
 }

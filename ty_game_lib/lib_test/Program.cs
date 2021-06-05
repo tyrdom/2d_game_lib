@@ -58,7 +58,7 @@ namespace lib_test
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(0, -1f);
-                var operate = i < 20
+                var operate = i < 30
                     ? new Operate(mapInteractive: MapInteract.BuyOrApplyCall)
                     : new Operate(aim: twoDVector);
                 var dVector1 = new TwoDVector(0, 1f);

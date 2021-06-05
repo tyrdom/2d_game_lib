@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
 using collision_and_rigid;
@@ -229,13 +230,15 @@ namespace game_stuff
             return WhoDriveOrCanDrive == null || WhoDriveOrCanDrive == characterStatus;
         }
 
-        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public ImmutableArray<IActResult> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             return interactive switch
             {
-                MapInteract.InVehicleCall => new DropThings(characterStatus.GetInAVehicle(this)),
-                MapInteract.KickVehicleCall => new DropThings(KickBySomeBody(characterStatus.GetPos())),
-                _ => throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null)
+                MapInteract.InVehicleCall => new IActResult[]
+                    {new DropThings(characterStatus.GetInAVehicle(this))}.ToImmutableArray(),
+                MapInteract.KickVehicleCall => new IActResult[]
+                    {new DropThings(KickBySomeBody(characterStatus.GetPos()))}.ToImmutableArray(),
+                _ => ImmutableArray<IActResult>.Empty
             };
         }
 

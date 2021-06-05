@@ -26,13 +26,13 @@ namespace game_stuff
 
         private IQSpace MapInteractableThings { get; } // 互动物品，包括地上的武器，道具，被动技能，空载具，售卖机等
 
-        private Dictionary<int, (ImmutableHashSet<INotMoveCanBeSew>, ImmutableHashSet<CharacterBody>)> LastTickRecord
-        {
-            get;
-        }
+        private Dictionary<int, (ImmutableHashSet<INotMoveCanBeAndNeedSew>, ImmutableHashSet<CharacterBody>)>
+            LastTickRecord { get; }
 
 
         private int NowMapInstanceInteractableId { get; set; }
+
+        private List<(int gid, TelePortMsg)> TempTeleMsgToThisMap { get; }
 
         public List<ApplyDevice> GetMapApplyDevices()
         {
@@ -82,8 +82,10 @@ namespace game_stuff
             Entrance = entrance;
             BulletBlockMap = bulletBlockMap;
             TeamToHitMedia = new Dictionary<int, List<IHitMedia>>();
-            LastTickRecord = new Dictionary<int, (ImmutableHashSet<INotMoveCanBeSew>, ImmutableHashSet<CharacterBody>)>();
+            LastTickRecord =
+                new Dictionary<int, (ImmutableHashSet<INotMoveCanBeAndNeedSew>, ImmutableHashSet<CharacterBody>)>();
             NowMapInstanceInteractableId = 0;
+            TempTeleMsgToThisMap = new List<(int gid, TelePortMsg)>();
         }
 
         public static PlayGround GenEmptyPlayGround(int resId, int genId)
@@ -239,11 +241,11 @@ namespace game_stuff
             PlayGroundGoATick(
                 Dictionary<int, Operate> gidToOperates)
         {
-            var teleports = new Dictionary<int, TelePortMsg>();
+            var actOut = new Dictionary<int, IEnumerable<IToOutPutResult>>();
             var playerBeHit = new Dictionary<int, HashSet<IRelationMsg>>();
             var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
             var teamRadarSee = new Dictionary<int, HashSet<IPerceivable>>();
-            var everyBodyGoATick = EveryTeamGoATick(gidToOperates, teleports);
+            var everyBodyGoATick = EveryTeamGoATick(gidToOperates, actOut);
 
             MapInteractableGoATick();
 
@@ -278,16 +280,31 @@ namespace game_stuff
                 x => PlayerTickSee.GenPlayerSee(x.Value,
                     LastTickRecord.TryGetValue(x.Key, out var t)
                         ? t
-                        : (ImmutableHashSet<INotMoveCanBeSew>.Empty, ImmutableHashSet<CharacterBody>.Empty)));
+                        : (ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty, ImmutableHashSet<CharacterBody>.Empty)));
 
             foreach (var keyValuePair in playerPerceivable)
             {
                 var key = keyValuePair.Key;
                 var immutableHashSet = keyValuePair.Value;
-                var notMoveCanBeSews = immutableHashSet.OfType<INotMoveCanBeSew>();
+                var notMoveCanBeSews = immutableHashSet.OfType<INotMoveCanBeAndNeedSew>();
                 var characterBodies = immutableHashSet.OfType<CharacterBody>();
                 LastTickRecord[key] = (notMoveCanBeSews.ToImmutableHashSet(), characterBodies.ToImmutableHashSet());
             }
+
+            if (TempTeleMsgToThisMap.Any())
+            {
+                foreach (var tuple in TempTeleMsgToThisMap)
+                {
+                    var (gid, telePortMsg) = tuple;
+                    var toOutPutResults = actOut.TryGetValue(gid, out var acToOutPutResults)
+                        ? acToOutPutResults.Append(telePortMsg)
+                        : new IToOutPutResult[] {telePortMsg};
+                    actOut[gid] = toOutPutResults;
+                }
+
+                TempTeleMsgToThisMap.Clear();
+            }
+
 
             var valueTuple =
                 new PlayGroundGoTickResult(
@@ -295,7 +312,7 @@ namespace game_stuff
                         p => p.Value.ToImmutableHashSet()), trapBeHit.ToImmutableDictionary(pa => pa.Key,
                         pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
                             pp => pp.Value.ToImmutableHashSet())),
-                    playerTickSees, teleports.ToImmutableDictionary());
+                    playerTickSees, actOut.ToImmutableDictionary(p => p.Key, p => p.Value.ToImmutableArray()));
 
             return valueTuple;
         }
@@ -353,7 +370,7 @@ namespace game_stuff
 #endif
                 var characterBodies = new HashSet<IPerceivable>();
 
-                var filterToBoxList = MapInteractableThings.FilterToBoxList<ICanBeSaw, CharacterBody>(
+                var filterToBoxList = MapInteractableThings.FilterToBoxList<ICanBeAndNeedSaw, CharacterBody>(
                     (idp, acb) => acb.InSight(idp, SightMap),
                     characterBody, sightZone);
                 characterBodies.UnionWith(filterToBoxList);
@@ -369,11 +386,11 @@ namespace game_stuff
                     {
                         var filterToGIdPsList =
                             qSpace.FilterToBoxList<IdPointBox, bool>((x, y) => true, true).Select(x => x.IdPointShape)
-                                .OfType<ICanBeSaw>();
+                                .OfType<ICanBeAndNeedSaw>();
 
                         var ofType = traps.FilterToBoxList<IdPointBox, bool>((x, y) => true, true)
                             .Select(x => x.IdPointShape)
-                            .OfType<ICanBeSaw>();
+                            .OfType<ICanBeAndNeedSaw>();
                         // #if DEBUG
 //                         Console.Out.WriteLine($"list::{filterToGIdPsList.ToArray().Length}");
 // #endif                
@@ -589,7 +606,7 @@ namespace game_stuff
         private static readonly Func<IAaBbBox, bool> IsV = x => x is VehicleCanIn;
 
         private Dictionary<int, ITwoDTwoP> EveryTeamGoATick(Dictionary<int, Operate> gidToOperates,
-            IDictionary<int, TelePortMsg> dictionary)
+            IDictionary<int, IEnumerable<IToOutPutResult>> dictionary)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
 
@@ -637,17 +654,13 @@ namespace game_stuff
                     var aCharGoTickMsg = gtb.Value;
                     var twoDTwoP = aCharGoTickMsg.Move;
                     var stillAlive = aCharGoTickMsg.StillActive;
-                    var teleportTo = aCharGoTickMsg.TeleportTo;
+                    var actResults = aCharGoTickMsg.ActResults;
 
                     if (!stillAlive)
                     {
                         continue;
                     }
 
-                    if (teleportTo != null)
-                    {
-                        dictionary[gid] = teleportTo.Value;
-                    }
 
                     if (twoDTwoP != null)
                     {
@@ -669,27 +682,33 @@ namespace game_stuff
                         }
                     }
 
-                    var mapInteractive = aCharGoTickMsg.DropThing;
-                    AddRangeMapInteractable(mapInteractive);
+                    if (actResults.Any())
+                    {
+                        dictionary[gid] = actResults.OfType<IToOutPutResult>();
+                        var mapInteractive = actResults.OfType<DropThings>().SelectMany(x => x.DropSet);
+                        AddRangeMapInteractable(mapInteractive);
+                    }
+
 
                     var interactCaller = aCharGoTickMsg.WhoInteractCall;
                     if (interactCaller != null)
                     {
+                        var twoDPoint = interactCaller.GetAnchor();
                         (IAaBbBox? singleBox, bool needContinueCall) = aCharGoTickMsg.MapInteractive switch
                         {
                             MapInteract.RecycleCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                interactCaller.GetAnchor(), IsC), true),
+                                twoDPoint, IsC), true),
                             MapInteract.InVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                interactCaller.GetAnchor(), IsV), false),
+                                twoDPoint, IsV), false),
                             MapInteract.PickCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                interactCaller.GetAnchor(), IsC), false),
+                                twoDPoint, IsC), false),
                             MapInteract.KickVehicleCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                interactCaller.GetAnchor(), IsV), true),
+                                twoDPoint, IsV), true),
                             MapInteract.GetInfoCall => (
-                                MapInteractableThings.InteractiveFirstSingleBox(interactCaller.GetAnchor(), IsD),
+                                MapInteractableThings.InteractiveFirstSingleBox(twoDPoint, IsD),
                                 false),
                             MapInteract.BuyOrApplyCall => (MapInteractableThings.InteractiveFirstSingleBox(
-                                interactCaller.GetAnchor(), IsD), true),
+                                twoDPoint, IsD), true),
                             null => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg)),
                             _ => throw new ArgumentOutOfRangeException(nameof(aCharGoTickMsg))
                         };
@@ -768,19 +787,19 @@ namespace game_stuff
 
         public void AddRangeMapInteractable(IEnumerable<IMapInteractable> interactableSet)
         {
-            var mapInteractables = interactableSet.IeToHashSet();
-            var notMoveCanBeSews = mapInteractables.OfType<INotMoveCanBeSew>();
-            foreach (var applyDevice in mapInteractables.OfType<ApplyDevice>())
+            var mapInteractableS = interactableSet.IeToHashSet();
+
+            foreach (var applyDevice in mapInteractableS.OfType<ApplyDevice>())
             {
                 applyDevice.SetInPlayGround(this);
             }
 
-            foreach (var notMoveCanBeSew in notMoveCanBeSews)
+            foreach (var notMoveCanBeSew in mapInteractableS)
             {
-                notMoveCanBeSew.MapInstanceId = GenAMapInstanceId();
+                notMoveCanBeSew.MapMarkId = GenAMapInstanceId();
             }
 
-            MapInteractableThings.AddRangeAabbBoxes(mapInteractables.OfType<IAaBbBox>().IeToHashSet(),
+            MapInteractableThings.AddRangeAabbBoxes(mapInteractableS.OfType<IAaBbBox>().IeToHashSet(),
                 CommonConfig.OtherConfig.qspace_max_per_level);
         }
 
@@ -792,10 +811,9 @@ namespace game_stuff
                 case ApplyDevice applyDevice:
                     applyDevice.SetInPlayGround(this);
                     break;
-                case INotMoveCanBeSew notMoveCanBeSew:
-                    notMoveCanBeSew.MapInstanceId = GenAMapInstanceId();
-                    break;
             }
+
+            interactable.MapMarkId = GenAMapInstanceId();
 
             MapInteractableThings.AddSingleAaBbBox(interactable, CommonConfig.OtherConfig.qspace_max_per_level);
         }
@@ -865,7 +883,7 @@ namespace game_stuff
             return false;
         }
 
-        public void AddBodies(IEnumerable<CharacterBody> characterBodies)
+        public void AddBodiesToStart(IEnumerable<CharacterBody> characterBodies)
         {
             var groupBy = characterBodies.GroupBy(x => x.Team);
 
@@ -881,7 +899,9 @@ namespace game_stuff
                     {
                         var (body, point) = tuple;
                         body.Teleport(point);
-                        GidToBody[body.GetId()] = body;
+                        var key = body.GetId();
+                        GidToBody[key] = body;
+                        TempTeleMsgToThisMap.Add((key, new TelePortMsg(MgId, point)));
                     }
 
                     var enumerableToHashSet = grouping.Select(x => x.InBox).IeToHashSet();

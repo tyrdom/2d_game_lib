@@ -29,7 +29,7 @@ namespace game_stuff
         }
     }
 
-    public class VehicleCanIn : IMapInteractable, INotMoveCanBeSew
+    public class VehicleCanIn : IMapInteractable, INotMoveCanBeAndNeedSew
     {
         private VehicleCanIn(Interaction charActOne, Interaction charActTwo, Round canInterActiveRound, Zone zone)
         {
@@ -64,7 +64,7 @@ namespace game_stuff
             CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
-            MapInstanceId = -1;
+            MapMarkId = -1;
         }
 
         private static Interaction GenInteractionByConfig(ICanPutInMapInteractable vehicle, interaction interaction1,
@@ -163,6 +163,6 @@ namespace game_stuff
             return (destroyBullet, weapons);
         }
 
-        public int MapInstanceId { get; set; }
+        public int MapMarkId { get; set; }
     }
 }

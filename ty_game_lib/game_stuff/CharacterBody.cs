@@ -7,7 +7,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CharacterBody : ICanBeHit
+    public class CharacterBody : ICanBeAndNeedHit
     {
         public bool RealDead()
         {
@@ -234,7 +234,7 @@ namespace game_stuff
 
     public readonly struct BuffDmgMsg : IDamageMsg
     {
-        public BuffDmgMsg(CharacterStatus casterOrOwner, DmgShow dmgShow, ICanBeHit whoTake)
+        public BuffDmgMsg(CharacterStatus casterOrOwner, DmgShow dmgShow, ICanBeAndNeedHit whoTake)
         {
             CasterOrOwner = casterOrOwner;
             DmgShow = dmgShow;
@@ -246,7 +246,7 @@ namespace game_stuff
 
         public DmgShow DmgShow { get; }
 
-        public ICanBeHit WhoTake { get; }
+        public ICanBeAndNeedHit WhoTake { get; }
     }
 
     public readonly struct DmgShow

@@ -49,7 +49,7 @@ namespace lib_unit_test
         public void Test2()
         {
             var genAChapterMap =
-                rogue_chapter_maker.ChapterMapTop.GenAChapterMap(7, 3, 1, 1, false, false, 2, 1, 4, 2);
+                rogue_chapter_maker.ChapterMapTop.GenAChapterMap(0, 6, 1, 0, false, false, 2, 1, 4, 2);
 
             Assert.Pass(genAChapterMap.ToString());
         }

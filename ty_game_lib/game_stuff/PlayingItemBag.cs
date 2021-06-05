@@ -49,7 +49,7 @@ namespace game_stuff
             return cost || any;
         }
 
-        public bool CanCost(IEnumerable<GameItem> gameItem)
+        private bool CanCost(IEnumerable<GameItem> gameItem)
         {
             var gameItems = GameItem.SumSame(gameItem);
             return gameItems.All(CanCost);

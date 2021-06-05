@@ -6,7 +6,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class CageCanPick : IMapInteractable, INotMoveCanBeSew
+    public class CageCanPick : IMapInteractable, INotMoveCanBeAndNeedSew
     {
         public static Interaction GenInteractionByConfig(ICanPutInMapInteractable canPutInMapInteractable,
             interaction interaction,
@@ -44,7 +44,7 @@ namespace game_stuff
             CharActTwo.InMapInteractable.InWhichMapInteractive = this;
             NowInterCharacterBody = null;
             LocateRecord = new Queue<Quad>();
-            MapInstanceId = -1;
+            MapMarkId = -1;
         }
 
 
@@ -147,7 +147,7 @@ namespace game_stuff
             };
         }
 
-        public int MapInstanceId { get; set; }
+        public int MapMarkId { get; set; }
     }
 
     public enum ContainType

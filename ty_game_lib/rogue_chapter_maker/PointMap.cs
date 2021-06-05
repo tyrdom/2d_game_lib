@@ -32,6 +32,7 @@ namespace rogue_chapter_maker
                 MapType.SmallEnd => 'e',
                 MapType.Vendor => 'v',
                 MapType.Hangar => 'H',
+                MapType.Nothing => 'N',
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -157,8 +158,7 @@ namespace rogue_chapter_maker
         {
             var slotX = Slot.x - pointMap.Slot.x;
             var slotY = Slot.y - pointMap.Slot.y;
-            return Math.Abs(slotX) +
-                   Math.Abs(slotY);
+            return Math.Abs(slotX) + Math.Abs(slotY);
         }
 
         public void SetHangar()

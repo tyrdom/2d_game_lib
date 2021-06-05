@@ -3,7 +3,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public class Trap : ICanBeHit, IBattleUnitStatus, INotMoveCanBeSew
+    public class Trap : ICanBeAndNeedHit, IBattleUnitStatus, INotMoveCanBeAndNeedSew
     {
         public Trap(CharacterStatus characterStatus, SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos,
             int tid,
@@ -34,7 +34,7 @@ namespace game_stuff
             TrapMedia.Sign(this);
             LaunchMedia?.Sign(this);
             InBox = CovToIdBox();
-            MapInstanceId = instanceId ;
+            MapMarkId = instanceId;
         }
 
         public override string ToString()
@@ -230,7 +230,7 @@ namespace game_stuff
                 return (DmgShow?) null;
         }
 
-        public int MapInstanceId { get; set; }
+        public int MapMarkId { get; set; }
     }
 
     public class TrapTickMsg : ISeeTickMsg

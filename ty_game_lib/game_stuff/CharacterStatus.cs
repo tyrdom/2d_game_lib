@@ -635,27 +635,27 @@ namespace game_stuff
 
             var actResult = getThing.ActWhichChar(this, interactive);
 
-            HashSet<IMapInteractable>? dropThings1DropSet = null;
-            TelePortMsg? t = null;
+            // HashSet<IMapInteractable>? dropThings1DropSet = null;
+            // TelePortMsg? t = null;
             var mapInteractive = getThing is IApplyUnit ? null : getThing.InWhichMapInteractive;
-            switch (actResult)
-            {
-                case null:
-                    break;
-                case DropThings dropThings1:
-                    dropThings1DropSet = dropThings1.DropSet.IeToHashSet();
-                    break;
-                case TelePortMsg telePort:
-                    t = telePort;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(actResult));
-            }
+            
+            // switch (actResult)
+            // {
+            //     case null:
+            //         break;
+            //     case DropThings dropThings1:
+            //         dropThings1DropSet = dropThings1.DropSet.IeToHashSet();
+            //         break;
+            //     case TelePortMsg telePort:
+            //         t = telePort;
+            //         break;
+            //     default:
+            //         throw new ArgumentOutOfRangeException(nameof(actResult));
+            // }
 
 
             return new CharGoTickResult(move: move, launchBullet: selfEffectFilter,
-                dropThing: dropThings1DropSet,
-                getThing: mapInteractive, teleTo: t);
+                getThing: mapInteractive, actResults: actResult);
         }
 
 
@@ -811,8 +811,7 @@ namespace game_stuff
                     NowProtectTick = 0;
 
                     var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
-                    return new CharGoTickResult(launchBullet: destroyBullet,
-                        dropThing: mapInteractables.IeToHashSet());
+                    return new CharGoTickResult(launchBullet: destroyBullet);
                 }
             }
 
@@ -1065,7 +1064,7 @@ namespace game_stuff
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                 NowVehicle = null;
 
-                return new CharGoTickResult(dropThing: new HashSet<IMapInteractable> {genIMapInteractable});
+                return new CharGoTickResult();
             }
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using collision_and_rigid;
 using game_config;
 
@@ -52,18 +53,18 @@ namespace game_stuff
             return false;
         }
 
-        public IActResult? ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
+        public ImmutableArray<IActResult> ActWhichChar(CharacterStatus characterStatus, MapInteract interactive)
         {
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
                     characterStatus.RecyclePassive(this);
-                    return null;
+                    return ImmutableArray<IActResult>.Empty;
                 case MapInteract.PickCall:
                     characterStatus.PickAPassive(this);
-                    return null;
+                    return ImmutableArray<IActResult>.Empty;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(interactive), interactive, null);
+                    return ImmutableArray<IActResult>.Empty;
             }
         }
 

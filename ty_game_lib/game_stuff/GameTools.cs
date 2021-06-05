@@ -83,12 +83,12 @@ namespace game_stuff
                 GenDicBulletBox(rawBulletShape);
         }
 
-        public static bool IsHit(IHitMedia hitMedia, ICanBeHit canBeHit)
+        public static bool IsHit(IHitMedia hitMedia, ICanBeAndNeedHit canBeAndNeedHit)
         {
-            var checkAlive = canBeHit.CheckCanBeHit();
-            var characterBodyBodySize = canBeHit.GetSize();
+            var checkAlive = canBeAndNeedHit.CheckCanBeHit();
+            var characterBodyBodySize = canBeAndNeedHit.GetSize();
             return checkAlive && hitMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
-                   bulletBox.IsHit(canBeHit.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
+                   bulletBox.IsHit(canBeAndNeedHit.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
         }
 
         public static float GetMaxUpSpeed(float? height)

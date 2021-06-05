@@ -14,7 +14,6 @@ namespace rogue_chapter_maker
             CanLinks = new HashSet<Link>();
         }
 
-      
 
         public override string ToString()
         {
@@ -105,6 +104,20 @@ namespace rogue_chapter_maker
                 nowSlot = genAChapterMap.GenANewSlot();
             }
 
+            PointMap? endP = null;
+            if (finishB)
+            {
+                if (startP != null)
+                {
+                    genAChapterMap.SetFarthestSlot(startP, MapType.Big, MapType.BigEnd);
+                }
+                else
+                {
+                    endP = new PointMap(MapType.BigEnd, 1, 1, 1, 1, nowSlot);
+                    genAChapterMap.AddMapPoint(endP);
+                    genAChapterMap.CanLinks.ExceptWith(endP.Links);
+                }
+            }
 
             foreach (var _ in enumerable2)
             {
@@ -115,8 +128,15 @@ namespace rogue_chapter_maker
 
             if (!startB)
             {
-                startP = new PointMap(MapType.SmallStart, 1, 1, 1, 1, nowSlot);
-                genAChapterMap.AddMapPoint(startP);
+                if (endP != null)
+                {
+                    genAChapterMap.SetFarthestSlot(endP, MapType.Small, MapType.SmallStart);
+                }
+                else
+                {
+                    startP = new PointMap(MapType.SmallStart, 1, 1, 1, 1, nowSlot);
+                    genAChapterMap.AddMapPoint(startP);
+                }
             }
 
             if (startP == null)
@@ -124,7 +144,12 @@ namespace rogue_chapter_maker
                 throw new Exception("have not set a start!");
             }
 
-            genAChapterMap.SetFinishSlot(startP, finishB ? MapType.Big : MapType.Small);
+            if (endP == null)
+            {
+                genAChapterMap.SetFarthestSlot(startP, MapType.Small, MapType.SmallEnd);
+            }
+
+
             if (hangar > 0)
             {
                 genAChapterMap.SetHangars(startP, hStart, hRangeCount, hangar);
@@ -183,30 +208,45 @@ namespace rogue_chapter_maker
             return range;
         }
 
-        private PointMap? FindFarMap(PointMap pointMap, MapType needType)
+        private PointMap? FindFarthestMap(PointMap pointMap, MapType needType)
         {
             var valueTuples = PointMaps.Where(m => m.MapType == needType).Select(x => (x.GetDistance(pointMap), x))
                 .ToList();
             valueTuples.Sort((tuple, valueTuple) => -tuple.Item1.CompareTo(valueTuple.Item1));
             var (_, pointMap1) = valueTuples.FirstOrDefault();
             return pointMap == pointMap1 ? null : pointMap1;
-            (int distance, PointMap? farMap) func = (0, null);
-            var (_, farMap) = PointMaps.Aggregate(func, (a, map) =>
-            {
-                var intPtr = map.GetDistance(pointMap);
-                var b = map.MapType == needType;
-                var (dis, fMap) = a;
-                return intPtr > dis && b ? (intPtr, map) : (dis, fMap);
-            });
-            return farMap;
         }
 
-        private void SetFinishSlot(PointMap pointMap, MapType needType)
+        private void SetFarthestSlot(PointMap pointMap, MapType needType, MapType toSet)
         {
-            var findFarMap = FindFarMap(pointMap, needType);
+            var findFarMap = FindFarthestMap(pointMap, needType);
             if (findFarMap == null) throw new ArgumentNullException($"not big enough map ");
-            CanLinks.ExceptWith(findFarMap.Links);
-            findFarMap.SetFinish();
+            var nearSlotCanUse = GetNearSlotCanUse(findFarMap);
+            if (!nearSlotCanUse.Any())
+            {
+                throw new Exception("no good map");
+            }
+
+            var valueTuple = nearSlotCanUse.First();
+
+            var map = new PointMap(toSet, 1, 1, 1, 1, valueTuple);
+            AddMapPoint(map);
+            CanLinks.ExceptWith(map.Links);
+        }
+
+        private (int x, int y)[] GetNearSlotCanUse(PointMap findFarMap)
+        {
+            var slotX = findFarMap.Slot.x;
+            var slotY = findFarMap.Slot.y;
+            var valueTuples = new (int x, int y)[]
+                {(slotX + 1, slotY), (slotX - 1, slotY), (slotX, slotY + 1), (slotX, slotY - 1)};
+            var enumerable = valueTuples.Except(valueTuples.Where(x => PointMaps.Any(xx =>
+            {
+                var (i, y) = xx.Slot;
+                return i == x.x && y == x.y;
+            })));
+
+            return enumerable.ToArray();
         }
 
         private void AddMapPoint(PointMap pointMap)
