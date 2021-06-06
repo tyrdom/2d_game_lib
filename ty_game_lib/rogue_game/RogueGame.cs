@@ -53,7 +53,7 @@ namespace rogue_game
         public GameItem[] RebornCost { get; }
         public int PlayerLeaderGid { get; private set; }
 
-        public PveMap NowPlayMap { get; set; }
+        public PveMap NowPlayMap { get; private set; }
 
         public bool NeedCheckClear { get; set; }
         public Random Random { get; }
@@ -85,9 +85,9 @@ namespace rogue_game
                     });
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
-            var genChapterById = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
-            NowChapter = genChapterById.genByConfig;
-            ySlotArray = genChapterById.ySlotArray;
+            var (genByConfig, valueTuples) = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
+            NowChapter = genByConfig;
+            ySlotArray = valueTuples;
             NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
             RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             ChapterCountDownTick = -1;
@@ -129,9 +129,8 @@ namespace rogue_game
             NowPlayMap.TelePortOut();
             BotTeam.ClearBot();
             var dequeue = ChapterIds.Dequeue();
-            var genChapterById = Chapter.GenChapterById(dequeue, Random);
-            NowChapter = genChapterById.genByConfig;
-            var ySlotArray = genChapterById.ySlotArray;
+            var (genByConfig, ySlotArray) = Chapter.GenChapterById(dequeue, Random);
+            NowChapter = genByConfig;
             var nowChapterEntrance = NowChapter.Entrance;
             var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
             nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);

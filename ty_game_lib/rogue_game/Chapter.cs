@@ -86,12 +86,12 @@ namespace rogue_game
         {
             return mapType switch
             {
-                MapType.BigStart => gameChapter.BigMapResRandIn,
+                MapType.BigStart => gameChapter.StartRandIn,
                 MapType.BigEnd => gameChapter.BigMapResRandIn,
-                MapType.Small => gameChapter.BigMapResRandIn,
+                MapType.Small => gameChapter.SmallMapResRandIn,
                 MapType.Big => gameChapter.BigMapResRandIn,
-                MapType.SmallStart => gameChapter.BigMapResRandIn,
-                MapType.SmallEnd => gameChapter.BigMapResRandIn,
+                MapType.SmallStart => gameChapter.StartRandIn,
+                MapType.SmallEnd => gameChapter.SmallMapResRandIn,
                 MapType.Vendor => gameChapter.VendorMapResRandIn,
                 MapType.Hangar => gameChapter.HangarMapResRandIn,
                 _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
