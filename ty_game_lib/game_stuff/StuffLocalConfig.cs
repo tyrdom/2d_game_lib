@@ -132,7 +132,13 @@ namespace game_stuff
                             .ToArray()));
 
             PerLoadMapConfig = CommonConfig.Configs.map_rawss.ToImmutableDictionary(x => x.Key,
-                x => PlayGround.GenEmptyByConfig(x.Value));
+                x =>
+                {
+#if DEBUG
+                    Console.Out.WriteLine($"now init map {x.Key}");
+#endif
+                    return PlayGround.GenEmptyByConfig(x.Value);
+                });
 
             var configsOtherConfig = CommonConfig.OtherConfig;
             MaxUpSpeed = MathTools.Sqrt(2f * CommonConfig.OtherConfig.g_acc * CommonConfig.OtherConfig.max_hegiht);
@@ -144,7 +150,7 @@ namespace game_stuff
                 StunBuffStandard.GenBuffByConfig(
                     CommonConfig.Configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
             MaxCallActTwoTick = configsOtherConfig.interaction_act2_call_time;
-            ProtectTick = (int)configsOtherConfig.protect_time;
+            ProtectTick = (int) configsOtherConfig.protect_time;
         }
 
 #if NETCOREAPP
