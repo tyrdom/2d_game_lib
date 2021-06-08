@@ -151,7 +151,7 @@ namespace cov_path_navi
         private static void GetACovInArea(ref int li, ref int ri, IReadOnlyList<IBlockShape> area, bool rCanGo,
             bool lCanGo, ref bool inALine, bool right, SimpleBlocks blocks)
         {
-            if (li == ri)
+            if (li == ri || area.Count <= 3)
             {
 #if DEBUG
                 Console.Out.WriteLine($"just a cov l{li} m r{ri}");
