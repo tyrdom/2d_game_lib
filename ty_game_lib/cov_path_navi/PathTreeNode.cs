@@ -12,7 +12,7 @@ namespace cov_path_navi
         private float Cost { get; set; }
         private TwoDVectorLine? GoThrough;
 
-        private List<PathTreeNode> ToList;
+        private List<PathTreeNode> ToList { get; }
 
 
         public PathTreeNode(int id, float cost)
@@ -68,7 +68,7 @@ namespace cov_path_navi
                 .ToList();
             var okNodes = treeNodes.Where(x => x.Id == end).ToList();
 #if DEBUG
-            Console.Out.WriteLine($"root node is {Id}");
+            Console.Out.WriteLine($"have got a path!~~root node is {Id}");
             var aggregate = treeNodes.Aggregate("", (s, x) => s + x + "\n");
             Console.Out.WriteLine($"grow :::\n{aggregate}");
 #endif
@@ -125,16 +125,26 @@ namespace cov_path_navi
             Father?.GatherPathIds(ints);
         }
 
-        private void GrowTree(IReadOnlyDictionary<int, PathNodeCovPolygon> polygonsTop, int end, List<PathTreeNode> collector,
+        private void GrowTree(IReadOnlyDictionary<int, PathNodeCovPolygon> polygonsTop, int end,
+            List<PathTreeNode> collector,
             IDictionary<int, PathTreeNode> haveReached, TwoDPoint? endPt = null)
         {
             if (!polygonsTop.TryGetValue(Id, out var nodeCovPolygon)) throw new Exception($"not such polygon id{Id}");
             if (Father == null) throw new Exception($"this a root Node:: {Id}");
 
             {
-                if (nodeCovPolygon.LinkAndCost == null ||
-                    !nodeCovPolygon.LinkAndCost.TryGetValue(Father.Id, out var tuples))
-                    throw new Exception($"not such link:{Father.Id} in poly:{Id} ");
+                if (nodeCovPolygon.LinkAndCost == null)
+                    throw new Exception($"no links in poly:{Id} ");
+
+                if (!nodeCovPolygon.LinkAndCost.TryGetValue(Father.Id, out var tuples))
+                {
+#if DEBUG
+
+                    Console.Out.WriteLine(
+                        $"dead end~~ not such link:{Father.Id} in poly:{Id} link keys:{nodeCovPolygon.LinkAndCost.Keys.Aggregate("", (s, x) => s + "|" + x)} ");
+#endif
+                    return;
+                }
 
                 var treeNodes = tuples.Select(x =>
                     new PathTreeNode(x.id, x.cost, this, x.GoTrough)).ToList();

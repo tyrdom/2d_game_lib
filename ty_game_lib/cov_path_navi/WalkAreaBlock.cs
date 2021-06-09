@@ -8,23 +8,24 @@ namespace cov_path_navi
     public class WalkAreaBlock
     {
         public SimpleBlocks ShellBlocks { get; }
-        public List<IBlockShape> ShellRaw { get; set; }
-        public readonly List<List<IBlockShape>> ChildrenRaw;
+        public List<IBlockShape> Shell { get; set; }
 
-        public readonly List<SimpleBlocks> ChildrenBlocks;
+        public List<List<IBlockShape>> ChildrenRaw { get; }
+
+        public List<SimpleBlocks> ChildrenBlocks { get; }
 
 
         public WalkAreaBlock(List<List<IBlockShape>> children, List<IBlockShape> blockShapes)
         {
             ChildrenRaw = children;
-            ShellRaw = blockShapes;
+            Shell = blockShapes;
             ShellBlocks = new SimpleBlocks(blockShapes);
             ChildrenBlocks = children.Select(x => new SimpleBlocks(x)).ToList();
         }
 
         public override string ToString()
         {
-            var shellString = ShellRaw.Aggregate("", (s, x) => s + x.ToString() + "\n");
+            var shellString = Shell.Aggregate("", (s, x) => s + x.ToString() + "\n");
             var cStr = "";
             for (var i = 0; i < ChildrenRaw.Count; i++)
             {
@@ -52,27 +53,27 @@ namespace cov_path_navi
             //child逐个合并到shell上
 
             var linksAndMirror = new List<(Link link, TwoDVectorLine mirror)>();
-            if (!ShellRaw.Any())
+            if (!Shell.Any())
             {
                 throw new Exception("must have some shells");
             }
 
             if (ChildrenRaw.Count <= 0)
             {
-                return new ContinuousWalkArea(ShellRaw, linksAndMirror);
+                return new ContinuousWalkArea(Shell, linksAndMirror);
             }
 
             foreach (var aChildBlockShapes in ChildrenRaw)
             {
-                (var si, var ci, TwoDVectorLine cut) = (-1, -1, null!);
+                (var si, var ci, TwoDVectorLine? cut) = (-1, -1, null);
                 for (var i1 = 0; i1 < aChildBlockShapes.Count; i1++)
                 {
                     var blockShape = aChildBlockShapes[i1];
                     var childPoint = blockShape.GetEndPt();
 
-                    for (var i = 0; i < ShellRaw.Count; i++)
+                    for (var i = 0; i < Shell.Count; i++)
                     {
-                        var shape = ShellRaw[i];
+                        var shape = Shell[i];
                         var shellPt = shape.GetEndPt();
                         var twoDVectorLine = new TwoDVectorLine(shellPt, childPoint);
                         foreach (var unused in ChildrenBlocks
@@ -95,7 +96,7 @@ namespace cov_path_navi
                     }
                 }
 
-                var (sLeft, sRight) = SomeTools.CutList(ShellRaw, si);
+                var (sLeft, sRight) = SomeTools.CutList(Shell, si);
                 var (cLeft, cRight) = SomeTools.CutList(aChildBlockShapes, ci);
                 if (cut != null)
                 {
@@ -109,7 +110,7 @@ namespace cov_path_navi
                     linksAndMirror.Add((new Link(-1, cutMirror), cut));
                     linksAndMirror.Add((new Link(-1, cut), cutMirror));
 
-                    ShellRaw = shapes;
+                    Shell = shapes;
                     ChildrenBlocks.RemoveAt(0);
 #if DEBUG
                     Console.Out.WriteLine($"a cut ok {cut.ToString()}");
@@ -123,7 +124,7 @@ namespace cov_path_navi
                 }
             }
 
-            return new ContinuousWalkArea(ShellRaw, linksAndMirror);
+            return new ContinuousWalkArea(Shell, linksAndMirror);
         }
     }
 }

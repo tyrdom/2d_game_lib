@@ -14,7 +14,11 @@ namespace cov_path_navi
 
         private List<IBlockShape> Edges { get; }
 
-        public ImmutableDictionary<int, List<(int id, float cost, TwoDVectorLine GoTrough)>>? LinkAndCost;
+        public ImmutableDictionary<int, List<(int id, float cost, TwoDVectorLine GoTrough)>>? LinkAndCost
+        {
+            get;
+            private set;
+        }
 
         // public WayFlag WayFlag;
         public PathNodeCovPolygon(List<Link> links, int thisPathNodeId, List<IBlockShape> edges)
@@ -22,6 +26,7 @@ namespace cov_path_navi
             Links = links;
             ThisPathNodeId = thisPathNodeId;
             Edges = edges;
+
         }
 
         public TwoDPoint GetCenterPt()
@@ -114,9 +119,5 @@ namespace cov_path_navi
                 return $"{s1} edges::\n{aggregate} links::\n{aggregate1} cost::\n{aggregate2}";
             }
         }
-    }
-
-    public class WayFlag
-    {
     }
 }

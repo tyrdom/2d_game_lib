@@ -95,7 +95,8 @@ namespace lib_unit_test
         {
             var keyValuePair = CommonConfig.Configs.map_rawss.Values.First();
             var id = keyValuePair.WalkRawMap.First().First().x;
-            Assert.Pass(id.ToString(CultureInfo.InvariantCulture));
+            var s = BotLocalConfig.NaviMapPerLoad[2][size.small].ToString();
+            Assert.Pass(s);
         }
 
         [Test]

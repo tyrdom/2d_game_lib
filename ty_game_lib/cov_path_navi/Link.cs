@@ -4,7 +4,7 @@ namespace cov_path_navi
 {
     public class Link
     {
-        public int LinkToPathNodeId;
+        public int LinkToPathNodeId { get; set; }
 
         public TwoDVectorLine GoThrough { get; }
 

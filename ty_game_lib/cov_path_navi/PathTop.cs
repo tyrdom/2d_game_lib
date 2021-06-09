@@ -99,7 +99,7 @@ namespace cov_path_navi
             return pointInWhichArea?.PolyId;
         }
 
-        public IEnumerable<(int polyId, TwoDVectorLine? gothroughLine)> FindAPathByPoint(TwoDPoint startPt,
+        public List<(int polyId, TwoDVectorLine? gothroughLine)> FindAPathByPoint(TwoDPoint startPt,
             TwoDPoint endPt,
             int? startPoly = null,
             int? endPoly = null)
@@ -119,187 +119,143 @@ namespace cov_path_navi
             int? endPoly = null)
         {
             var findAPathByPoint = FindAPathByPoint(startPt, endPt, startPoly, endPoly);
-            var twoDVectorLines = findAPathByPoint.Select(x => x.gothroughLine);
+            var aPathByPoint =
+                findAPathByPoint.ToArray();
+            if (!aPathByPoint.Any())
+            {
+                return new TwoDPoint[] { };
+            }
+
+            var twoDVectorLines = aPathByPoint
+                .Where(x => x.gothroughLine != null)
+                .Select(x => x.gothroughLine!);
+
             return GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
         }
 
         public static IEnumerable<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end,
-            TwoDVectorLine?[] twoDVectorLines)
+            TwoDVectorLine[] twoDVectorLines)
         {
             var twoDPoints = new List<TwoDPoint>();
             if (!twoDVectorLines.Any())
             {
+                twoDPoints.Add(end);
                 return twoDPoints;
             }
-
-            var leftLines = new List<TwoDVectorLine>();
-            var rightLines = new List<TwoDVectorLine>();
-
-            static (List<TwoDVectorLine> opLines, List<TwoDVectorLine> thisLines, IEnumerable<TwoDPoint>
-                addPoints
-                )? CheckOpSide(TwoDPoint point, List<TwoDVectorLine> rawOpLines, Pt2LinePos pos)
-            {
-                var cutCount = -1;
-                for (var i1 = rawOpLines.Count - 1; i1 >= 0; i1--)
-                {
-                    var a = rawOpLines[i1];
-#if DEBUG
-                    Console.Out.WriteLine($"  {point.GetPosOf(a)} vs_vs {pos}");
-#endif
-                    if (point.GetPosOf(a) != pos) continue;
-                    cutCount = i1 + 1;
-                    break;
-                }
-
-                if (cutCount < 0) return null;
-#if DEBUG
-                Console.Out.WriteLine($" pt is over {pos},turn {pos}");
-#endif
-                var before = rawOpLines.GetRange(0, cutCount);
-                var opLines = rawOpLines.GetRange(cutCount, rawOpLines.Count - cutCount);
-                var addPoints = before.Select(x => x.GetEndPt());
-
-                var twoDPoints = addPoints.ToList();
-                var twoDPoint = twoDPoints.Last();
-
-                var thisLines = new List<TwoDVectorLine> {new TwoDVectorLine(twoDPoint, point)};
-                return (opLines, thisLines, twoDPoints);
-            }
-
-            static void CheckSameSide(TwoDPoint point, List<TwoDVectorLine> thisLinesCollector,
-                Pt2LinePos pos)
-            {
-                var cutRr = -1;
-                for (var i1 = thisLinesCollector.Count - 1; i1 >= 0; i1--)
-                {
-                    var line = thisLinesCollector[i1];
-                    if (point.GetPosOf(line) != pos)
-                    {
-                        cutRr = i1;
-                    }
-                }
-
-                if (cutRr >= 0)
-                {
-                    var startPt = thisLinesCollector[cutRr].GetStartPt();
-                    thisLinesCollector.RemoveRange(cutRr, thisLinesCollector.Count - cutRr);
-                    thisLinesCollector.Add(new TwoDVectorLine(startPt, point));
-#if DEBUG
-                    var aggregate = thisLinesCollector.Aggregate("", (s, x) => s + x.ToString() + "\n");
-                    Console.Out.WriteLine($"get direct link at {pos} :: \n{aggregate}");
-#endif
-                    return;
-                }
-
-                var twoDPoint = thisLinesCollector.Last().GetEndPt();
-                thisLinesCollector.Add(new TwoDVectorLine(twoDPoint, point));
-            }
-
+            
+            var vectorLine = twoDVectorLines.First();
+            var rightSidePt = vectorLine.GetStartPt();
+            var leftSidePt = vectorLine.GetEndPt();
+            var localPt = start;
 
             for (var i = 1; i < twoDVectorLines.Length; i++)
             {
                 var twoDVectorLine = twoDVectorLines[i];
-                if (twoDVectorLine == null)
-                {
-                    continue;
-                }
 
                 var rightPt = twoDVectorLine.GetStartPt();
                 var leftPt = twoDVectorLine.GetEndPt();
 
                 //getNextPt;
-
-                if (i > 1)
+                var lLine = new TwoDVectorLine(localPt, leftSidePt);
+                var rLine = new TwoDVectorLine(localPt, rightSidePt);
+                var b = rightPt.GetPosOf(lLine) == Pt2LinePos.Left;
+                if (b)
                 {
-#if DEBUG
-                    var aggregate = rightLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
-                    var aggregate2 = leftLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
-                    Console.Out.WriteLine($"now left:{leftLines.Count}:\n{aggregate2}::");
-                    Console.Out.WriteLine($"now right:{rightLines.Count}:\n{aggregate}::");
-                    Console.Out.WriteLine(
-                        $"now to cross:{twoDVectorLine.ToString()} left:{leftPt.ToString()} right:{rightPt.ToString()}");
-#endif
-                    if (rightPt != rightLines.Last().GetEndPt())
-                    {
-                        var checkOpSide = CheckOpSide(rightPt, leftLines, Pt2LinePos.Left);
-                        if (checkOpSide != null)
-                        {
-                            var (opLines, thisLines, addPoints) = checkOpSide.Value;
-                            leftLines = opLines;
-                            rightLines = thisLines;
-                            var dPoints = addPoints.ToList();
-                            twoDPoints.AddRange(dPoints);
-                            if (leftLines.Any()) CheckSameSide(leftPt, leftLines, Pt2LinePos.Left);
-                            else if (leftPt != dPoints.Last())
-                            {
-                                leftLines.Add(new TwoDVectorLine(dPoints.Last(), leftPt));
-                            }
-
-                            continue;
-                        }
-
-                        CheckSameSide(rightPt, rightLines, Pt2LinePos.Right);
-                    }
-                    else
-                    {
-#if DEBUG
-                        Console.Out.WriteLine($"not new Pt at right{rightPt.ToString()}");
-#endif
-                    }
-
-                    if (leftPt != leftLines.Last().GetEndPt())
-                    {
-                        var valueTuple = CheckOpSide(leftPt, rightLines, Pt2LinePos.Right);
-                        if (valueTuple != null)
-                        {
-                            var (opLines, thisLines, addPoints) = valueTuple.Value;
-                            rightLines = opLines;
-                            leftLines = thisLines;
-                            twoDPoints.AddRange(addPoints);
-                            continue;
-                        }
-
-                        CheckSameSide(leftPt, leftLines, Pt2LinePos.Left);
-                    }
-                    else
-                    {
-#if DEBUG
-                        Console.Out.WriteLine($"not new Pt at left{leftPt.ToString()}");
-#endif
-                    }
+                    //右方点越过左射线当前点为新的起点，并加入路径点
+                    twoDPoints.Add(leftSidePt);
+                    localPt = leftSidePt;
+                    leftSidePt = leftPt;
+                    rightSidePt = rightPt;
+                    continue;
                 }
-                else
-                {
-                    leftLines.Add(new TwoDVectorLine(start, twoDVectorLine.GetEndPt()));
-                    rightLines.Add(new TwoDVectorLine(start, twoDVectorLine.GetStartPt()));
-                }
-            }
-#if DEBUG
-            var aggregate11 = rightLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
-            var aggregate22 = leftLines.Aggregate("", (s, x) => s + x.ToString() + "\n");
-            Console.Out.WriteLine($"end left:{leftLines.Count}:\n{aggregate22}::");
-            Console.Out.WriteLine($"end right:{rightLines.Count}:\n{aggregate11}::");
-            Console.Out.WriteLine($"now to end:{end.ToString()}");
-#endif
-            var opSide = CheckOpSide(end, leftLines, Pt2LinePos.Left);
 
-            if (opSide != null)
-            {
-                var valueAddPoints = opSide.Value.addPoints;
-                twoDPoints.AddRange(valueAddPoints);
-            }
-            else
-            {
-                var checkOpSide = CheckOpSide(end, rightLines, Pt2LinePos.Right);
-                if (checkOpSide != null)
+                var b1 = leftPt.GetPosOf(rLine) == Pt2LinePos.Right;
+                if (b1)
                 {
-                    var valueAddPoints = checkOpSide.Value.addPoints;
-                    twoDPoints.AddRange(valueAddPoints);
+                    //左方点越过右边点
+                    twoDPoints.Add(rightSidePt);
+                    localPt = rightSidePt;
+                    leftSidePt = leftPt;
+                    rightSidePt = rightPt;
+                    continue;
+                }
+
+                //到这里说明都没转弯，比较夹角有没有收起
+                var b2 = leftPt.GetPosOf(lLine) != Pt2LinePos.Left;
+                if (b2)
+                {
+                    //左点不在左线的左边，更新左点
+                    leftSidePt = leftPt;
+                }
+
+                var b3 = rightPt.GetPosOf(rLine) != Pt2LinePos.Right;
+                if (b3)
+                {
+                    //右点不在右线的右边，更新右点
+                    rightSidePt = rightPt;
                 }
             }
 
             twoDPoints.Add(end);
             return twoDPoints;
+        }
+
+        private static void CheckSameSide(TwoDPoint point, List<TwoDVectorLine> thisLinesCollector, Pt2LinePos pos)
+        {
+            var cutRr = -1;
+            for (var i1 = thisLinesCollector.Count - 1; i1 >= 0; i1--)
+            {
+                var line = thisLinesCollector[i1];
+                if (point.GetPosOf(line) != pos)
+                {
+                    cutRr = i1;
+                }
+            }
+
+            if (cutRr >= 0)
+            {
+                var startPt = thisLinesCollector[cutRr].GetStartPt();
+                thisLinesCollector.RemoveRange(cutRr, thisLinesCollector.Count - cutRr);
+                thisLinesCollector.Add(new TwoDVectorLine(startPt, point));
+#if DEBUG
+                    var aggregate = thisLinesCollector.Aggregate("", (s, x) => s + x.ToString() + "\n");
+                    Console.Out.WriteLine($"get direct link at {pos} :: \n{aggregate}");
+#endif
+                return;
+            }
+
+            var twoDPoint = thisLinesCollector.Last().GetEndPt();
+            thisLinesCollector.Add(new TwoDVectorLine(twoDPoint, point));
+        }
+
+        private static (List<TwoDVectorLine> opLines, List<TwoDVectorLine> thisLines, IEnumerable<TwoDPoint> addPoints)?
+            CheckOpSide(TwoDPoint point, List<TwoDVectorLine> rawOpLines, Pt2LinePos pos)
+        {
+            var cutCount = -1;
+            for (var i1 = rawOpLines.Count - 1; i1 >= 0; i1--)
+            {
+                var a = rawOpLines[i1];
+#if DEBUG
+                    Console.Out.WriteLine($"  {point.GetPosOf(a)} vs_vs {pos}");
+#endif
+                if (point.GetPosOf(a) != pos) continue;
+                cutCount = i1 + 1;
+                break;
+            }
+
+            if (cutCount < 0) return null;
+#if DEBUG
+                Console.Out.WriteLine($" pt is over {pos},turn {pos}");
+#endif
+            var before = rawOpLines.GetRange(0, cutCount);
+            var opLines = rawOpLines.GetRange(cutCount, rawOpLines.Count - cutCount);
+            var addPoints = before.Select(x => x.GetEndPt());
+
+            var twoDPoints = addPoints.ToList();
+            var twoDPoint = twoDPoints.Last();
+
+            var thisLines = new List<TwoDVectorLine> {new TwoDVectorLine(twoDPoint, point)};
+            return (opLines, thisLines, twoDPoints);
         }
 
         public List<(int, TwoDVectorLine?)> FindAPathById(int start, int end, TwoDPoint? startPt = null,

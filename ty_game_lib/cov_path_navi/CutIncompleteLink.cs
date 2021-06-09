@@ -4,8 +4,9 @@ namespace cov_path_navi
 {
     public class CutIncompleteLink
     {
-        public readonly Link Link;
-        public readonly TwoDVectorLine Mirror;
+        public Link Link { get; }
+
+        public TwoDVectorLine Mirror { get; }
         public int Belong;
 
         public CutIncompleteLink(Link link, TwoDVectorLine mirror)
