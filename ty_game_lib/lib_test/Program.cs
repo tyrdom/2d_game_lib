@@ -53,6 +53,9 @@ namespace lib_test
             // Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
             var genById = SimpleBot.GenById(1, characterBody, new Random(), null);
+            var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
+            characterBody.CharacterStatus.PickAPassive(passiveTrait);
+            
             for (var i = 0; i < 100; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);

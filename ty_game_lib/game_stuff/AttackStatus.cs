@@ -4,7 +4,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public struct AttackStatus
+    public class AttackStatus
     {
         private float BackStabAdd { get; set; }
         private uint MainAttack { get; set; }
@@ -20,17 +20,17 @@ namespace game_stuff
             var damage = new Damage(shardedNum, mainDamage, shardedAttack);
 
 #if DEBUG
-            
-             Console.Out.WriteLine($"{MainAttack} cause {mainDamage} and {ShardedAttack} cause {shardedAttack}~{shardedNum}");
+            Console.Out.WriteLine(
+                $"{MainAttack} cause {mainDamage} and {ShardedAttack} cause {shardedAttack}~{shardedNum}");
 #endif
-           
+
             return damage;
         }
 
 
         private AttackStatus(uint baseAttack, uint bsn, float backStabAdd)
         {
-            ShardedAttack = (uint) (baseAttack *  CommonConfig.OtherConfig.ShardedAttackMulti);
+            ShardedAttack = (uint) (baseAttack * CommonConfig.OtherConfig.ShardedAttackMulti);
             ShardedNum = bsn;
             BackStabAdd = backStabAdd;
             MainAttack = baseAttack;
@@ -46,6 +46,11 @@ namespace game_stuff
             return new AttackStatus(baseAttributeAtk, baseAttributeShardedNum, baseAttributeBackStabAdd);
         }
 
+        public override string ToString()
+        {
+            return $"MA:{MainAttack} SN:{ShardedNum} BS:{BackStabAdd}";
+        }
+
         public void PassiveEffectChangeAtk(float[] passiveTrait,
             AttackStatus baseAtkStatus)
         {
@@ -53,9 +58,13 @@ namespace game_stuff
             {
                 return;
             }
-            MainAttack = (uint) (baseAtkStatus.MainAttack * (1 + passiveTrait[0]));
-            ShardedNum = (uint) (baseAtkStatus.ShardedNum + passiveTrait[1]);
-            BackStabAdd += baseAtkStatus.BackStabAdd + passiveTrait[2];
+
+            BackStabAdd = baseAtkStatus.BackStabAdd + passiveTrait[0];
+            MainAttack = baseAtkStatus.MainAttack + (uint) (passiveTrait[1] * baseAtkStatus.MainAttack);
+            ShardedNum = baseAtkStatus.ShardedNum + (uint) passiveTrait[2];
+#if DEBUG
+            Console.Out.WriteLine($"now Atk attr is {this}");
+#endif
         }
     }
 }

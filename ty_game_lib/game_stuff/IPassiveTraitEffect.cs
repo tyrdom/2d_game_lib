@@ -101,11 +101,6 @@ namespace game_stuff
             return new AddItem(ArrayTools.Multiply(level, GetVector()));
         }
 
-        public Vector<float> GetZero()
-        {
-            return Vector<float>.Zero;
-        }
-
 
         public float[] GetVector()
         {

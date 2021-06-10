@@ -638,7 +638,7 @@ namespace game_stuff
             // HashSet<IMapInteractable>? dropThings1DropSet = null;
             // TelePortMsg? t = null;
             var mapInteractive = getThing is IApplyUnit ? null : getThing.InWhichMapInteractive;
-            
+
             // switch (actResult)
             // {
             //     case null:
@@ -1264,8 +1264,7 @@ namespace game_stuff
 
         private void RefreshStatusByAKindOfPass(PassiveTrait passiveTrait, float[] vector)
         {
-            var v = vector;
-            if (!v.Any())
+            if (!vector.Any())
             {
                 return;
             }
@@ -1273,40 +1272,40 @@ namespace game_stuff
             switch (passiveTrait.PassiveTraitEffect)
             {
                 case OtherAttrPassiveEffect _:
-                    OtherStatusRefresh(v);
-                    NowVehicle?.OtherStatusRefresh(v);
+                    OtherStatusRefresh(vector);
+                    NowVehicle?.OtherStatusRefresh(vector);
                     break;
                 case RegenPassiveEffect _:
-                    RegenStatusRefresh(v);
-                    NowVehicle?.RegenStatusRefresh(v);
+                    RegenStatusRefresh(vector);
+                    NowVehicle?.RegenStatusRefresh(vector);
                     break;
                 case AtkAboutPassiveEffect _:
-                    AttackStatusRefresh(v);
-                    NowVehicle?.AttackStatusRefresh(v);
+                    AttackStatusRefresh(vector);
+                    NowVehicle?.AttackStatusRefresh(vector);
                     break;
                 case HitPass _:
-                    HitBuffTrickRefresh(v);
+                    HitBuffTrickRefresh(vector);
                     break;
                 case SurvivalAboutPassiveEffect _:
-                    SurvivalStatusRefresh(v);
-                    NowVehicle?.SurvivalStatusRefresh(v);
+                    SurvivalStatusRefresh(vector);
+                    NowVehicle?.SurvivalStatusRefresh(vector);
                     break;
                 case AddItem _:
-                    var itemId = (int) v[0];
-                    var num = (int) v[1];
+                    var itemId = (int) vector[0];
+                    var num = (int) vector[1];
                     var gameItem = new GameItem((item_id) itemId, num);
                     PickGameItem(gameItem);
                     break;
                 case AbsorbAboutPassiveEffect _:
-                    AbsorbStatusRefresh(v);
-                    NowVehicle?.AbsorbStatusRefresh(v);
+                    AbsorbStatusRefresh(vector);
+                    NowVehicle?.AbsorbStatusRefresh(vector);
                     break;
                 case TrapEffect _:
-                    TrapAboutRefresh(v);
-                    NowVehicle?.TrapAboutRefresh(v);
+                    TrapAboutRefresh(vector);
+                    NowVehicle?.TrapAboutRefresh(vector);
                     break;
                 case TickAddEffect _:
-                    TickAboutRefresh(v);
+                    TickAboutRefresh(vector);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1355,19 +1354,24 @@ namespace game_stuff
             {
                 var passiveTraits =
                     PassiveTraits.Values.Where(x =>
-                        x.PassiveTraitEffect.GetType() == passiveTrait.GetType());
+                    {
+                        var b = x.PassiveTraitEffect.GetType() == passiveTrait.PassiveTraitEffect.GetType();
+
+                        return b;
+                    });
                 v = passiveTraits.Aggregate(new float[] { },
                     (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
             }
-
+#if DEBUG
+            Console.Out.WriteLine($"passive v is {v.Aggregate("", (s, x) => s + "|" + x)}");
+#endif
             var level = PassiveTraits[passiveTraitPassId].Level;
+            RefreshStatusByAKindOfPass(passiveTrait, v);
             var getPassive = new GetPassive(passiveTraitPassId, level);
             CharEvents.Add(getPassive);
-
-            RefreshStatusByAKindOfPass(passiveTrait, v);
         }
 
-        private void TickAboutRefresh(float[] tickAdds)
+        private void TickAboutRefresh(IReadOnlyList<float> tickAdds)
         {
             ProtectTickMultiAdd = tickAdds[0];
         }
