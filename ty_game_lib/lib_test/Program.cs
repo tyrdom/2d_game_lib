@@ -55,14 +55,14 @@ namespace lib_test
             var genById = SimpleBot.GenById(1, characterBody, new Random(), null);
             var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
             characterBody.CharacterStatus.PickAPassive(passiveTrait);
-            
+
             for (var i = 0; i < 100; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(0, -1f);
-                var operate = i < 30
-                    ? new Operate(mapInteractive: MapInteract.BuyOrApplyCall)
+                var operate = i < 50
+                    ? new Operate(skillAction: SkillAction.Op1)
                     : new Operate(aim: twoDVector);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);

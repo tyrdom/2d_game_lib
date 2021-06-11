@@ -273,11 +273,11 @@ namespace game_stuff
             var lossHp = MaxHp - NowHp;
             MaxHp = (uint) MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
 
-            NowHp = MaxHp <= lossHp ? 1 : MaxHp - lossHp;
+            NowHp = MathTools.Max(1, MaxHp - lossHp);
 
             var lossAr = MaxArmor - NowArmor;
             MaxArmor = (uint) MathTools.Max(0, baseSurvivalStatus.MaxArmor * (1 + v[1]));
-            NowArmor = MaxArmor < lossAr ? 0 : MaxArmor - lossAr;
+            NowArmor = MathTools.Max(0, MaxArmor - lossAr);
             ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
             MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
             ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[4]));

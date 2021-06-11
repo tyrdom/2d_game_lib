@@ -148,7 +148,7 @@ namespace game_stuff
                 ? valuePerSecToValuePerTick
                 : bullet.DamageMulti;
 
-            if (bulletProtectValue == -1)
+            if (bulletProtectValue < 0)
             {
                 bulletProtectValue = (int) (bulletDamageMulti *
                                             CommonConfig.OtherConfig.protect_standardMulti);
@@ -156,7 +156,7 @@ namespace game_stuff
 
 
             var bulletSuccessAmmoAdd = bullet.SuccessAmmoAdd;
-            if (bulletSuccessAmmoAdd == -1)
+            if (bulletSuccessAmmoAdd < 0)
             {
                 bulletSuccessAmmoAdd = (int) (pairKey * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }

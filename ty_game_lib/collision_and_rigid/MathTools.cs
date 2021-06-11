@@ -39,7 +39,14 @@ namespace collision_and_rigid
             return (float) Math.Sin(a);
 #endif
         }
-
+        public static uint Max(uint a, uint b)
+        {
+#if NETCOREAPP
+            return Math.Max(a, b);
+#else
+            return  Math.Max(a, b);
+#endif
+        }
         public static float Max(float a, float b)
         {
 #if NETCOREAPP

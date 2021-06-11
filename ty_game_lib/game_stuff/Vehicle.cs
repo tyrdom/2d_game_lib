@@ -112,7 +112,7 @@ namespace game_stuff
         public Scope StandardScope { get; }
         public Dictionary<int, Weapon> Weapons { get; }
 
-        public int NowAmmo { get; private set; }
+        public int NowAmmo { get; set; }
 
         private int MaxAmmo { get; set; }
         public int WeaponCarryMax { get; }

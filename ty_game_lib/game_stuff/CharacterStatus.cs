@@ -78,10 +78,27 @@ namespace game_stuff
         private void SetAct(ICharAct charAct)
         {
             NowProtectValue = 0;
+            if (charAct is Skill skill)
+            {
+                CostAmmo(skill.AmmoCost);
+            }
+
             NowCastAct = charAct;
             var startAct = new StartAct(charAct.GetTypeEnum(), charAct.GetIntId(),
                 charAct.NowOnTick);
             CharEvents.Add(startAct);
+        }
+
+        private void CostAmmo(int skillAmmoCost)
+        {
+            if (NowVehicle != null)
+            {
+                NowVehicle.NowAmmo -= skillAmmoCost;
+            }
+            else
+            {
+                NowAmmo -= skillAmmoCost;
+            }
         }
 
         private (TwoDVector? Aim, Skill skill, SkillAction opAction)? NextSkill { get; set; }
