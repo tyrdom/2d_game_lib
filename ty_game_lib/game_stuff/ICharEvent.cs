@@ -7,6 +7,16 @@ namespace game_stuff
     {
     }
 
+    public class SwitchWeapon : ICharEvent
+    {
+        public SwitchWeapon(weapon_id wId)
+        {
+            WeaponId = wId;
+        }
+
+        public weapon_id WeaponId { get; }
+    }
+
     public class InProtect : ICharEvent
     {
         public InProtect(int nowProtectTick)

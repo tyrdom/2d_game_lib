@@ -739,6 +739,8 @@ namespace game_stuff
             if (NextSkill!.Value.opAction == SkillAction.Switch)
             {
                 NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
+                var switchWeapon = new SwitchWeapon(GetWeapons()[NowWeapon].WId);
+                CharEvents.Add(switchWeapon);
             }
 
             var aim = operateAim ?? NextSkill.Value.Aim;
@@ -909,10 +911,13 @@ namespace game_stuff
                     case SkillPeriod.CanCombo:
                         actNowActATick = LoadSkill(operateAim, skill, opAction.Value, operateMove);
                         NowWeapon = toUse;
+                        var switchWeapon = new SwitchWeapon(GetWeapons()[NowWeapon].WId);
+                        CharEvents.Add(switchWeapon);
                         break;
                     case SkillPeriod.End:
                         NowWeapon = toUse;
-
+                        var switchWeapon2 = new SwitchWeapon(GetWeapons()[NowWeapon].WId);
+                        CharEvents.Add(switchWeapon2);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -1005,6 +1010,9 @@ namespace game_stuff
                     Console.Out.WriteLine($"Now Weapon {NowWeapon} switch to");
 #endif
                     NowWeapon = (NowWeapon + 1) % GetWeapons().Count;
+                    var switchWeapon = new SwitchWeapon(GetWeapons()[NowWeapon].WId);
+                    CharEvents.Add(switchWeapon);
+
 #if DEBUG
                     Console.Out.WriteLine($"Now Weapon {NowWeapon} in {GetWeapons().Count()}");
 #endif
