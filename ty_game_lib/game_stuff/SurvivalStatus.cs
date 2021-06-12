@@ -280,8 +280,10 @@ namespace game_stuff
             NowArmor = MathTools.Max(0, MaxArmor - lossAr);
             ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
             MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
-            ShieldRecover = (uint) (baseSurvivalStatus.ShieldRecover * (1 + v[4]));
-            ShieldInstability = (uint) (baseSurvivalStatus.ShieldInstability * (1 + v[5]));
+            var shieldRecover = (baseSurvivalStatus.ShieldRecover * (1 + v[4]));
+            ShieldRecover = (uint) MathTools.Max(0, shieldRecover);
+            var shieldInstability = baseSurvivalStatus.ShieldInstability * (1 + v[5]);
+            ShieldInstability = (uint) MathTools.Max(0, shieldInstability);
             SurvivalChangeMarks.Add(SurvivalChangeMark.MaxValueChange);
         }
 

@@ -154,6 +154,8 @@ namespace game_stuff
 
         public AttackStatus AttackStatus { get; }
 
+      
+
         public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
         {
             BattleUnitMoverStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);

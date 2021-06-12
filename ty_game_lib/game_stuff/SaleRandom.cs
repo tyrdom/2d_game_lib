@@ -92,7 +92,8 @@ namespace game_stuff
                 sale_type.prop => chooseRandCanSame.Select(x => (1, new ISaleStuff[] {Prop.GenById(x)}))
                     .ToImmutableArray(),
 
-                sale_type.passive => chooseRandCanSame.Select(x => (1, new ISaleStuff[] {PassiveTrait.GenById(x, 1)}))
+                sale_type.passive => chooseRandCanSame
+                    .Select(x => (1, PassiveTrait.GenManyById(x, 1).OfType<ISaleStuff>().ToArray()))
                     .ToImmutableArray(),
                 _ => throw new ArgumentOutOfRangeException()
             };

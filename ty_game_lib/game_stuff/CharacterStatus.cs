@@ -171,6 +171,7 @@ namespace game_stuff
 
         // Status
         public AttackStatus AttackStatus { get; }
+        public DamageMultiStatus DamageMultiStatus { get; }
 
         public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
         {
@@ -248,6 +249,7 @@ namespace game_stuff
 
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
+            DamageMultiStatus = new DamageMultiStatus();
             DefaultTakeOutWeapon = Skill.GenSkillById(CommonConfig.OtherConfig.default_take_out_skill);
             NowMoveSpeed = 0f;
             CharEvents = new List<ICharEvent>();
@@ -1187,8 +1189,10 @@ namespace game_stuff
         public Damage GenDamage(float damageMulti, bool b4)
         {
             var multi = GetBuffs<MakeDamageBuff>().GetDamageMulti();
+            var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus());
+
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
-            return attackStatus.GenDamage(damageMulti, b4, multi);
+            return attackStatus.GenDamage(damageMulti, b4, multi * totalMulti);
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
@@ -1272,10 +1276,10 @@ namespace game_stuff
         public float[] GetPassiveEffects<T>() where T : IPassiveTraitEffect
         {
             var passiveTraits = PassiveTraits.Values.Where(x => x.PassiveTraitEffect is T);
-            var passiveTraitEffects = passiveTraits.Select(x => x.PassiveTraitEffect.GenEffect(x.Level));
+            var enumerable = passiveTraits as PassiveTrait[] ?? passiveTraits.ToArray();
+            if (!enumerable.Any()) return new float[] { };
+            var passiveTraitEffects = enumerable.Select(x => x.PassiveTraitEffect.GenEffect(x.Level));
             var traitEffects = passiveTraitEffects.ToList();
-            var firstOrDefault = traitEffects.FirstOrDefault();
-            if (firstOrDefault == null) return new float[] { };
             var r = traitEffects.Aggregate(new float[] { }, (s, x) => s.Plus(x.GetVector()));
             return r;
         }
@@ -1303,6 +1307,9 @@ namespace game_stuff
                 case RegenPassiveEffect _:
                     RegenStatusRefresh(vector);
                     NowVehicle?.RegenStatusRefresh(vector);
+                    break;
+                case SpecialSurviveDamageAddEffect _:
+                    SurvivalDamageMultiStatusRefresh(vector);
                     break;
                 case AtkAboutPassiveEffect _:
                     AttackStatusRefresh(vector);
@@ -1332,9 +1339,15 @@ namespace game_stuff
                 case TickAddEffect _:
                     TickAboutRefresh(vector);
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void SurvivalDamageMultiStatusRefresh(float[] vector)
+        {
+            DamageMultiStatus.RefreshSurvivalDmgMulti(vector);
         }
 
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using collision_and_rigid;
 using game_config;
 
@@ -31,6 +32,11 @@ namespace game_stuff
         public void ResetLevel()
         {
             Level = 0;
+        }
+
+        public void SetLevel(uint level)
+        {
+            Level = level;
         }
 
         public uint Level { get; private set; }
@@ -78,7 +84,27 @@ namespace game_stuff
             return 1;
         }
 
-        public static PassiveTrait GenById(string i, uint level)
+        public static IEnumerable<PassiveTrait> GenManyById(string i, uint level)
+        {
+            if (i.TryStringToEnum(out passive_id i1))
+            {
+                return GenManyByPId(i1, level);
+            }
+
+            throw new Exception($"not such passive id{i}");
+        }
+
+        private static IEnumerable<PassiveTrait> GenManyByPId(passive_id eId, uint level)
+        {
+            if (!CommonConfig.Configs.passives.TryGetValue(eId, out var passive))
+                throw new KeyNotFoundException($"not such passive id {eId}");
+            var passiveTraits = passive.AddOns.Select(x => GenById(x, level));
+            var genById = GenById(eId, level);
+            var enumerable = passiveTraits.Append(genById);
+            return enumerable;
+        }
+
+        private static PassiveTrait GenById(string i, uint level)
         {
             if (i.TryStringToEnum(out passive_id i1))
             {

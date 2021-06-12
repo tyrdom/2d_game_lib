@@ -183,7 +183,7 @@ namespace lib_unit_test
         public void NpcTest()
         {
             var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2);
-            
+
             Assert.Pass($"fin");
         }
 
@@ -244,7 +244,7 @@ namespace lib_unit_test
             var aggregate4 =
                 findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
-            var twoDVectorLines = findAPathByPoint.Select(x => x.Item2);
+            var twoDVectorLines = findAPathByPoint.Where(x => x.gothroughLine != null).Select(x => x.Item2);
             var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x);
             Console.Out.WriteLine($"way Points are {s3}");

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using game_config;
 
@@ -52,9 +51,29 @@ namespace game_stuff
                 passive_type.TrapAbout => new TrapEffect(vector),
                 passive_type.Regen => new RegenPassiveEffect(vector),
                 passive_type.AbsorbAdd => new AbsorbAboutPassiveEffect(vector),
-
+                passive_type.SpecialSurviveDamageAdd => new SpecialSurviveDamageAddEffect(vector),
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+    }
+
+    public readonly struct SpecialSurviveDamageAddEffect : IPassiveTraitEffect
+    {
+        private float[] Adds { get; }
+
+        public SpecialSurviveDamageAddEffect(float[] vector)
+        {
+            Adds = vector;
+        }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new SpecialSurviveDamageAddEffect(ArrayTools.Multiply(level, GetVector()));
+        }
+
+        public float[] GetVector()
+        {
+            return Adds;
         }
     }
 

@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
+using static game_stuff.PassiveTrait;
 
 namespace game_stuff
 {
@@ -69,15 +70,15 @@ namespace game_stuff
                 ? new GameItem(item_id.coin, 0)
                 : GameItem.GenByConfigGain(firstOrDefault);
             var chooseRandCanSame = saleUnit.LimitIdRange.ChooseRandOne();
-            ISaleStuff saleStuff = saleUnit.SaleType switch
+            var saleStuff = saleUnit.SaleType switch
             {
-                sale_type.prop => Prop.GenById(chooseRandCanSame),
-                sale_type.passive => PassiveTrait.GenById(chooseRandCanSame, 1),
+                sale_type.prop => new ISaleStuff[] {Prop.GenById(chooseRandCanSame)},
+                sale_type.passive => GenManyById(chooseRandCanSame, 1).OfType<ISaleStuff>().ToArray(),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
             var gameItems = new GameItem[] { };
-            var unit = new SaleUnit(null, genByConfigGain, new[] {saleStuff}, saleUnit.Stack,
+            var unit = new SaleUnit(null, genByConfigGain, saleStuff, saleUnit.Stack,
                 gameItems);
             return unit;
         }

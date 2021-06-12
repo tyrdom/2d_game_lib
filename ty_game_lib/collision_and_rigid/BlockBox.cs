@@ -71,7 +71,7 @@ namespace collision_and_rigid
             return null;
         }
 
-        public IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
+        private IEnumerable<(int, IAaBbBox)> SplitByQuads(float horizon, float vertical)
         {
             var z1234 = new List<(int, IAaBbBox)>();
             var z = Zone;
@@ -107,7 +107,8 @@ namespace collision_and_rigid
                     }
                     else
                     {
-                        throw new Exception($"lz no good zone{z.ToString()} v {vertical} {z.Right <= vertical}");
+                        throw new Exception(
+                            $"lz no good zone{z.ToString()} shape: {Shape} genZone{Shape.GenAabbBoxShape()} v {vertical} {z.Right <= vertical}");
                     }
                 }
             }
