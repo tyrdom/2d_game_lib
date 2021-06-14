@@ -399,10 +399,10 @@ namespace game_stuff
 
         private void HpValueRegen(int regen)
         {
-            NowHp = (uint) MathTools.Max(1, MathTools.Min(MaxHp, (int) NowHp + regen));
+            NowHp = (uint) MathTools.Max(0, MathTools.Min(MaxHp, (int) NowHp + regen));
         }
 
-        public void TransRegen((int sR, int aR, int hR) transValue)
+        private void TransRegen((int sR, int aR, int hR) transValue)
         {
             var (sR, aR, hR) = transValue;
             ShieldValueRegen(sR);

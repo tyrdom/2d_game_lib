@@ -198,7 +198,7 @@ namespace game_stuff
 
         public RegenEffectStatus RegenEffectStatus { get; }
 
-        public TransRegenEffectStatus TransRegenEffectStatus { get; } 
+        public TransRegenEffectStatus TransRegenEffectStatus { get; }
         public AbsorbStatus AbsorbStatus { get; }
 
         //wealth about
@@ -558,6 +558,7 @@ namespace game_stuff
 
             if (NowSnipeStep == -1) return;
             NowSnipeStep = -1;
+            CharEvents.Add(new TickSnipeActionLaunch(SnipeAction.SnipeOff));
             BaseChangeMarks.Add(BaseChangeMark.ThetaC);
         }
 
