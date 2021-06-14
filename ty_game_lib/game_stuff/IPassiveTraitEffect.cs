@@ -52,9 +52,32 @@ namespace game_stuff
                 passive_type.Regen => new RegenPassiveEffect(vector),
                 passive_type.AbsorbAdd => new AbsorbAboutPassiveEffect(vector),
                 passive_type.SpecialSurviveDamageAdd => new SpecialSurviveDamageAddEffect(vector),
+                passive_type.TransRegeneration => new TransRegenerationEffect(vector),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+    }
+
+    public readonly struct TransRegenerationEffect : IPassiveTraitEffect
+    {
+        private float[] V { get; }
+
+        public TransRegenerationEffect(float[] vector)
+        {
+            V = vector;
+        }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new TransRegenerationEffect(ArrayTools.Multiply(level, GetVector()));
+        }
+
+        public float[] GetVector()
+        {
+            return V;
+        }
+
+   
     }
 
     public readonly struct SpecialSurviveDamageAddEffect : IPassiveTraitEffect

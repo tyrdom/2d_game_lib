@@ -25,7 +25,7 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_gun, weapon_id.test_gun}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_bow, weapon_id.test_gun}, size.small,
                     1);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);

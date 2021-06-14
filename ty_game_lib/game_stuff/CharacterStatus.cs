@@ -198,6 +198,7 @@ namespace game_stuff
 
         public RegenEffectStatus RegenEffectStatus { get; }
 
+        public TransRegenEffectStatus TransRegenEffectStatus { get; } 
         public AbsorbStatus AbsorbStatus { get; }
 
         //wealth about
@@ -255,7 +256,7 @@ namespace game_stuff
             CharEvents = new List<ICharEvent>();
             BaseChangeMarks = new HashSet<BaseChangeMark>();
 
-
+            TransRegenEffectStatus = new TransRegenEffectStatus();
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;
@@ -1339,10 +1340,18 @@ namespace game_stuff
                 case TickAddEffect _:
                     TickAboutRefresh(vector);
                     break;
+                case TransRegenerationEffect _:
+                    TransRegenerationEffectRefresh(vector);
+                    break;
 
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void TransRegenerationEffectRefresh(float[] vector)
+        {
+            TransRegenEffectStatus.TransRegenerationEffectChange(vector);
         }
 
         private void SurvivalDamageMultiStatusRefresh(float[] vector)
@@ -1518,8 +1527,7 @@ namespace game_stuff
             if (NowVehicle == null)
             {
                 var isDead = SurvivalStatus.IsDead();
-
-                SurvivalStatus.TakeDamage(genDamage);
+                SurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus);
 
                 var after = SurvivalStatus.IsDead();
 #if DEBUG
@@ -1529,8 +1537,8 @@ namespace game_stuff
                 return new DmgShow(!isDead && after, genDamage);
             }
 
-            NowVehicle.SurvivalStatus.TakeDamage(genDamage);
-
+            var nowVehicleSurvivalStatus = NowVehicle.SurvivalStatus;
+            nowVehicleSurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus);
             return new DmgShow(false, genDamage);
         }
 
