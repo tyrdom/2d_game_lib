@@ -76,7 +76,6 @@ namespace collision_and_rigid
             var z1234 = new List<(int, IAaBbBox)>();
             var z = Zone;
 #if DEBUG
-
 #endif
 
             if (z.Down >= horizon)
@@ -107,8 +106,9 @@ namespace collision_and_rigid
                     }
                     else
                     {
+                        var genAabbBoxShape = Shape.GenAabbBoxShape();
                         throw new Exception(
-                            $"lz no good zone{z.ToString()} shape: {Shape} genZone{Shape.GenAabbBoxShape()} v {vertical} {z.Right <= vertical}");
+                            $"lz no good zone{z.ToString()} shape: {Shape} genZone:{genAabbBoxShape.Aggregate("", ((s, box) => s + box.Zone))} v {vertical} {z.Right <= vertical}");
                     }
                 }
             }

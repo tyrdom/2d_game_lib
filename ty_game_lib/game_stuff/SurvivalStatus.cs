@@ -74,7 +74,7 @@ namespace game_stuff
             NowDelayTick = ShieldDelayTick;
             TakeOneDamage(damage.MainDamage);
 #if DEBUG
-            Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
+            // Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
 #endif
             if (damage.ShardedNum <= 0)
             {
@@ -113,7 +113,7 @@ namespace game_stuff
 
             if (NowArmor > 0)
             {
-                var defence = (int) (damage - ArmorDefence);
+                var defence = (int) damage - (int) ArmorDefence;
                 if (defence <= 0)
                 {
                     return;
@@ -146,7 +146,7 @@ namespace game_stuff
 
         private void TakeOneDamage(uint damage)
         {
-            var rest = damage;
+            var rest = (int) damage;
 
             if (NowShield > 0)
             {
@@ -163,7 +163,7 @@ namespace game_stuff
 
 
                 NowShield = 0;
-                rest = (uint) -nowShield;
+                rest = -nowShield;
             }
 
 
@@ -180,7 +180,7 @@ namespace game_stuff
 
                 {
                     NowArmor = 0;
-                    rest = (uint) -nowArmor;
+                    rest = (int) -nowArmor;
                 }
             }
 
@@ -191,7 +191,7 @@ namespace game_stuff
                 return;
             }
 
-            NowHp -= rest;
+            NowHp -= (uint) rest;
             return;
         }
 
@@ -292,7 +292,7 @@ namespace game_stuff
             NowArmor = MathTools.Max(0, MaxArmor - lossAr);
             ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
             MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
-            var shieldRecover = (baseSurvivalStatus.ShieldRecover * (1 + v[4]));
+            var shieldRecover = baseSurvivalStatus.ShieldRecover * (1 + v[4]);
             ShieldRecover = (uint) MathTools.Max(0, shieldRecover);
             var shieldInstability = baseSurvivalStatus.ShieldInstability * (1 + v[5]);
             ShieldInstability = (uint) MathTools.Max(0, shieldInstability);
@@ -374,17 +374,22 @@ namespace game_stuff
             });
         }
 
-        public (uint NowShield, uint NowArmor, uint NowHp) GetMainValues()
+        public void GetMainValues(out int nowShield, out int nowArmor, out int nowHp)
         {
-            return (NowShield, NowArmor, NowHp);
+            nowShield = (int) NowShield;
+            nowArmor = (int) NowArmor;
+            nowHp = (int) NowHp;
         }
 
-        public (uint sLoss, uint aLoss, uint hLoss) GetMainLost((uint NowShield, uint NowArmor, uint NowHp) mainValues)
+        public void GetMainLost(int lastS, int lastA, int lastH, out int lossS, out int lossA, out int lossH)
         {
-            var (nowShield, nowArmor, nowHp) = mainValues;
-            return (MathTools.Max(0, nowShield - NowShield),
-                MathTools.Max(0, nowArmor - NowArmor),
-                MathTools.Max(0, nowHp - NowHp));
+            lossS = MathTools.Max(0, lastS - (int) NowShield);
+            lossA = MathTools.Max(0, lastA - (int) NowArmor);
+            lossH = MathTools.Max(0, lastH - (int) NowHp);
+#if DEBUG
+            Console.Out.WriteLine(
+                $"take damage loss Sd:{lossS},AM {lossA} ,HP {lossH}");
+#endif
         }
 
         private void ShieldValueRegen(int regen)
@@ -402,9 +407,8 @@ namespace game_stuff
             NowHp = (uint) MathTools.Max(0, MathTools.Min(MaxHp, (int) NowHp + regen));
         }
 
-        private void TransRegen((int sR, int aR, int hR) transValue)
+        private void TransRegen(int sR, int aR, int hR)
         {
-            var (sR, aR, hR) = transValue;
             ShieldValueRegen(sR);
             ArmorValueRegen(aR);
             HpValueRegen(hR);
@@ -412,11 +416,11 @@ namespace game_stuff
 
         public void TakeDamageAndEtc(Damage damage, TransRegenEffectStatus regenEffectStatus)
         {
-            var mainValues = GetMainValues();
+            GetMainValues(out var lS, out var lA, out var lH);
             TakeDamage(damage);
-            var valueTuple = GetMainLost(mainValues);
-            var transValue = regenEffectStatus.GetTransValue(valueTuple);
-            TransRegen(transValue);
+            GetMainLost(lS, lA, lH, out var lls, out var lossA, out var lossH);
+            regenEffectStatus.GetTransValue(lls, lossA, lossH, out var sR, out var armorR, out var hpR);
+            TransRegen(sR, armorR, hpR);
         }
     }
 

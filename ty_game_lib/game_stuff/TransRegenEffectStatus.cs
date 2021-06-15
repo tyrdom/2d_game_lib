@@ -1,8 +1,10 @@
-﻿namespace game_stuff
+﻿using System;
+
+namespace game_stuff
 {
-    public class TransRegenEffectStatus
+    public struct TransRegenEffectStatus
     {
-        public TransRegenEffectStatus()
+        public TransRegenEffectStatus(int a)
         {
             HpToArmor = 0;
             HpToShield = 0;
@@ -29,15 +31,17 @@
             ShieldToArmor = (int) transRegeneration[5];
         }
 
-        public (int sR, int aR, int hR) GetTransValue((uint sLoss, uint aLoss, uint hLoss) valueTuple)
+        public void GetTransValue(int sLoss, int aLoss, int hLoss, out int sR, out int armorR,
+            out int hpR)
         {
-            var (sLoss, aLoss, hLoss) = valueTuple;
+            hpR = ArmorToHp * aLoss + ShieldToHp * sLoss;
+            armorR = ShieldToArmor * sLoss + HpToArmor * hLoss;
+            sR = ArmorToShield * sLoss + HpToShield * hLoss;
 
-            var hpR = ArmorToHp * aLoss + ShieldToHp * sLoss;
-            var armorR = ShieldToArmor * sLoss + HpToArmor * hLoss;
-            var sR = ArmorToShield * sLoss + HpToShield * hLoss;
-
-            return ((int) sR, (int) armorR, (int) hpR);
+#if DEBUG
+            Console.Out.WriteLine(
+                $"take damage to regen  sR:{sR} aR:{armorR} hR:{hpR}");
+#endif
         }
     }
 }

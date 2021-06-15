@@ -25,8 +25,8 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_bow, weapon_id.test_gun}, size.small,
-                    1);
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
+                    5);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData2 =
@@ -56,13 +56,13 @@ namespace lib_test
             var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
             characterBody.CharacterStatus.PickAPassive(passiveTrait);
 
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 200; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
 
-                var dVector = new TwoDVector(0, -1f);
-                var operate = i < 50
-                    ? new Operate(skillAction: SkillAction.Op1)
+                var dVector = new TwoDVector(1f, 0f);
+                var operate = i < 199
+                    ? new Operate(aim: dVector, skillAction: SkillAction.Op1)
                     : new Operate(aim: twoDVector);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);

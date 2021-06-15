@@ -256,7 +256,7 @@ namespace game_stuff
             CharEvents = new List<ICharEvent>();
             BaseChangeMarks = new HashSet<BaseChangeMark>();
 
-            TransRegenEffectStatus = new TransRegenEffectStatus();
+            TransRegenEffectStatus = new TransRegenEffectStatus(0);
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;

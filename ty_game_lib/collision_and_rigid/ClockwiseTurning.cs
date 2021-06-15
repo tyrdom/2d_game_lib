@@ -589,6 +589,11 @@ namespace collision_and_rigid
 
             if (oav.Y > 0 && obv.Y < 0) passR = true;
 
+
+#if DEBUG
+            Console.Out.WriteLine($"pass U:{passU} D: {passD} L:{passL} R:{passR}");
+
+#endif
             if (passU)
             {
                 if (passR)
@@ -630,8 +635,8 @@ namespace collision_and_rigid
                 if (passL)
                 {
                     zones.Add(a.GenZone(d));
-                    zones.Add(d.GenZone(r));
-                    zones.Add(r.GenZone(b));
+                    zones.Add(d.GenZone(l));
+                    zones.Add(l.GenZone(b));
                 }
                 else
                 {
@@ -651,44 +656,6 @@ namespace collision_and_rigid
                 zones.Add(a.GenZone(b));
             }
 
-//            {
-//            }
-//
-//
-//            if (oav.X > 0)
-//
-//
-//            {
-//                if (obv.X >= 0)
-//                {
-//                    zones.Add(CovToAabbPackBox().Zone);
-//                }
-//                else
-//                {
-//                    var aod = new ClockwiseBalanceAngle(a, o, d);
-//                    var dob = new ClockwiseBalanceAngle(d, o, b);
-//                    zones.Add(aod.GetZone(R));
-//                    zones.Add(dob.GetZone(R));
-//                }
-//            }
-//            else if (oav.X < 0)
-//            {
-//                if (obv.X <= 0)
-//                {
-//                    zones.Add(CovToAabbPackBox().Zone);
-//                }
-//                else
-//                {
-//                    var aod = new ClockwiseBalanceAngle(a, o, u);
-//                    var dob = new ClockwiseBalanceAngle(u, o, b);
-//                    zones.Add(aod.GetZone(R));
-//                    zones.Add(dob.GetZone(R));
-//                }
-//            }
-//            else
-//            {
-//                zones.Add(CovToAabbPackBox().Zone);
-//            }
             return zones.Select(zone => new BlockBox(zone, this)).ToList();
         }
 
