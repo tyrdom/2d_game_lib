@@ -36,20 +36,21 @@ namespace collision_and_rigid
         }
 
         public (bool isHitWall, TwoDPoint pt)
-            PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, bool safe = true) //null表示不需要被动移动
+            PushOutToPt(TwoDPoint lastP, TwoDPoint nowP) //null表示不需要被动移动
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
-            var apt = QSpace.GetSlidePoint(inLine, safe);
+            var apt = QSpace.GetSlidePoint(inLine, true);
 
-            if (safe) return (apt != null, apt ?? nowP);
+            // if (safe)
+            return (apt != null, apt ?? nowP);
 
 
-            if (apt != null)
-            {
-                return RealCoverPoint(apt) ? PushOutToPt(lastP, apt, false) : (true, apt);
-            }
-
-            return (false, nowP);
+            // if (apt != null)
+            // {
+            //     return RealCoverPoint(apt) ? PushOutToPt(lastP, apt, false) : (true, apt);
+            // }
+            //
+            // return (false, nowP);
         }
     }
 }
