@@ -392,7 +392,7 @@ namespace collision_and_rigid
             var boxes = aaBbBoxes.ToArray();
 #if DEBUG
             var aggregate = boxes.Select(box => box.GetAnchor()).Aggregate("", (s, x) => s + "|" + x);
-            Console.Out.WriteLine($"to add {aggregate} to b zone {Zone}");
+            Console.Out.WriteLine($"to add {boxes.Length} {aggregate} to b zone {Zone}");
 #endif
 
             var intPtr = AaBbPackBox.Count + boxes.Length;
@@ -544,7 +544,7 @@ namespace collision_and_rigid
 
         public void ForeachBoxDoWithOutMove<T, TK>(Action<TK, T> action, T t, Zone zone)
         {
-            if ( Zone.RealNotCross(zone))
+            if (Zone.RealNotCross(zone))
             {
 #if DEBUG
 

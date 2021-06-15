@@ -271,7 +271,7 @@ namespace collision_and_rigid
                 return;
             }
 
-            TryCovToBranch(limit);
+            TryCovToBranch(limit, out _);
 
             // tryCovToBranch.AddSingleAaBbBox(aaBbBox, limit);
         }
@@ -379,7 +379,7 @@ namespace collision_and_rigid
         }
 
 
-        private QSpaceBranch TryCovToBranch(int limit)
+        private bool TryCovToBranch(int limit, out QSpaceBranch qSpaceBranch)
         {
             var one = new HashSet<IAaBbBox>();
             var two = new HashSet<IAaBbBox>();
@@ -422,17 +422,30 @@ namespace collision_and_rigid
             var qs2 = new QSpaceLeaf(Quad.Two, null, zones[1], two);
             var qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
             var qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
+            if (zone.Count == AaBbPackBox.Count)
+            {
+                qSpaceBranch = new QSpaceBranch(TheQuad, Father, Zone, zone, qs1, qs2, qs3, qs4);
+                return false;
+            }
+
             var tryCovToBranch = new QSpaceBranch(TheQuad, Father, Zone, zone,
                 qs1.TryCovToLimitQSpace(limit),
                 qs2.TryCovToLimitQSpace(limit),
                 qs3.TryCovToLimitQSpace(limit),
                 qs4.TryCovToLimitQSpace(limit));
+
+
             tryCovToBranch.QuadOne.Father = tryCovToBranch;
             tryCovToBranch.QuadTwo.Father = tryCovToBranch;
             tryCovToBranch.QuadThree.Father = tryCovToBranch;
             tryCovToBranch.QuadFour.Father = tryCovToBranch;
 
-            if (Father == null) return tryCovToBranch;
+            if (Father == null)
+            {
+                qSpaceBranch = tryCovToBranch;
+                return true;
+            }
+
             switch (TheQuad)
             {
                 case Quad.One:
@@ -453,7 +466,8 @@ namespace collision_and_rigid
                     throw new ArgumentOutOfRangeException();
             }
 
-            return tryCovToBranch;
+            qSpaceBranch = tryCovToBranch;
+            return true;
         }
 
         public IEnumerable<IIdPointShape> FilterToGIdPsList<T>(Func<IIdPointShape, T, bool> funcWithIIdPtsShape,
@@ -522,10 +536,11 @@ namespace collision_and_rigid
             }
 #if DEBUG
             var aggregate = AaBbPackBox.Select(x => x.GetAnchor()).Aggregate("", (s, x) => s + "|" + x);
-            Console.Out.WriteLine($"limit over {aggregate}  try to cov to b {Zone}");
+            Console.Out.WriteLine(
+                $"limit over {AaBbPackBox.Count}/{limit}in{TheQuad}: {aggregate}  try to cov to b {Zone}");
 #endif
-            var tryCovToBranch = TryCovToBranch(limit);
-            return tryCovToBranch;
+
+            return TryCovToBranch(limit, out var qSpaceBranch) ? (IQSpace) qSpaceBranch : this;
         }
     }
 }

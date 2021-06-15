@@ -541,17 +541,17 @@ namespace collision_and_rigid
             return hashSet;
         }
 
-        public static IQSpace CreateQSpaceByAabbBoxShapes(IAaBbBox[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
-        {
-            var joinAabbZone = JoinAaBbZone(aabbBoxShapes);
-            if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
-
-            var aabbPackPackBoxShapes = IeToHashSet(aabbBoxShapes);
-
-
-            var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
-            return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
-        }
+        // public static IQSpace CreateQSpaceByAabbBoxShapes(IAaBbBox[] aabbBoxShapes, int maxLoadPerQ, Zone zone)
+        // {
+        //     var joinAabbZone = JoinAaBbZone(aabbBoxShapes);
+        //     if (joinAabbZone.IsIn(zone)) joinAabbZone = zone;
+        //
+        //     var aabbPackPackBoxShapes = IeToHashSet(aabbBoxShapes);
+        //
+        //
+        //     var qSpace = new QSpaceLeaf(Quad.One, null, joinAabbZone, aabbPackPackBoxShapes);
+        //     return qSpace.TryCovToLimitQSpace(maxLoadPerQ);
+        // }
 
 
         private static IQSpace CreateQSpaceByAaBbBoxes(IAaBbBox[] aaBbBoxes, int limit)
