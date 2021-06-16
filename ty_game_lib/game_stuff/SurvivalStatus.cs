@@ -404,7 +404,14 @@ namespace game_stuff
 
         private void HpValueRegen(int regen)
         {
-            NowHp = (uint) MathTools.Max(0, MathTools.Min(MaxHp, (int) NowHp + regen));
+            if (regen < 0)
+            {
+                NowHp = (uint) MathTools.Max(1, (int) NowHp + regen);
+            }
+            else if (regen > 0)
+            {
+                NowHp = (uint) MathTools.Min(MaxHp, (int) NowHp + regen);
+            }
         }
 
         private void TransRegen(int sR, int aR, int hR)
