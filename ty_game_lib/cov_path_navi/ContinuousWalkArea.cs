@@ -74,7 +74,7 @@ namespace cov_path_navi
                     Console.Out.WriteLine($"this just a cov shape \n{aggregate3}");
 
 #endif
-                   var list = new List<Link>();
+                    var list = new List<Link>();
                     CollectLinks(list, incompleteLinks, nowId, area);
                     var nodeCovPolygon = new PathNodeCovPolygon(list, nowId, area);
                     polygons.Add(nodeCovPolygon);
@@ -156,8 +156,9 @@ namespace cov_path_navi
                 if (li == ri || area.Count <= 3)
                 {
 #if DEBUG
+ Console.Out.WriteLine($"just a cov l{li} m r{ri}");
 #endif
-                    Console.Out.WriteLine($"just a cov l{li} m r{ri}");
+
                     li = -1;
                     ri = -1;
                     return;
@@ -172,13 +173,14 @@ namespace cov_path_navi
                 var leftLine = area[li].AsTwoDVectorLine();
                 var areaCount = ri == 0 ? area.Count - 1 : ri - 1;
                 var rightLine = area[areaCount].AsTwoDVectorLine();
-                Console.Out.WriteLine($"l::{li} r::{ri}");
+
 #if DEBUG
+Console.Out.WriteLine($"l::{li} r::{ri}");
             Console.Out.WriteLine($" l is {leftLine} m r is {rightLine}");
 #endif
                 if (right && rCanGo)
                 {
-                    Console.Out.WriteLine($"go right before {ri} {rCanGo}");
+                    // Console.Out.WriteLine($"go right before {ri} {rCanGo}");
                     var nextR = area[ri];
                     var canGo = CanGo(leftLine, rightLine, nextR.GetEndPt(), ref inALine, blocks, true);
                     if (canGo) ri = ri + 1 == area.Count ? 0 : ri + 1;
@@ -186,13 +188,13 @@ namespace cov_path_navi
                     var lCanGo1 = lCanGo;
                     rCanGo = canGo;
                     right = !lCanGo1;
-                    Console.Out.WriteLine($"go right {ri} {rCanGo}");
+                    // Console.Out.WriteLine($"go right {ri} {rCanGo}");
                     continue;
                 }
 
                 if (lCanGo)
                 {
-                    Console.Out.WriteLine($"go left before:{li} {lCanGo}");
+                    // Console.Out.WriteLine($"go left before:{li} {lCanGo}");
 
                     var nextL = area[(area.Count + li - 1) % area.Count];
 
@@ -203,7 +205,7 @@ namespace cov_path_navi
                     var rCanGo1 = rCanGo;
                     lCanGo = canGo;
                     right = rCanGo1;
-                    Console.Out.WriteLine($"go left {li} {lCanGo}");
+                    // Console.Out.WriteLine($"go left {li} {lCanGo}");
 
                     continue;
                 }

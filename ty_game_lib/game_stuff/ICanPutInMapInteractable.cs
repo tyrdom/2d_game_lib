@@ -18,7 +18,6 @@ namespace game_stuff
 
     public interface IToOutPutResult : IActResult
     {
-        
     }
 
     public interface IActResult

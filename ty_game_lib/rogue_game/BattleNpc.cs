@@ -78,8 +78,9 @@ namespace rogue_game
 
             var gameItems = battleNpc.KillDrops.Select(GameItem.GenByConfigGain).ToArray();
             var array = battleNpc.AllDrops.Select(GameItem.GenByConfigGain).ToArray();
+            var randOne = battleNpc.DropMapInteractableId.ChooseRandOne();
             var canPutInMapInteractable =
-                Func(battleNpc.DropMapInteractableType, battleNpc.DropMapInteractableId);
+                Func(battleNpc.DropMapInteractableType, randOne);
             var mapInteractable = canPutInMapInteractable?.PutInteractable(TwoDPoint.Zero(), true);
 
             var wantedBonus = new WantedBonus(array, gameItems, mapInteractable);

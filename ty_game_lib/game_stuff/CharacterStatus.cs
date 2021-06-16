@@ -137,7 +137,7 @@ namespace game_stuff
 
         public void SetPauseTick(int tick)
         {
-            if (PauseTick <= 0) return;
+            if (tick <= 0) return;
             PauseTick = tick;
             var getPauseTick = new GetPauseTick(tick);
             CharEvents.Add(getPauseTick);
@@ -209,7 +209,7 @@ namespace game_stuff
 
 
         // for_tick_msg
-        public List<ICharEvent> CharEvents { get; }
+        public HashSet<ICharEvent> CharEvents { get; }
         private HashSet<BaseChangeMark> BaseChangeMarks { get; }
 
 
@@ -253,7 +253,7 @@ namespace game_stuff
             DamageMultiStatus = new DamageMultiStatus();
             DefaultTakeOutWeapon = Skill.GenSkillById(CommonConfig.OtherConfig.default_take_out_skill);
             NowMoveSpeed = 0f;
-            CharEvents = new List<ICharEvent>();
+            CharEvents = new HashSet<ICharEvent>();
             BaseChangeMarks = new HashSet<BaseChangeMark>();
 
             TransRegenEffectStatus = new TransRegenEffectStatus(0);
@@ -558,7 +558,12 @@ namespace game_stuff
 
             if (NowSnipeStep == -1) return;
             NowSnipeStep = -1;
+            // var tickSnipeActionLaunches = CharEvents.OfType<TickSnipeActionLaunch>();
+            // CharEvents.ExceptWith(tickSnipeActionLaunches);
             CharEvents.Add(new TickSnipeActionLaunch(SnipeAction.SnipeOff));
+#if DEBUG
+            Console.Out.WriteLine("snipe off by reset");
+#endif
             BaseChangeMarks.Add(BaseChangeMark.ThetaC);
         }
 
@@ -644,6 +649,10 @@ namespace game_stuff
                 .GoATick(GetPos(), GetAim(), fixMove, limitV);
             if (snipeOff)
             {
+#if DEBUG
+                Console.Out.WriteLine("res");
+
+#endif
                 ResetSnipe();
             }
 
@@ -720,7 +729,13 @@ namespace game_stuff
             prop.Sign(this);
             var pickAProp = new PickAProp(prop.PId);
             CharEvents.Add(pickAProp);
-            if (Prop != null) return prop.DropAsIMapInteractable(GetPos());
+            if (Prop != null)
+            {
+                var dropAsIMapInteractable = Prop.DropAsIMapInteractable(GetPos());
+                Prop = prop;
+                return dropAsIMapInteractable;
+            }
+
             Prop = prop;
             return null;
         }
@@ -834,7 +849,9 @@ namespace game_stuff
                     NowProtectTick = 0;
 
                     var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
-                    return new CharGoTickResult(launchBullet: destroyBullet);
+                    var dropThings = new DropThings(mapInteractables);
+                    var dropThingsList = new[] {dropThings}.OfType<IActResult>().ToImmutableArray();
+                    return new CharGoTickResult(launchBullet: destroyBullet, actResults: dropThingsList);
                 }
             }
 
@@ -1093,7 +1110,9 @@ namespace game_stuff
                 var genIMapInteractable = NowVehicle.DropAsIMapInteractable(GetPos());
                 NowVehicle = null;
 
-                return new CharGoTickResult();
+                var immutableArray =
+                    new[] {(IActResult) new DropThings(new[] {genIMapInteractable})}.ToImmutableArray();
+                return new CharGoTickResult(actResults: immutableArray);
             }
         }
 

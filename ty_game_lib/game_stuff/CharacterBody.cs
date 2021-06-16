@@ -202,8 +202,8 @@ namespace game_stuff
                 characterStatusCharEvents.Add(itemDetailChange);
             }
 
-            characterStatusCharEvents.AddRange(CharacterStatus.GenBaseChangeMarksEvents());
-            characterStatusCharEvents.AddRange(CharacterStatus.GetNowSurvivalStatus().GenSurvivalEvents());
+            characterStatusCharEvents.UnionWith(CharacterStatus.GenBaseChangeMarksEvents());
+            characterStatusCharEvents.UnionWith(CharacterStatus.GetNowSurvivalStatus().GenSurvivalEvents());
 
             return new CharTickMsg(GetId(), characterStatusCharEvents);
         }

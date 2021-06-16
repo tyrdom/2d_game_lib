@@ -8,7 +8,7 @@ namespace game_stuff
 {
     public readonly struct CharTickMsg : ISeeTickMsg
     {
-        public CharTickMsg(int getId, List<ICharEvent> characterStatusCharEvents)
+        public CharTickMsg(int getId, HashSet<ICharEvent> characterStatusCharEvents)
         {
             Gid = getId;
             CharEvents = characterStatusCharEvents;
@@ -16,7 +16,7 @@ namespace game_stuff
 
         public int Gid { get; }
 
-        public List<ICharEvent> CharEvents { get; }
+        public HashSet<ICharEvent> CharEvents { get; }
 
         public override string ToString()
         {

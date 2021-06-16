@@ -25,7 +25,7 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_bow, weapon_id.test_gun}, size.small,
                     5);
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
@@ -54,16 +54,16 @@ namespace lib_test
 #endif
             var genById = SimpleBot.GenById(1, characterBody, new Random(), null);
             var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
-            characterBody.CharacterStatus.PickAPassive(passiveTrait);
+            genCharacterBody.CharacterStatus.FullAmmo();
 
-            for (var i = 0; i < 200; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(1f, 0f);
-                var operate = i < 199
-                    ? new Operate(aim: dVector, skillAction: SkillAction.Op1)
-                    : new Operate(aim: twoDVector);
+                var operate = i < 50
+                    ? new Operate(aim: dVector, snipeAction: SnipeAction.SnipeOn2)
+                    : new Operate(aim: dVector, skillAction: SkillAction.Op2);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);
                 var opDic = new Dictionary<int, Operate>()
@@ -87,7 +87,7 @@ namespace lib_test
                 }
 
                 var characterBodies = playerSee[1].OnChange.OfType<CharacterBody>();
-                var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 5);
+                var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
 
                 var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
 
@@ -106,8 +106,8 @@ namespace lib_test
 
                 if (genTickMsg != null)
                 {
-                    var theta = genTickMsg.Value.CharEvents.OfType<SightAngleChange>().FirstOrDefault()?.Theta;
-                    Console.Out.WriteLine($"out put angle change {theta}");
+                    var theta = genTickMsg.Value.CharEvents.OfType<TickSnipeActionLaunch>().FirstOrDefault();
+                    if (theta != null) Console.Out.WriteLine($"out put angle change {theta?.SniperAction}");
                 }
 #endif
             }
