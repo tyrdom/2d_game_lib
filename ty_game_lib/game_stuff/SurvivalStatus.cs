@@ -199,7 +199,7 @@ namespace game_stuff
         {
             GetHeal(regeneration.HealMulti, regenEffectStatus.HealEffect);
             FixArmor(regeneration.FixMulti, regenEffectStatus.FixEffect);
-            ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect);
+            ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect,regenEffectStatus.ExtraChargeMulti);
         }
 
         private void GetHeal(float regenerationHealMulti, float healMulti)
@@ -225,11 +225,11 @@ namespace game_stuff
             NowArmor = (uint) MathTools.Min(NowArmor + regenerationFixMulti * MaxArmor * fixMulti, MaxArmor);
         }
 
-        private void ChargeShield(float regenerationShieldMulti, float chargeMulti)
+        private void ChargeShield(float regenerationShieldMulti, float chargeMulti, float extraChargeMulti)
         {
             SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
             var maxShield = (uint) (regenerationShieldMulti * MaxShield * chargeMulti);
-            NowShield += maxShield;
+            NowShield = (uint) MathTools.Min(MaxShield*(1+extraChargeMulti),  maxShield);
         }
 
 
@@ -394,7 +394,7 @@ namespace game_stuff
 
         private void ShieldValueRegen(int regen)
         {
-            NowShield = (uint) MathTools.Max(0, MathTools.Min(MaxShield, (int) NowShield + regen));
+            NowShield = (uint) MathTools.Max(0,  (int) NowShield + regen);
         }
 
         private void ArmorValueRegen(int regen)
