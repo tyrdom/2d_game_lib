@@ -10,6 +10,7 @@ namespace collision_and_rigid
         public QSpaceBranch? Father { get; set; }
         public Zone Zone { get; }
 
+        public string ToString(int level);
         public HashSet<IAaBbBox> AaBbPackBox { get; }
 
         public void AddIdPointBoxes(HashSet<IdPointBox> idPointBox, int limit, bool needRecord = false);

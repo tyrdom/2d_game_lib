@@ -193,6 +193,14 @@ namespace collision_and_rigid
             }
         }
 
+        public string ToString(int level)
+        {
+            var s1 =
+                $"level:{level} Zone: {Zone} Quad {TheQuad} BlockBoxes:{AaBbPackBox.Aggregate("", (s, x) => s + "\n" + x)}";
+
+            return s1;
+        }
+
         public void ReLocateIdBoxInQuadTree(int[] gidToMove, int limit)
         {
             var outZone = AaBbPackBox.OfType<IdPointBox>()
@@ -254,11 +262,19 @@ namespace collision_and_rigid
 
         public bool LineIsBlockSight(TwoDVectorLine line)
         {
-            var notCross = line.GenZone().RealNotCross(Zone);
-            if (notCross) return false;
+            var genZone = line.GenZone();
+            var notCross = genZone.RealNotCross(Zone);
+            if (notCross)
+            {
+#if DEBUG
+                Console.Out.WriteLine($"not cross zone {genZone} and {Zone}");
+#endif
+
+                return false;
+            }
 
             return (from aabbPackBoxShape in AaBbPackBox
-                let notCross2 = line.GenZone().RealNotCross(aabbPackBoxShape.Zone)
+                let notCross2 = genZone.RealNotCross(aabbPackBoxShape.Zone)
                 where !notCross2
                 select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
         }

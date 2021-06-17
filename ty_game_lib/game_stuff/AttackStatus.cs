@@ -48,7 +48,7 @@ namespace game_stuff
 
         public override string ToString()
         {
-            return $"MA:{MainAttack} SN:{ShardedNum} BS:{BackStabAdd}";
+            return $"攻击:{MainAttack} 破片:{ShardedNum} 额外背伤:{BackStabAdd}";
         }
 
         public void PassiveEffectChangeAtk(float[] passiveTrait,

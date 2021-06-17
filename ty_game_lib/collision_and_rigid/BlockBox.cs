@@ -6,6 +6,11 @@ namespace collision_and_rigid
 {
     public class BlockBox : IAaBbBox
     {
+        public override string ToString()
+        {
+            return $"{Shape} in {Zone}";
+        }
+
         public IBlockShape Shape { get; }
 
         public Quad? GetNextQuad()

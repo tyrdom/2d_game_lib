@@ -5,6 +5,7 @@ namespace collision_and_rigid
 {
     public interface IAaBbBox : IHaveAnchor
     {
+        public string ToString();
         public Quad? GetNextQuad();
         public IShape GetShape();
         public bool CanInteractive(TwoDPoint pos);

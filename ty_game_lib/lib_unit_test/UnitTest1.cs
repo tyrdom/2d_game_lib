@@ -20,7 +20,7 @@ namespace lib_unit_test
         [SetUp]
         public void Setup()
         {
-            rogue_game.RogueLocalConfig.LoadConfig();
+            RogueLocalConfig.LoadConfig();
         }
 
         [Test]
@@ -33,10 +33,20 @@ namespace lib_unit_test
         }
 
         [Test]
+        public void SightTest()
+        {
+            var sightMap = StuffLocalConfig.PerLoadMapConfig[1].SightMap;
+            var ss = sightMap?.Lines.ToString(0) ?? "";
+            var twoDVectorLine = new TwoDVectorLine(new TwoDPoint(9.8f, 7.2f), new TwoDPoint(2.5f, 15f));
+            var isBlockSightLine = sightMap?.IsBlockSightLine(twoDVectorLine) ?? false;
+            Assert.Pass(ss + "\n" + isBlockSightLine + "\n");
+        }
+
+        [Test]
         public void TestDir()
         {
             var currentDirectory = Environment.CurrentDirectory;
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 var x = currentDirectory.LastIndexOf("\\", StringComparison.Ordinal);
                 currentDirectory = currentDirectory[..x];

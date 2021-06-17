@@ -61,7 +61,7 @@ namespace game_stuff
 
         public override string ToString()
         {
-            return $"HP: {NowHp}/{MaxHp} AM: {NowArmor}/{MaxArmor} SD: {NowShield}/{MaxShield}r{NowDelayTick}";
+            return $"生命: {NowHp}/{MaxHp} 装甲: {NowArmor}/{MaxArmor} 护盾: {NowShield}/{MaxShield}延迟{NowDelayTick}";
         }
 
         public bool IsDead()
@@ -199,7 +199,7 @@ namespace game_stuff
         {
             GetHeal(regeneration.HealMulti, regenEffectStatus.HealEffect);
             FixArmor(regeneration.FixMulti, regenEffectStatus.FixEffect);
-            ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect,regenEffectStatus.ExtraChargeMulti);
+            ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect, regenEffectStatus.ExtraChargeMulti);
         }
 
         private void GetHeal(float regenerationHealMulti, float healMulti)
@@ -229,7 +229,7 @@ namespace game_stuff
         {
             SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
             var maxShield = (uint) (regenerationShieldMulti * MaxShield * chargeMulti);
-            NowShield = (uint) MathTools.Min(MaxShield*(1+extraChargeMulti),  maxShield);
+            NowShield = (uint) MathTools.Min(MaxShield * (1 + extraChargeMulti), NowShield + maxShield);
         }
 
 
@@ -394,7 +394,7 @@ namespace game_stuff
 
         private void ShieldValueRegen(int regen)
         {
-            NowShield = (uint) MathTools.Max(0,  (int) NowShield + regen);
+            NowShield = (uint) MathTools.Max(0, (int) NowShield + regen);
         }
 
         private void ArmorValueRegen(int regen)
@@ -404,13 +404,9 @@ namespace game_stuff
 
         private void HpValueRegen(int regen)
         {
-            if (regen < 0)
+            if (NowHp <= 0) return;
             {
-                NowHp = (uint) MathTools.Max(1, (int) NowHp + regen);
-            }
-            else if (regen > 0)
-            {
-                NowHp = (uint) MathTools.Min(MaxHp, (int) NowHp + regen);
+                NowHp = (uint) MathTools.Max(1, MathTools.Min(MaxHp, (int) NowHp + regen));
             }
         }
 

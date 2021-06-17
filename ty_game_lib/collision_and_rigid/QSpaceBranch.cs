@@ -37,6 +37,19 @@ namespace collision_and_rigid
 
         public Zone Zone { get; }
 
+        public string ToString(int level)
+        {
+            var s1 =
+                $"level:{level} Zone: {Zone} Quad {TheQuad} BlockBoxes:{AaBbPackBox.Aggregate("", (s, x) => s + "\n" + x)}";
+            var i = level + 1;
+            var s2 = QuadOne.ToString(i);
+            var s3 = QuadTwo.ToString(i);
+            var s4 = QuadThree.ToString(i);
+            var s5 = QuadFour.ToString(i);
+            var s6 = s1 + "\n" + s2 + "\n" + s3 + "\n" + s4 + "\n" + s5;
+            return s6;
+        }
+
         public HashSet<IAaBbBox> AaBbPackBox { get; private set; }
         public IQSpace QuadTwo { get; set; }
         public IQSpace QuadOne { get; set; }
@@ -339,13 +352,25 @@ namespace collision_and_rigid
 
         public bool LineIsBlockSight(TwoDVectorLine line)
         {
-            var notCross = line.GenZone().RealNotCross(Zone);
-            if (notCross) return false;
+            var genZone = line.GenZone();
+            var notCross = genZone.RealNotCross(Zone);
 
-            var lineIsBlockSight = (from aabbPackBoxShape in AaBbPackBox
-                let notCross2 = line.GenZone().RealNotCross(aabbPackBoxShape.Zone)
-                where !notCross2
-                select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
+
+            if (notCross)
+            {
+#if DEBUG
+                Console.Out.WriteLine($"not cross zone {genZone} and {Zone}");
+#endif
+                return false;
+            }
+
+
+            var lineIsBlockSight =
+                (from aabbPackBoxShape in AaBbPackBox
+                    let notCross2 = genZone.RealNotCross(aabbPackBoxShape.Zone)
+                    where !notCross2
+                    select line.IsSightBlockByWall(aabbPackBoxShape.GetShape())).Any(isTouchAnother => isTouchAnother);
+
 
             var isBlockSight = QuadOne.LineIsBlockSight(line) ||
                                QuadTwo.LineIsBlockSight(line) ||
@@ -547,7 +572,6 @@ namespace collision_and_rigid
             if (Zone.RealNotCross(zone))
             {
 #if DEBUG
-
                 Console.Out.WriteLine($"zone not cross so skip {zone} -- {Zone}");
 #endif
                 return;

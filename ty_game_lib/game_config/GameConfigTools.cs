@@ -13,8 +13,17 @@ using Newtonsoft.Json.Linq;
 using UnityEngine;
 #endif
 
+
 namespace game_config
 {
+    public interface IShowSchemeConfig
+    {
+        string Name { get; set; }
+        string icon { get; set; }
+
+        string Describe { get; set; }
+    }
+
     public static class GameConfigTools
 
 

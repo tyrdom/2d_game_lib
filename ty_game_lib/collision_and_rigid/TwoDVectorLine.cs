@@ -379,6 +379,9 @@ namespace collision_and_rigid
 
         public bool IsSightBlockByWall(TwoDVectorLine wall)
         {
+#if DEBUG
+            Console.Out.WriteLine($"this {this} vs wall {wall}");
+#endif
             var c = wall.A;
             var d = wall.B;
             var getposOnLineA = A.GetPosOf(wall);
@@ -388,7 +391,7 @@ namespace collision_and_rigid
             return getposOnLineA switch
                    {
                        Pt2LinePos.Left => getposOnLineB == Pt2LinePos.Right,
-
+                       // Pt2LinePos.Right => getposOnLineB == Pt2LinePos.Left,
                        _ => false
                    }
                    &&

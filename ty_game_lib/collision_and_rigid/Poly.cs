@@ -204,10 +204,10 @@ namespace collision_and_rigid
 
             var aabbBoxShapes = new List<TwoDVectorLine>();
 
-            for (var i = 0; i < pts.Length - 1; i++)
+            for (var i = 0; i < pts.Length; i++)
             {
                 var a = pts[i];
-                var bPoint = pts[i + 1];
+                var bPoint = pts[(i + 1) % pts.Length];
                 var line = new TwoDVectorLine(a, bPoint);
                 aabbBoxShapes.Add(line);
             }
