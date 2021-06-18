@@ -1676,6 +1676,11 @@ namespace game_stuff
 
             return false;
         }
+
+        public void ResetProtect()
+        {
+            NowProtectTick = 0;
+        }
     }
 
 

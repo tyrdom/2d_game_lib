@@ -531,6 +531,7 @@ namespace game_stuff
             //清除技能数据
             bodyCaster.ResetSnipe();
             bodyCaster.ResetCastAct();
+            bodyCaster.ResetProtect();
             //生成击中受击消息数据缓存
 
             bodyCaster.SetHitMark(
