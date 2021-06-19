@@ -25,7 +25,7 @@ namespace game_stuff
         int Stack { get; }
 
         ISaleStuff[] GetGood();
-
+        public ISaleStuff? GetTitleGood();
         int GetRestStack(int? gid);
     }
 

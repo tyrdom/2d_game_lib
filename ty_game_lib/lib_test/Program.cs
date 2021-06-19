@@ -46,7 +46,7 @@ namespace lib_test
                 RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody},
                     genCharacterBody).genByConfig;
 
-            genByConfig.ForceSpawnNpc();
+            // genByConfig.ForceSpawnNpc();
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
             var any = mapApplyDevices.Any(x => x.IsActive);
@@ -56,14 +56,14 @@ namespace lib_test
             var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
             genCharacterBody.CharacterStatus.FullAmmo();
 
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 1000; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(1f, 0f);
                 var operate = i < 50
                     ? new Operate(aim: dVector, snipeAction: SnipeAction.SnipeOn2)
-                    : new Operate(aim: dVector, skillAction: SkillAction.Op2);
+                    : new Operate(aim: dVector, move: dVector);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);
                 var opDic = new Dictionary<int, Operate>()
@@ -83,7 +83,20 @@ namespace lib_test
                 var mapChange = rogueGameGoTickResult.MapChange;
                 if (i % 5 == 0)
                 {
-                    genByConfig.GameConsoleGoATick(new Dictionary<int, IGameRequest>());
+                    var gameRequests = new Dictionary<int, IGameRequest>();
+#if DEBUG
+                      if (i % 30 == 0)
+                    {
+                        gameRequests[1] = new SkipChapter();
+                    }
+#endif
+                    var gameConsoleGoATick = genByConfig.GameConsoleGoATick(gameRequests);
+                    var goNextChapters = gameConsoleGoATick.OfType<PushChapterGoNext>().ToArray();
+                    if (goNextChapters.Any())
+                    {
+                        var pushChapterGoNext = goNextChapters.First();
+                        Console.Out.WriteLine($"go next {pushChapterGoNext.YSlotArray.Length}");
+                    }
                 }
 
                 var characterBodies = playerSee[1].OnChange.OfType<CharacterBody>();

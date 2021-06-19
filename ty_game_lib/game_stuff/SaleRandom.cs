@@ -26,12 +26,19 @@ namespace game_stuff
             var firstOrDefault = randomGood.FirstOrDefault().good.FirstOrDefault();
             if (firstOrDefault != null)
             {
-                Title = SaleStuffStandard.GetTitle(firstOrDefault);
+                Title = firstOrDefault.GetTitle();
             }
 
             Title = ContainType.PropC;
 
             DoneDictionary = new Dictionary<int, int>();
+        }
+
+        public ISaleStuff? GetTitleGood()
+        {
+            var s = CommonConfig.OtherConfig.RandShowItem;
+            
+            return GameItem.GenByConfig(s,1);
         }
 
         public int GetRestStack(int? gid)

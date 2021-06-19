@@ -118,5 +118,10 @@ namespace game_stuff
         {
             return new PassiveTrait(i, level, PassiveEffectStandard.GenById(i));
         }
+
+        public bool CanTitle()
+        {
+            return !CommonConfig.Configs.passives[PassId].CantTitle;
+        }
     }
 }

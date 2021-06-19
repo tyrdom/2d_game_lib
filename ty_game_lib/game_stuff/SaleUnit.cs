@@ -37,6 +37,19 @@ namespace game_stuff
             return Good;
         }
 
+        public ISaleStuff? GetTitleGood()
+        {
+            var firstOrDefault = Good.FirstOrDefault(x =>
+            {
+                return x switch
+                {
+                    PassiveTrait passiveTrait => passiveTrait.CanTitle(),
+                    _ => true
+                };
+            });
+            return firstOrDefault;
+        }
+
         public int GetRestStack(int? gid)
         {
             return SaleUnitStandard.GetRestStack(gid, this);

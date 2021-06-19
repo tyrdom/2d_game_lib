@@ -27,6 +27,13 @@ namespace rogue_game
             ExtraPassiveNum = extraPassiveNum;
         }
 
+#if DEBUG
+        public IGameResp SetPass(int callSeat, IGameRequest gameRequest)
+        {
+            Finish.ForceClear();
+            return new QuestOkResult(callSeat, gameRequest);
+        }
+#endif
         public bool IsPass()
         {
             return Finish.IsClear;

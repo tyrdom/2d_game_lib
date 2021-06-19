@@ -399,14 +399,15 @@ namespace game_stuff
 
         private void ArmorValueRegen(int regen)
         {
-            NowArmor = (uint) MathTools.Max(0, MathTools.Min(MaxArmor, (int) NowArmor + regen));
+            NowArmor = (uint) MathTools.Max(0,
+                MathTools.Min(MathTools.Max(NowArmor, MaxArmor), (int) NowArmor + regen));
         }
 
         private void HpValueRegen(int regen)
         {
             if (NowHp <= 0) return;
             {
-                NowHp = (uint) MathTools.Max(1, MathTools.Min(MaxHp, (int) NowHp + regen));
+                NowHp = (uint) MathTools.Max(1, MathTools.Min(MathTools.Max(NowHp, MaxHp), (int) NowHp + regen));
             }
         }
 

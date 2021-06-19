@@ -92,7 +92,8 @@ namespace rogue_game
             var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam, true, nowChapterExtraPassiveNum);
             Bosses = battleNpc.Select(x => x.Item2).IeToHashSet();
             var valueTuples = genBattleNpc.Union(battleNpc)
-                .Select(x => (x.simpleBot, x.battleNpc.CharacterBody, x.simpleBot.GetStartPt())).IeToHashSet();
+                .Select(x => (x.simpleBot, x.battleNpc.CharacterBody,
+                    x.simpleBot.GetStartPt() ?? PlayGround.GetEntrancePoint())).IeToHashSet();
             var battleNpcS = valueTuples.Select(x => x.simpleBot);
             botTeam.SetBots(battleNpcS);
             TeleportToThisMap(valueTuples.Select(x => (x.CharacterBody, x.Item3)));
@@ -175,5 +176,11 @@ namespace rogue_game
         {
             PlayGround.AddBodies(characterBodiesToPt);
         }
+#if DEBUG
+        public void ForceClear()
+        {
+            IsClear = true;
+        }
+#endif
     }
 }

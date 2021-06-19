@@ -138,5 +138,10 @@ namespace game_stuff
         {
             return Num;
         }
+
+        public static GameItem? GenByConfig(string o1, int num)
+        {
+            return o1.TryStringToEnum<item_id>(out var itemId) ? new GameItem(itemId, num) : (GameItem?) null;
+        }
     }
 }

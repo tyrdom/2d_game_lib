@@ -16,7 +16,15 @@ namespace rogue_game
     public readonly struct Leave : IGameRequest
     {
     }
+#if DEBUG
+    public readonly struct SkipChapter : IGameRequest
+    {
+    }
 
+    public readonly struct ForcePassChapter : IGameRequest
+    {
+    }
+#endif
     public readonly struct KickPlayer : IGameRequest
     {
         public KickPlayer(int seat)
@@ -126,16 +134,16 @@ namespace rogue_game
 
         private IGameResp GoNextChapter()
         {
-            NowPlayMap.TelePortOut();
             BotTeam.ClearBot();
+            ChapterCountDownTick = -1;
+            NowPlayMap.TelePortOut();
             var dequeue = ChapterIds.Dequeue();
             var (genByConfig, ySlotArray) = Chapter.GenChapterById(dequeue, Random);
             NowChapter = genByConfig;
             var nowChapterEntrance = NowChapter.Entrance;
-            var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
-            nowChapterEntrance.AddCharacterBodiesToStart(characterBodies);
             NowPlayMap = nowChapterEntrance;
-            ChapterCountDownTick = -1;
+            var characterBodies = NowGamePlayers.Values.Select(x => x.Player).ToArray();
+            NowPlayMap.AddCharacterBodiesToStart(characterBodies);
             var pushChapterGoNext = new PushChapterGoNext(ySlotArray);
             return pushChapterGoNext;
         }
@@ -166,10 +174,14 @@ namespace rogue_game
         }
 
 
-        private IGameResp DoGameRequest(int callSeat, IGameRequest gameRequest, ISet<IGameResp> collector)
+        private IGameResp DoGameRequest(int callSeat, IGameRequest gameRequest)
         {
             return gameRequest switch
             {
+#if DEBUG
+                SkipChapter _ => GoNextChapter(),
+                ForcePassChapter _ => NowChapter.SetPass(callSeat, gameRequest),
+#endif
                 GoNextChapter _ => ChapterCountDownTick > 0 ? GoNextChapter() : new QuestFail(callSeat),
                 KickPlayer kickPlayer => callSeat == PlayerLeaderGid && LeaveGame(kickPlayer.Seat)
                     ? (IGameResp) new QuestOkResult(callSeat, kickPlayer)
@@ -191,7 +203,7 @@ namespace rogue_game
             var gameRespSet = new HashSet<IGameResp>();
             var enumerable = gameRequests
                 .Select(
-                    x => DoGameRequest(x.Key, x.Value, gameRespSet)).ToArray();
+                    x => DoGameRequest(x.Key, x.Value)).ToArray();
             if (enumerable.Any())
             {
                 gameRespSet.UnionWith(enumerable);
@@ -212,6 +224,13 @@ namespace rogue_game
 
             if (NowChapter.IsPass())
             {
+                if (!ChapterIds.Any())
+                {
+                    var gameConsoleGoATick = new GameMsgPush(GamePushMsg.GameFinish);
+                    gameRespSet.Add(gameConsoleGoATick);
+                    return gameRespSet.ToImmutableHashSet();
+                }
+
                 ChapterCountDownTick = RogueLocalConfig.ChapterPassTick;
                 gameRespSet.Add(new GameMsgPush(GamePushMsg.ChapterPass));
                 return gameRespSet.ToImmutableHashSet();
@@ -331,6 +350,9 @@ namespace rogue_game
     {
         KickPlayer,
         Leave,
+#if DEBUG
+        ForcePassChapter,
+#endif
         RebornPlayer
     }
 
@@ -351,9 +373,12 @@ namespace rogue_game
             PlayerGid = playerGid;
             var gameRequestType = gameRequest switch
             {
-                KickPlayer kickPlayer => rogue_game.GameRequestType.KickPlayer,
-                Leave leave => rogue_game.GameRequestType.Leave,
-                RebornPlayer rebornPlayer => rogue_game.GameRequestType.RebornPlayer,
+                KickPlayer _ => GameRequestType.KickPlayer,
+                Leave _ => GameRequestType.Leave,
+                RebornPlayer _ => GameRequestType.RebornPlayer,
+#if DEBUG
+                ForcePassChapter _ => GameRequestType.ForcePassChapter,
+#endif
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
             };
 
@@ -390,5 +415,6 @@ namespace rogue_game
         GameFail,
         MapClear,
         ChapterPass,
+        GameFinish
     }
 }

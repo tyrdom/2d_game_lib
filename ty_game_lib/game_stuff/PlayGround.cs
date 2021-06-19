@@ -883,6 +883,12 @@ namespace game_stuff
             return false;
         }
 
+        public TwoDPoint GetEntrancePoint()
+        {
+            var twoDPoints = Entrance.First().Value.GenPt();
+            return twoDPoints;
+        }
+
         public void AddBodiesToStart(IEnumerable<CharacterBody> characterBodies)
         {
             var groupBy = characterBodies.GroupBy(x => x.Team);

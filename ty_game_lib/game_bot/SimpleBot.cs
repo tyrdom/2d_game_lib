@@ -498,7 +498,7 @@ namespace game_bot
             return characterStatusNowWeapon == okWeapon.weaponIndex ? (true, false) : (false, true);
         }
 
-        public TwoDPoint GetStartPt()
+        public TwoDPoint? GetStartPt()
         {
             var twoDPoint = PatrolCtrl.GetNowPt();
             return twoDPoint;

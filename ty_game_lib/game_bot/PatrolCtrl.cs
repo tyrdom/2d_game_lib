@@ -25,9 +25,10 @@ namespace game_bot
             Points = rawPoints.ToArray();
         }
 
-        public TwoDPoint GetNowPt()
+        public TwoDPoint? GetNowPt()
         {
-            return Points[NowToPt];
+            return       Points.Any() ? Points[NowToPt] : null;
+      
         }
 
 
