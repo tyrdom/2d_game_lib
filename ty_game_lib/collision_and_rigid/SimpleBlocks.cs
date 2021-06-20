@@ -72,12 +72,12 @@ namespace collision_and_rigid
                 select aabbBoxShape)
             {
 #if DEBUG
-                // Console.Out.WriteLine($"line {line.Log()} is cross zone ::{aabbBoxShape.Zone.LogSide()}");
+                Console.Out.WriteLine($"line {line} is cross zone ::{aabbBoxShape}");
 #endif
                 var b = aabbBoxShape.Shape switch
                 {
                     ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
-                    TwoDVectorLine blockLine => line.IsGoTrough(blockLine),
+                    TwoDVectorLine blockLine => line.CrossAnotherPointInLinesNotIncludeEnds(blockLine) != null,
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 if (b)
@@ -91,7 +91,7 @@ namespace collision_and_rigid
 
         public override string ToString()
         {
-            return GetBlockShapes().Aggregate("", (s, x) => s + x);
+            return GetBlockShapes().Aggregate("", (s, x) => s + "~" + x);
         }
 
         public bool Include(TwoDPoint pos)

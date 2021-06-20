@@ -33,7 +33,6 @@ namespace cov_path_navi
             if (!pathNodeCovPolygons.Any()) return new List<TwoDPoint>();
             var pathNodeCovPolygon = pathNodeCovPolygons.ChooseRandOne(random);
 
-
             var twoDPoints = new List<TwoDPoint> {pathNodeCovPolygon.GetCenterPt()};
             for (var i = 0; i < polyNum; i++)
             {
@@ -41,7 +40,10 @@ namespace cov_path_navi
                 if (any)
                 {
                     var chooseRandOne = pathNodeCovPolygon.Links.ChooseRandOne(random);
+                    var twoDPoint = chooseRandOne.GoThrough.GetMid();
+                    twoDPoints.Add(twoDPoint);
                     pathNodeCovPolygon = PolygonsTop[chooseRandOne.LinkToPathNodeId];
+
                     twoDPoints.Add(pathNodeCovPolygon.GetCenterPt());
                     continue;
                 }
@@ -142,7 +144,7 @@ namespace cov_path_navi
                 twoDPoints.Add(end);
                 return twoDPoints;
             }
-            
+
             var vectorLine = twoDVectorLines.First();
             var rightSidePt = vectorLine.GetStartPt();
             var leftSidePt = vectorLine.GetEndPt();
