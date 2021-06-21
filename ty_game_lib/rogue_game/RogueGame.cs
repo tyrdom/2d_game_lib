@@ -136,6 +136,11 @@ namespace rogue_game
         {
             BotTeam.ClearBot();
             ChapterCountDownTick = -1;
+            if (!ChapterIds.Any())
+            {
+                return new GameMsgPush(GamePushMsg.GameFinish);
+            }
+
             NowPlayMap.TelePortOut();
             var dequeue = ChapterIds.Dequeue();
             var (genByConfig, ySlotArray) = Chapter.GenChapterById(dequeue, Random);
