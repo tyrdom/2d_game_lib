@@ -38,7 +38,8 @@ namespace cov_path_navi
                 LinksAndMirrorLine.ToDictionary(x => x.link.GoThrough,
                     x => new CutIncompleteLink(x.link, x.mirror));
 #if DEBUG
-            Console.Out.WriteLine("new ContinuousWalkArea about to cut ");
+            Console.Out.WriteLine(
+                $"new ContinuousWalkArea about to cut {Area.Aggregate("", (s, x) => s + "~" + x.GetEndPt())}");
 #endif
             var pathNodeCovPolygons = new List<PathNodeCovPolygon>();
             nowOnId += 1;
@@ -65,7 +66,7 @@ namespace cov_path_navi
 
                 // CheckFirstLineCross(area, lfc1, rfc1);
 
-                GetACovInArea(ref lfc1, ref rfc1, area, true, true, ref inALine1, false, areaSimpleBlocks);
+                GetACovInArea(ref lfc1, ref rfc1, area, true, true, ref inALine1, true, areaSimpleBlocks);
 
                 if (lfc1 == -1)
                 {
@@ -111,9 +112,9 @@ namespace cov_path_navi
                 incompleteLinks[restS] = restIncomplete;
                 incompleteLinks[covS] = covSIncomplete;
 #if DEBUG
-                var aggregate = covShape.Aggregate("", (s, x) => s + x.ToString() + "\n");
+                var aggregate = covShape.Aggregate("", (s, x) => s + x.GetEndPt() + "=").Replace('|', '=');
 
-                var aggregate2 = rest.Aggregate("", (s, x) => s + x.ToString() + "\n");
+                var aggregate2 = rest.Aggregate("", (s, x) => s + x.GetEndPt() + "=").Replace('|', '=');
                 Console.Out.WriteLine(
                     $"cut to 2 part \n {aggregate}\n and \n{aggregate2} \n  , and go to find next cov");
 #endif
@@ -175,7 +176,7 @@ namespace cov_path_navi
                 var rightLine = area[ri].AsTwoDVectorLine();
 
 #if DEBUG
-                Console.Out.WriteLine($"l::{li} r::{ri}\n");
+                Console.Out.WriteLine($"l::{li} r::{ri} all {area.Count}\n");
                 Console.Out.WriteLine($" l is {leftLine} m r is {rightLine}\n");
 #endif
                 if (right && rCanGo)
@@ -184,17 +185,25 @@ namespace cov_path_navi
                     var areaCount = (ri + 1) % area.Count;
                     var nextR = area[areaCount];
                     var twoDPoint = nextR.GetEndPt();
+
+                    var (covShape, restShape, _, _) = CutTo2Part(area.ToList(), areaCount, li);
+                    var simpleBlocks = new SimpleBlocks(covShape);
+                    var twoDPoints = restShape.Select(x => x.GetEndPt())
+                        .ToArray();
+                    var any = !twoDPoints.Any(simpleBlocks.PtRealInShape);
 #if DEBUG
-                    Console.Out.WriteLine($"next pt {twoDPoint}");
+                    var aggregate = twoDPoints.Aggregate("rest", (s, x) => s + ":" + x);
+                    Console.Out.WriteLine($"rest points {aggregate}");
 #endif
-                    var (_, restShape, _, _) = CutTo2Part(area.ToList(), li, areaCount);
-                    var twoDPoints = restShape.Select(x => x.GetEndPt()).ToList();
-                    var canGo = CanGo(leftLine, rightLine, twoDPoint, ref inALine, blocks, true, twoDPoints);
+
+#if DEBUG
+                    Console.Out.WriteLine($"next pt {twoDPoint} is not in cut {any}");
+#endif
+                    var canGo = any && CanGo(leftLine, rightLine, twoDPoint, ref inALine, blocks, true);
                     if (canGo) ri = areaCount;
 
-                    var lCanGo1 = lCanGo;
                     rCanGo = canGo;
-                    right = !lCanGo1;
+                    right = !lCanGo;
                     // Console.Out.WriteLine($"go right {ri} {rCanGo}");
                     continue;
                 }
@@ -207,19 +216,27 @@ namespace cov_path_navi
                     var nextL = area[areaCount];
 
                     var twoDPoint = nextL.GetStartPt();
-#if DEBUG
-                    Console.Out.WriteLine($"next pt {twoDPoint}");
-#endif
-                    var (_, restShape, _, _) = CutTo2Part(area.ToList(), areaCount, ri);
-                    var twoDPoints = restShape.Select(x => x.GetEndPt()).ToList();
 
-                    var canGo = CanGo(rightLine, leftLine, twoDPoint, ref inALine, blocks, false, twoDPoints);
+                    var (covShape, restShape, _, _) = CutTo2Part(area.ToList(), ri, areaCount);
+                    var simpleBlocks = new SimpleBlocks(covShape);
+                    var twoDPoints = restShape.Select(x => x.GetEndPt())
+                        .ToArray();
+                    var any = !twoDPoints.Any(x => simpleBlocks.PtRealInShape(x));
+#if DEBUG
+                    var aggregate = twoDPoints.Aggregate("rest", (s, x) => s + ":" + x);
+                    Console.Out.WriteLine($"rest points {aggregate}");
+#endif
+
+#if DEBUG
+                    Console.Out.WriteLine(
+                        $"next pt {twoDPoint} rest point is not in cut {li} {areaCount} \n{simpleBlocks} \n re {any}");
+#endif
+                    var canGo = any && CanGo(rightLine, leftLine, twoDPoint, ref inALine, blocks, false);
 
                     if (canGo) li = areaCount;
 
-                    var rCanGo1 = rCanGo;
                     lCanGo = canGo;
-                    right = rCanGo1;
+                    right = rCanGo;
                     // Console.Out.WriteLine($"go left {li} {lCanGo}");
 
                     continue;
@@ -234,28 +251,28 @@ namespace cov_path_navi
         }
 
         private static bool CanGo(TwoDVectorLine otherLine, TwoDVectorLine thisLine, TwoDPoint next, ref bool aLine,
-            SimpleBlocks simpleBlocks, bool goRight, IEnumerable<TwoDPoint> twoDPoints)
+            SimpleBlocks simpleBlocks, bool goRight)
         {
-            var leftNPos = next.GetPosOf(thisLine);
+            var nPos = next.GetPosOf(thisLine);
             var same = next.Same(goRight ? thisLine.GetEndPt() : thisLine.GetStartPt());
-            var lCov = leftNPos != Pt2LinePos.Right;
+            var lCov = nPos != Pt2LinePos.Right;
 
             var notOver = next.GetPosOf(otherLine) != Pt2LinePos.Right;
 
-            var twoDVectorLine = goRight
+            var line = goRight
                 ? new TwoDVectorLine(next, otherLine.GetStartPt())
                 : new TwoDVectorLine(otherLine.GetEndPt(), next);
 
-            // var lineCross = simpleBlocks.LineCross(twoDVectorLine);
-
-            var all = twoDPoints.All(x => x.GetPosOf(twoDVectorLine) != Pt2LinePos.Left);
-            var canGo = lCov && notOver && all;
-            aLine = canGo ? leftNPos == Pt2LinePos.On && !same && aLine : aLine;
+            var lineCross = simpleBlocks.LineCross(line);
+            var twoDPoint = line.GetMid();
+            var include = simpleBlocks.Include(twoDPoint);
+            var canGo = lCov && notOver && !lineCross && include;
+            aLine = canGo ? nPos == Pt2LinePos.On && !same && aLine : aLine;
 #if DEBUG
             Console.Out.WriteLine(
-                $"{simpleBlocks} \nvs{twoDVectorLine} \n  ");
+                $"{simpleBlocks} \nvs{line} \n  ");
             Console.Out.WriteLine(
-                $"can go {canGo}:left1 {lCov} left2 {notOver} all {all}\n");
+                $"can go {canGo}:left1 {lCov} left2 {notOver}  not cross {!lineCross} include {include}\n");
             Console.Out.WriteLine($"in a line ? {aLine} go right? {goRight}");
 #endif
             return canGo;

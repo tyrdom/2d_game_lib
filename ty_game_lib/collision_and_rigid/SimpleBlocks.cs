@@ -77,7 +77,7 @@ namespace collision_and_rigid
                 var b = aabbBoxShape.Shape switch
                 {
                     ClockwiseTurning blockClockwiseTurning => blockClockwiseTurning.IsCross(line),
-                    TwoDVectorLine blockLine => line.CrossAnotherPointInLinesNotIncludeEnds(blockLine) != null,
+                    TwoDVectorLine blockLine => blockLine.IsCrossAnother(line),
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 if (b)

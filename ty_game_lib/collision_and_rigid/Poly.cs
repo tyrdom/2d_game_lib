@@ -7,12 +7,12 @@ namespace collision_and_rigid
 {
     public class Poly
     {
-        public Poly(TwoDPoint[] pts)
+        public Poly(TwoDPoint[] pts, bool needCheck = true)
         {
-            if (pts.Length >= 3 && !CheckCross(pts) && CheckNoSame(pts))
+            if (!needCheck || (pts.Length >= 3 && !CheckCross(pts) && CheckNoSame(pts)))
                 Pts = pts;
             else
-                throw new ArgumentOutOfRangeException(pts.Aggregate("", (s, point) => s + " " + point));
+                throw new ArgumentOutOfRangeException(pts.Aggregate("no good pts", (s, point) => s + " " + point));
         }
 
 
@@ -91,15 +91,17 @@ namespace collision_and_rigid
             return new Poly(twoDPoints);
         }
 
-
+//找x上最大点
         public int GetACovPointNum()
         {
             var n = 0;
             var pt = Pts[0];
             var f = pt.X;
+            var f2 = pt.Y;
             foreach (var i in Enumerable.Range(0, Pts.Length))
             {
-                var x = Pts[i].X;
+                var twoDPoint = Pts[i];
+                var x = twoDPoint.X;
                 if (x < f) continue;
                 n = i;
                 f = x;
@@ -109,21 +111,32 @@ namespace collision_and_rigid
             return n;
         }
 
-        public bool IsFlush()
+        public bool IsClockwise()
         {
             var n = GetACovPointNum();
 
             var ptsLength = Pts.Length;
+
             var m = (n + ptsLength - 1) % ptsLength;
+
+            var point = Pts[m];
+            var dPoint = Pts[n];
+            while (dPoint.Same(point))
+            {
+                m = (m + ptsLength - 1) % ptsLength;
+                dPoint = Pts[m];
+            }
+
+            var twoDVectorLine1 = new TwoDVectorLine(point, dPoint);
             var o = (n + 1) % ptsLength;
-            var twoDVectorLine1 = new TwoDVectorLine(Pts[m], Pts[n]);
-            var pt2LinePos = Pts[o].GetPosOf(twoDVectorLine1);
+            var twoDPoint = Pts[o];
+            var pt2LinePos = twoDPoint.GetPosOf(twoDVectorLine1);
             return pt2LinePos switch
             {
                 Pt2LinePos.Right => true,
-                Pt2LinePos.On => throw new ArgumentOutOfRangeException(),
                 Pt2LinePos.Left => false,
-                _ => throw new ArgumentOutOfRangeException()
+                Pt2LinePos.On => throw new ArgumentOutOfRangeException($"{twoDPoint} is On {twoDVectorLine1}"),
+                _ => false
             };
         }
 
@@ -136,7 +149,7 @@ namespace collision_and_rigid
                 .ToArray();
             var pp = new Poly(dPoints);
 
-            var isFlush = pp.IsFlush();
+            var isFlush = pp.IsClockwise();
 
             if (!isFlush)
             {
