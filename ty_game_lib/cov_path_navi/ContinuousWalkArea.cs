@@ -39,7 +39,7 @@ namespace cov_path_navi
                     x => new CutIncompleteLink(x.link, x.mirror));
 #if DEBUG
             Console.Out.WriteLine(
-                $"new ContinuousWalkArea about to cut {Area.Aggregate("", (s, x) => s + "~" + x.GetEndPt())}");
+                $"new ContinuousWalkArea about to cut {Area.Aggregate("", (s, x) => s + "=" + x.GetEndPt()).Replace('|', '=')}");
 #endif
             var pathNodeCovPolygons = new List<PathNodeCovPolygon>();
             nowOnId += 1;
@@ -187,7 +187,7 @@ namespace cov_path_navi
                     var twoDPoint = nextR.GetEndPt();
 
                     var (covShape, restShape, _, _) = CutTo2Part(area.ToList(), areaCount, li);
-                    var simpleBlocks = new SimpleBlocks(covShape);
+                    var simpleBlocks = new SimpleBlocks(covShape.Select(x => x.AsTwoDVectorLine()));
                     var twoDPoints = restShape.Select(x => x.GetEndPt())
                         .ToArray();
                     var any = !twoDPoints.Any(simpleBlocks.PtRealInShape);
@@ -218,7 +218,7 @@ namespace cov_path_navi
                     var twoDPoint = nextL.GetStartPt();
 
                     var (covShape, restShape, _, _) = CutTo2Part(area.ToList(), ri, areaCount);
-                    var simpleBlocks = new SimpleBlocks(covShape);
+                    var simpleBlocks = new SimpleBlocks(covShape.Select(x => x.AsTwoDVectorLine()));
                     var twoDPoints = restShape.Select(x => x.GetEndPt())
                         .ToArray();
                     var any = !twoDPoints.Any(x => simpleBlocks.PtRealInShape(x));
