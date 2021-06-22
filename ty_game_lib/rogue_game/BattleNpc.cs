@@ -9,12 +9,14 @@ namespace rogue_game
 {
     public class BattleNpc
     {
-        public BattleNpc(CharacterBody characterBody, WantedBonus wantedBonus)
+        private BattleNpc(CharacterBody characterBody, WantedBonus wantedBonus, int npcId)
         {
             CharacterBody = characterBody;
             WantedBonus = wantedBonus;
+            NpcId = npcId;
         }
 
+        public int NpcId { get; }
         public CharacterBody CharacterBody { get; }
         public WantedBonus WantedBonus { get; }
 
@@ -84,7 +86,7 @@ namespace rogue_game
             var mapInteractable = canPutInMapInteractable?.PutInteractable(TwoDPoint.Zero(), true);
 
             var wantedBonus = new WantedBonus(array, gameItems, mapInteractable);
-            var genByConfig = new BattleNpc(genCharacterBody, wantedBonus);
+            var genByConfig = new BattleNpc(genCharacterBody, wantedBonus, battleNpc.id);
             var battleNpcBotId = battleNpc.botId;
 
             var b = battleNpc.botId == 0;

@@ -520,7 +520,7 @@ namespace collision_and_rigid
         public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter)
         {
             var firstOrDefault =
-                AaBbPackBox.FirstOrDefault(x => x.CanInteractive(pos));
+                AaBbPackBox.FirstOrDefault(x => filter == null || filter(x) && x.CanInteractive(pos));
             if (firstOrDefault != null)
             {
                 return firstOrDefault;

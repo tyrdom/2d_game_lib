@@ -309,8 +309,8 @@ namespace collision_and_rigid
 
         public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter)
         {
-            return AaBbPackBox.FirstOrDefault(x => x.CanInteractive(pos) &&
-                                                   (filter == null || filter(x)));
+            return AaBbPackBox.FirstOrDefault(x => (filter == null || filter(x)) &&
+                                                   x.CanInteractive(pos));
         }
 
         public void InsertBlockBox(BlockBox box)
@@ -438,8 +438,8 @@ namespace collision_and_rigid
             var qs2 = new QSpaceLeaf(Quad.Two, null, zones[1], two);
             var qs3 = new QSpaceLeaf(Quad.Three, null, zones[2], three);
             var qs4 = new QSpaceLeaf(Quad.Four, null, zones[3], four);
-            if (zone.Count >= AaBbPackBox.Count || one.Count >= AaBbPackBox.Count ||two.Count >= AaBbPackBox.Count 
-                ||four.Count >= AaBbPackBox.Count ||zone.Count >= AaBbPackBox.Count )
+            if (zone.Count >= AaBbPackBox.Count || one.Count >= AaBbPackBox.Count || two.Count >= AaBbPackBox.Count
+                || four.Count >= AaBbPackBox.Count || zone.Count >= AaBbPackBox.Count)
             {
 #if DEBUG
                 Console.Out.WriteLine("not less box in leaf dont go on");
