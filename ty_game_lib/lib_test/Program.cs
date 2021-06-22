@@ -37,14 +37,14 @@ namespace lib_test
             var characterInitData4 =
                 CharacterInitData.GenPlayerByConfig(5, 1, new[] {weapon_id.test_sword}, size.small, 1);
 
-            var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
-            var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
-            var body = characterInitData2.GenCharacterBody(TwoDPoint.Zero());
-            var body1 = characterInitData3.GenCharacterBody(TwoDPoint.Zero());
-            var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
+            // var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
+            // var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
+            // var body = characterInitData2.GenCharacterBody(TwoDPoint.Zero());
+            // var body1 = characterInitData3.GenCharacterBody(TwoDPoint.Zero());
+            // var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterBody> {genCharacterBody, characterBody},
-                    genCharacterBody).genByConfig;
+                RogueGame.GenByConfig(new HashSet<CharacterInitData> {genPlayerByConfig, characterInitData},
+                    1).genByConfig;
 
             // genByConfig.ForceSpawnNpc();
 #if DEBUG
@@ -52,9 +52,9 @@ namespace lib_test
             var any = mapApplyDevices.Any(x => x.IsActive);
             // Console.Out.WriteLine($"~~~!!~~~{any}~~!!~~{mapApplyDevices.Count}");
 #endif
-            var genById = SimpleBot.GenById(1, characterBody, new Random(), null);
-            var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
-            genCharacterBody.CharacterStatus.FullAmmo();
+            // var genById = SimpleBot.GenById(1, characterBody, new Random(), null);
+            // var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
+            // genCharacterBody.CharacterStatus.FullAmmo();
 
             for (var i = 0; i < 1000; i++)
             {
@@ -79,15 +79,15 @@ namespace lib_test
                 var immutableHashSet = hitSomething.TryGetValue(2, out var enumerable1)
                     ? enumerable1
                     : ImmutableHashSet<IHitMsg>.Empty;
-                genById.BotSimpleGoATick(canBeEnemies, immutableHashSet, null);
+                // genById.BotSimpleGoATick(canBeEnemies, immutableHashSet, null);
                 var mapChange = rogueGameGoTickResult.MapChange;
                 if (i % 5 == 0)
                 {
                     var gameRequests = new Dictionary<int, IGameRequest>();
 #if DEBUG
-                      if (i % 30 == 0)
+                    if (i % 30 == 0)
                     {
-                        gameRequests[1] = new SkipChapter();
+                        gameRequests[1] = new ResetGame();
                     }
 #endif
                     var gameConsoleGoATick = genByConfig.GameConsoleGoATick(gameRequests);

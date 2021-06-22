@@ -39,6 +39,13 @@ namespace game_stuff
 
     public readonly struct PlayGroundGoTickResult
     {
+        public static PlayGroundGoTickResult Empty = new PlayGroundGoTickResult(
+            ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>.Empty,
+            ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>>.Empty,
+            ImmutableDictionary<int, PlayerTickSee>.Empty,
+            ImmutableDictionary<int, ImmutableArray<IToOutPutResult>>.Empty);
+
+
         public PlayGroundGoTickResult(ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>> characterGidBeHit,
             ImmutableDictionary<int, ImmutableDictionary<int, ImmutableHashSet<IRelationMsg>>> trapGidTidBeHit,
             ImmutableDictionary<int, PlayerTickSee> playerSee,

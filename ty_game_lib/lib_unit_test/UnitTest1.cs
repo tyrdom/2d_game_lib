@@ -113,7 +113,7 @@ namespace lib_unit_test
         public void RGameInitTest()
         {
             var characterBodies = Players();
-            var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First());
+            var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First().Gid);
             Assert.Pass(genByConfig.genByConfig.PlayerLeaderGid.ToString());
         }
 
@@ -151,11 +151,11 @@ namespace lib_unit_test
             Assert.Pass($"fin");
         }
 
-        private static HashSet<CharacterBody> Players()
+        private static HashSet<CharacterInitData> Players()
         {
             var characterInitDataS = new[] {TestStuff.TestPlayer1(), TestStuff.TestPlayer2()};
-            var characterBodies = characterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero()));
-            return characterBodies.IeToHashSet();
+
+            return characterInitDataS.IeToHashSet();
         }
 
         private static HashSet<IBlockShape>? ABlock()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using collision_and_rigid;
 using game_bot;
 using game_config;
 using game_stuff;
@@ -9,101 +10,98 @@ using rogue_chapter_maker;
 
 namespace rogue_game
 {
-    public readonly struct GoNextChapter : IGameRequest
-    {
-    }
-
-    public readonly struct Leave : IGameRequest
-    {
-    }
-#if DEBUG
-    public readonly struct SkipChapter : IGameRequest
-    {
-    }
-
-    public readonly struct ForcePassChapter : IGameRequest
-    {
-    }
-#endif
-    public readonly struct KickPlayer : IGameRequest
-    {
-        public KickPlayer(int seat)
-        {
-            Seat = seat;
-        }
-
-        public int Seat { get; }
-    }
-
-    public readonly struct RebornPlayer : IGameRequest
-    {
-        public RebornPlayer(int seat)
-        {
-            Seat = seat;
-        }
-
-        public int Seat { get; }
-    }
-
-    public interface IGameRequest
-    {
-    }
-
     public class RogueGame
     {
         public BotTeam BotTeam { get; }
-        private Queue<int> ChapterIds { get; }
+        private Queue<int> ChapterIds { get; set; }
         private Chapter NowChapter { get; set; }
-        public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; }
+        public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; set; }
         public int RebornCountDownTick { get; set; }
 
+        public bool Pause { get; set; }
         public int ChapterCountDownTick { get; set; }
         public GameItem[] RebornCost { get; }
         public int PlayerLeaderGid { get; private set; }
 
         public PveMap NowPlayMap { get; private set; }
 
-        public bool NeedCheckClear { get; set; }
-        public Random Random { get; }
+        private bool NeedCheckClear { get; set; }
+
+        private bool OnReset { get; set; } = false;
+        private Random Random { get; }
 
 
         public static (RogueGame genByConfig, ImmutableHashSet<IGameResp> gameResps) GenByConfig(
-            HashSet<CharacterBody> characterBodies,
-            CharacterBody leader)
+            HashSet<CharacterInitData> characterBodies,
+            int leaderId)
         {
-            var gameResps = new HashSet<IGameResp>();
-            var otherConfig = CommonConfig.OtherConfig;
-            var otherConfigRogueChapters = otherConfig.RogueChapters;
-            var genByConfig = new RogueGame(characterBodies, leader.GetId(), otherConfigRogueChapters,
+            var gameRespS = new HashSet<IGameResp>();
+
+
+            var genByConfig = new RogueGame(characterBodies, leaderId,
                 out var ySlotArray);
             var pushChapterGoNext = new PushChapterGoNext(ySlotArray);
-            gameResps.Add(pushChapterGoNext);
-            return (genByConfig, gameResps.ToImmutableHashSet());
+            gameRespS.Add(pushChapterGoNext);
+            return (genByConfig, gameRespS.ToImmutableHashSet());
         }
 
-        private RogueGame(HashSet<CharacterBody> characterBodies, int playerLeader, IEnumerable<int> chapterIds,
+        private RogueGame(HashSet<CharacterInitData> characterBodies, int playerLeader,
             out (int x, MapType MapType, int GId)[][] ySlotArray)
         {
-            ChapterIds =
-                chapterIds
-                    .Aggregate(new Queue<int>(), (ints, i) =>
-                    {
-                        ints.Enqueue(i);
-                        return ints;
-                    });
+            CharacterInitDataS = characterBodies;
+            var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
+            LoadChapterIds();
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
+            if (ChapterIds == null) throw new Exception("no ChapterIds");
             var (genByConfig, valueTuples) = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
             NowChapter = genByConfig;
             ySlotArray = valueTuples;
-            NowGamePlayers = characterBodies.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
+            NowGamePlayers = enumerable.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
             RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             ChapterCountDownTick = -1;
             PlayerLeaderGid = playerLeader;
             NowPlayMap = NowChapter.Entrance;
             BotTeam = new BotTeam();
-            NowChapter.Entrance.AddCharacterBodiesToStart(characterBodies);
+            NowChapter.Entrance.AddCharacterBodiesToStart(enumerable);
             NeedCheckClear = true;
+            Pause = false;
+        }
+
+        private IGameResp ResetRogueGame()
+        {
+            Pause = true;
+            BotTeam.ClearBot();
+            NowPlayMap.TelePortOut();
+            LoadChapterIds();
+            var (genByConfig, valueTuples) = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
+            NowChapter = genByConfig;
+            var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
+            NowGamePlayers = enumerable.ToDictionary(x => x.GetId(), x => new RogueGamePlayer(x));
+            RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
+            ChapterCountDownTick = -1;
+            NowPlayMap = NowChapter.Entrance;
+            NowChapter.Entrance.AddCharacterBodiesToStart(enumerable);
+            NeedCheckClear = true;
+            var pushChapterGoNext = new PushChapterGoNext(valueTuples);
+            Pause = false;
+            OnReset = true;
+            return pushChapterGoNext;
+        }
+
+        private HashSet<CharacterInitData> CharacterInitDataS { get; }
+
+        private void LoadChapterIds()
+        {
+            var otherConfig = CommonConfig.OtherConfig;
+            var otherConfigRogueChapters = otherConfig.RogueChapters;
+            ChapterIds =
+                otherConfigRogueChapters
+                    .Aggregate(new Queue<int>(), (ints, i) =>
+                    {
+                        ints.Enqueue(i);
+                        return ints;
+                    });
         }
 
         private bool Reborn(int seat, int toSeat)
@@ -183,6 +181,8 @@ namespace rogue_game
         {
             return gameRequest switch
             {
+                ResetGame _ => callSeat == PlayerLeaderGid ? ResetRogueGame() : new QuestFail(callSeat),
+                Pause _ => PauseOrUnPauseGame(callSeat, gameRequest),
 #if DEBUG
                 SkipChapter _ => GoNextChapter(),
                 ForcePassChapter _ => NowChapter.SetPass(callSeat, gameRequest),
@@ -201,6 +201,15 @@ namespace rogue_game
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
             };
         }
+
+        private IGameResp PauseOrUnPauseGame(int callSeat, IGameRequest gameRequest)
+        {
+            Pause = !Pause;
+
+            var questOkResult = new QuestOkResult(callSeat, gameRequest);
+            return questOkResult;
+        }
+
 
         // rogue游戏控制台包含核心玩法外的规则，应该与玩法异步运行
         public ImmutableHashSet<IGameResp> GameConsoleGoATick(Dictionary<int, IGameRequest> gameRequests)
@@ -265,6 +274,17 @@ namespace rogue_game
         // roguelike接入核心玩法，
         public RogueGameGoTickResult GamePlayGoATick(Dictionary<int, Operate> opDic)
         {
+            if (Pause)
+            {
+                return RogueGameGoTickResult.Empty;
+            }
+
+            if (OnReset)
+            {
+                OnReset = false;
+                return RogueGameGoTickResult.Empty2;
+            }
+
             foreach (var botTeamTempOpThink in BotTeam.TempOpThinks.Where(botTeamTempOpThink =>
                 botTeamTempOpThink.Value.Operate != null))
             {
@@ -334,8 +354,12 @@ namespace rogue_game
         }
     }
 
+
     public readonly struct RogueGameGoTickResult
     {
+        public static RogueGameGoTickResult Empty = new RogueGameGoTickResult(PlayGroundGoTickResult.Empty, false);
+        public static RogueGameGoTickResult Empty2 = new RogueGameGoTickResult(PlayGroundGoTickResult.Empty, true);
+
         public RogueGameGoTickResult(PlayGroundGoTickResult playGroundGoTickResult, bool mapChange)
         {
             PlayGroundGoTickResult = playGroundGoTickResult;
