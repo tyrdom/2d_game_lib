@@ -142,11 +142,12 @@ namespace game_stuff
 
     public class HitMark : ICharEvent
     {
-        public HitMark(TwoDVector twoDVectorByPt)
+        public HitMark(TwoDVector twoDVectorByPt, bullet_id bulletId)
         {
             HitDirV = twoDVectorByPt;
+            BulletId = bulletId;
         }
-
+public bullet_id BulletId { get; }
         public TwoDVector HitDirV { get; }
     }
 

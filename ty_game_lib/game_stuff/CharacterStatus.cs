@@ -1479,9 +1479,9 @@ namespace game_stuff
         }
 
         public void AbsorbRangeBullet(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
-            float damageMulti, bool back)
+            float damageMulti, bool back, bullet_id bulletId)
         {
-            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos));
+            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId);
             var pa = GetProtectAbsorb();
             var valueAdd = (int) (protectValueAdd * (1 + pa));
             AddProtect(valueAdd);
@@ -1509,12 +1509,12 @@ namespace game_stuff
         }
 
         public DmgShow? BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
-            float damageMulti, bool back)
+            float damageMulti, bool back, bullet_id bulletId)
         {
             ResetSpeed();
             ResetSnipe();
             ResetCastAct();
-            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos));
+            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId);
 
 
             if (CatchingWho != null)
@@ -1620,12 +1620,12 @@ namespace game_stuff
             return NowSnipeStep;
         }
 
-        public void SetHitMark(TwoDVector twoDVectorByPt)
+        public void SetHitMark(TwoDVector twoDVectorByPt, bullet_id bulletId)
         {
 #if DEBUG
             Console.Out.WriteLine($"gid:{GId} be hit form {twoDVectorByPt}");
 #endif
-            var hitMark = new HitMark(twoDVectorByPt);
+            var hitMark = new HitMark(twoDVectorByPt, bulletId);
             CharEvents.Add(hitMark);
         }
 

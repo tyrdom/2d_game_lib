@@ -393,14 +393,16 @@ namespace game_stuff
 
                 // 被击中方基本状态改变 包括伤害
                 var dmgShow =
-                    targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back);
+                    targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back,
+                        BulletId);
 
                 //stun buff方面
                 var antiActBuffConfig = SuccessStunBuffConfigToOpponent[targetCharacterBodyBodySize];
 
                 void InitBuff()
                 {
-                    targetCharacterStatus.SetPauseTick(MathTools.Max((int)PauseToOpponent, targetCharacterStatus.PauseTick));
+                    targetCharacterStatus.SetPauseTick(MathTools.Max((int) PauseToOpponent,
+                        targetCharacterStatus.PauseTick));
 #if DEBUG
                     Console.Out.WriteLine($"bullet hit!! target pause tick {targetCharacterStatus.PauseTick}");
 #endif
@@ -471,7 +473,7 @@ namespace game_stuff
                             case hit_type.range:
 
                                 targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
-                                    DamageMulti, back);
+                                    DamageMulti, back, BulletId);
                                 break;
                             case hit_type.melee:
                                 CharAtkFail(characterStatus, targetCharacterStatus, isActSkill,
@@ -535,7 +537,7 @@ namespace game_stuff
             //生成击中受击消息数据缓存
 
             bodyCaster.SetHitMark(
-                TwoDVector.TwoDVectorByPt(bodyCaster.GetPos(), targetCharacterStatus.GetPos()));
+                TwoDVector.TwoDVectorByPt(bodyCaster.GetPos(), targetCharacterStatus.GetPos()), BulletId);
 
 
             if (!isActSkill) // 说明目标不在攻击状态 通过特定配置读取
