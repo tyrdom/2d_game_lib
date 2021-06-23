@@ -411,6 +411,9 @@ namespace collision_and_rigid
                 var (i, aabbBoxShape1) = intTBoxShapes;
                 switch (i)
                 {
+                    case -1:
+                        zone.Add(aabbBoxShape1);
+                        break;
                     case 0:
                         zone.Add(aabbBoxShape1);
                         break;

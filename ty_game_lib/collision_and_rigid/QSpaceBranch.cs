@@ -393,6 +393,9 @@ namespace collision_and_rigid
                 var (item1, item2) = splitByQuad;
                 switch (item1)
                 {
+                    case -1:
+                        AaBbPackBox.Add(item2);
+                        break;
                     case 0:
                         AaBbPackBox.Add(item2);
                         break;
