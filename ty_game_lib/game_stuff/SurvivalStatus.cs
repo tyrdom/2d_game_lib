@@ -282,12 +282,12 @@ namespace game_stuff
             //     throw new Exception($"no good array : {aggregate}:: {v.Length}");
             // }
 
-            var lossHp = MaxHp - NowHp;
+            var lossHp = MaxHp < NowHp ? 0 : MaxHp - NowHp;
             MaxHp = (uint) MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
 
             NowHp = MathTools.Max(1, MaxHp - lossHp);
 
-            var lossAr = MaxArmor - NowArmor;
+            var lossAr = MaxArmor < NowArmor ? 0 : MaxArmor - NowArmor;
             MaxArmor = (uint) MathTools.Max(0, baseSurvivalStatus.MaxArmor * (1 + v[1]));
             NowArmor = MathTools.Max(0, MaxArmor - lossAr);
             ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
