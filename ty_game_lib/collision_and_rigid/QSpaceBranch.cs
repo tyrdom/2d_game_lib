@@ -394,7 +394,12 @@ namespace collision_and_rigid
                 switch (item1)
                 {
                     case -1:
-                        AaBbPackBox.Add(item2);
+                        if (Father != null) Father.AaBbPackBox.Add(item2);
+                        else
+                        {
+                            AaBbPackBox.Add(item2);
+                        }
+
                         break;
                     case 0:
                         AaBbPackBox.Add(item2);

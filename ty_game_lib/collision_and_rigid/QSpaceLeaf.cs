@@ -412,7 +412,13 @@ namespace collision_and_rigid
                 switch (i)
                 {
                     case -1:
-                        zone.Add(aabbBoxShape1);
+
+                        if (Father != null) Father.AaBbPackBox.Add(aabbBoxShape1);
+                        else
+                        {
+                            zone.Add(aabbBoxShape1);
+                        }
+
                         break;
                     case 0:
                         zone.Add(aabbBoxShape1);
