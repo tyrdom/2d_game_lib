@@ -156,6 +156,12 @@ namespace game_stuff
         private int NowProtectValue { get; set; }
         private int MaxProtectValue { get; }
 
+        public float GetProtectRate()
+        {
+            var nowProtectValue = (float) NowProtectValue / MaxProtectValue;
+            return nowProtectValue;
+        }
+
         private float ProtectTickMultiAdd { get; set; }
         public int NowProtectTick { get; private set; }
 

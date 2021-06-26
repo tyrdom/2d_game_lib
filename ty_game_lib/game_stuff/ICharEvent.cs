@@ -185,3 +185,4 @@ public bullet_id BulletId { get; }
         public int GetTick { get; }
     }
 }
+
