@@ -114,7 +114,7 @@ namespace game_stuff
 
         public int NowAmmo { get; set; }
 
-        private int MaxAmmo { get; set; }
+        public int MaxAmmo { get; set; }
         public int WeaponCarryMax { get; }
         private uint DestroyTick { get; }
 
@@ -154,7 +154,6 @@ namespace game_stuff
 
         public AttackStatus AttackStatus { get; }
 
-      
 
         public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
         {
@@ -174,7 +173,7 @@ namespace game_stuff
 
         public void ReloadAmmo(float reloadMulti)
         {
-            NowAmmo = (int) Math.Min(MaxAmmo, NowAmmo + MaxAmmo * reloadMulti * RegenEffectStatus.ReloadEffect);
+            BattleUnitMoverStandard.ReloadAmmo(this, reloadMulti);
         }
 
         public void PassiveEffectChangeOther(float[] otherAttrPassiveEffects,

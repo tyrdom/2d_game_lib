@@ -1,4 +1,6 @@
+using System;
 using System.Numerics;
+using collision_and_rigid;
 
 namespace game_stuff
 {
@@ -16,9 +18,12 @@ namespace game_stuff
         AttackStatus AttackStatus { get; }
         float TrapAtkMulti { get; set; }
         float TrapSurvivalMulti { get; set; }
+        int NowAmmo { get; set; }
+        int MaxAmmo { get; set; }
         void AttackStatusRefresh(float[] atkAboutPassiveEffects);
         void OtherStatusRefresh(float[] otherAttrPassiveEffects);
         void AddAmmo(int ammoAdd);
+        public void ReloadAmmo(float reloadMulti);
 
         void PassiveEffectChangeOther(float[] otherAttrPassiveEffects,
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
@@ -29,6 +34,12 @@ namespace game_stuff
 
     public static class BattleUnitMoverStandard
     {
+        public static void ReloadAmmo(IMoveBattleAttrModel model, float reloadMulti)
+        {
+            model.NowAmmo = (int) MathTools.Min(model.MaxAmmo,
+                model.NowAmmo + model.MaxAmmo * reloadMulti * model.RegenEffectStatus.ReloadEffect);
+        }
+
         public static void PassiveEffectChangeTrap(float[] trapAdd,
             (float TrapAtkMulti, float TrapSurvivalMulti) trapBaseAttr, IMoveBattleAttrModel moveBattleAttrModel
         )
@@ -43,7 +54,7 @@ namespace game_stuff
         {
             var (baseSurvivalStatus, _) =
                 GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(moveBattleAttrModel.BaseAttrId));
-                moveBattleAttrModel.SurvivalStatus
+            moveBattleAttrModel.SurvivalStatus
                 .SurvivalPassiveEffectChange(survivalAboutPassiveEffects,
                     baseSurvivalStatus);
         }

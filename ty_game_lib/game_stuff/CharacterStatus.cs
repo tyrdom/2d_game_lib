@@ -45,7 +45,7 @@ namespace game_stuff
             return NowVehicle?.NowAmmo ?? NowAmmo;
         }
 
-        private int MaxAmmo { get; set; }
+        public int MaxAmmo { get; set; }
         public IBattleUnitStatus? LockingWho { get; set; }
 
         public CharacterBody GetFinalCaster()
@@ -606,12 +606,18 @@ namespace game_stuff
             if (NowVehicle == null)
             {
                 SurvivalStatus.GetRegen(effectRegenerationBase, RegenEffectStatus);
+                ReloadAmmo(effectRegenerationBase.ReloadMulti);
             }
             else
             {
                 NowVehicle.SurvivalStatus.GetRegen(effectRegenerationBase, NowVehicle.RegenEffectStatus);
                 NowVehicle.ReloadAmmo(effectRegenerationBase.ReloadMulti);
             }
+        }
+
+        public void ReloadAmmo(float reloadMulti)
+        {
+            BattleUnitMoverStandard.ReloadAmmo(this, reloadMulti);
         }
 
         private CharGoTickResult GoNowActATick(ICharAct charAct,
