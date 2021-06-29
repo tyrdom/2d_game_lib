@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using game_config;
 
@@ -64,6 +65,9 @@ namespace game_stuff
 
         public TransRegenerationEffect(float[] vector)
         {
+#if DEBUG
+            Console.Out.WriteLine($"gen transRegen effect {vector.Aggregate("", (s, x) => s + "," + x)}");
+#endif
             V = vector;
         }
 
@@ -76,8 +80,6 @@ namespace game_stuff
         {
             return V;
         }
-
-   
     }
 
     public readonly struct SpecialSurviveDamageAddEffect : IPassiveTraitEffect

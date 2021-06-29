@@ -284,12 +284,10 @@ namespace game_stuff
 
             var lossHp = MaxHp < NowHp ? 0 : MaxHp - NowHp;
             MaxHp = (uint) MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
-
             NowHp = MathTools.Max(1, MaxHp - lossHp);
-
             var lossAr = MaxArmor < NowArmor ? 0 : MaxArmor - NowArmor;
             MaxArmor = (uint) MathTools.Max(0, baseSurvivalStatus.MaxArmor * (1 + v[1]));
-            NowArmor = MathTools.Max(0, MaxArmor - lossAr);
+            NowArmor = MathTools.Max(1, MaxArmor - lossAr);
             ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
             MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
             var shieldRecover = baseSurvivalStatus.ShieldRecover * (1 + v[4]);
@@ -345,17 +343,17 @@ namespace game_stuff
 
         public float ArmorPercent()
         {
-            return (float) NowArmor / MaxArmor;
+            return (float) NowArmor / MathTools.Max(1, MaxArmor);
         }
 
         public float HpPercent()
         {
-            return (float) NowHp / MaxHp;
+            return (float) NowHp / MathTools.Max(1, MaxHp);
         }
 
         public float ShieldPercent()
         {
-            return (float) NowShield / MaxShield;
+            return (float) NowShield / MathTools.Max(1, MaxShield);
         }
 
         public IEnumerable<ICharEvent> GenSurvivalEvents()
@@ -394,20 +392,39 @@ namespace game_stuff
 
         private void ShieldValueRegen(int regen)
         {
+#if DEBUG
+            Console.Out.WriteLine($"regen shield by TransRegen {NowShield} {regen}");
+#endif
             NowShield = (uint) MathTools.Max(0, (int) NowShield + regen);
+#if DEBUG
+            Console.Out.WriteLine($"regen shield by TransRegen {NowShield} ");
+#endif
         }
 
         private void ArmorValueRegen(int regen)
         {
+#if DEBUG
+            Console.Out.WriteLine($"regen armor by TransRegen {NowArmor} {regen}");
+#endif
             NowArmor = (uint) MathTools.Max(0,
                 MathTools.Min(MathTools.Max(NowArmor, MaxArmor), (int) NowArmor + regen));
+#if DEBUG
+            Console.Out.WriteLine($"regen armor by TransRegen {NowArmor} ");
+#endif
         }
 
         private void HpValueRegen(int regen)
         {
             if (NowHp <= 0) return;
             {
+#if DEBUG
+                Console.Out.WriteLine($"regen Hp by TransRegen {NowHp} {regen}");
+#endif
+
                 NowHp = (uint) MathTools.Max(1, MathTools.Min(MathTools.Max(NowHp, MaxHp), (int) NowHp + regen));
+#if DEBUG
+                Console.Out.WriteLine($"regen Hp by TransRegen {NowHp}");
+#endif
             }
         }
 

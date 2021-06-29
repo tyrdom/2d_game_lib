@@ -28,7 +28,7 @@ namespace lib_unit_test
 
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(1, 1, new[] {weapons}, size.small,
-                    1);
+                    1, new Dictionary<passive_id, uint>());
 #if DEBUG
             Console.Out.WriteLine($"Test P1 ok");
 #endif
@@ -42,7 +42,7 @@ namespace lib_unit_test
 
             var characterInitData =
                 CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapons}, size.small,
-                    1);
+                    1, new Dictionary<passive_id, uint>());
 #if DEBUG
             Console.Out.WriteLine($"Test P2 ok");
 #endif

@@ -25,10 +25,18 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_bow, weapon_id.test_gun}, size.small,
-                    5);
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
+                    1, new Dictionary<passive_id, uint>
+                    {
+                        {passive_id.main_atk, 10}, {passive_id.emergency_shield, 1}, {passive_id.energy_armor, 1}
+                    });
+        
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1,
+                    new Dictionary<passive_id, uint>
+                    {
+                        {passive_id.main_atk, 10}, {passive_id.emergency_shield, 1}, {passive_id.energy_armor, 1}
+                    });
             var characterInitData2 =
                 CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData3 =
@@ -56,13 +64,13 @@ namespace lib_test
             // var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
             // genCharacterBody.CharacterStatus.FullAmmo();
 
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(1f, 0f);
-                var operate = i < 50
-                    ? new Operate(aim: dVector, snipeAction: SnipeAction.SnipeOn2)
+                var operate = i < 99
+                    ? new Operate(aim: dVector, SkillAction.Op1)
                     : new Operate(aim: dVector, move: dVector);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);
@@ -87,7 +95,7 @@ namespace lib_test
 #if DEBUG
                     if (i % 30 == 0)
                     {
-                        gameRequests[1] = new ResetGame();
+                        // gameRequests[1] = new ResetGame();
                     }
 #endif
                     var gameConsoleGoATick = genByConfig.GameConsoleGoATick(gameRequests);
@@ -99,7 +107,12 @@ namespace lib_test
                     }
                 }
 
-                var characterBodies = playerSee[1].OnChange.OfType<CharacterBody>();
+#if DEBUG
+                Console.Out.WriteLine("");
+#endif
+                var characterBodies = playerSee.TryGetValue(1, out var tickSee)
+                    ? tickSee.OnChange.OfType<CharacterBody>()
+                    : new CharacterBody[] { };
                 var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
 
                 var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
