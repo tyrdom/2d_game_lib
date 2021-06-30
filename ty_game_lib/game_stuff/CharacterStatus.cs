@@ -1222,7 +1222,7 @@ namespace game_stuff
             var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus());
 
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
-            return attackStatus.GenDamage(damageMulti, b4, multi * totalMulti);
+            return attackStatus.GenDamage(damageMulti, b4, multi + totalMulti);
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
@@ -1551,7 +1551,7 @@ namespace game_stuff
 
         public DmgShow? TakeDamage(Damage genDamage)
         {
-            var damageMulti = GetBuffs<TakeDamageBuff>().GetDamageMulti();
+            var damageMulti = MathTools.Max(0, 1 + GetBuffs<TakeDamageBuff>().GetDamageMulti());
             genDamage.GetBuffMulti(damageMulti);
             if (NowVehicle == null)
             {

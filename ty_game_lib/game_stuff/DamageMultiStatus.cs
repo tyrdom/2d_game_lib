@@ -36,7 +36,7 @@ namespace game_stuff
             var lossP2 = MathTools.Max(0, 1 - survivalStatus.ArmorPercent());
             var survivalStatusMaxHp = lossP1 * LossPercentHpMulti;
             var survivalStatusMaxArmor = lossP2 * LossPercentArmorMulti;
-            var statusMaxHp = 1 + noShieldMulti + noArmorMulti + survivalStatusMaxHp + survivalStatusMaxArmor;
+            var statusMaxHp = noShieldMulti + noArmorMulti + survivalStatusMaxHp + survivalStatusMaxArmor;
             return statusMaxHp;
         }
     }

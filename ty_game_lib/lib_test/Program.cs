@@ -30,12 +30,12 @@ namespace lib_test
                     {
                         {passive_id.main_atk, 10}, {passive_id.emergency_shield, 1}, {passive_id.energy_armor, 1}
                     });
-        
+
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1,
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 5,
                     new Dictionary<passive_id, uint>
                     {
-                        {passive_id.main_atk, 10}, {passive_id.emergency_shield, 1}, {passive_id.energy_armor, 1}
+                        {passive_id.main_atk, 10}, {passive_id.shield_overload, 3}, {passive_id.energy_armor, 1}
                     });
             var characterInitData2 =
                 CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
