@@ -10,6 +10,7 @@ using Random = System.Random;
 
 namespace rogue_game
 {
+    [Serializable]
     public class PveMap
     {
         private PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
@@ -22,6 +23,7 @@ namespace rogue_game
             IsClear = isClear;
             CreepIdToSpawn = creepIdToSpawn;
             BossIdToSpawn = bossIdToSpawn;
+            IsReached = false;
         }
 
         private static (PveWinCond winCond, bool isClear) GetWinCond(MapType mapType)
@@ -41,12 +43,12 @@ namespace rogue_game
         }
 
         public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid, int[] bNpc, int[] boss,
-            IEnumerable<ISaleUnit> saleUnits = null!)
+            IEnumerable<ISaleUnit>? saleUnits = null)
         {
             var (winCond, isClear) = GetWinCond(pointMap.MapType);
             var genEmptyPlayGround = PlayGround.GenEmptyPlayGround(resId, gmMid);
 
-            if (pointMap.MapType == MapType.Vendor)
+            if (pointMap.MapType == MapType.Vendor && saleUnits != null)
             {
                 genEmptyPlayGround.AddSaleUnitsToMap(saleUnits, 0);
             }
@@ -57,6 +59,7 @@ namespace rogue_game
             return pveMap;
         }
 
+        public bool IsReached { get; set; }
         public bool IsClear { get; private set; }
         public PlayGround PlayGround { get; }
         public HashSet<BattleNpc> Bosses { get; private set; }
@@ -182,5 +185,9 @@ namespace rogue_game
             IsClear = true;
         }
 #endif
+        public bool NeedSave()
+        {
+            return CreepIdToSpawn.Any() || BossIdToSpawn.Any();
+        }
     }
 }

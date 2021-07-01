@@ -24,6 +24,8 @@ namespace game_stuff
                 _ => throw new ArgumentOutOfRangeException(nameof(saleStuff))
             };
         }
+        
+        
 
         public static (ContainType type, int intId) GetSaleId(this ISaleStuff saleStuff)
         {

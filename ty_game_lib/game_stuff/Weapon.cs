@@ -113,6 +113,16 @@ namespace game_stuff
         }
 
 
+        public static weapon_id GenId(string id)
+        {
+            if (id.TryStringToEnum(out weapon_id weaponId))
+            {
+                return weaponId;
+            }
+
+            throw new KeyNotFoundException($"cant find weapon id {id}");
+        }
+
         public static Weapon GenById(string id)
         {
             if (id.TryStringToEnum(out weapon_id weaponId))

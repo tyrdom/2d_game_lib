@@ -81,7 +81,7 @@ namespace game_stuff
 
         public int GetNum()
         {
-            return 1;
+            return (int) Level;
         }
 
         public static IEnumerable<PassiveTrait> GenManyById(string i, uint level)

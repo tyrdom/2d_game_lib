@@ -11,60 +11,43 @@ namespace game_stuff
         public int Gid { get; }
 
         public int TeamId { get; }
-        private Dictionary<int, Weapon> Weapons { get; }
+        private weapon_id[] Weapons { get; }
         private size BodySize { get; }
         private int BaseAttrId { get; }
 
-        private Dictionary<passive_id, PassiveTrait>? InitPassiveTraits { get; }
+        private Dictionary<passive_id, uint>? InitPassiveTraits { get; }
         private int? WeaponMaxNum { get; }
 
         public static CharacterInitData GenNpcByConfig(int gid, int teamId, string[] weapons, size size,
             int baseAttrId, int battleNpcMaxWeaponSlot)
         {
-            var dictionary = new Dictionary<int, Weapon>();
-            for (var i = 0; i < weapons.Length; i++)
-            {
-                dictionary[i] = Weapon.GenById(weapons[i]);
-            }
+            var weaponIds = weapons.Select(Weapon.GenId).ToArray();
+            // var dictionary = new Dictionary<int, weapon_id>();
+            // for (var i = 0; i < weapons.Length; i++)
+            // {
+            //     dictionary[i] = Weapon.GenId(weapons[i]);
+            // }
 
 
-            return new CharacterInitData(gid, teamId, dictionary, size, baseAttrId, battleNpcMaxWeaponSlot,
-                new Dictionary<passive_id, PassiveTrait>());
+            return new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, battleNpcMaxWeaponSlot,
+                new Dictionary<passive_id, uint>());
         }
 
         public static CharacterInitData GenPlayerByConfig(int gid, int teamId, weapon_id[] weapons, size size,
             int baseAttrId, Dictionary<passive_id, uint>? initPassive = null)
         {
-            var dictionary = new Dictionary<int, Weapon>();
-            for (var i = 0; i < MathTools.Min(CommonConfig.OtherConfig.weapon_num, weapons.Length); i++)
-            {
-                dictionary[i] = Weapon.GenById(weapons[i]);
-            }
+            var min = MathTools.Min(CommonConfig.OtherConfig.weapon_num, weapons.Length);
+            var weaponIds = weapons.Take(min).ToArray();
 
 
-            if (initPassive == null)
-                return new CharacterInitData(gid, teamId, dictionary, size, baseAttrId, null, null);
-            var d2 = new Dictionary<passive_id, PassiveTrait>();
-            foreach (var passiveTrait in initPassive
-                .Select(keyValuePair => PassiveTrait.GenManyByPId(keyValuePair.Key, keyValuePair.Value))
-                .SelectMany(genManyByPId => genManyByPId))
-            {
-                if (d2.TryGetValue(passiveTrait.PassId, out var nowPass))
-                {
-                    nowPass.AddLevel(passiveTrait.Level);
-                }
-                else
-                {
-                    d2[passiveTrait.PassId] = passiveTrait;
-                }
-            }
-
-
-            return new CharacterInitData(gid, teamId, dictionary, size, baseAttrId, null, d2);
+            return initPassive == null
+                ? new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, null, null)
+                : new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, null, initPassive);
+            // var d2 = new Dictionary<passive_id, PassiveTrait>();
         }
 
-        private CharacterInitData(int gid, int teamId, Dictionary<int, Weapon> weapons, size bodySize,
-            int baseAttrId, int? weaponMaxNum, Dictionary<passive_id, PassiveTrait>? initPassiveTraits)
+        private CharacterInitData(int gid, int teamId, weapon_id[] weapons, size bodySize,
+            int baseAttrId, int? weaponMaxNum, Dictionary<passive_id, uint>? initPassiveTraits)
         {
             Gid = gid;
             TeamId = teamId;
@@ -79,18 +62,20 @@ namespace game_stuff
         public CharacterBody GenCharacterBody(TwoDPoint startPos,
             Dictionary<passive_id, PassiveTrait>? passiveTraits = null, PlayingItemBag? playingItemBag = null)
         {
-            var dd = InitPassiveTraits ?? new Dictionary<passive_id, PassiveTrait>();
-            if (passiveTraits != null)
+            var dd = passiveTraits ?? new Dictionary<passive_id, PassiveTrait>();
+            if (InitPassiveTraits != null)
             {
-                foreach (var initPassiveTrait in passiveTraits)
+                foreach (var passiveTrait in InitPassiveTraits
+                    .Select(keyValuePair => PassiveTrait.GenManyByPId(keyValuePair.Key, keyValuePair.Value))
+                    .SelectMany(genManyByPId => genManyByPId))
                 {
-                    if (dd.TryGetValue(initPassiveTrait.Key, out var nowPass))
+                    if (dd.TryGetValue(passiveTrait.PassId, out var nowPass))
                     {
-                        nowPass.AddLevel(initPassiveTrait.Value.Level);
+                        nowPass.AddLevel(passiveTrait.Level);
                     }
                     else
                     {
-                        dd[initPassiveTrait.Key] = initPassiveTrait.Value;
+                        dd[passiveTrait.PassId] = passiveTrait;
                     }
                 }
             }
@@ -104,7 +89,7 @@ namespace game_stuff
             var characterBody = new CharacterBody(startPos, BodySize, characterStatus, startPos,
                 AngleSight.StandardAngleSight(),
                 TeamId);
-            foreach (var weapon in Weapons.Select(keyValuePair => keyValuePair.Value))
+            foreach (var weapon in Weapons.Select(Weapon.GenById))
             {
 // #if DEBUG
 //                 Console.Out.WriteLine($"{weapon.LogUserString()}");
