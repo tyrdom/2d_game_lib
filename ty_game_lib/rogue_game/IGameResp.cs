@@ -53,11 +53,13 @@ namespace rogue_game
 
     public class InitChapter : IGameResp
     {
-        public InitChapter(int[] reachedMap)
+        public InitChapter(int restChapterIds, int[] reachedMap)
         {
+            RestChapterIds = restChapterIds;
             ReachedMap = reachedMap;
         }
 
+        public int RestChapterIds { get; }
         public int[] ReachedMap { get; }
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 using game_stuff;
@@ -20,9 +21,9 @@ namespace rogue_game
 
         public int ChapterId { get; }
 
-        public InitChapter GenInitChapterPush()
+        public InitChapter GenInitChapterPush(int chapterIdsCount)
         {
-            return new InitChapter(GetReachedMapsMGidS());
+            return new InitChapter(chapterIdsCount,GetReachedMapsMGidS());
         }
 
         public PushChapterGoNext GenNewChapterMap()
@@ -32,9 +33,9 @@ namespace rogue_game
             return new PushChapterGoNext(ySlotArray);
         }
 
-        public ImmutableHashSet<IGameResp> GenLoadChapterMsg()
+        public ImmutableHashSet<IGameResp> GenLoadChapterMsg(int chapterIdsCount)
         {
-            var genLoadChapterMsg = new IGameResp[] {GenNewChapterMap(), GenInitChapterPush()};
+            var genLoadChapterMsg = new IGameResp[] {GenNewChapterMap(), GenInitChapterPush(chapterIdsCount)};
             return genLoadChapterMsg.ToImmutableHashSet();
         }
 
@@ -177,7 +178,7 @@ namespace rogue_game
         }
 
         public static Chapter GenBySave(Dictionary<PointMap, int> dictionary, rogue_game_chapter gameChapter,
-            Random random, PlayGroundSaveData[] playGroundSaveDataS)
+            Random random, IEnumerable<PlayGroundSaveData> playGroundSaveDataS, IEnumerable<int> clearMapIds)
         {
             var playGroundSaveDatas = playGroundSaveDataS.ToDictionary(x => x.MGid, x => x);
             var pveEmptyMaps = dictionary.ToDictionary(pair => pair.Value, pair =>
@@ -198,7 +199,15 @@ namespace rogue_game
                                     x.Range.ChooseRandCanSame(x.Num, random)
                                         .Select(SaleUnitStandard.GenById)
                                 );
-                    return PveMap.GenEmptyPveMap(pointMap, resId, gMid, creep, boss, selectMany);
+                    var contains = clearMapIds.Contains(gMid);
+#if DEBUG
+                    if (contains)
+                    {
+                        Console.Out.WriteLine($"have been reach & clear {gMid}");
+                    }
+
+#endif
+                    return PveMap.GenEmptyPveMap(pointMap, resId, gMid, creep, boss, selectMany, contains);
                 }
             );
             var start = dictionary.Keys.FirstOrDefault(x =>

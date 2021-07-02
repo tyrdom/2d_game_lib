@@ -137,6 +137,26 @@ namespace lib_test
                 }
 #endif
             }
+
+            var rogueGameSave = genByConfig.Save();
+
+
+            var rogueGame = rogueGameSave.Load(1);
+
+            for (int i = 0; i < 100; i++)
+            {
+                var twoDVector = new TwoDVector(0, 1f);
+
+                var dVector = new TwoDVector(1f, 0f);
+                var operate = i < 99
+                    ? new Operate(aim: dVector, SkillAction.Op1)
+                    : new Operate(aim: dVector, move: dVector);
+                var dVector1 = new TwoDVector(0, 1f);
+                var operate1 = new Operate(aim: dVector1);
+                var opDic = new Dictionary<int, Operate>()
+                    {{1, operate}, {2, operate1}};
+                var rogueGameGoTickResult = rogueGame.GamePlayGoATick(opDic);
+            }
         }
 
         private static string GetStringByFile(string s)

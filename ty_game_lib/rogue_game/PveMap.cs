@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
 using game_bot;
+using game_config;
 using game_stuff;
 using rogue_chapter_maker;
 using Random = System.Random;
@@ -14,7 +15,7 @@ namespace rogue_game
     public class PveMap
     {
         private PveMap(PlayGround playGround, HashSet<BattleNpc> bosses, HashSet<BattleNpc> creeps,
-            PveWinCond pveWinCond, bool isClear, int[] creepIdToSpawn, int[] bossIdToSpawn)
+            PveWinCond pveWinCond, bool isClear, int[] creepIdToSpawn, int[] bossIdToSpawn, bool isReached = false)
         {
             PlayGround = playGround;
             Bosses = bosses;
@@ -23,7 +24,7 @@ namespace rogue_game
             IsClear = isClear;
             CreepIdToSpawn = creepIdToSpawn;
             BossIdToSpawn = bossIdToSpawn;
-            IsReached = false;
+            IsReached = isReached;
         }
 
         private static (PveWinCond winCond, bool isClear) GetWinCond(MapType mapType)
@@ -43,9 +44,10 @@ namespace rogue_game
         }
 
         public static PveMap GenEmptyPveMap(PointMap pointMap, int resId, int gmMid, int[] bNpc, int[] boss,
-            IEnumerable<ISaleUnit>? saleUnits = null)
+            IEnumerable<ISaleUnit>? saleUnits = null, bool forceClear = false)
         {
             var (winCond, isClear) = GetWinCond(pointMap.MapType);
+            var isC = forceClear || isClear;
             var genEmptyPlayGround = PlayGround.GenEmptyPlayGround(resId, gmMid);
 
             if (pointMap.MapType == MapType.Vendor && saleUnits != null)
@@ -55,7 +57,7 @@ namespace rogue_game
 
 
             var pveMap = new PveMap(genEmptyPlayGround, new HashSet<BattleNpc>(), new HashSet<BattleNpc>(), winCond,
-                isClear, bNpc, boss);
+                isC, bNpc, boss, forceClear);
             return pveMap;
         }
 

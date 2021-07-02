@@ -26,16 +26,18 @@ namespace rogue_game
 
         private int ChapterId { get; }
 
+
         public static ChapterSave Save(Chapter chapter)
         {
             var chapterMapOnYSlotArray = chapter.MapOnYSlotArray;
             var enumerable = chapter.MGidToMap.Where(x => x.Value.IsClear && x.Value.IsReached).Select(x => x.Key)
                 .ToArray();
-            var @select = chapterMapOnYSlotArray
+            var ints = chapterMapOnYSlotArray
                 .Where(x => x.Key.MapType == MapType.Vendor || x.Key.MapType == MapType.Hangar).Select(x => x.Value);
 
-            var pveMaps = @select.Where(x => chapter.MGidToMap[x].IsReached).Select(x => chapter.MGidToMap[x]);
+            var pveMaps = ints.Select(x => chapter.MGidToMap[x]);
             var playGroundSaveDataS = pveMaps.Select(x => PlayGroundSaveData.GroundSaveData(x.PlayGround)).ToArray();
+
             var chapterSave =
                 new ChapterSave(playGroundSaveDataS, chapterMapOnYSlotArray, enumerable, chapter.ChapterId);
             return chapterSave;
@@ -44,7 +46,8 @@ namespace rogue_game
         public Chapter Load(Random random)
         {
             var configsRogueGameChapter = CommonConfig.Configs.rogue_game_chapters[ChapterId];
-            var genBySave = Chapter.GenBySave(MapOnYSlotArray, configsRogueGameChapter, random, PlayGroundSaveDataS);
+            var genBySave = Chapter.GenBySave(MapOnYSlotArray, configsRogueGameChapter, random, PlayGroundSaveDataS,
+                ClearMapIds);
             return genBySave;
         }
     }

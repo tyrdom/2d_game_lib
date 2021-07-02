@@ -6,19 +6,19 @@ using game_config;
 
 namespace game_stuff
 {
+    [Serializable]
     public class CharacterInitData
     {
         public int Gid { get; }
-
         public int TeamId { get; }
         private weapon_id[] Weapons { get; }
         private size BodySize { get; }
         private int BaseAttrId { get; }
 
         private Dictionary<passive_id, uint>? InitPassiveTraits { get; }
-        private int? WeaponMaxNum { get; }
+        private int WeaponMaxNum { get; }
 
-        public static CharacterInitData GenNpcByConfig(int gid, int teamId, string[] weapons, size size,
+        public static CharacterInitData GenNpcByConfig(int gid, int teamId, IEnumerable<string> weapons, size size,
             int baseAttrId, int battleNpcMaxWeaponSlot)
         {
             var weaponIds = weapons.Select(Weapon.GenId).ToArray();
@@ -54,7 +54,7 @@ namespace game_stuff
             Weapons = weapons;
             BodySize = bodySize;
             BaseAttrId = baseAttrId;
-            WeaponMaxNum = weaponMaxNum;
+            WeaponMaxNum = weaponMaxNum ?? 5;
             InitPassiveTraits = initPassiveTraits;
         }
 

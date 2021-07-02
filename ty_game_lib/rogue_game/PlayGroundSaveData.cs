@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using game_config;
 using game_stuff;
-using rogue_chapter_maker;
 
 namespace rogue_game
 {
@@ -21,12 +20,18 @@ namespace rogue_game
 
         public static PlayGroundSaveData GroundSaveData(PlayGround playGround)
         {
-            var saleUnits = playGround.GetMapApplyDevices()
-                .Select(x => x.CharActOne.InMapInteractable).OfType<SaleUnit>();
+            var mapApplyDevices = playGround.GetMapApplyDevices();
+            var saleUnits = mapApplyDevices
+                .Select(x => x.CharActOne.InMapInteractable)
+                .OfType<SaleUnit>();
             var saleUnitSaves = saleUnits.Select(SaleUnitSave.GenByASaleUnit);
             var playGroundMgId = playGround.MgId;
             var playGroundResMId = playGround.ResMId;
-            var playGroundSaveData = new PlayGroundSaveData(saleUnitSaves.ToArray(), playGroundMgId, playGroundResMId);
+            var unitSaves = saleUnitSaves.ToArray();
+            var playGroundSaveData = new PlayGroundSaveData(unitSaves, playGroundMgId, playGroundResMId);
+#if DEBUG
+            Console.Out.WriteLine($"now Map to Save {unitSaves.Length}");
+#endif
             return playGroundSaveData;
         }
 
@@ -55,11 +60,17 @@ namespace rogue_game
             var id = stuff.GetId();
             var num = stuff.GetNum();
             var containType = stuff.GetTitle();
+#if DEBUG
+            Console.Out.WriteLine($"save a stuff {containType} {id} {num}");
+#endif
             return new SaleStuffSave(containType, id, num);
         }
 
         public IEnumerable<ISaleStuff> GenStuff()
         {
+#if DEBUG
+            Console.Out.WriteLine($"load a stuff {ContainType},{Id},{Num}");
+#endif
             switch (ContainType)
             {
                 case ContainType.PassiveC:

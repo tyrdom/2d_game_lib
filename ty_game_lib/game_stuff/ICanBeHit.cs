@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
 
@@ -16,6 +17,12 @@ namespace game_stuff
     public interface ISeeTickMsg
     {
         string? ToString();
+    }
+
+    public interface ICharMsg : ISeeTickMsg
+    {
+        public int GId { get; }
+        public HashSet<ICharEvent> CharEvents { get; }
     }
 
     public interface ISeeActive

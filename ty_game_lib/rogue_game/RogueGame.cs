@@ -33,6 +33,7 @@ namespace rogue_game
         private Random Random { get; }
 
 
+   
         public static (RogueGame genByConfig, ImmutableHashSet<IGameResp> gameResps) GenByConfig(
             HashSet<CharacterInitData> characterBodies,
             int leaderId)
@@ -47,17 +48,24 @@ namespace rogue_game
 
         public ImmutableHashSet<IGameResp> GenLoadRespS()
         {
-            return NowChapter.GenLoadChapterMsg();
+            var chapterIdsCount = ChapterIds.Count;
+            return NowChapter.GenLoadChapterMsg(chapterIdsCount);
         }
 
+        public RogueGameSave Save()
+        {
+            var rogueGameSave = RogueGameSave.Save(this);
+            return rogueGameSave;
+        }
+
+        //for load game
         public RogueGame(HashSet<CharacterInitData> characterBodies, int playerLeader, ChapterSave chapterSave,
-            Dictionary<int, PlayerStatusSave> playerSaves, int restChapterNum)
+            Dictionary<int, PlayerStatusSave> playerSaves, int restChapterNum, int nowMap)
         {
             CharacterInitDataS = characterBodies;
-            LoadChapterIds(restChapterNum);
+            ChapterIds = LoadChapterIds(restChapterNum);
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
-            if (ChapterIds == null) throw new Exception("no ChapterIds");
             var genByConfig = chapterSave.Load(Random);
             NowChapter = genByConfig;
             NowGamePlayers = playerSaves.ToDictionary(x => x.Key,
@@ -65,9 +73,10 @@ namespace rogue_game
             RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
             ChapterCountDownTick = -1;
             PlayerLeaderGid = playerLeader;
-            NowPlayMap = NowChapter.Entrance;
+            NowPlayMap = NowChapter.MGidToMap[nowMap];
             BotTeam = new BotTeam();
-            NowChapter.Entrance.AddCharacterBodiesToStart(NowGamePlayers.Values.Select(x => x.Player));
+            NowPlayMap.AddCharacterBodiesToStart(NowGamePlayers.Values.Select(x => x.Player));
+            NowPlayMap.PlayGround.ActiveApplyDevice();
             NeedCheckClear = true;
             Pause = false;
         }
@@ -77,7 +86,7 @@ namespace rogue_game
         {
             CharacterInitDataS = characterBodies;
             var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
-            LoadChapterIds();
+            ChapterIds = LoadChapterIds();
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
             if (ChapterIds == null) throw new Exception("no ChapterIds");
@@ -100,7 +109,7 @@ namespace rogue_game
             Pause = true;
             BotTeam.ClearBot();
             NowPlayMap.TelePortOut();
-            LoadChapterIds();
+            ChapterIds = LoadChapterIds();
             var (genByConfig, valueTuples) = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
             NowChapter = genByConfig;
             var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
@@ -117,14 +126,14 @@ namespace rogue_game
         }
 
 
-        private void LoadChapterIds(int rest = -1)
+        private Queue<int> LoadChapterIds(int rest = -1)
         {
             var otherConfig = CommonConfig.OtherConfig;
             var configRogueChapters = otherConfig.RogueChapters;
             var enumerable = configRogueChapters.Skip(configRogueChapters.Length - rest).ToArray();
             var otherConfigRogueChapters = rest < 0 ? configRogueChapters : enumerable;
 
-            ChapterIds =
+            return
                 otherConfigRogueChapters
                     .Aggregate(new Queue<int>(), (ints, i) =>
                     {
