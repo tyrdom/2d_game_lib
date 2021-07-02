@@ -12,6 +12,7 @@ namespace rogue_chapter_maker
         South
     }
 
+    [Serializable]
     public class Link
     {
         public Link(direction side, PointMap inPointMap)

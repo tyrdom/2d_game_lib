@@ -1,26 +1,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace game_stuff
 {
-    public class CharInitMsg
+    public class CharInitMsg : ICharMsg
     {
         public int GId { get; }
         public HashSet<ICharEvent> CharEvents { get; }
 
 
         public CharInitMsg(int gId, TwoDPoint pos, TwoDVector aim, SurvivalStatus survivalStatus,
-            Dictionary<int, Weapon> weaponConfigs)
+            Weapon weaponConfigs, Dictionary<passive_id, PassiveTrait> characterStatusPassiveTraits,
+            PlayingItemBag characterStatusPlayingItemBag)
         {
             GId = gId;
             var posChange = new PosChange(pos);
             var aimChange = new AimChange(aim);
             var newSurvivalStatus = survivalStatus.GenNewMsg();
-
-            var pickWeapons = weaponConfigs.Values.Select(x => new PickWeapon(x.WId));
-            var charEvents = new HashSet<ICharEvent> {posChange, aimChange, newSurvivalStatus};
-            charEvents.UnionWith(pickWeapons);
+            var getPassives = characterStatusPassiveTraits.Values.Select(x => new GetPassive(x.PassId, x.Level));
+            var gameItems = characterStatusPlayingItemBag.GameItems.Select(x => new GameItem(x.Key, x.Value)).ToArray();
+            var itemChange = new ItemDetailChange(gameItems);
+            var pickWeapons = new SwitchWeapon(weaponConfigs.WId);
+            var charEvents = new HashSet<ICharEvent> {posChange, aimChange, newSurvivalStatus, pickWeapons, itemChange};
+            charEvents.UnionWith(getPassives);
             CharEvents = charEvents;
         }
     }

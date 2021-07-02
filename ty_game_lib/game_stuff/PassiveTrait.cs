@@ -81,7 +81,7 @@ namespace game_stuff
 
         public int GetNum()
         {
-            return 1;
+            return (int) Level;
         }
 
         public static IEnumerable<PassiveTrait> GenManyById(string i, uint level)
@@ -94,7 +94,7 @@ namespace game_stuff
             throw new Exception($"not such passive id{i}");
         }
 
-        private static IEnumerable<PassiveTrait> GenManyByPId(passive_id eId, uint level)
+        public static IEnumerable<PassiveTrait> GenManyByPId(passive_id eId, uint level)
         {
             if (!CommonConfig.Configs.passives.TryGetValue(eId, out var passive))
                 throw new KeyNotFoundException($"not such passive id {eId}");

@@ -13,6 +13,15 @@ namespace collision_and_rigid
 #endif
         }
 
+        public static int Min(int a, int b)
+        {
+#if NETCOREAPP
+            return Math.Min(a, b);
+#else
+            return Math.Min(a, b);
+#endif
+        }
+
         public static float Min(float a, float b)
         {
 #if NETCOREAPP
@@ -39,22 +48,25 @@ namespace collision_and_rigid
             return (float) Math.Sin(a);
 #endif
         }
+
         public static int Max(int a, int b)
         {
 #if NETCOREAPP
             return Math.Max(a, b);
 #else
-            return  Math.Max(a, b);
+            return Math.Max(a, b);
 #endif
         }
+
         public static uint Max(uint a, uint b)
         {
 #if NETCOREAPP
             return Math.Max(a, b);
 #else
-            return  Math.Max(a, b);
+            return Math.Max(a, b);
 #endif
         }
+
         public static float Max(float a, float b)
         {
 #if NETCOREAPP

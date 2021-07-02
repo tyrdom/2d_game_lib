@@ -17,7 +17,7 @@ namespace rogue_chapter_maker
         Hangar,
         Nothing
     }
-
+    [Serializable]
     public class PointMap
     {
         private char ShortChar()

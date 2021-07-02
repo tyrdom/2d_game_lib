@@ -101,7 +101,7 @@ namespace game_stuff
             }
         }
     }
-
+    [Serializable]
 
     public readonly struct GameItem : ISaleStuff
     {

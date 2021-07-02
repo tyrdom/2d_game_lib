@@ -262,7 +262,7 @@ namespace game_stuff
             CharEvents = new HashSet<ICharEvent>();
             BaseChangeMarks = new HashSet<BaseChangeMark>();
 
-            TransRegenEffectStatus = new TransRegenEffectStatus(0);
+            TransRegenEffectStatus = new TransRegenEffectStatus();
             ResetSnipe();
             Prop = null;
             NowPropPoint = 0;
@@ -293,6 +293,9 @@ namespace game_stuff
 
         private void StartPassiveInitRefresh()
         {
+#if DEBUG
+            Console.Out.WriteLine($"init passives {PassiveTraits.Count}");
+#endif
             var groupBy = PassiveTraits.Values.GroupBy(x => x.PassiveTraitEffect.GetType());
 
             foreach (var passiveTraits in groupBy)
@@ -308,7 +311,7 @@ namespace game_stuff
                 var aggregate1 = passiveTraits.Aggregate("",
                     ((s, trait) => s + trait.PassiveTraitEffect.GetType() + ""));
                 Console.Out.WriteLine(
-                    $"key: {firstOrDefault.PassId} enum {passiveTraits.Count()} types : {aggregate1}");
+                    $"to init passive id key: {firstOrDefault.PassId} enum {passiveTraits.Count()} types : {aggregate1}");
 #endif
                 var aggregate = passiveTraits.Aggregate(new float[] { },
                     (s, x) => s.Plus(x.PassiveTraitEffect.GenEffect(x.Level).GetVector()));
@@ -1225,7 +1228,7 @@ namespace game_stuff
             var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus());
 
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
-            return attackStatus.GenDamage(damageMulti, b4, multi * totalMulti);
+            return attackStatus.GenDamage(damageMulti, b4, multi + totalMulti);
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
@@ -1554,7 +1557,7 @@ namespace game_stuff
 
         public DmgShow? TakeDamage(Damage genDamage)
         {
-            var damageMulti = GetBuffs<TakeDamageBuff>().GetDamageMulti();
+            var damageMulti = MathTools.Max(0, 1 + GetBuffs<TakeDamageBuff>().GetDamageMulti());
             genDamage.GetBuffMulti(damageMulti);
             if (NowVehicle == null)
             {

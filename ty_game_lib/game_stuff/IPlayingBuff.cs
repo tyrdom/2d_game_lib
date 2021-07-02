@@ -59,7 +59,7 @@ namespace game_stuff
         public static IPlayingBuff GenById(int id)
         {
             var playBuff = GetBuffConfig(id);
-            var intTickByTime = (int)(playBuff.LastTime);
+            var intTickByTime = (int) (playBuff.LastTime);
             var playBuffUseStack = playBuff.UseStack;
             return playBuff.EffectType switch
             {
@@ -112,12 +112,7 @@ namespace game_stuff
         public static float GetDamageMulti(this IEnumerable<IDamageAboutBuff> damageBuffs)
         {
             var sum = damageBuffs.Sum(x => x.AddDamageMulti);
-            if (sum > 0)
-            {
-                return 1f + sum;
-            }
-
-            return 1f / (1f - sum);
+            return sum;
         }
 
         public static void AddABuff(

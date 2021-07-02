@@ -6,15 +6,15 @@ using game_config;
 
 namespace game_stuff
 {
-    public readonly struct CharTickMsg : ISeeTickMsg
+    public readonly struct CharTickMsg : ICharMsg
     {
         public CharTickMsg(int getId, HashSet<ICharEvent> characterStatusCharEvents)
         {
-            Gid = getId;
+            GId = getId;
             CharEvents = characterStatusCharEvents;
         }
 
-        public int Gid { get; }
+        public int GId { get; }
 
         public HashSet<ICharEvent> CharEvents { get; }
 
@@ -30,7 +30,7 @@ namespace game_stuff
             var getS = CharEvents.OfType<GetStunBuff>().FirstOrDefault()?.RestTick;
             var startAct = CharEvents.OfType<StartAct>().FirstOrDefault();
             return
-                $"gid: {Gid} Pos: {pos} Aim {aim} SightR {sightR} \n Hp:{hpChange} Armor:{amc} Shield:{sc}\n" +
+                $"gid: {GId} Pos: {pos} Aim {aim} SightR {sightR} \n Hp:{hpChange} Armor:{amc} Shield:{sc}\n" +
                 $" is on hit::{hdv} , is get stun :: {getS},skill act {startAct?.TypeEnum} launch {startAct?.IntId} ";
         }
     }

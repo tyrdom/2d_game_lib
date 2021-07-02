@@ -9,6 +9,7 @@ using game_stuff;
 
 namespace game_bot
 {
+    [Serializable]
     public class BotTeam
     {
         private ImmutableDictionary<size, PathTop> SizeToNaviMap { get; set; }
@@ -64,7 +65,7 @@ namespace game_bot
                 var pathTop = SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)
                     ? top
                     : throw new KeyNotFoundException($"size {bot.BotBody.GetSize()}");
-                var botSimpleGoATick = bot.BotSimpleGoATick(canBeEnemies,immutableHashSet,
+                var botSimpleGoATick = bot.BotSimpleGoATick(canBeEnemies, immutableHashSet,
                     pathTop);
 
 #if DEBUG

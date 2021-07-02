@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Immutable;
 using game_stuff;
 
 namespace rogue_game
 {
+    [Serializable]
     public class RogueGamePlayer
     {
         public RogueGamePlayer(CharacterBody player)
@@ -26,10 +28,10 @@ namespace rogue_game
             FinalBill.AddGain(gameItems);
         }
 
-        public PlayerStatusSave PlayerSave(int mid)
+        public PlayerStatusSave PlayerSave()
         {
             var playerCharacterStatus = Player.CharacterStatus;
-            var playerStatusSave = PlayerStatusSave.GenPlayerSave(playerCharacterStatus, mid);
+            var playerStatusSave = PlayerStatusSave.GenSave(playerCharacterStatus, Player.Team, Player.BodySize);
             return playerStatusSave;
         }
 

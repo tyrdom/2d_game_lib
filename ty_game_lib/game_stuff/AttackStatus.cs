@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
@@ -11,12 +12,13 @@ namespace game_stuff
         private uint ShardedAttack { get; }
         private uint ShardedNum { get; set; }
 
-        public Damage GenDamage(float damageMulti, bool isBackStab, float buffMulti = 1f)
+        public Damage GenDamage(float damageMulti, bool isBackStab, float buffMulti = 0f)
         {
             var bk = isBackStab ? 1f + BackStabAdd : 1f;
-            var mainDamage = (uint) (MainAttack * damageMulti * bk * buffMulti);
-            var shardedAttack = (uint) (ShardedAttack * damageMulti);
-            var shardedNum = (uint) (ShardedNum * buffMulti * bk);
+            var multi = bk + buffMulti;
+            var mainDamage = (uint) MathTools.Max(0, MainAttack * damageMulti * multi);
+            var shardedAttack = (uint) MathTools.Max(0, ShardedAttack * damageMulti);
+            var shardedNum = (uint) MathTools.Max(0, ShardedNum * multi);
             var damage = new Damage(shardedNum, mainDamage, shardedAttack);
 
 #if DEBUG

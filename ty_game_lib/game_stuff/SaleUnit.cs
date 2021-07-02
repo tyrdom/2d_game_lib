@@ -21,6 +21,16 @@ namespace game_stuff
             DoneDictionary = new Dictionary<int, int>();
         }
 
+        public SaleUnit(IMapInteractable? inWhichMapInteractive, GameItem cost, ISaleStuff[] good,
+            int stack, GameItem[] orCosts, Dictionary<int, int> doneDictionary)
+        {
+            InWhichMapInteractive = inWhichMapInteractive;
+            Cost = cost;
+            Good = good;
+            Stack = stack;
+            OrCosts = orCosts;
+            DoneDictionary = doneDictionary;
+        }
 
         public IMapInteractable PutInteractable(TwoDPoint pos, bool isActive)
         {
@@ -78,6 +88,7 @@ namespace game_stuff
 
         public static ISaleUnit GenByConfig(sale_unit saleUnit)
         {
+            var saleUnitId = saleUnit.id;
             var firstOrDefault = saleUnit.Cost.FirstOrDefault();
             var genByConfigGain = firstOrDefault == null
                 ? new GameItem(item_id.coin, 0)

@@ -211,7 +211,7 @@ namespace game_stuff
         public CharInitMsg GenInitMsg()
         {
             return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
-                CharacterStatus.GetWeapons());
+                CharacterStatus.GetWeapons()[CharacterStatus.NowWeapon],CharacterStatus.PassiveTraits,CharacterStatus.PlayingItemBag);
         }
 
         public override string ToString()

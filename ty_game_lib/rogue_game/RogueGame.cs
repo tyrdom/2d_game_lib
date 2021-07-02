@@ -10,11 +10,13 @@ using rogue_chapter_maker;
 
 namespace rogue_game
 {
+    [Serializable]
     public class RogueGame
     {
         public BotTeam BotTeam { get; }
-        private Queue<int> ChapterIds { get; set; }
-        private Chapter NowChapter { get; set; }
+        public Queue<int> ChapterIds { get; set; }
+        public Chapter NowChapter { get; set; }
+        public HashSet<CharacterInitData> CharacterInitDataS { get; }
         public Dictionary<int, RogueGamePlayer> NowGamePlayers { get; set; }
         public int RebornCountDownTick { get; set; }
 
@@ -31,13 +33,12 @@ namespace rogue_game
         private Random Random { get; }
 
 
+   
         public static (RogueGame genByConfig, ImmutableHashSet<IGameResp> gameResps) GenByConfig(
             HashSet<CharacterInitData> characterBodies,
             int leaderId)
         {
             var gameRespS = new HashSet<IGameResp>();
-
-
             var genByConfig = new RogueGame(characterBodies, leaderId,
                 out var ySlotArray);
             var pushChapterGoNext = new PushChapterGoNext(ySlotArray);
@@ -45,12 +46,47 @@ namespace rogue_game
             return (genByConfig, gameRespS.ToImmutableHashSet());
         }
 
+        public ImmutableHashSet<IGameResp> GenLoadRespS()
+        {
+            var chapterIdsCount = ChapterIds.Count;
+            return NowChapter.GenLoadChapterMsg(chapterIdsCount);
+        }
+
+        public RogueGameSave Save()
+        {
+            var rogueGameSave = RogueGameSave.Save(this);
+            return rogueGameSave;
+        }
+
+        //for load game
+        public RogueGame(HashSet<CharacterInitData> characterBodies, int playerLeader, ChapterSave chapterSave,
+            Dictionary<int, PlayerStatusSave> playerSaves, int restChapterNum, int nowMap)
+        {
+            CharacterInitDataS = characterBodies;
+            ChapterIds = LoadChapterIds(restChapterNum);
+            Random = new Random();
+            RebornCost = RogueLocalConfig.RogueRebornCost;
+            var genByConfig = chapterSave.Load(Random);
+            NowChapter = genByConfig;
+            NowGamePlayers = playerSaves.ToDictionary(x => x.Key,
+                x => new RogueGamePlayer(x.Value.LoadBody(x.Key)));
+            RebornCountDownTick = RogueLocalConfig.RogueRebornTick;
+            ChapterCountDownTick = -1;
+            PlayerLeaderGid = playerLeader;
+            NowPlayMap = NowChapter.MGidToMap[nowMap];
+            BotTeam = new BotTeam();
+            NowPlayMap.AddCharacterBodiesToStart(NowGamePlayers.Values.Select(x => x.Player));
+            NowPlayMap.PlayGround.ActiveApplyDevice();
+            NeedCheckClear = true;
+            Pause = false;
+        }
+
         private RogueGame(HashSet<CharacterInitData> characterBodies, int playerLeader,
-            out (int x, MapType MapType, int GId)[][] ySlotArray)
+            out (int x, MapType MapType, int MGid)[][] ySlotArray)
         {
             CharacterInitDataS = characterBodies;
             var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
-            LoadChapterIds();
+            ChapterIds = LoadChapterIds();
             Random = new Random();
             RebornCost = RogueLocalConfig.RogueRebornCost;
             if (ChapterIds == null) throw new Exception("no ChapterIds");
@@ -73,7 +109,7 @@ namespace rogue_game
             Pause = true;
             BotTeam.ClearBot();
             NowPlayMap.TelePortOut();
-            LoadChapterIds();
+            ChapterIds = LoadChapterIds();
             var (genByConfig, valueTuples) = Chapter.GenChapterById(ChapterIds.Dequeue(), Random);
             NowChapter = genByConfig;
             var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
@@ -89,13 +125,15 @@ namespace rogue_game
             return pushChapterGoNext;
         }
 
-        private HashSet<CharacterInitData> CharacterInitDataS { get; }
 
-        private void LoadChapterIds()
+        private Queue<int> LoadChapterIds(int rest = -1)
         {
             var otherConfig = CommonConfig.OtherConfig;
-            var otherConfigRogueChapters = otherConfig.RogueChapters;
-            ChapterIds =
+            var configRogueChapters = otherConfig.RogueChapters;
+            var enumerable = configRogueChapters.Skip(configRogueChapters.Length - rest).ToArray();
+            var otherConfigRogueChapters = rest < 0 ? configRogueChapters : enumerable;
+
+            return
                 otherConfigRogueChapters
                     .Aggregate(new Queue<int>(), (ints, i) =>
                     {
@@ -334,9 +372,12 @@ namespace rogue_game
 #if DEBUG
             Console.Out.WriteLine($"map change ~~~~{map} ~~ {toPos}");
 #endif
+
+
             NowPlayMap.TelePortOut();
             NowPlayMap = NowChapter.MGidToMap[map];
             NowPlayMap.TeleportToThisMap(NowGamePlayers.Values.Select(x => (x.Player, toPos)));
+            NowPlayMap.IsReached = true;
             NeedCheckClear = true;
             if (NowPlayMap.IsClear) return new RogueGameGoTickResult(playGroundGoTickResult, true);
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
@@ -371,10 +412,6 @@ namespace rogue_game
         public bool MapChange { get; }
     }
 
-    public interface IGameResp
-    {
-    }
-
     public enum GameRequestType
     {
         KickPlayer,
@@ -383,67 +420,5 @@ namespace rogue_game
         ForcePassChapter,
 #endif
         RebornPlayer
-    }
-
-    public class QuestFail : IGameResp
-    {
-        public int PlayerGid;
-
-        public QuestFail(int playerGid)
-        {
-            PlayerGid = playerGid;
-        }
-    }
-
-    public class QuestOkResult : IGameResp
-    {
-        public QuestOkResult(int playerGid, IGameRequest gameRequest)
-        {
-            PlayerGid = playerGid;
-            var gameRequestType = gameRequest switch
-            {
-                KickPlayer _ => GameRequestType.KickPlayer,
-                Leave _ => GameRequestType.Leave,
-                RebornPlayer _ => GameRequestType.RebornPlayer,
-#if DEBUG
-                ForcePassChapter _ => GameRequestType.ForcePassChapter,
-#endif
-                _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
-            };
-
-            GameRequestType = gameRequestType;
-        }
-
-        public GameRequestType GameRequestType { get; }
-
-        public int PlayerGid { get; }
-    }
-
-    public class PushChapterGoNext : IGameResp
-    {
-        public PushChapterGoNext((int x, MapType MapType, int GMid)[][] ySlotArray)
-        {
-            YSlotArray = ySlotArray;
-        }
-
-        public (int x, MapType MapType, int GMid)[][] YSlotArray { get; }
-    }
-
-    public class GameMsgPush : IGameResp
-    {
-        public GameMsgPush(GamePushMsg gameMsgToPush)
-        {
-            GameMsgToPush = gameMsgToPush;
-        }
-
-        public GamePushMsg GameMsgToPush { get; }
-    }
-
-    public enum GamePushMsg
-    {
-        GameFail,
-        MapClear,
-        ChapterPass,
-        GameFinish
     }
 }
