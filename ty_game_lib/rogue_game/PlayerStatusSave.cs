@@ -26,6 +26,7 @@ namespace rogue_game
 
         public int PropId { get; set; }
 
+        public int PropV { get; set; }
         public int NowHp { get; set; }
 
         public int NowArmor { get; set; }
@@ -61,7 +62,7 @@ namespace rogue_game
 
         private PlayerStatusSave(weapon_id[] weaponIds, int baseAttrId, int vehicleId, weapon_id[] vWeaponIds,
             GameItem[] bagData,
-            int[][] passiveData, int propId, int nowHp, int nowArmor, int nowAmmo, int vNowHp, int vNowArmor,
+            int[][] passiveData, int propId, int propV, int nowHp, int nowArmor, int nowAmmo, int vNowHp, int vNowArmor,
             int vNowAmmo, size size, int teamId)
         {
             BodySize = size;
@@ -73,6 +74,7 @@ namespace rogue_game
             BagData = bagData;
             PassiveData = passiveData;
             PropId = propId;
+            PropV = propV;
             NowHp = nowHp;
             NowArmor = nowArmor;
             NowAmmo = nowAmmo;
@@ -113,9 +115,16 @@ namespace rogue_game
             {
                 var byId = Prop.GenById((prop_id) PropId);
                 characterStatus.PickAProp(byId);
+#if DEBUG
+                Console.Out.WriteLine($"prop load {byId.PId}");
+            
+#endif
             }
 
-
+            characterStatus.SetPropPoint(PropV);
+#if DEBUG
+            Console.Out.WriteLine($"prop point load {PropV}");
+#endif 
             characterStatus.NowAmmo = NowAmmo;
             characterStatus.SurvivalStatus.SetArmor(NowArmor);
             characterStatus.SurvivalStatus.SetHp(NowHp);
@@ -181,7 +190,13 @@ namespace rogue_game
             var characterStatusNowVehicle = characterStatus.NowVehicle;
             var vehicleId = (int?) (characterStatusNowVehicle?.VId) ?? -1;
             var propId = (int?) characterStatus.Prop?.PId ?? -1;
+            var characterStatusNowPropPoint =
+                characterStatus.NowPropPoint;
+#if DEBUG
+            Console.Out.WriteLine($"save prop {propId}, {characterStatusNowPropPoint}");
+#endif
             var characterStatusSurvivalStatus = characterStatus.SurvivalStatus;
+
             var nowHp = (int) characterStatusSurvivalStatus.NowHp;
             var nowArmor = (int) characterStatusSurvivalStatus.NowArmor;
             var nowAmmo = characterStatus.NowAmmo;
@@ -194,6 +209,7 @@ namespace rogue_game
             var bagData = characterStatus.PlayingItemBag.GameItems.Select(p => new GameItem(p.Key, p.Value)).ToArray();
 
             return new PlayerStatusSave(weaponIds, baseAttrId, vehicleId, vWeaponIds, bagData, keyValuePairs, propId,
+                characterStatusNowPropPoint,
                 nowHp,
                 nowArmor,
                 nowAmmo, vNowHp, vNowArmor, vNowAmmo, size, teamId);

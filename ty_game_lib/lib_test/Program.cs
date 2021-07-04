@@ -54,6 +54,7 @@ namespace lib_test
                 RogueGame.GenByConfig(new HashSet<CharacterInitData> {genPlayerByConfig, characterInitData},
                     1).genByConfig;
 
+            genByConfig.NowGamePlayers[1].Player.CharacterStatus.PickAProp(Prop.GenById(prop_id.heal));
             // genByConfig.ForceSpawnNpc();
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();

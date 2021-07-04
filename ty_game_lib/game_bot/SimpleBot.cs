@@ -205,7 +205,8 @@ namespace game_bot
                 case BotStatus.OnPatrol:
                     if (targets != null)
                     {
-                        return new BotOpAndThink(SeeATargetAction(targets));
+                        var seeATargetAction = SeeATargetAction(targets);
+                        return new BotOpAndThink(seeATargetAction);
                     }
 
                     if (radarSees.Any())
@@ -300,7 +301,9 @@ namespace game_bot
                             }
 
                             BotStatus = BotStatus.EngageAct;
-                            return new BotOpAndThink(new Operate(skillAction: skillAction), goATick);
+
+                            return new BotOpAndThink(new Operate(aim: MoveToPt(twoDPoint), skillAction: skillAction),
+                                goATick);
                         }
 
                         var operate = new Operate(move: MoveToPt(twoDPoint));
@@ -355,7 +358,10 @@ namespace game_bot
                         }
 
                         ComboCtrl.ActACombo();
-                        return new BotOpAndThink(new Operate(skillAction: comboAction));
+                        var canBeAndNeedHit = LockBody == null
+                            ? null
+                            : BotBody.GetAnchor().GenVector(LockBody.GetAnchor()).GetUnit2();
+                        return new BotOpAndThink(new Operate(aim: canBeAndNeedHit, skillAction: comboAction));
                     }
 
                     BotStatus = BotStatus.TargetApproach;

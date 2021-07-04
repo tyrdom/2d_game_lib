@@ -48,6 +48,8 @@ namespace rogue_game
         {
             var (winCond, isClear) = GetWinCond(pointMap.MapType);
             var isC = forceClear || isClear;
+            var b = pointMap.MapType == MapType.BigStart || pointMap.MapType == MapType.SmallStart;
+            var clear = b || forceClear;
             var genEmptyPlayGround = PlayGround.GenEmptyPlayGround(resId, gmMid);
 
             if (pointMap.MapType == MapType.Vendor && saleUnits != null)
@@ -57,7 +59,7 @@ namespace rogue_game
 
 
             var pveMap = new PveMap(genEmptyPlayGround, new HashSet<BattleNpc>(), new HashSet<BattleNpc>(), winCond,
-                isC, bNpc, boss, forceClear);
+                isC, bNpc, boss, clear);
             return pveMap;
         }
 

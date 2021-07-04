@@ -715,6 +715,11 @@ namespace game_stuff
             return NowVehicle?.RecycleMulti ?? RecycleMulti;
         }
 
+        public void SetPropPoint(int v)
+        {
+            NowPropPoint = v;
+        }
+
         public IMapInteractable? PicAWeapon(Weapon weapon)
         {
             var pickedBySomebody = weapon.PickedBySomebody(this);

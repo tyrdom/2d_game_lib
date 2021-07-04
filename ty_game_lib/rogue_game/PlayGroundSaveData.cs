@@ -93,7 +93,6 @@ namespace rogue_game
                     var itemId = (item_id) Id;
                     var gameItem = new GameItem(itemId, Num);
                     return new ISaleStuff[] {gameItem};
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

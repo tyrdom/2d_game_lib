@@ -76,9 +76,8 @@ namespace game_stuff
         public bool InSight(IHaveAnchor another, SightMap? map)
         {
 #if DEBUG
-            if (GetId()==1)
+            if (GetId() == 1)
             {
-                
                 Console.Out.WriteLine($"pos {NowPos} want see {another.GetAnchor()}");
             }
 #endif
@@ -211,7 +210,8 @@ namespace game_stuff
         public CharInitMsg GenInitMsg()
         {
             return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
-                CharacterStatus.GetWeapons()[CharacterStatus.NowWeapon],CharacterStatus.PassiveTraits,CharacterStatus.PlayingItemBag);
+                CharacterStatus.GetWeapons()[CharacterStatus.NowWeapon], CharacterStatus.PassiveTraits,
+                CharacterStatus.PlayingItemBag,CharacterStatus.Prop);
         }
 
         public override string ToString()
