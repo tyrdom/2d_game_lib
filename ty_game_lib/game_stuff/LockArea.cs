@@ -92,13 +92,33 @@ namespace game_stuff
         public IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit)
         {
             if (!(Caster is CharacterStatus characterStatus)) return null;
+            if (characterStatus.LockingWho == null)
+            {
+                characterStatus.LockingWho = canBeAndNeedHit.GetBattleUnitStatus();
+            }
+            else
+            {
+                var twoDPoint = characterStatus.LockingWho.GetPos();
+                var dPoint = canBeAndNeedHit.GetBattleUnitStatus().GetPos();
+                var b = characterStatus.GetPos().GetDistance(twoDPoint) > characterStatus.GetPos().GetDistance(dPoint);
+                if (b)
+                {
+                    characterStatus.LockingWho = canBeAndNeedHit.GetBattleUnitStatus();
+                }
+            }
+
             switch (canBeAndNeedHit)
             {
                 case CharacterBody characterBody1:
 
-                    characterStatus.LockingWho = characterBody1.CharacterStatus;
+
                     return new LockHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
                 case Trap trap:
+                    if (characterStatus.LockingWho == null)
+                    {
+                        characterStatus.LockingWho = trap;
+                    }
+
                     return new LockHit(trap, Caster.GetFinalCaster().CharacterStatus, this);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));

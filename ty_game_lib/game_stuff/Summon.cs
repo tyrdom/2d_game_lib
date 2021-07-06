@@ -21,8 +21,7 @@ namespace game_stuff
 
         public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
         {
-            return
-                PosMediaStandard.Active(casterPos, casterAim, this);
+            return PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
         public bool CanGoNextTick()
@@ -42,7 +41,7 @@ namespace game_stuff
                 case null:
                     return null;
                 case CharacterStatus characterStatus:
-                    var genATrap = TrapSetter.GenATrap(characterStatus, Pos, genAMapInstanceId);
+                    var genATrap = TrapSetter.GenATrap(characterStatus, characterStatus.GetPos(), genAMapInstanceId);
                     characterStatus.AddTrap(genATrap);
                     return genATrap.InBox;
                 case Trap _:
@@ -63,7 +62,7 @@ namespace game_stuff
             return GenById(summonId);
         }
 
-        public static Summon GenById(summon_id id)
+        private static Summon GenById(summon_id id)
         {
             return CommonConfig.Configs.summons.TryGetValue(id, out var summon)
                 ? new Summon(summon)

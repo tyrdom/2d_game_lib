@@ -10,7 +10,7 @@ namespace game_stuff
             size bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
             uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChanceStack,
             float damageMulti,
-            int instanceId)
+            int instanceId, trap_id trapId)
         {
             NotOverFlow = true;
             Owner = characterStatus;
@@ -35,12 +35,14 @@ namespace game_stuff
             LaunchMedia?.Sign(this);
             InBox = CovToIdBox();
             MapMarkId = instanceId;
+            TrapId = trapId;
         }
 
         public override string ToString()
         {
             return $"trapId :{Tid} pos: {Pos}";
         }
+
 
         public bool NotOverFlow { get; set; }
         private CharacterStatus Owner { get; }
@@ -157,9 +159,14 @@ namespace game_stuff
             return covToAaBbPackBox;
         }
 
+        public IBattleUnitStatus GetBattleUnitStatus()
+        {
+            return this;
+        }
+
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            return new TrapTickMsg(Pos, Tid, SurvivalStatus?.GenShortStatus() ?? -1f);
+            return new TrapTickMsg(Pos, SurvivalStatus?.GenShortStatus() ?? -1f, Owner.GId, (int) TrapId);
         }
 
         public TwoDPoint GetAnchor()
@@ -231,19 +238,23 @@ namespace game_stuff
         }
 
         public int MapMarkId { get; set; }
+
+        public trap_id TrapId { get; }
     }
 
     public class TrapTickMsg : ISeeTickMsg
     {
-        public TrapTickMsg(TwoDPoint pos, int tid, float ssStatus)
+        public TrapTickMsg(TwoDPoint pos, float ssStatus, int ownerId, int trapId)
         {
             Pos = pos;
-            Tid = tid;
             SsStatus = ssStatus;
+            OwnerId = ownerId;
+            TrapId = trapId;
         }
 
+        public int OwnerId { get; }
+        public int TrapId { get; }
         public TwoDPoint Pos { get; }
-        public int Tid { get; }
         public float SsStatus { get; }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
@@ -9,7 +10,7 @@ namespace game_stuff
     {
         public TrapSetter(bool canBeSee, int? failChanceStack, size bodySize, uint callTrapTick,
             uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
-            int? baseAttrId)
+            int? baseAttrId, trap_id trapId)
         {
             CanBeSee = canBeSee;
             FailChanceStack = failChanceStack;
@@ -18,13 +19,19 @@ namespace game_stuff
             MaxLifeTimeTick = maxLifeTimeTick;
             TrapMedia = trapMedia;
             BaseAttrId = baseAttrId;
-
+            TrapId = trapId;
             LaunchMedia = launchMedia;
             TrickDelayTick = trickDelayTick;
             TrickStack = trickStack;
         }
 
         public static TrapSetter GenById(string id)
+        {
+            var trapId = (trap_id) Enum.Parse(typeof(trap_id), id, true);
+            return GenById(trapId);
+        }
+
+        private static TrapSetter GenById(trap_id id)
         {
             return CommonConfig.Configs.traps.TryGetValue(id, out var trap)
                 ? new TrapSetter(trap)
@@ -33,6 +40,7 @@ namespace game_stuff
 
         private TrapSetter(trap trap)
         {
+            TrapId = trap.id;
             CanBeSee = trap.CanBeSee;
             FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
             BodySize = trap.BodyId;
@@ -56,7 +64,7 @@ namespace game_stuff
             TrickDelayTick = trap.TrickDelayTime;
         }
 
-        public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos ,int mapInstanceId)
+        public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos, int mapInstanceId)
         {
             var id = characterStatus.GetId() * CommonConfig.OtherConfig.up_trap_max + characterStatus.Traps.Count;
 
@@ -65,16 +73,17 @@ namespace game_stuff
                     CallTrapTick,
                     MaxLifeTimeTick, 0,
                     TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
-                    characterStatus.TrapAtkMulti,mapInstanceId);
+                    characterStatus.TrapAtkMulti, mapInstanceId, TrapId);
             var (baseSurvivalStatus, _) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value));
             var trap = new Trap(characterStatus, baseSurvivalStatus, CanBeSee, pos, id, BodySize,
                 CallTrapTick,
                 MaxLifeTimeTick, 0,
                 TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
-                characterStatus.TrapAtkMulti,mapInstanceId);
+                characterStatus.TrapAtkMulti, mapInstanceId, TrapId);
             return trap;
         }
 
+        private trap_id TrapId { get; }
         private int? BaseAttrId { get; }
         private bool CanBeSee { get; }
         private int? FailChanceStack { get; }

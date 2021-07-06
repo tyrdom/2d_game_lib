@@ -93,6 +93,11 @@ namespace game_stuff
             return covToAaBbPackBox;
         }
 
+        public IBattleUnitStatus GetBattleUnitStatus()
+        {
+            return CharacterStatus;
+        }
+
 
         public float GetRr()
         {
@@ -211,7 +216,7 @@ namespace game_stuff
         {
             return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
                 CharacterStatus.GetWeapons()[CharacterStatus.NowWeapon], CharacterStatus.PassiveTraits,
-                CharacterStatus.PlayingItemBag,CharacterStatus.Prop);
+                CharacterStatus.PlayingItemBag, CharacterStatus.Prop);
         }
 
         public override string ToString()

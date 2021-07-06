@@ -11,6 +11,7 @@ namespace game_stuff
         size GetSize();
         bool CheckCanBeHit();
         public IdPointBox CovToIdBox();
+        public IBattleUnitStatus GetBattleUnitStatus();
     }
 
 

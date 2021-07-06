@@ -41,20 +41,22 @@ namespace game_stuff
 
 
             return initPassive == null
-                ? new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, null, null)
-                : new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, null, initPassive);
+                ? new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, CommonConfig.OtherConfig.weapon_num,
+                    null)
+                : new CharacterInitData(gid, teamId, weaponIds, size, baseAttrId, CommonConfig.OtherConfig.weapon_num,
+                    initPassive);
             // var d2 = new Dictionary<passive_id, PassiveTrait>();
         }
 
         private CharacterInitData(int gid, int teamId, weapon_id[] weapons, size bodySize,
-            int baseAttrId, int? weaponMaxNum, Dictionary<passive_id, uint>? initPassiveTraits)
+            int baseAttrId, int weaponMaxNum, Dictionary<passive_id, uint>? initPassiveTraits)
         {
             Gid = gid;
             TeamId = teamId;
             Weapons = weapons;
             BodySize = bodySize;
             BaseAttrId = baseAttrId;
-            WeaponMaxNum = weaponMaxNum ?? 5;
+            WeaponMaxNum = weaponMaxNum;
             InitPassiveTraits = initPassiveTraits;
         }
 

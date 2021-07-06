@@ -22,6 +22,11 @@ namespace game_stuff
         {
             return Pos;
         }
+
+        public float GetRr()
+        {
+           return StuffLocalConfig.GetRBySize(Size);
+        }
     }
 
     public class RadarWave : IHitMedia

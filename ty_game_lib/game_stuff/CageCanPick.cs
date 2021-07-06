@@ -156,7 +156,7 @@ namespace game_stuff
         PropC,
         WeaponC,
         VehicleC,
-        GameItemC,
+        GameItemC
     }
 
     public class CageTickMsg : ISeeTickMsg
