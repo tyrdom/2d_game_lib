@@ -43,7 +43,7 @@ namespace collision_and_rigid
         TwoDVectorLine GetMoveVectorLine();
 
 
-        IdPointBox? IdPointBox { get; set; }
+        IdPointBox IdPointBox { get; set; }
     }
 
 

@@ -14,7 +14,7 @@ namespace game_stuff
         AllTeam
     }
 
-    public class Bullet : IHitMedia
+    public class Bullet : IHitMedia, IHaveAnchor
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
@@ -25,6 +25,7 @@ namespace game_stuff
         private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
 
+        public float WaveCast { get; }
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
         private Dictionary<size, IStunBuffMaker> SuccessStunBuffConfigToOpponent { get; }
@@ -163,14 +164,15 @@ namespace game_stuff
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
-                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum);
+                bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
+                bullet.SoundWaveRad);
         }
 
         private Bullet(Dictionary<size, BulletBox> sizeToBulletCollision,
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, uint pauseToCaster, uint pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum, float waveCast)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -189,6 +191,7 @@ namespace game_stuff
             RestTick = 1;
             BulletId = bulletId;
             HitLimitNum = hitLimitNum;
+            WaveCast = waveCast;
             AmmoAddWhenSuccess = ammoAddWhenSuccess;
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
@@ -580,6 +583,11 @@ namespace game_stuff
         {
             return
                 PosMediaStandard.Active(casterPos, casterAim, this);
+        }
+
+        public TwoDPoint GetAnchor()
+        {
+            return Pos;
         }
     }
 

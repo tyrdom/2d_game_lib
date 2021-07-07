@@ -6,7 +6,6 @@ namespace game_stuff
     public class Trap : ICanBeAndNeedHit, IBattleUnitStatus, INotMoveCanBeAndNeedSew
     {
         public Trap(CharacterStatus characterStatus, SurvivalStatus? survivalStatus, bool canBeSee, TwoDPoint pos,
-            int tid,
             size bodySize, uint callTrapTick, uint? maxLifeTimeTick, uint nowLifeTimeTick, IHitMedia trapMedia,
             uint trickDelayTick, uint nowTrickDelayTick, int? trickStack, IHitMedia? launchMedia, int? failChanceStack,
             float damageMulti,
@@ -17,7 +16,6 @@ namespace game_stuff
             SurvivalStatus = survivalStatus;
             CanBeSee = canBeSee;
             Pos = pos;
-            Tid = tid;
             BodySize = bodySize;
             CallTrapTick = callTrapTick;
             MaxLifeTimeTick = maxLifeTimeTick;
@@ -30,17 +28,20 @@ namespace game_stuff
             LaunchMedia = launchMedia;
             FailChanceStack = failChanceStack;
             DamageMulti = damageMulti;
-            IdPointBox = null;
+
+            var zone = Zone.Zero();
+            var covToAaBbPackBox = new IdPointBox(zone, this);
+            IdPointBox = covToAaBbPackBox;
             TrapMedia.Sign(this);
             LaunchMedia?.Sign(this);
-            InBox = CovToIdBox();
+
             MapMarkId = instanceId;
             TrapId = trapId;
         }
 
         public override string ToString()
         {
-            return $"trapId :{Tid} pos: {Pos}";
+            return $"trapId :{MapMarkId} pos: {Pos}";
         }
 
 
@@ -49,7 +50,7 @@ namespace game_stuff
         private SurvivalStatus? SurvivalStatus { get; }
         public bool CanBeSee { get; }
         private TwoDPoint Pos { get; }
-        private int Tid { get; }
+
         private int? FailChanceStack { get; set; }
         private size BodySize { get; }
         private uint CallTrapTick { get; }
@@ -126,7 +127,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return Tid;
+            return MapMarkId;
         }
 
 
@@ -139,7 +140,7 @@ namespace game_stuff
             return Pos;
         }
 
-        public IdPointBox InBox { get; set; }
+        // public IdPointBox InBox { get; set; }
 
         public size GetSize()
         {
@@ -151,13 +152,6 @@ namespace game_stuff
             return true;
         }
 
-        public IdPointBox CovToIdBox()
-        {
-            var zone = Zone.Zero();
-            var covToAaBbPackBox = new IdPointBox(zone, this);
-            IdPointBox = covToAaBbPackBox;
-            return covToAaBbPackBox;
-        }
 
         public IBattleUnitStatus GetBattleUnitStatus()
         {
@@ -184,7 +178,7 @@ namespace game_stuff
             return Pos;
         }
 
-        public IdPointBox? IdPointBox { get; set; }
+        public IdPointBox IdPointBox { get; set; }
 
 
         public CharacterBody GetFinalCaster()

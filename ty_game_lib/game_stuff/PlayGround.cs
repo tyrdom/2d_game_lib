@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 
@@ -171,7 +170,7 @@ namespace game_stuff
                 {
                     var hashSet = p.Value;
                     var aabbBoxShapes =
-                        hashSet.Select(x => x.InBox).OfType<IAaBbBox>().IeToHashSet();
+                        hashSet.Select(x => x.IdPointBox).OfType<IAaBbBox>().IeToHashSet();
                     emptyRootBranch.AddRangeAabbBoxes(aabbBoxShapes, CommonConfig.OtherConfig.qspace_max_per_level);
                     return (emptyRootBranch, emptyRootBranch2);
                 });
@@ -197,10 +196,10 @@ namespace game_stuff
         private Dictionary<int, HashSet<CharInitMsg>> GenInitMsg()
         {
             var dictionary = new Dictionary<int, HashSet<CharInitMsg>>();
-            var charInitMsgs =
+            var charInitMsgS =
                 GidToBody.ToDictionary(p => p.Key,
                     p => p.Value.GenInitMsg());
-            foreach (var kv in charInitMsgs)
+            foreach (var kv in charInitMsgS)
             {
                 if (dictionary.TryGetValue(kv.Key, out var initMsgList))
                 {
@@ -245,11 +244,11 @@ namespace game_stuff
             var playerBeHit = new Dictionary<int, HashSet<IRelationMsg>>();
             var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
             var teamRadarSee = new Dictionary<int, HashSet<IPerceivable>>();
-            var everyBodyGoATick = EveryTeamGoATick(gidToOperates, actOut);
+            var newBulletCollector = new HashSet<Bullet>();
 
-            MapInteractableGoATick();
+            var everyBodyGoATick = EveryTeamGoATick(gidToOperates, actOut, newBulletCollector);
 
-
+            MapInteractableGoATick(newBulletCollector);
             HitMediasDo(playerBeHit, trapBeHit, teamRadarSee);
 
             foreach (var twoDTwoP in everyBodyGoATick)
@@ -260,24 +259,26 @@ namespace game_stuff
                 }
             }
 
-            BodiesQSpaceReplace(playerBeHit, gidToOperates);
+            BodiesQSpaceReplace(playerBeHit);
 
-            var playerSee = GetPlayerSee();
+            var playerSee = GetPlayerSense(newBulletCollector);
+
             var playerPerceivable =
                 playerSee.ToImmutableDictionary(pair => pair.Key,
                     pair =>
                     {
                         var gid = pair.Key;
-                        var seeTickMsgS = pair.Value;
+                        var (characterBodies, enumerable, hear) = pair.Value;
                         if (GidToBody.TryGetValue(gid, out var cb) &&
                             teamRadarSee.TryGetValue(cb.Team, out var sees))
-                            return seeTickMsgS.Union(sees).ToImmutableHashSet();
-                        return seeTickMsgS
-                            .ToImmutableHashSet();
+                            return (characterBodies.Union(sees).ToImmutableHashSet(),
+                                enumerable.ToImmutableHashSet(), hear.ToImmutableHashSet());
+                        return (characterBodies.ToImmutableHashSet(),
+                            enumerable.ToImmutableHashSet(), hear.ToImmutableHashSet());
                     });
 
             var playerTickSees = playerPerceivable.ToImmutableDictionary(x => x.Key,
-                x => PlayerTickSee.GenPlayerSee(x.Value,
+                x => PlayerTickSense.GenPlayerSense(x.Value,
                     LastTickRecord.TryGetValue(x.Key, out var t)
                         ? t
                         : (ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty, ImmutableHashSet<CharacterBody>.Empty)));
@@ -285,7 +286,7 @@ namespace game_stuff
             foreach (var keyValuePair in playerPerceivable)
             {
                 var key = keyValuePair.Key;
-                var immutableHashSet = keyValuePair.Value;
+                var (immutableHashSet, _, _) = keyValuePair.Value;
                 var notMoveCanBeSews = immutableHashSet.OfType<INotMoveCanBeAndNeedSew>();
                 var characterBodies = immutableHashSet.OfType<CharacterBody>();
                 LastTickRecord[key] = (notMoveCanBeSews.ToImmutableHashSet(), characterBodies.ToImmutableHashSet());
@@ -317,27 +318,13 @@ namespace game_stuff
             return valueTuple;
         }
 
-        private void MapInteractableGoATick()
+        private void MapInteractableGoATick(HashSet<Bullet> newBulletCollector)
         {
             var mapInteractableS = new List<IHitMedia>();
 
             var vehicleCanIns = new List<VehicleCanIn>();
 
             var tuples = new List<(TwoDPoint pos, Weapon[] weapons)>();
-
-            static void Act(VehicleCanIn vehicleCanIn,
-                (List<IHitMedia> bullets, List<VehicleCanIn>vehicleCanIns, List<(TwoDPoint pos, Weapon[] weapons)>
-                    weaponsDrop) valueTuple)
-            {
-                var (bullet, weapons) = vehicleCanIn.GoATick();
-
-                if (bullet == null) return;
-                var (bullets, vehicleCanIns, weaponsDrop) = valueTuple;
-                bullets.Add(bullet);
-                vehicleCanIns.Add(vehicleCanIn);
-                var twoDPoint = vehicleCanIn.GetAnchor();
-                weaponsDrop.Add((twoDPoint, weapons));
-            }
 
             MapInteractableThings
                 .ForeachBoxDoWithOutMove<(List<IHitMedia> bullets,
@@ -347,6 +334,7 @@ namespace game_stuff
                     (mapInteractableS, vehicleCanIns, tuples));
             TeamToHitMedia[-1] = mapInteractableS;
 
+            newBulletCollector.UnionWith(mapInteractableS.OfType<Bullet>());
             foreach (var vehicleCanIn in vehicleCanIns)
             {
                 MapInteractableThings.RemoveSingleAaBbBox(vehicleCanIn);
@@ -356,10 +344,28 @@ namespace game_stuff
             AddRangeMapInteractable(selectMany);
         }
 
-
-        private Dictionary<int, HashSet<IPerceivable>> GetPlayerSee()
+        private static void Act(VehicleCanIn vehicleCanIn,
+            (List<IHitMedia> bullets, List<VehicleCanIn> vehicleCanIns, List<(TwoDPoint pos, Weapon[] weapons)>
+                weaponsDrop) valueTuple)
         {
-            var gidToCharacterBodies = new Dictionary<int, HashSet<IPerceivable>>();
+            var (bullet, weapons) = vehicleCanIn.GoATick();
+
+            if (bullet == null) return;
+            var (bullets, vehicleCanIns, weaponsDrop) = valueTuple;
+            bullets.Add(bullet);
+            vehicleCanIns.Add(vehicleCanIn);
+            var twoDPoint = vehicleCanIn.GetAnchor();
+            weaponsDrop.Add((twoDPoint, weapons));
+        }
+
+
+        private Dictionary<int, (HashSet<IPerceivable> characterBodies, HashSet<Bullet> bulletSaw, HashSet<Bullet>
+            bulletHear)> GetPlayerSense(
+            ISet<Bullet> newBulletCollector)
+        {
+            var gidToCharacterBodies =
+                new Dictionary<int, (HashSet<IPerceivable> characterBodies, HashSet<Bullet> bulletSaw, HashSet<Bullet>
+                    bulletHear)>();
             foreach (var kv in GidToBody)
             {
                 var key = kv.Key;
@@ -369,7 +375,6 @@ namespace game_stuff
                 // Console.Out.WriteLine($"gid::{characterBody.GetId()}");
 #endif
                 var characterBodies = new HashSet<IPerceivable>();
-
                 var filterToBoxList = MapInteractableThings.FilterToBoxList<ICanBeAndNeedSaw, CharacterBody>(
                     (idp, acb) => acb.InSight(idp, SightMap),
                     characterBody, sightZone);
@@ -420,14 +425,16 @@ namespace game_stuff
                     }
                 }
 
-                gidToCharacterBodies[key] = characterBodies;
+                var bulletSaw = newBulletCollector.Where(x => characterBody.InSight(x, SightMap)).IeToHashSet();
+                var bulletHear = newBulletCollector.Except(bulletSaw).Where(x => characterBody.Hear(x, BulletBlockMap))
+                    .IeToHashSet();
+                gidToCharacterBodies[key] = (characterBodies, bulletSaw, bulletHear);
             }
 
             return gidToCharacterBodies;
         }
 
-        private void BodiesQSpaceReplace(IDictionary<int, HashSet<IRelationMsg>> playerBeHit,
-            Dictionary<int, Operate> gidToOperates)
+        private void BodiesQSpaceReplace(IDictionary<int, HashSet<IRelationMsg>> playerBeHit)
         {
             foreach (var (playerBodies, _) in TeamToBodies.Select(kv => kv.Value))
             {
@@ -438,7 +445,6 @@ namespace game_stuff
                         {
                             case CharacterBody characterBody:
                                 var characterBodyBodySize = characterBody.GetSize();
-                                var id = characterBody.GetId();
                                 if (dic.SizeToEdge.TryGetValue(characterBodyBodySize, out var walkBlock))
                                 {
                                     return characterBody.RelocateWithBlock(walkBlock);
@@ -606,7 +612,7 @@ namespace game_stuff
         private static readonly Func<IAaBbBox, bool> IsV = x => x is VehicleCanIn;
 
         private Dictionary<int, ITwoDTwoP> EveryTeamGoATick(Dictionary<int, Operate> gidToOperates,
-            IDictionary<int, IEnumerable<IToOutPutResult>> dictionary)
+            IDictionary<int, IEnumerable<IToOutPutResult>> dictionary, ICollection<Bullet> newBulletCollector)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
 
@@ -630,20 +636,40 @@ namespace game_stuff
                     var goTickResult = trapGoTickResult.Value;
 
                     var stillAlive = goTickResult.StillAlive;
-
+#if DEBUG
+                    // Console.Out.WriteLine($"trap go tick {trapGoTickResult.Key} :{trapGoTickResult.Value.StillAlive}");
+#endif
                     if (!stillAlive)
                     {
-                        if (goTickResult.Self?.IdPointBox != null) thisTeamToRemove.Add(goTickResult.Self.IdPointBox);
+                        if (goTickResult.Self?.IdPointBox != null)
+                        {
+                            thisTeamToRemove.Add(goTickResult.Self.IdPointBox);
+#if DEBUG
+                            Console.Out.WriteLine($"trap to remove {trapGoTickResult.Key} {thisTeamToRemove.Count}");
+#endif
+                        }
+
                         continue;
                     }
 
                     var launchBullet = goTickResult.LaunchBullet;
-                    if (launchBullet == null) continue;
+                    switch (launchBullet)
+                    {
+                        case null:
+                            continue;
+                        case Bullet bullet:
+                            newBulletCollector.Add(bullet);
+                            break;
+                    }
 
                     var addBulletToDict = AddBulletToDict(team, launchBullet);
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
+                // foreach (var idPointBox in thisTeamToRemove)
+                // {
+                //     traps.RemoveSingleAaBbBox(idPointBox);
+                // }
                 traps.RemoveIdPointBoxes(thisTeamToRemove);
 
                 foreach (var gtb in mapToDicGidToSth)
@@ -734,9 +760,17 @@ namespace game_stuff
                         }
                     }
 
-                    var bullet = aCharGoTickMsg.LaunchBullet;
-                    if (bullet == null) continue;
-                    var addBulletToDict = AddBulletToDict(team, bullet);
+                    var posMedia = aCharGoTickMsg.LaunchBullet;
+                    switch (posMedia)
+                    {
+                        case null:
+                            continue;
+                        case Bullet bullet:
+                            newBulletCollector.Add(bullet);
+                            break;
+                    }
+
+                    var addBulletToDict = AddBulletToDict(team, posMedia);
                     if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
                 }
 
@@ -836,7 +870,7 @@ namespace game_stuff
             var selectMany = groupBy.SelectMany(bodies =>
             {
                 if (!TeamToBodies.TryGetValue(bodies.Key, out var q)) return Enumerable.Empty<IdPointBox>();
-                var idPointBoxes = bodies.Select(x => x.InBox);
+                var idPointBoxes = bodies.Select(x => x.IdPointBox);
                 return q.playerBodies.RemoveIdPointBoxes(idPointBoxes);
             });
             return selectMany;
@@ -862,7 +896,7 @@ namespace game_stuff
             )
             {
                 return GidToBody.Remove(gid) &&
-                       valueTuple.playerBodies.RemoveSingleAaBbBox(gidCharacterBody.InBox);
+                       valueTuple.playerBodies.RemoveSingleAaBbBox(gidCharacterBody.IdPointBox);
             }
 
             return false;
@@ -877,7 +911,7 @@ namespace game_stuff
                 GidToBody.TryGetValue(id, out var gidCharacterBody) && characterBody == gidCharacterBody)
             {
                 return GidToBody.Remove(id) &&
-                       valueTuple.playerBodies.RemoveAIdPointBox(characterBody.InBox);
+                       valueTuple.playerBodies.RemoveAIdPointBox(characterBody.IdPointBox);
             }
 
             return false;
@@ -910,7 +944,7 @@ namespace game_stuff
                         TempTeleMsgToThisMap.Add((key, new TelePortMsg(MgId, point)));
                     }
 
-                    var enumerableToHashSet = grouping.Select(x => x.InBox).IeToHashSet();
+                    var enumerableToHashSet = grouping.Select(x => x.IdPointBox).IeToHashSet();
                     AddTeamBodies(team, enumerableToHashSet);
                 }
                 else
@@ -958,7 +992,7 @@ namespace game_stuff
                     GidToBody[characterBody.GetId()] = characterBody;
                 }
 
-                var enumerableToHashSet = valueTuples.Select(x => x.characterBody.InBox).IeToHashSet();
+                var enumerableToHashSet = valueTuples.Select(x => x.characterBody.IdPointBox).IeToHashSet();
                 AddTeamBodies(team, enumerableToHashSet);
             }
         }
@@ -966,7 +1000,7 @@ namespace game_stuff
         public void AddBody(CharacterBody characterBody, TwoDPoint? telePos = null)
         {
             var characterBodyTeam = characterBody.Team;
-            var characterBodyInBox = characterBody.InBox;
+            var characterBodyInBox = characterBody.IdPointBox;
             if (telePos != null) characterBody.Teleport(telePos);
             if (TeamToBodies.TryGetValue(characterBodyTeam, out var tuple))
             {

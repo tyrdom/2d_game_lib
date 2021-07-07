@@ -33,6 +33,8 @@ namespace collision_and_rigid
         public void AddRangeAabbBoxes(HashSet<IAaBbBox> aaBbBoxes, int limit);
         public bool RemoveSingleAaBbBox(IAaBbBox aaBbBox);
 
+        // public bool RemoveAaBbBoxes(HashSet<IAaBbBox> aaBbBoxes);
+        
         public IAaBbBox? InteractiveFirstSingleBox(TwoDPoint pos, Func<IAaBbBox, bool>? filter = null);
         public (int, BlockBox?) TouchWithARightShootPoint(TwoDPoint p);
         public string OutZones();

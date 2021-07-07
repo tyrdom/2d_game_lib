@@ -9,7 +9,7 @@ namespace game_stuff
         float MaxMoveSpeed { get; }
         float MinMoveSpeed { get; }
         float AddMoveSpeed { get; }
-
+        float ListenRange { get; }
         int BaseAttrId { get; }
         SurvivalStatus SurvivalStatus { get; }
         AbsorbStatus AbsorbStatus { get; }

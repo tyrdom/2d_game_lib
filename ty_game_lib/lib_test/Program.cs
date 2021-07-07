@@ -54,7 +54,9 @@ namespace lib_test
                 RogueGame.GenByConfig(new HashSet<CharacterInitData> {genPlayerByConfig, characterInitData},
                     1).genByConfig;
 
-            genByConfig.NowGamePlayers[1].Player.CharacterStatus.PickAProp(Prop.GenById(prop_id.heal));
+            var playerCharacterStatus = genByConfig.NowGamePlayers[1].Player.CharacterStatus;
+            playerCharacterStatus.PickAProp(Prop.GenById(prop_id.alert));
+            playerCharacterStatus.SetPropPoint(100);
             // genByConfig.ForceSpawnNpc();
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
@@ -71,7 +73,7 @@ namespace lib_test
 
                 var dVector = new TwoDVector(1f, 0f);
                 var operate = i < 99
-                    ? new Operate(aim: dVector, SkillAction.Op1)
+                    ? new Operate(aim: dVector, specialAction: SpecialAction.UseProp)
                     : new Operate(aim: dVector, move: dVector);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);

@@ -235,9 +235,18 @@ namespace collision_and_rigid
         {
             var removeIdPointBoxes = idPointBoxes as IdPointBox[] ?? idPointBoxes.ToArray();
             if (!removeIdPointBoxes.Any()) return removeIdPointBoxes;
-            var aaBbBoxes = removeIdPointBoxes.Where(AaBbPackBox.Contains).ToArray();
-            AaBbPackBox.ExceptWith(aaBbBoxes);
-            return removeIdPointBoxes.Except(aaBbBoxes);
+#if DEBUG
+            // Console.Out.WriteLine($"to remove idBox L {TheQuad} {removeIdPointBoxes.Length} {AaBbPackBox.Count} ");
+#endif
+
+            var aaBbBoxes = AaBbPackBox.ToArray();
+            AaBbPackBox.ExceptWith(removeIdPointBoxes);
+#if DEBUG
+            // Console.Out.WriteLine($" removed idBox L {TheQuad} {removeIdPointBoxes.Length} {AaBbPackBox.Count} ");
+#endif
+            var except = removeIdPointBoxes.Except(aaBbBoxes).ToArray();
+            var bbBoxes = removeIdPointBoxes.Except(except).OfType<IdPointBox>();
+            return bbBoxes;
         }
 
         public TwoDPoint? GetSlidePoint(TwoDVectorLine line, bool safe = true)
@@ -267,7 +276,7 @@ namespace collision_and_rigid
             if (notCross)
             {
 #if DEBUG
-                Console.Out.WriteLine($"not cross zone {genZone} and {Zone}");
+                // Console.Out.WriteLine($"not cross zone {genZone} and {Zone}");
 #endif
 
                 return false;
@@ -351,7 +360,7 @@ namespace collision_and_rigid
             if (Zone.RealNotCross(zone))
             {
 #if DEBUG
-                Console.Out.WriteLine($"zone not cross so skip {zone} -- {Zone}");
+                // Console.Out.WriteLine($"zone not cross so skip {zone} -- {Zone}");
 #endif
                 return;
             }

@@ -591,7 +591,7 @@ namespace collision_and_rigid
 
 
 #if DEBUG
-            Console.Out.WriteLine($"pass U:{passU} D: {passD} L:{passL} R:{passR}");
+            // Console.Out.WriteLine($"pass U:{passU} D: {passD} L:{passL} R:{passR}");
 
 #endif
             if (passU)

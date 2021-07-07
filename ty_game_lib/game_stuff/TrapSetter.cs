@@ -66,16 +66,14 @@ namespace game_stuff
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos, int mapInstanceId)
         {
-            var id = characterStatus.GetId() * CommonConfig.OtherConfig.up_trap_max + characterStatus.Traps.Count;
-
             if (BaseAttrId == null)
-                return new Trap(characterStatus, null, CanBeSee, pos, id, BodySize,
+                return new Trap(characterStatus, null, CanBeSee, pos, BodySize,
                     CallTrapTick,
                     MaxLifeTimeTick, 0,
                     TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
                     characterStatus.TrapAtkMulti, mapInstanceId, TrapId);
             var (baseSurvivalStatus, _) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value));
-            var trap = new Trap(characterStatus, baseSurvivalStatus, CanBeSee, pos, id, BodySize,
+            var trap = new Trap(characterStatus, baseSurvivalStatus, CanBeSee, pos, BodySize,
                 CallTrapTick,
                 MaxLifeTimeTick, 0,
                 TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,

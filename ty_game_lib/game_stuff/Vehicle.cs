@@ -81,6 +81,7 @@ namespace game_stuff
             MaxMoveSpeed = genBaseAttrById.MoveMaxSpeed;
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
+            ListenRange = genBaseAttrById.ListenRange;
             StandardScope = standardScope;
             Weapons = weapons;
             DestroyBullet = destroyBullet;
@@ -108,6 +109,7 @@ namespace game_stuff
         public float MaxMoveSpeed { get; private set; }
         public float MinMoveSpeed { get; }
         public float AddMoveSpeed { get; }
+        public float ListenRange { get; }
         public int BaseAttrId { get; }
         public Scope StandardScope { get; }
         public Dictionary<int, Weapon> Weapons { get; }

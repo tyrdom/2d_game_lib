@@ -269,25 +269,54 @@ namespace collision_and_rigid
             {
                 return removeIdPointBoxes;
             }
+#if DEBUG
+            // Console.Out.WriteLine($"to remove idBox {removeIdPointBoxes.Length} {AaBbPackBox.Count} ");
+#endif
+            var aaBbBoxes = AaBbPackBox.ToArray();
+            AaBbPackBox.ExceptWith(removeIdPointBoxes);
 
-            var aaBbBoxes = removeIdPointBoxes.Where(AaBbPackBox.Contains).ToArray();
-            var i = aaBbBoxes.Length;
-            AaBbPackBox.ExceptWith(aaBbBoxes);
-            var except = removeIdPointBoxes.Except(aaBbBoxes);
+            var except = removeIdPointBoxes.Except(aaBbBoxes).ToArray();
+            var bbBoxes = removeIdPointBoxes.Except(except).OfType<IdPointBox>().ToList();
+#if DEBUG
+            // Console.Out.WriteLine($" removed idBox {AaBbPackBox.Count}:{bbBoxes.Count()} rest {except.Length} ");
+#endif
+            var valueTuples = except.SelectMany(box => box.SplitByQuads(Zone)).GroupBy(x => x.Item1);
 
-            var groupBy = except.GroupBy(x => x.GetAnchor().WhichQ(this));
-
-            return groupBy.SelectMany(gg =>
+            foreach (var g in valueTuples)
             {
-                return gg.Key switch
+                var enumerable = g.Select(x => x.Item2).OfType<IdPointBox>().ToArray();
+#if DEBUG
+                // Console.Out.WriteLine($" remove idBox in L {g.Key}:{enumerable.Count()} ");
+#endif
+                var pointBoxes = g.Key switch
                 {
-                    Quad.One => QuadOne.RemoveIdPointBoxes(gg),
-                    Quad.Two => QuadTwo.RemoveIdPointBoxes(gg),
-                    Quad.Three => QuadThree.RemoveIdPointBoxes(gg),
-                    Quad.Four => QuadFour.RemoveIdPointBoxes(gg),
-                    _ => throw new ArgumentOutOfRangeException()
+                    -1 => throw new Exception("no good split zone"),
+                    // case 0:
+                    //     
+                    //     break;
+                    1 => QuadOne.RemoveIdPointBoxes(enumerable),
+                    2 => QuadTwo.RemoveIdPointBoxes(enumerable),
+                    3 => QuadThree.RemoveIdPointBoxes(enumerable),
+                    4 => QuadFour.RemoveIdPointBoxes(enumerable),
+                    _ => throw new Exception("no good split zone")
                 };
-            });
+                bbBoxes.AddRange(pointBoxes);
+            }
+
+            return bbBoxes;
+            // var groupBy = removeIdPointBoxes.GroupBy(x => x.GetAnchor().WhichQ(this));
+            //
+            // return groupBy.SelectMany(gg =>
+            // {
+            //     return gg.Key switch
+            //     {
+            //         Quad.One => QuadOne.RemoveIdPointBoxes(gg),
+            //         Quad.Two => QuadTwo.RemoveIdPointBoxes(gg),
+            //         Quad.Three => QuadThree.RemoveIdPointBoxes(gg),
+            //         Quad.Four => QuadFour.RemoveIdPointBoxes(gg),
+            //         _ => throw new ArgumentOutOfRangeException()
+            //     };
+            // });
         }
 
 
@@ -359,7 +388,7 @@ namespace collision_and_rigid
             if (notCross)
             {
 #if DEBUG
-                Console.Out.WriteLine($"not cross zone {genZone} and {Zone}");
+                // Console.Out.WriteLine($"not cross zone {genZone} and {Zone}");
 #endif
                 return false;
             }
@@ -580,7 +609,7 @@ namespace collision_and_rigid
             if (Zone.RealNotCross(zone))
             {
 #if DEBUG
-                Console.Out.WriteLine($"zone not cross so skip {zone} -- {Zone}");
+                // Console.Out.WriteLine($"zone not cross so skip {zone} -- {Zone}");
 #endif
                 return;
             }

@@ -7,10 +7,10 @@ namespace game_stuff
     public interface ICanBeAndNeedHit : IIdPointShape, ICanBeAndNeedSaw, ICanBeEnemy
     {
         int GetTeam();
-        IdPointBox InBox { get; set; }
+        
         size GetSize();
         bool CheckCanBeHit();
-        public IdPointBox CovToIdBox();
+       
         public IBattleUnitStatus GetBattleUnitStatus();
     }
 

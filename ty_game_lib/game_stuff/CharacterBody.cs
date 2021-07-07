@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -36,21 +35,21 @@ namespace game_stuff
         public TwoDPoint NowPos { get; private set; }
         public AngleSight Sight { get; }
         public int Team { get; }
-        public IdPointBox? IdPointBox { get; set; }
+        public IdPointBox IdPointBox { get; set; }
 
         public int GetTeam()
         {
             return Team;
         }
 
-        public IdPointBox InBox { get; set; }
-
 
         public CharacterBody(TwoDPoint nowPos, size bodySize, CharacterStatus characterStatus,
             TwoDPoint lastPos,
             AngleSight sight, int team)
         {
-            IdPointBox = null;
+            var zone = Zone.Zero();
+            var covToAaBbPackBox = new IdPointBox(zone, this);
+            IdPointBox = covToAaBbPackBox;
             NowPos = nowPos;
             BodySize = bodySize;
             characterStatus.CharacterBody = this;
@@ -58,8 +57,6 @@ namespace game_stuff
             LastPos = lastPos;
             Sight = sight;
             Team = team;
-
-            InBox = CovToIdBox();
         }
 
         public void Teleport(TwoDPoint twoDPoint)
@@ -84,14 +81,12 @@ namespace game_stuff
             return Sight.InSight(new TwoDVectorLine(NowPos, another.GetAnchor()), map, CharacterStatus.GetNowScope());
         }
 
-        public IdPointBox CovToIdBox()
+        public bool Hear(Bullet bullet, SightMap? map)
         {
-            if (IdPointBox != null) return IdPointBox;
-            var zone = Zone.Zero();
-            var covToAaBbPackBox = new IdPointBox(zone, this);
-            IdPointBox = covToAaBbPackBox;
-            return covToAaBbPackBox;
+            return CharacterStatus.Hear(bullet, map);
         }
+
+     
 
         public IBattleUnitStatus GetBattleUnitStatus()
         {

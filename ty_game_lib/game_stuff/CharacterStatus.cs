@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using collision_and_rigid;
 using game_config;
 
@@ -10,6 +11,7 @@ namespace game_stuff
     public class CharacterStatus : IMoveBattleAttrModel, IBattleUnitStatus
     {
         public CharacterBody CharacterBody;
+
         public int BaseAttrId { get; }
         public float MaxMoveSpeed { get; private set; }
 
@@ -35,6 +37,13 @@ namespace game_stuff
         public Scope GetStandardScope()
         {
             return NowVehicle?.StandardScope ?? CharacterBody.Sight.StandardScope;
+        }
+
+        public float ListenRange { get; }
+
+        public float GetListenRange()
+        {
+            return NowVehicle?.ListenRange ?? ListenRange;
         }
 
         //Ammo
@@ -253,7 +262,7 @@ namespace game_stuff
             MinMoveSpeed = genBaseAttrById.MoveMinSpeed;
             MaxProtectValue = CommonConfig.OtherConfig.trick_protect_value;
             PassiveTraits = passiveTraits ?? new Dictionary<passive_id, PassiveTrait>();
-
+            ListenRange = genBaseAttrById.ListenRange;
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
             DamageMultiStatus = new DamageMultiStatus();
@@ -1571,8 +1580,8 @@ namespace game_stuff
 
                 var after = SurvivalStatus.IsDead();
 #if DEBUG
-                Console.Out.WriteLine(
-                    $"{GId} take damage {genDamage.MainDamage}| {genDamage.ShardedDamage}~{genDamage.ShardedNum} Sv {SurvivalStatus} {SurvivalStatus.GetHashCode()}");
+                // Console.Out.WriteLine(
+                //     $"{GId} take damage {genDamage.MainDamage}| {genDamage.ShardedDamage}~{genDamage.ShardedNum} Sv {SurvivalStatus} {SurvivalStatus.GetHashCode()}");
 #endif
                 return new DmgShow(!isDead && after, genDamage);
             }
@@ -1592,12 +1601,21 @@ namespace game_stuff
             if (Traps.Count < MaxTrap)
             {
                 Traps.Enqueue(genATrap);
-            }
 
-            var trap = Traps.Dequeue();
-            //NotOverFlow false 会在下一时刻回收
-            trap.NotOverFlow = false;
-            Traps.Enqueue(genATrap);
+#if DEBUG
+                Console.Out.WriteLine($"not over flow {Traps.Count}");
+#endif
+            }
+            else
+            {
+                var trap = Traps.Dequeue();
+                //NotOverFlow false 会在下一时刻回收
+                trap.NotOverFlow = false;
+                Traps.Enqueue(genATrap);
+#if DEBUG
+                Console.Out.WriteLine($" over flow {Traps.Count}");
+#endif
+            }
         }
 
         public void PassiveEffectChangeTrap(float[] trapAdd,
@@ -1700,6 +1718,26 @@ namespace game_stuff
         public void ResetProtect()
         {
             NowProtectTick = 0;
+        }
+
+        public bool Hear(Bullet bullet, SightMap? map)
+        {
+            if (bullet.WaveCast < 0)
+            {
+                return false;
+            }
+
+            var twoDVectorLine = new TwoDVectorLine(GetPos(), bullet.Pos);
+            var bulletWaveCast = GetListenRange() + bullet.WaveCast;
+            var distance = twoDVectorLine.GetVector().SqNorm();
+            if (distance > bulletWaveCast * bulletWaveCast)
+            {
+                return false;
+            }
+
+            var isBlockSightLine = map?.IsBlockSightLine(twoDVectorLine) ?? false;
+
+            return !isBlockSightLine;
         }
     }
 
