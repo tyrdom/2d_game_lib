@@ -55,8 +55,9 @@ namespace game_stuff
 
         private hit_type HitType { get; }
         private int RestTick { get; set; }
-        private bullet_id BulletId { get; }
+        public bullet_id BulletId { get; }
 
+        
         private int ProtectValueAdd { get; }
 
         public static Bullet GenById(bullet_id id, uint pairKey = 0)
