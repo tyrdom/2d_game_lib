@@ -55,8 +55,11 @@ namespace lib_test
                     1).genByConfig;
 
             var playerCharacterStatus = genByConfig.NowGamePlayers[1].Player.CharacterStatus;
-            playerCharacterStatus.PickAProp(Prop.GenById(prop_id.alert));
+            var playerCharacterStatus2 = genByConfig.NowGamePlayers[2].Player.CharacterStatus;
+            playerCharacterStatus.PickAProp(Prop.GenById(prop_id.trap));
             playerCharacterStatus.SetPropPoint(100);
+            playerCharacterStatus2.PickAProp(Prop.GenById(prop_id.alert));
+            playerCharacterStatus2.SetPropPoint(100);
             // genByConfig.ForceSpawnNpc();
 #if DEBUG
             var mapApplyDevices = genByConfig.NowPlayMap.PlayGround.GetMapApplyDevices();
@@ -76,8 +79,8 @@ namespace lib_test
                     ? new Operate(aim: dVector, specialAction: SpecialAction.UseProp)
                     : new Operate(aim: dVector, move: dVector);
                 var dVector1 = new TwoDVector(0, 1f);
-                var operate1 = new Operate(aim: dVector1);
-                var opDic = new Dictionary<int, Operate>()
+                var operate1 = new Operate(aim: dVector1, specialAction: SpecialAction.UseProp);
+                var opDic = new Dictionary<int, Operate>
                     {{1, operate}, {2, operate1}};
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(opDic);
 

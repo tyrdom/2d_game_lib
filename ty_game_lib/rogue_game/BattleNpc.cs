@@ -51,6 +51,8 @@ namespace rogue_game
             var genCharacterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero(), passiveTraits);
             var characterStatus = genCharacterBody.CharacterStatus;
             characterStatus.FullAmmo();
+            characterStatus.SetPropPoint(battleNpc.PropPoint);
+            
             var battleNpcWithVehicleId = battleNpc.WithVehicleId;
             if (battleNpcWithVehicleId != "")
             {

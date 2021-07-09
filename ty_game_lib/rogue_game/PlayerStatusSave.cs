@@ -111,20 +111,20 @@ namespace rogue_game
                 characterStatus.PicAWeapon(weapon);
             }
 
-            if (PropId > 0)
+            if (PropId >= 0)
             {
                 var byId = Prop.GenById((prop_id) PropId);
                 characterStatus.PickAProp(byId);
 #if DEBUG
                 Console.Out.WriteLine($"prop load {byId.PId}");
-            
+
 #endif
             }
 
             characterStatus.SetPropPoint(PropV);
 #if DEBUG
             Console.Out.WriteLine($"prop point load {PropV}");
-#endif 
+#endif
             characterStatus.NowAmmo = NowAmmo;
             characterStatus.SurvivalStatus.SetArmor(NowArmor);
             characterStatus.SurvivalStatus.SetHp(NowHp);
@@ -193,7 +193,7 @@ namespace rogue_game
             var characterStatusNowPropPoint =
                 characterStatus.NowPropPoint;
 #if DEBUG
-            Console.Out.WriteLine($"save prop {propId}, {characterStatusNowPropPoint}");
+            Console.Out.WriteLine($"save prop {characterStatus.Prop?.PId}: {propId}, {characterStatusNowPropPoint}");
 #endif
             var characterStatusSurvivalStatus = characterStatus.SurvivalStatus;
 

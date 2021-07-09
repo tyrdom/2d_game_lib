@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using collision_and_rigid;
 using game_config;
 
@@ -1718,6 +1717,11 @@ namespace game_stuff
         public void ResetProtect()
         {
             NowProtectTick = 0;
+        }
+
+        public void MakeProtect(int tick)
+        {
+            NowProtectTick = tick;
         }
 
         public bool Hear(Bullet bullet, SightMap? map)

@@ -418,6 +418,8 @@ namespace game_stuff
                         Console.Out.WriteLine(
                             $" {characterBody.GetId()} : pos {characterBody.GetAnchor()}in t {characterBody.Team}:" +
                             $"look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
+                        Console.Out.WriteLine(
+                            $"look other team trap:{bTeam}::see {trapsSee.Count()}:in:{traps.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
 #endif
 
                         characterBodies.UnionWith(bodies);
@@ -989,6 +991,7 @@ namespace game_stuff
                 foreach (var (characterBody, pos) in valueTuples)
                 {
                     characterBody.Teleport(pos);
+                    characterBody.MakeProtect((int) CommonConfig.OtherConfig.teleport_protect_time);
                     GidToBody[characterBody.GetId()] = characterBody;
                 }
 

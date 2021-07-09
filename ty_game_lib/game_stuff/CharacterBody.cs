@@ -229,6 +229,10 @@ namespace game_stuff
             Teleport(pos);
             CharacterStatus.Reborn();
         }
+
+        public void MakeProtect(int tick)
+        {
+CharacterStatus.MakeProtect( tick);        }
     }
 
 

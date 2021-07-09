@@ -81,6 +81,11 @@ namespace game_stuff
             var b = NowOnTick == 0;
             NowOnTick++;
             var bullet = PropBullets.TryGetValue(NowOnTick, out var aBullet) ? aBullet : null;
+            if (bullet is IPosMedia posMedia)
+            {
+                posMedia.Active(getPos, sightAim);
+            }
+
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
 
             if (AddSpeed == null || !(NowOnTick > StartAddSpeedTick))

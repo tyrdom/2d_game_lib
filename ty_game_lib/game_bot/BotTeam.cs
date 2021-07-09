@@ -57,7 +57,7 @@ namespace game_bot
             {
                 var key = bot.BotBody.GetId();
                 var canBeEnemies = perceivable.PlayerSee.TryGetValue(key, out var enumerable)
-                    ? enumerable.OnChange.OfType<ICanBeEnemy>()
+                    ? enumerable.OnChange.OfType<ICanBeEnemy>().Union(enumerable.Appear.OfType<ICanBeEnemy>())
                     : new ICanBeEnemy[] { };
                 var immutableHashSet = perceivable.CharacterHitSomeThing.TryGetValue(key, out var enumerable1)
                     ? enumerable1

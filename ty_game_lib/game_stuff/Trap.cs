@@ -21,11 +21,19 @@ namespace game_stuff
             MaxLifeTimeTick = maxLifeTimeTick;
             NowLifeTimeTick = nowLifeTimeTick;
             TrapMedia = trapMedia;
+            TrapMedia.Pos = pos;
+            TrapMedia.Aim = Owner.GetAim();
             TrickDelayTick = trickDelayTick;
             NowTrickDelayTick = nowTrickDelayTick;
             OnTrick = false;
             TrickStack = trickStack;
             LaunchMedia = launchMedia;
+            if (LaunchMedia != null)
+            {
+                LaunchMedia.Pos = pos;
+                LaunchMedia.Aim = Owner.GetAim();
+            }
+
             FailChanceStack = failChanceStack;
             DamageMulti = damageMulti;
 
@@ -107,7 +115,7 @@ namespace game_stuff
             {
                 var b = NowLifeTimeTick % CallTrapTick == 0;
 
-                if (MaxLifeTimeTick == null) NowLifeTimeTick = 0;
+                if (MaxLifeTimeTick == null && b) NowLifeTimeTick = 0;
 
                 hitMedia = b ? TrapMedia : null;
             }

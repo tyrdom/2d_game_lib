@@ -110,6 +110,9 @@ namespace collision_and_rigid
 
         public bool PtRealInShape(TwoDPoint point)
         {
+#if DEBUG
+            Console.Out.WriteLine($" pt {point} in {O} with R:{R}  ");
+#endif
             return TwoDVector.TwoDVectorByPt(O, point).SqNorm() < R * R;
         }
 

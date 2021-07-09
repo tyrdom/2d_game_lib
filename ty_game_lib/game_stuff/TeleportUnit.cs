@@ -46,7 +46,7 @@ namespace game_stuff
 
         public bool CanInterActOneBy(CharacterStatus characterStatus)
         {
-            return true;
+            return CanInterActTwoBy(characterStatus);
         }
 
         public bool CanInterActTwoBy(CharacterStatus characterStatus)
@@ -60,7 +60,8 @@ namespace game_stuff
         {
             return interactive switch
             {
-                MapInteract.GetInfoCall => ImmutableArray<IActResult>.Empty,
+                MapInteract.GetInfoCall => new IActResult[]
+                    {new TelePortMsg(ToPlayGround.MgId, ToPos)}.ToImmutableArray(),
                 MapInteract.BuyOrApplyCall => new IActResult[]
                     {new TelePortMsg(ToPlayGround.MgId, ToPos)}.ToImmutableArray(),
                 _ => ImmutableArray<IActResult>.Empty

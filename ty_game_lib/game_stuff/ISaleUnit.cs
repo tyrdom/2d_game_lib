@@ -57,7 +57,7 @@ namespace game_stuff
 
         public static bool CanInterActOneBy(CharacterStatus characterStatus, ISaleUnit saleUnit)
         {
-            return IsStackOk(characterStatus, saleUnit);
+            return IsStackOk(characterStatus, saleUnit) && characterStatus.PlayingItemBag.CanCost(saleUnit);
         }
 
         public static bool CanInterActTwoBy(CharacterStatus characterStatus, ISaleUnit saleUnit)
@@ -72,69 +72,79 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.GetInfoCall:
-                    return ImmutableArray<IActResult>.Empty;
+                    if (GenActResultWhichChar(characterStatus, saleUnit, out var c1)) return c1;
+                    break;
                 case MapInteract.BuyOrApplyCall:
-                    var cost = characterStatus.PlayingItemBagCost(saleUnit);
-                    var characterStatusGId = characterStatus.GId;
-                    var restStack = saleUnit.GetRestStack(characterStatusGId);
-                    var b = restStack > 0;
-                    if (cost && b)
-                    {
-                        if (saleUnit.DoneDictionary.TryGetValue(characterStatusGId, out var haveUsed))
-                        {
-                            saleUnit.DoneDictionary[characterStatusGId] = haveUsed + 1;
-                        }
-                        else
-                        {
-                            saleUnit.DoneDictionary[characterStatusGId] = 1;
-                        }
-
-
-                        var saleStuffs = saleUnit.GetGood();
-
-                        var selectMany = saleStuffs.SelectMany(x =>
-                        {
-                            switch (x)
-                            {
-                                case PassiveTrait passiveTrait:
-                                    var immutableArray =
-                                        passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
-                                    return immutableArray;
-                                case Prop prop:
-                                    var actResults = prop.ActWhichChar(characterStatus, MapInteract.PickCall);
-                                    return actResults;
-                                case Vehicle vehicle:
-                                    vehicle.WhoDriveOrCanDrive = characterStatus;
-                                    var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ??
-                                                    characterStatus.GetPos();
-
-                                    var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
-                                    var actWhichChar = new DropThings(new List<IMapInteractable>
-                                        {dropAsIMapInteractable});
-                                    var results = new IActResult[] {actWhichChar};
-                                    return results.ToImmutableArray();
-                                case Weapon weapon:
-                                    return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
-                                default:
-                                    return ImmutableArray<IActResult>.Empty;
-                            }
-                        });
-                        var mapMarkId = saleUnit.InWhichMapInteractive?.MapMarkId;
-                        if (!mapMarkId.HasValue)
-                        {
-                            return selectMany.ToImmutableArray();
-                        }
-
-                        var saleStackChange = new SaleStackChange(mapMarkId.Value, restStack - 1);
-                        var enumerable = selectMany.Append(saleStackChange).ToImmutableArray();
-                        return enumerable;
-                    }
-
+                    if (GenActResultWhichChar(characterStatus, saleUnit, out var c)) return c;
                     break;
                 default: return ImmutableArray<IActResult>.Empty;
             }
 
             return ImmutableArray<IActResult>.Empty;
+        }
+
+        private static bool GenActResultWhichChar(CharacterStatus characterStatus, ISaleUnit saleUnit,
+            out ImmutableArray<IActResult> c)
+        {
+            var cost = characterStatus.PlayingItemBagCost(saleUnit);
+            var characterStatusGId = characterStatus.GId;
+            var restStack = saleUnit.GetRestStack(characterStatusGId);
+            var b = restStack > 0;
+            if (!cost || !b) return false;
+            if (saleUnit.DoneDictionary.TryGetValue(characterStatusGId, out var haveUsed))
+            {
+                saleUnit.DoneDictionary[characterStatusGId] = haveUsed + 1;
+            }
+            else
+            {
+                saleUnit.DoneDictionary[characterStatusGId] = 1;
+            }
+
+
+            var saleStuffs = saleUnit.GetGood();
+
+            var selectMany = saleStuffs.SelectMany(x =>
+            {
+                switch (x)
+                {
+                    case PassiveTrait passiveTrait:
+                        var immutableArray =
+                            passiveTrait.ActWhichChar(characterStatus, MapInteract.PickCall);
+                        return immutableArray;
+                    case Prop prop:
+                        var actResults = prop.ActWhichChar(characterStatus, MapInteract.PickCall);
+                        return actResults;
+                    case Vehicle vehicle:
+                        vehicle.WhoDriveOrCanDrive = characterStatus;
+                        var twoDPoint = saleUnit.InWhichMapInteractive?.GetAnchor() ??
+                                        characterStatus.GetPos();
+
+                        var dropAsIMapInteractable = vehicle.DropAsIMapInteractable(twoDPoint);
+                        var actWhichChar = new DropThings(new List<IMapInteractable>
+                            {dropAsIMapInteractable});
+                        var results = new IActResult[] {actWhichChar};
+                        return results.ToImmutableArray();
+                    case Weapon weapon:
+                        return weapon.ActWhichChar(characterStatus, MapInteract.PickCall);
+                    default:
+                        return ImmutableArray<IActResult>.Empty;
+                }
+            });
+            var mapMarkId = saleUnit.InWhichMapInteractive?.MapMarkId;
+            if (!mapMarkId.HasValue)
+            {
+                {
+                    c = selectMany.ToImmutableArray();
+                    return true;
+                }
+            }
+
+            var saleStackChange = new SaleStackChange(mapMarkId.Value, restStack - 1);
+            var enumerable = selectMany.Append(saleStackChange).ToImmutableArray();
+            {
+                c = enumerable;
+                return true;
+            }
         }
 
         public static ISaleUnit GenById(int i)

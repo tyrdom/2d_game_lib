@@ -73,8 +73,8 @@ namespace game_bot
                 .Select(x => (x.weight, CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
                 (int) (battleBot.DoNotMinMaxTime.item2),
-                (int) (battleBot.DoNotMinMaxTime.item1),
-                (int) (battleBot.ActShowDelayTime));
+                (int) battleBot.DoNotMinMaxTime.item1,
+                (int) battleBot.ActShowDelayTime);
 
             return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleBot.MaxCombo);
         }
@@ -149,7 +149,7 @@ namespace game_bot
             var canBeHits = canBeEnemies.OfType<ICanBeAndNeedHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
 
-            var targets = canBeHits.Aggregate((ICanBeAndNeedHit?) null, (s, x) =>
+            ICanBeAndNeedHit? targets = canBeHits.Aggregate((ICanBeAndNeedHit?) null, (s, x) =>
             {
                 if (s == null)
                 {
@@ -291,6 +291,7 @@ namespace game_bot
                             return new BotOpAndThink(new Operate(skillAction: SkillAction.Switch), goATick);
                         }
 
+                        var twoDVector = MoveToPt(twoDPoint);
                         if (inRange)
                         {
                             var skillAction = FirstSkillCtrl.GetAction();
@@ -302,11 +303,10 @@ namespace game_bot
 
                             BotStatus = BotStatus.EngageAct;
 
-                            return new BotOpAndThink(new Operate(aim: MoveToPt(twoDPoint), skillAction: skillAction),
-                                goATick);
+                            return new BotOpAndThink(new Operate(aim: twoDVector, skillAction: skillAction), goATick);
                         }
 
-                        var operate = new Operate(move: MoveToPt(twoDPoint));
+                        var operate = new Operate(move: twoDVector);
                         return new BotOpAndThink(operate, goATick);
                     }
 
@@ -438,14 +438,14 @@ namespace game_bot
             {
                 var goPathDirection = GoPathDirection()?.Multi(BotLocalConfig.PatrolSlowMulti
                 );
-                return new Operate(move: goPathDirection);
+                if (goPathDirection != null) return new Operate(move: goPathDirection);
+                var canUseWhenPatrol = BotBody.CharacterStatus.Prop?.CanUseWhenPatrol(BotBody.CharacterStatus);
+                if (canUseWhenPatrol.HasValue && canUseWhenPatrol.Value)
+                {
+                    return new Operate(specialAction: SpecialAction.UseProp);
+                }
             }
 
-            var canUseWhenPatrol = BotBody.CharacterStatus.Prop?.CanUseWhenPatrol(BotBody.CharacterStatus);
-            if (canUseWhenPatrol.HasValue && canUseWhenPatrol.Value)
-            {
-                return new Operate(specialAction: SpecialAction.UseProp);
-            }
 
             var next = Random.Next(PatrolCtrl.GetPtNum());
             var twoDPoints = PatrolCtrl.NextPt(next);
@@ -478,13 +478,13 @@ namespace game_bot
                 Console.Out.WriteLine("close enough pts rv ");
 #endif
                 PathPoints.RemoveAt(0);
+                return null;
             }
         }
 
         private (bool inRange, bool needSwitch) CheckWeaponAndAmmo(float distance)
         {
             var botBodyCharacterStatus = BotBody.CharacterStatus;
-
             var valueTuples = RangeToWeapon.Where(x => x.maxAmmoUse <= botBodyCharacterStatus.NowAmmo).ToArray();
             if (!valueTuples.Any())
             {
@@ -493,7 +493,9 @@ namespace game_bot
 
             var longestWeapon = valueTuples.First();
             var characterStatusNowWeapon = botBodyCharacterStatus.NowWeapon;
-            if (characterStatusNowWeapon != longestWeapon.weaponIndex) return (false, true);
+            var b = botBodyCharacterStatus.NowCastAct == null;
+
+            if (characterStatusNowWeapon != longestWeapon.weaponIndex) return (false, b);
             var enumerable = valueTuples.Where(a => a.range >= distance).ToArray();
             if (!enumerable.Any())
             {
@@ -501,7 +503,7 @@ namespace game_bot
             }
 
             var okWeapon = enumerable.First();
-            return characterStatusNowWeapon == okWeapon.weaponIndex ? (true, false) : (false, true);
+            return characterStatusNowWeapon == okWeapon.weaponIndex ? (true, false) : (false, b);
         }
 
         public TwoDPoint? GetStartPt()

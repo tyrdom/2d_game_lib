@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
+using Force.DeepCloner;
 using game_config;
 
 namespace game_stuff
@@ -44,10 +45,10 @@ namespace game_stuff
             CanBeSee = trap.CanBeSee;
             FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
             BodySize = trap.BodyId;
-            CallTrapTick = (trap.CallTrapRoundTime);
+            CallTrapTick = MathTools.Max(2, trap.CallTrapRoundTime);
             TrapMedia = StuffLocalConfig.GenHitMedia(trap.TrapMedia);
             BaseAttrId = trap.AttrId;
-            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : (trap.MaxLifeTime);
+            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : trap.MaxLifeTime;
 
             var firstOrDefault = trap.LauchMedia.FirstOrDefault();
             if (firstOrDefault == null)
@@ -66,17 +67,19 @@ namespace game_stuff
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos, int mapInstanceId)
         {
+            var deepClone = TrapMedia.DeepClone();
+            var hitMedia = LaunchMedia?.DeepClone() ?? null;
             if (BaseAttrId == null)
                 return new Trap(characterStatus, null, CanBeSee, pos, BodySize,
                     CallTrapTick,
                     MaxLifeTimeTick, 0,
-                    TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
+                    deepClone, TrickDelayTick, 0, TrickStack, hitMedia, FailChanceStack,
                     characterStatus.TrapAtkMulti, mapInstanceId, TrapId);
             var (baseSurvivalStatus, _) = GameTools.GenStatusByAttr(GameTools.GenBaseAttrById(BaseAttrId.Value));
             var trap = new Trap(characterStatus, baseSurvivalStatus, CanBeSee, pos, BodySize,
                 CallTrapTick,
                 MaxLifeTimeTick, 0,
-                TrapMedia, TrickDelayTick, 0, TrickStack, LaunchMedia, FailChanceStack,
+                deepClone, TrickDelayTick, 0, TrickStack, hitMedia, FailChanceStack,
                 characterStatus.TrapAtkMulti, mapInstanceId, TrapId);
             return trap;
         }
