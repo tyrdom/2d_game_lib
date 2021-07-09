@@ -38,6 +38,7 @@ namespace game_bot
 
         private ICanBeAndNeedHit? LockBody { get; set; }
 
+        private HashSet<ICanBeAndNeedHit> Traps { get; }
 
         private static List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons,
             size bodySize)
@@ -107,6 +108,7 @@ namespace game_bot
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
             HavePeered = true;
+            Traps = new HashSet<ICanBeAndNeedHit>();
         }
 
 
@@ -129,6 +131,7 @@ namespace game_bot
         {
             BotStatus = BotStatus.OnPatrol;
             var twoDPoint = PatrolCtrl.GetNowPt();
+            if (twoDPoint == null) return;
             var twoDPoints = pathTop?.FindGoPts(BotBody.GetAnchor(), twoDPoint) ?? new TwoDPoint[] { };
             PathPoints.AddRange(twoDPoints);
         }
@@ -142,25 +145,26 @@ namespace game_bot
             return twoDVector;
         }
 
-        public BotOpAndThink BotSimpleGoATick(IEnumerable<ICanBeEnemy> perceivable,
+        public BotOpAndThink BotSimpleGoATick(PlayerTickSense perceivable,
             ImmutableHashSet<IHitMsg> immutableHashSet, PathTop? pathTop)
         {
-            var canBeEnemies = perceivable.ToList();
+            var notMoveCanBeAndNeedSews = perceivable.Appear.OfType<ICanBeAndNeedHit>()
+                .Where(x => x.GetTeam() != BotBody.Team);
+            var moveCanBeAndNeedSews = perceivable.Vanish.OfType<ICanBeAndNeedHit>();
+            Traps.UnionWith(notMoveCanBeAndNeedSews);
+            Traps.ExceptWith(moveCanBeAndNeedSews);
+            var canBeEnemies = perceivable.OnChange.ToList();
             var canBeHits = canBeEnemies.OfType<ICanBeAndNeedHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
 
-            ICanBeAndNeedHit? targets = canBeHits.Aggregate((ICanBeAndNeedHit?) null, (s, x) =>
+            var targets = canBeHits.Aggregate((ICanBeAndNeedHit?) null,
+                CanBeAndNeedHit);
+            if (targets == null)
             {
-                if (s == null)
-                {
-                    return x;
-                }
+                var accumulate = Traps.Aggregate((ICanBeAndNeedHit?) null, CanBeAndNeedHit);
+                targets = accumulate;
+            }
 
-                var distance1 = BotBody.GetAnchor().GetDistance(s.GetAnchor());
-                var distance2 = BotBody.GetAnchor().GetDistance(x.GetAnchor());
-                var canBeHit = distance1 > distance2 ? x : s;
-                return canBeHit;
-            });
             // var canBeHitPts = canBeHits
             //     .Select(x => x.GetAnchor()).ToList();
             var radarSees = canBeEnemies.OfType<RadarSee>().Select(x => x.GetAnchor()).ToList();
@@ -312,7 +316,7 @@ namespace game_bot
 
                     if (LockBody != null)
                     {
-                        var closeEnough = LockBody.GetAnchor().GetDistance(this.BotBody.GetAnchor()) >
+                        var closeEnough = LockBody.GetAnchor().GetDistance(this.BotBody.GetAnchor()) <
                                           BotLocalConfig.MaxTraceDistance;
                         if (closeEnough)
                         {
@@ -369,6 +373,19 @@ namespace game_bot
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private ICanBeAndNeedHit CanBeAndNeedHit(ICanBeAndNeedHit? s, ICanBeAndNeedHit x)
+        {
+            if (s == null)
+            {
+                return x;
+            }
+
+            var distance1 = BotBody.GetAnchor().GetDistance(s.GetAnchor());
+            var distance2 = BotBody.GetAnchor().GetDistance(x.GetAnchor());
+            var canBeHit = distance1 > distance2 ? x : s;
+            return canBeHit;
         }
 
         private bool CheckSkillSnipeNeed(SkillAction comboAction)

@@ -8,6 +8,11 @@ namespace game_stuff
 {
     public readonly struct PlayerTickSense
     {
+        public static PlayerTickSense Empty = new PlayerTickSense(ImmutableHashSet<IPerceivable>.Empty,
+            ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty, ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty,
+            ImmutableHashSet<CharacterBody>.Empty, ImmutableHashSet<Bullet>.Empty, 
+            ImmutableHashSet<Bullet>.Empty);
+
         public ImmutableHashSet<IPerceivable> OnChange { get; }
         public ImmutableHashSet<CharacterBody> NewCharBodies { get; }
         public ImmutableHashSet<INotMoveCanBeAndNeedSew> Appear { get; }
@@ -48,7 +53,7 @@ namespace game_stuff
             {
                 Console.Out.WriteLine($"vanish  {vanish.Count}");
             }
-         
+
 #endif
             var playerTickSee = new PlayerTickSense(immutableHashSet, appear, vanish, enumerable, hashSet,
                 hear);
