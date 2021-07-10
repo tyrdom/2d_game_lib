@@ -15,7 +15,9 @@ namespace game_bot
         public static float PatrolMax { get; private set; } = 0.8f;
 
         public static float KeepDistance { get; private set; } = 6f;
-        public static float MaxTraceDistance { get; set; } = 8f;
+        public static float MaxTraceDistance { get; set; } = 16f;
+
+        public static float MinTraceDistance { get; set; } = 2f;
 
         public static ImmutableDictionary<int, ImmutableDictionary<size, PathTop>> NaviMapPerLoad { get; private set; }
             =

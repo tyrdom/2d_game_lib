@@ -7,13 +7,20 @@ namespace game_stuff
     public interface ICanBeAndNeedHit : IIdPointShape, ICanBeAndNeedSaw, ICanBeEnemy
     {
         int GetTeam();
-        
+
         size GetSize();
         bool CheckCanBeHit();
        
+
         public IBattleUnitStatus GetBattleUnitStatus();
     }
 
+    public enum UnitType
+    {
+        Trap,
+        CharacterBody,
+        Other
+    }
 
     public interface ISeeTickMsg
     {

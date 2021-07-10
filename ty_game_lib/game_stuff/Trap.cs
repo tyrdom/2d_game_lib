@@ -160,6 +160,11 @@ namespace game_stuff
             return true;
         }
 
+        public (UnitType unitType, int gid) GetTypeAndId()
+        {
+            return (UnitType.Trap, GetId());
+        }
+
 
         public IBattleUnitStatus GetBattleUnitStatus()
         {

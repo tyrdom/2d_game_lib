@@ -1230,6 +1230,11 @@ namespace game_stuff
             LockingWho ??= targetCharacterStatus;
         }
 
+        public (UnitType unitType, int gid) GetTypeAndId()
+        {
+            return CharacterBody.GetTypeAndId();
+        }
+
         public TwoDVector GetAim()
         {
             return CharacterBody.Sight.Aim;

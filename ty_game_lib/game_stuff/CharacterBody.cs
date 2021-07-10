@@ -30,6 +30,11 @@ namespace game_stuff
             return CharacterStatus.CheckCanBeHit();
         }
 
+        public (UnitType unitType, int gid) GetTypeAndId()
+        {
+            return (UnitType.CharacterBody, GetId());
+        }
+
         public CharacterStatus CharacterStatus { get; }
         private TwoDPoint LastPos { get; set; }
         public TwoDPoint NowPos { get; private set; }
@@ -86,7 +91,6 @@ namespace game_stuff
             return CharacterStatus.Hear(bullet, map);
         }
 
-     
 
         public IBattleUnitStatus GetBattleUnitStatus()
         {
@@ -232,7 +236,8 @@ namespace game_stuff
 
         public void MakeProtect(int tick)
         {
-CharacterStatus.MakeProtect( tick);        }
+            CharacterStatus.MakeProtect(tick);
+        }
     }
 
 

@@ -207,9 +207,11 @@ namespace game_stuff
             };
         }
 
-        public bool CanUseWhenPatrol(CharacterStatus botBodyCharacterStatus)
+        public bool CanUseWhenPatrol(CharacterStatus botBodyCharacterStatus, Random random)
         {
-            return BotUseCond == bot_use_cond.OnPatrolRandom && botBodyCharacterStatus.NowPropPoint >= PropPointCost;
+            var b = random.NextDouble() < CondParam;
+            return BotUseCond == bot_use_cond.OnPatrolRandom && botBodyCharacterStatus.NowPropPoint >= PropPointCost &&
+                   b;
         }
     }
 }

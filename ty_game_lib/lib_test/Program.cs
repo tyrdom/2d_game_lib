@@ -28,7 +28,7 @@ namespace lib_test
                 CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_gun}, size.small,
                     1, new Dictionary<passive_id, uint>
                     {
-                        {passive_id.main_atk, 10}, {passive_id.emergency_shield, 1}, {passive_id.energy_armor, 1}
+                        {passive_id.main_atk, 10}, {passive_id.absorb_up, 1}, {passive_id.energy_armor, 1}
                     });
 
             var characterInitData =

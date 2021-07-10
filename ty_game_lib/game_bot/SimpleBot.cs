@@ -236,10 +236,11 @@ namespace game_bot
                     var goPathDirection = GoPathDirection();
                     if (goPathDirection == null)
                     {
+                        HavePeered = true;
                         ReturnOnPatrol(pathTop);
                     }
 
-                    if (HavePeered || PathPoints.Count != 1)
+                    if (HavePeered || PathPoints.Count < 1)
                         return new BotOpAndThink(new Operate(move: goPathDirection));
                     var distance1 = PathPoints.First().GetDistance(BotBody.GetAnchor());
                     var (inRange1, needSwitch1) = CheckWeaponAndAmmo(distance1);
@@ -316,8 +317,9 @@ namespace game_bot
 
                     if (LockBody != null)
                     {
-                        var closeEnough = LockBody.GetAnchor().GetDistance(this.BotBody.GetAnchor()) <
-                                          BotLocalConfig.MaxTraceDistance;
+                        var distance = LockBody.GetAnchor().GetDistance(this.BotBody.GetAnchor());
+                        var closeEnough = distance <
+                            BotLocalConfig.MinTraceDistance || distance > BotLocalConfig.MaxTraceDistance;
                         if (closeEnough)
                         {
                             LockBody = null;
@@ -456,7 +458,7 @@ namespace game_bot
                 var goPathDirection = GoPathDirection()?.Multi(BotLocalConfig.PatrolSlowMulti
                 );
                 if (goPathDirection != null) return new Operate(move: goPathDirection);
-                var canUseWhenPatrol = BotBody.CharacterStatus.Prop?.CanUseWhenPatrol(BotBody.CharacterStatus);
+                var canUseWhenPatrol = BotBody.CharacterStatus.Prop?.CanUseWhenPatrol(BotBody.CharacterStatus, Random);
                 if (canUseWhenPatrol.HasValue && canUseWhenPatrol.Value)
                 {
                     return new Operate(specialAction: SpecialAction.UseProp);
@@ -481,22 +483,17 @@ namespace game_bot
 
         private TwoDVector? GoPathDirection()
         {
-            while (true)
-            {
-                var firstOrDefault = PathPoints.FirstOrDefault();
+            var firstOrDefault = PathPoints.FirstOrDefault();
 
-                if (firstOrDefault == null) return null;
+            if (firstOrDefault == null) return null;
 
-                if (!CloseEnough(firstOrDefault))
-                {
-                    return MoveToPt(firstOrDefault);
-                }
+            var closeEnough = CloseEnough(firstOrDefault);
+            if (!closeEnough) return MoveToPt(firstOrDefault);
 #if DEBUG
                 Console.Out.WriteLine("close enough pts rv ");
 #endif
-                PathPoints.RemoveAt(0);
-                return null;
-            }
+            PathPoints.RemoveAt(0);
+            return null;
         }
 
         private (bool inRange, bool needSwitch) CheckWeaponAndAmmo(float distance)
