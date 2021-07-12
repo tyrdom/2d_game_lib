@@ -78,10 +78,26 @@ namespace collision_and_rigid
             return n;
         }
 
-        public float GetDistance(TwoDVectorLine line)
+        public float GetLineDistance(TwoDVectorLine line)
         {
-            var twoDPoint = line.GetMid();
-            return GetDistance(twoDPoint);
+            if (line.A.Same(line.B))
+            {
+                return GetDistance(line.A);
+            }
+
+            var multiFromA = line.GetMultiFromA(this);
+            if (multiFromA <= 0)
+            {
+                return GetDistance(line.A);
+            }
+
+            if (multiFromA >= 1)
+            {
+                return GetDistance(line.B);
+            }
+
+            var dPoint = line.A.Move(line.GetVector().GetUnit().Multi(multiFromA));
+            return GetDistance(dPoint);
         }
 
         public float GetDistance(TwoDPoint another)

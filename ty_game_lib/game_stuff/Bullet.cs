@@ -57,7 +57,7 @@ namespace game_stuff
         private int RestTick { get; set; }
         public bullet_id BulletId { get; }
 
-        
+
         private int ProtectValueAdd { get; }
 
         public static Bullet GenById(bullet_id id, uint pairKey = 0)
@@ -475,7 +475,6 @@ namespace game_stuff
                         switch (HitType)
                         {
                             case hit_type.range:
-
                                 targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
                                     DamageMulti, back, BulletId);
                                 break;

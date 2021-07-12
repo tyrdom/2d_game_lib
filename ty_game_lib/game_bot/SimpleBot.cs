@@ -37,7 +37,7 @@ namespace game_bot
         private bool InVehicle { get; }
 
         private ICanBeAndNeedHit? LockBody { get; set; }
-
+        private int NowLockTraceTick { get; set; }
         private HashSet<ICanBeAndNeedHit> Traps { get; }
 
         private static List<(float min, int i, int Key)> GetRangeAmmoWeapon(Dictionary<int, Weapon> weapons,
@@ -108,6 +108,7 @@ namespace game_bot
             PathPoints = new List<TwoDPoint>();
             RangeToWeapon = valueTuples;
             HavePeered = true;
+            NowLockTraceTick = 0;
             Traps = new HashSet<ICanBeAndNeedHit>();
         }
 
@@ -115,6 +116,7 @@ namespace game_bot
         private Operate? SeeATargetAction(ICanBeAndNeedHit canBeAndNeedHit)
         {
             LockBody = canBeAndNeedHit;
+            NowLockTraceTick = (int) BotLocalConfig.LockTraceTickTime;
             BotStatus = BotStatus.TargetApproach;
             var botBodyCharacterStatus = BotBody.CharacterStatus;
             var valueTuple = botBodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(
@@ -317,10 +319,10 @@ namespace game_bot
 
                     if (LockBody != null)
                     {
+                        NowLockTraceTick--;
                         var distance = LockBody.GetAnchor().GetDistance(this.BotBody.GetAnchor());
-                        var closeEnough = distance <
-                            BotLocalConfig.MinTraceDistance || distance > BotLocalConfig.MaxTraceDistance;
-                        if (closeEnough)
+                        var closeEnough = distance > BotLocalConfig.MaxTraceDistance;
+                        if (closeEnough || NowLockTraceTick <= 0)
                         {
                             LockBody = null;
                             ReturnOnPatrol(pathTop);
@@ -474,7 +476,8 @@ namespace game_bot
 
         private bool CloseEnough(TwoDPoint twoDPoint)
         {
-            var distance = twoDPoint.GetDistance(BotBody.GetMoveVectorLine());
+            var twoDVectorLine = BotBody.GetMoveVectorLine();
+            var distance = twoDPoint.GetLineDistance(twoDVectorLine);
 #if DEBUG
             Console.Out.WriteLine($"distance to pt{twoDPoint}  {BotBody.GetMoveVectorLine()} is {distance}");
 #endif

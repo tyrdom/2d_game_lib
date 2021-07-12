@@ -82,6 +82,8 @@
       <EmbeddedResource Include="Resources\battle_bot_s.json" />
       <None Remove="Resources\sale_unit_s.json" />
       <EmbeddedResource Include="Resources\sale_unit_s.json" />
+      <None Remove="Resources\bot_other_config_s.json" />
+      <EmbeddedResource Include="Resources\bot_other_config_s.json" />
     </ItemGroup>
 
 </Project>

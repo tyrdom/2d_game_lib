@@ -105,7 +105,6 @@ namespace collision_and_rigid
                     case CondAfterCross.ToIn:
                     {
 #if DEBUG
-
                         if (startCond == CondAfterCross.ToIn)
                         {
                             var selectMany = ptsAndCond.Aggregate("cutPt::",
@@ -123,7 +122,6 @@ namespace collision_and_rigid
                     }
                     case CondAfterCross.ToOut:
 #if DEBUG
-
                         if (startCond == CondAfterCross.ToOut)
                         {
                             var selectMany = ptsAndCond.Aggregate("cutPt::",
@@ -522,12 +520,17 @@ namespace collision_and_rigid
         }
 
 
-        private float GetMultiFromA(TwoDPoint p)
+        public float GetMultiFromA(TwoDPoint p)
         {
             var twoDVector = new TwoDVectorLine(A, p).GetVector();
             var dVector = GetVector();
             var dot = twoDVector.Dot(dVector);
             var norm = dVector.Norm();
+            // if (norm <= 0)
+            // {
+            //     return 0;
+            // }
+
             var f = dot / norm;
             return f;
         }
