@@ -133,7 +133,7 @@ namespace game_stuff
 
     public class RadarHit : IHitMsg
     {
-        public RadarHit(ICanBeAndNeedHit whoTake, CharacterStatus casterOrOwner, IHitMedia hitMedia)
+        public RadarHit(ICanBeAndNeedHit whoTake, CharacterStatus casterOrOwner, RadarWave hitMedia)
         {
             WhoTake = whoTake;
             CasterOrOwner = casterOrOwner;
@@ -142,6 +142,6 @@ namespace game_stuff
 
         public CharacterStatus CasterOrOwner { get; }
         public ICanBeAndNeedHit WhoTake { get; }
-        public IHitMedia HitMedia { get; }
+        public RadarWave HitMedia { get; }
     }
 }

@@ -33,10 +33,10 @@ namespace game_stuff
         private int BaseTough { get; }
 
         private int CanInputMove { get; }
-        private Dictionary<uint, Bullet> LaunchTickToBullet { get; }
+        private Dictionary<uint, Bullet[]> LaunchTickToBullets { get; }
         private TwoDVector[] Moves { get; }
 
-
+        public Skill? EnemyFailTrickSkill { get; }
         private uint MoveStartTick { get; }
 
         private uint SkillMustTick { get; } //必须播放帧，播放完才能进行下一个技能
@@ -51,17 +51,17 @@ namespace game_stuff
 
         public string LogUser()
         {
-            return LaunchTickToBullet.Select(keyValuePair => keyValuePair.Value.Caster)
+            return LaunchTickToBullets.SelectMany(keyValuePair => keyValuePair.Value).Select(x => x.Caster)
                 .Select(characterStatus =>
                     characterStatus?.GetId().ToString() == null ? "!null!" : characterStatus.GetId().ToString())
                 .Aggregate("", (current, @null) => current + @null);
         }
 
-        private Skill(Dictionary<uint, Bullet> launchTickToBullet, TwoDVector[] moves,
+        private Skill(Dictionary<uint, Bullet[]> launchTickToBullets, TwoDVector[] moves,
             uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
             LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove,
-            skill_id skillId)
+            skill_id skillId, Skill? enemyFailTrickSkill)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -79,7 +79,7 @@ namespace game_stuff
 
             NowOnTick = 0;
             NowTough = baseTough;
-            LaunchTickToBullet = launchTickToBullet;
+            LaunchTickToBullets = launchTickToBullets;
             Moves = moves;
             MoveStartTick = moveStartTick;
             SkillMustTick = skillMustTick;
@@ -93,16 +93,19 @@ namespace game_stuff
             AmmoCost = ammoCost;
             CanInputMove = canInputMove;
             SkillId = skillId;
+            EnemyFailTrickSkill = enemyFailTrickSkill;
         }
 
 
         public void PickedBySomeOne(IBattleUnitStatus characterStatus)
         {
             LockArea?.Sign(characterStatus);
-            foreach (var bullet in LaunchTickToBullet.Values)
+            foreach (var bullet1 in LaunchTickToBullets.Values.SelectMany(bullet => bullet))
             {
-                bullet.Sign(characterStatus);
+                bullet1.Sign(characterStatus);
             }
+
+            EnemyFailTrickSkill?.PickedBySomeOne(characterStatus);
         }
 
         public static Skill GenSkillById(string id)
@@ -129,7 +132,7 @@ namespace game_stuff
                 pair =>
                 {
                     var pairValue = pair.Value;
-                    var genByConfig = Bullet.GenById(pairValue, pair.Key);
+                    var genByConfig = pairValue.Select(x => Bullet.GenById(x, pair.Key)).ToArray();
                     return genByConfig;
                 });
 
@@ -137,13 +140,15 @@ namespace game_stuff
                 ? area
                 : null;
             var skillBaseTough = skill.BaseTough == 0
-                ? (int) dictionary.Keys.Min()
+                ? dictionary.Any() ? (int) dictionary.Keys.Min() : 0
                 : skill.BaseTough;
+
+            var genSkillById = skill.EnemyFailTrickSkill == "" ? null : GenSkillById(skill.EnemyFailTrickSkill);
             return new Skill(dictionary, twoDVectors, skill.MoveStartTime,
                 skill.SkillMustTime, skill.SkillMaxTime,
                 skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
                 skill.BreakSnipeTime,
-                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id);
+                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById);
         }
 
 
@@ -157,7 +162,7 @@ namespace game_stuff
             return NowOnTick < TotalTick ? SkillPeriod.CanCombo : SkillPeriod.End;
         }
 
-        public int? ComboInputRes() //可以连击，返回 下一个动作
+        public int? ComboInputRes() //可以输入连击，返回 下一个动作
         {
             // 返回连击id
             return NowOnTick >= ComboInputStartTick && NowOnTick < TotalTick
@@ -170,8 +175,8 @@ namespace game_stuff
             return action_type.skill;
         }
 
-        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
-            interactive) GoATick(TwoDPoint casterPos,
+        public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
+            MapInteract interactive) GoATick(TwoDPoint casterPos,
                 TwoDVector casterAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
@@ -201,22 +206,25 @@ namespace game_stuff
 
 
             // GenBullet 生成子弹
-            IPosMedia? bullet = null;
+            HashSet<IEffectMedia> bullet = new HashSet<IEffectMedia>();
 
             if (NowOnTick == 0 && LockArea != null)
             {
-                bullet = LockArea.Active(casterPos, casterAim);
+                bullet.Add(LockArea.Active(casterPos, casterAim));
             }
 
             NowTough += CommonConfig.OtherConfig.tough_grow;
 
-            if (LaunchTickToBullet.TryGetValue(NowOnTick, out var nowBullet))
+            if (LaunchTickToBullets.TryGetValue(NowOnTick, out var nowBullet))
             {
 #if DEBUG
                 Console.Out.WriteLine(
-                    $"to launch a bullet ~~~ {LaunchTickToBullet.Keys.Aggregate("", ((s, u) => s + "." + u))}");
+                    $"to launch {nowBullet.Length} bullet ~~~ {NowOnTick} ");
 #endif
-                bullet = nowBullet.Active(casterPos, casterAim);
+
+                var posMediaS = nowBullet.Select(x => x.Active(casterPos, casterAim));
+
+                bullet.UnionWith(posMediaS);
             }
 
             // 是否退出Snipe状态
@@ -227,9 +235,11 @@ namespace game_stuff
             return (move, bullet, snipeOff, null, MapInteract.PickCall);
         }
 
-        public (IPosMedia? posMedia, bool canInputMove) GetSkillStart(TwoDPoint casterPos, TwoDVector casterAim)
+        public (IPosMedia[]? posMedia, bool canInputMove) GetSkillStart(TwoDPoint casterPos, TwoDVector casterAim)
         {
-            return (LockArea?.Active(casterPos, casterAim), NowOnTick < CanInputMove);
+            var posMedia = LockArea?.Active(casterPos, casterAim);
+            var posMediaS = posMedia == null ? null : new IPosMedia[] {posMedia};
+            return (posMediaS, NowOnTick < CanInputMove);
         }
 
         public bool Launch(int nowSnipeStep, int nowAmmo)

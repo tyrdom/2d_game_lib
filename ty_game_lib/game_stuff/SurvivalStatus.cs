@@ -69,10 +69,10 @@ namespace game_stuff
             return NowHp <= 0;
         }
 
-        public void TakeDamage(Damage damage)
+        private void TakeDamage(Damage damage, out bool shieldBreak, out bool armorBreak)
         {
             NowDelayTick = ShieldDelayTick;
-            TakeOneDamage(damage.MainDamage);
+            TakeOneDamage(damage.MainDamage, out shieldBreak, out armorBreak);
 #if DEBUG
             // Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
 #endif
@@ -81,14 +81,16 @@ namespace game_stuff
                 return;
             }
 
-
-            TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum);
+            TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum, out var shieldBreak2, out var armorBreak2);
+            shieldBreak = shieldBreak2 || shieldBreak;
+            armorBreak = armorBreak2 || armorBreak;
         }
 
-        private void TakeMultiDamage(uint damage, uint times)
+        private void TakeMultiDamage(uint damage, uint times, out bool shieldBreak, out bool armorBreak)
         {
             var restTime = (int) times;
-
+            shieldBreak = false;
+            armorBreak = false;
             if (NowShield > 0)
             {
                 var shieldInstability = damage + ShieldInstability;
@@ -105,6 +107,7 @@ namespace game_stuff
                     return;
                 }
 
+                shieldBreak = true;
                 var lossTimes = (int) (NowShield / shieldInstability);
                 NowShield = 0;
                 restTime -= lossTimes;
@@ -128,6 +131,7 @@ namespace game_stuff
                     return;
                 }
 
+                armorBreak = true;
                 var armorDefence = (int) NowArmor / defence;
                 NowArmor = 0;
                 restTime -= armorDefence;
@@ -144,9 +148,11 @@ namespace game_stuff
         }
 
 
-        private void TakeOneDamage(uint damage)
+        private void TakeOneDamage(uint damage, out bool shieldBreak, out bool armorBreak)
         {
             var rest = (int) damage;
+            shieldBreak = false;
+            armorBreak = false;
 
             if (NowShield > 0)
             {
@@ -157,11 +163,10 @@ namespace game_stuff
                 {
                     NowShield = (uint) nowShield;
 
-
                     return;
                 }
 
-
+                shieldBreak = true;
                 NowShield = 0;
                 rest = -nowShield;
             }
@@ -179,6 +184,7 @@ namespace game_stuff
                 }
 
                 {
+                    armorBreak = true;
                     NowArmor = 0;
                     rest = (int) -nowArmor;
                 }
@@ -443,6 +449,21 @@ namespace game_stuff
             GetMainLost(lS, lA, lH, out var lls, out var lossA, out var lossH);
             regenEffectStatus.GetTransValue(lls, lossA, lossH, out var sR, out var armorR, out var hpR);
             TransRegen(sR, armorR, hpR);
+        }
+
+        public void TakeDamage(Damage damage)
+        {
+            TakeDamage(damage, out var shieldBreak, out var armorBreak);
+            damage.GetOtherMulti(damage.OnBreakMulti);
+            if (shieldBreak)
+            {
+                TakeDamage(damage, out _, out _);
+            }
+
+            if (armorBreak)
+            {
+                TakeDamage(damage, out _, out _);
+            }
         }
     }
 

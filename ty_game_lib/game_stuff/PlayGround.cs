@@ -614,7 +614,7 @@ namespace game_stuff
         private static readonly Func<IAaBbBox, bool> IsV = x => x is VehicleCanIn;
 
         private Dictionary<int, ITwoDTwoP> EveryTeamGoATick(Dictionary<int, Operate> gidToOperates,
-            IDictionary<int, IEnumerable<IToOutPutResult>> dictionary, ICollection<Bullet> newBulletCollector)
+            IDictionary<int, IEnumerable<IToOutPutResult>> dictionary, HashSet<Bullet> newBulletCollector)
         {
             var sepOperatesToTeam = SepOperatesToTeam(gidToOperates);
 
@@ -655,6 +655,7 @@ namespace game_stuff
                     }
 
                     var launchBullet = goTickResult.LaunchBullet;
+
                     switch (launchBullet)
                     {
                         case null:
@@ -763,17 +764,14 @@ namespace game_stuff
                     }
 
                     var posMedia = aCharGoTickMsg.LaunchBullet;
-                    switch (posMedia)
-                    {
-                        case null:
-                            continue;
-                        case Bullet bullet:
-                            newBulletCollector.Add(bullet);
-                            break;
-                    }
 
-                    var addBulletToDict = AddBulletToDict(team, posMedia);
-                    if (addBulletToDict != null) idPointBoxesToAdd.Add(addBulletToDict);
+                    var ofType = posMedia.OfType<Bullet>();
+                    newBulletCollector.UnionWith(ofType);
+
+                    var idPointBoxes = posMedia.Select(x => AddBulletToDict(team, x)).Where(x => x != null)
+                        .OfType<IdPointBox>().ToArray();
+                    // var addBulletToDict = AddBulletToDict(team, posMedia);
+                    if (idPointBoxes.Any()) idPointBoxesToAdd.UnionWith(idPointBoxes);
                 }
 
                 traps.AddRangeAabbBoxes(idPointBoxesToAdd.OfType<IAaBbBox>().IeToHashSet(),
@@ -1034,10 +1032,10 @@ namespace game_stuff
         public void RemoveAllBodies()
         {
             GidToBody.Clear();
-            foreach (var valueTuple in TeamToBodies.Values)
+            foreach (var (playerBodies, traps) in TeamToBodies.Values)
             {
-                valueTuple.playerBodies.Clear();
-                valueTuple.Traps.Clear();
+                playerBodies.Clear();
+                traps.Clear();
             }
 
             // var array = GidToBody.Values.IeToHashSet();

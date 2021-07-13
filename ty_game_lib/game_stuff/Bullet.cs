@@ -49,15 +49,10 @@ namespace game_stuff
             return HitLimitNum > 0;
         }
 
-
         public int HitLimitNum { get; }
-
-
         private hit_type HitType { get; }
         private int RestTick { get; set; }
         public bullet_id BulletId { get; }
-
-
         private int ProtectValueAdd { get; }
 
         public static Bullet GenById(bullet_id id, uint pairKey = 0)
@@ -265,7 +260,8 @@ namespace game_stuff
             //目标为trap 直接成功攻击
             caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetTrap);
 
-            var takeDamage = targetTrap.TakeDamage(caster.GenDamage(DamageMulti, true));
+            var genDamage = caster.GenDamage(DamageMulti, true);
+            var takeDamage = targetTrap.TakeDamage(genDamage);
             return takeDamage;
         }
 
@@ -477,6 +473,12 @@ namespace game_stuff
                             case hit_type.range:
                                 targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
                                     DamageMulti, back, BulletId);
+                                if (!IsFAtk)
+                                {
+                                    targetCharacterStatus.TrickBlockSkill(Pos);
+                                }
+
+
                                 break;
                             case hit_type.melee:
                                 CharAtkFail(characterStatus, targetCharacterStatus, isActSkill,
@@ -486,6 +488,7 @@ namespace game_stuff
                                 throw new ArgumentOutOfRangeException();
                         }
 
+                        targetCharacterStatus.NowSkillTryTrickSkill(Pos);
                         break;
                     case Trap trap:
                         trap.FailAtk();
@@ -591,7 +594,7 @@ namespace game_stuff
         }
     }
 
-    enum HitCond
+    internal enum HitCond
     {
         Ok,
         Fail,

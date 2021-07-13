@@ -213,8 +213,9 @@ namespace game_stuff
 
         public CharInitMsg GenInitMsg()
         {
+            var weaponConfigs = CharacterStatus.GetWeapons()[CharacterStatus.NowWeapon];
             return new CharInitMsg(GetId(), NowPos, Sight.Aim, CharacterStatus.SurvivalStatus,
-                CharacterStatus.GetWeapons()[CharacterStatus.NowWeapon], CharacterStatus.PassiveTraits,
+                weaponConfigs, CharacterStatus.PassiveTraits,
                 CharacterStatus.PlayingItemBag, CharacterStatus.Prop);
         }
 

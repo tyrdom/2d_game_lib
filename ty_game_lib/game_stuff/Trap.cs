@@ -233,15 +233,11 @@ namespace game_stuff
 
         public DmgShow? TakeDamage(Damage genDamage)
         {
-            if (SurvivalStatus != null)
-            {
-                var survivalStatus = SurvivalStatus;
-                var isDead = survivalStatus.IsDead();
-                survivalStatus.TakeDamage(genDamage);
-                return new DmgShow(!isDead && survivalStatus.IsDead(), genDamage);
-            }
-            else
-                return (DmgShow?) null;
+            if (SurvivalStatus == null) return null;
+            var survivalStatus = SurvivalStatus;
+            var isDead = survivalStatus.IsDead();
+            survivalStatus.TakeDamage(genDamage);
+            return new DmgShow(!isDead && survivalStatus.IsDead(), genDamage);
         }
 
         public int MapMarkId { get; set; }

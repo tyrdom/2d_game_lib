@@ -14,7 +14,7 @@ namespace game_stuff
         public ImmutableDictionary<size, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
             SkillGroups { get; }
 
-
+        public ImmutableDictionary<size, Skill> BlockSkills { get; }
         public float BotRanges { get; }
         public float KeepDistance { get; }
         public ImmutableDictionary<SnipeAction, Snipe> Snipes { get; }
@@ -29,7 +29,7 @@ namespace game_stuff
             ImmutableDictionary<SnipeAction, Snipe> snipes,
             weapon_id wId,
             float[] zoomStepMulti,
-            Scope[] zoomStepScopes, float keepDistance)
+            Scope[] zoomStepScopes, float keepDistance, ImmutableDictionary<size, Skill> blockSkills)
         {
             SkillGroups = skillGroups;
             BotRanges = botRanges;
@@ -37,6 +37,7 @@ namespace game_stuff
             WId = wId;
             ZoomStepScopes = zoomStepScopes;
             KeepDistance = keepDistance;
+            BlockSkills = blockSkills;
             ZoomStepMulti = zoomStepMulti;
             InWhichMapInteractive = null;
         }
@@ -69,6 +70,10 @@ namespace game_stuff
                 }
             }
 
+            foreach (var keyValuePaiSkill in BlockSkills.Values)
+            {
+                keyValuePaiSkill.PickedBySomeOne(characterStatus);
+            }
 
             ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.GetStandardScope().GenNewScope(x))
                 .ToArray();
@@ -156,7 +161,8 @@ namespace game_stuff
 
                     throw new Exception($"not such a group name::{skillGroup} in weapon {weapon.id} ");
                 }).ToImmutableDictionary();
-
+            var blockDic = weapon.BodySizeToBlockSkill
+                .ToDictionary(x => x.body, x => Skill.GenSkillById(x.blockSkill)).ToImmutableDictionary();
 
             var snipes = new Dictionary<SnipeAction, Snipe>();
 
@@ -198,7 +204,7 @@ namespace game_stuff
             var scopes = enumerable.Select(x => Scope.StandardScope().GenNewScope(x)).ToArray();
 
             var weapon1 = new Weapon(immutableDictionary, weapon.BotRange, snipes.ToImmutableDictionary(), weapon.id,
-                enumerable, scopes, weapon.KeepDistance);
+                enumerable, scopes, weapon.KeepDistance, blockDic);
             return weapon1;
         }
 

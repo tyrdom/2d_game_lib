@@ -73,8 +73,8 @@ namespace game_stuff
 
         private TwoDVector? AddSpeed { get; }
 
-        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
-            interactive) GoATick(TwoDPoint getPos,
+        public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
+            MapInteract interactive) GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
@@ -86,10 +86,12 @@ namespace game_stuff
                 posMedia.Active(getPos, sightAim);
             }
 
+            var bb = bullet != null ? new[] {bullet} : new IEffectMedia[] { };
+
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
 
             if (AddSpeed == null || !(NowOnTick > StartAddSpeedTick))
-                return (twoDVector, bullet, b, null, MapInteract.PickCall);
+                return (twoDVector, bb, b, null, MapInteract.PickCall);
 
             var antiClockwiseTurn = AddSpeed.AntiClockwiseTurn(sightAim);
             if (twoDVector != null)
@@ -97,7 +99,7 @@ namespace game_stuff
                 antiClockwiseTurn.Add(twoDVector);
             }
 
-            return (antiClockwiseTurn, bullet, b, null, MapInteract.PickCall);
+            return (antiClockwiseTurn, bb, b, null, MapInteract.PickCall);
         }
 
         public int GetIntId()

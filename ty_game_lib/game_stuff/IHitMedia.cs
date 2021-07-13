@@ -8,6 +8,8 @@ namespace game_stuff
 {
     public interface IHitMedia : IPosMedia
     {
+        
+        // public 
         public Zone RdZone { get; }
 
         public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap);

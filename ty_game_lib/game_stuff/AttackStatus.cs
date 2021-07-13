@@ -12,14 +12,15 @@ namespace game_stuff
         private uint ShardedAttack { get; }
         private uint ShardedNum { get; set; }
 
-        public Damage GenDamage(float damageMulti, bool isBackStab, float buffMulti = 0f)
+
+        public Damage GenDamage(float damageMulti, bool isBackStab, float buffMulti = 0f, float onBreak = 0)
         {
             var bk = isBackStab ? 1f + BackStabAdd : 1f;
             var multi = bk + buffMulti;
             var mainDamage = (uint) MathTools.Max(0, MainAttack * damageMulti * multi);
             var shardedAttack = (uint) MathTools.Max(0, ShardedAttack * damageMulti);
             var shardedNum = (uint) MathTools.Max(0, ShardedNum * multi);
-            var damage = new Damage(shardedNum, mainDamage, shardedAttack);
+            var damage = new Damage(shardedNum, mainDamage, shardedAttack, onBreak);
 
 #if DEBUG
             Console.Out.WriteLine(

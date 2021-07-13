@@ -39,21 +39,19 @@ namespace game_stuff
             // Console.Out.WriteLine($"{aggregate} ~~~ pass{passiveParamValues.Length}");
 #endif
 
-            var vector = passiveParamValues;
-
             return passive.passive_effect_type switch
             {
-                passive_type.Survive => new SurvivalAboutPassiveEffect(vector),
-                passive_type.TickAdd => new TickAddEffect(vector),
-                passive_type.Other => new OtherAttrPassiveEffect(vector),
-                passive_type.HitWinBuff => new HitPass(vector),
-                passive_type.Attack => new AtkAboutPassiveEffect(vector),
-                passive_type.AddItem => new AddItem(vector),
-                passive_type.TrapAbout => new TrapEffect(vector),
-                passive_type.Regen => new RegenPassiveEffect(vector),
-                passive_type.AbsorbAdd => new AbsorbAboutPassiveEffect(vector),
-                passive_type.SpecialSurviveDamageAdd => new SpecialSurviveDamageAddEffect(vector),
-                passive_type.TransRegeneration => new TransRegenerationEffect(vector),
+                passive_type.Survive => new SurvivalAboutPassiveEffect(passiveParamValues),
+                passive_type.TickAdd => new TickAddEffect(passiveParamValues),
+                passive_type.Other => new OtherAttrPassiveEffect(passiveParamValues),
+                passive_type.HitWinBuff => new HitPass(passiveParamValues),
+                passive_type.Attack => new AtkAboutPassiveEffect(passiveParamValues),
+                passive_type.AddItem => new AddItem(passiveParamValues),
+                passive_type.TrapAbout => new TrapEffect(passiveParamValues),
+                passive_type.Regen => new RegenPassiveEffect(passiveParamValues),
+                passive_type.AbsorbAdd => new AbsorbAboutPassiveEffect(passiveParamValues),
+                passive_type.SpecialDamageAdd => new SpecialDamageAddEffect(passiveParamValues),
+                passive_type.TransRegeneration => new TransRegenerationEffect(passiveParamValues),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -82,18 +80,18 @@ namespace game_stuff
         }
     }
 
-    public readonly struct SpecialSurviveDamageAddEffect : IPassiveTraitEffect
+    public readonly struct SpecialDamageAddEffect : IPassiveTraitEffect
     {
         private float[] Adds { get; }
 
-        public SpecialSurviveDamageAddEffect(float[] vector)
+        public SpecialDamageAddEffect(float[] vector)
         {
             Adds = vector;
         }
 
         public IPassiveTraitEffect GenEffect(uint level)
         {
-            return new SpecialSurviveDamageAddEffect(ArrayTools.Multiply(level, GetVector()));
+            return new SpecialDamageAddEffect(ArrayTools.Multiply(level, GetVector()));
         }
 
         public float[] GetVector()

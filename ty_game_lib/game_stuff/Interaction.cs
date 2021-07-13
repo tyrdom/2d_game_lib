@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
 
@@ -18,8 +19,8 @@ namespace game_stuff
             NowOnTick = 0;
         }
 
-        public (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract
-            interactive) GoATick(TwoDPoint getPos,
+        public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
+            MapInteract interactive) GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
@@ -28,7 +29,7 @@ namespace game_stuff
             NowOnTick++;
             var inCage = NowOnTick == TotalTick - 1 ? InMapInteractable : null;
 
-            return (twd, null, b, inCage, Interact);
+            return (twd, new IEffectMedia[] { }, b, inCage, Interact);
         }
 
         public int GetIntId()

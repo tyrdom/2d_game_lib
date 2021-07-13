@@ -134,7 +134,7 @@ namespace game_stuff
 
     public class LockHit : IHitMsg
     {
-        public LockHit(ICanBeAndNeedHit whoTake, CharacterStatus casterOrOwner, IHitMedia lockArea1)
+        public LockHit(ICanBeAndNeedHit whoTake, CharacterStatus casterOrOwner, LockArea lockArea1)
         {
             CasterOrOwner = casterOrOwner;
             WhoTake = whoTake;
@@ -143,7 +143,6 @@ namespace game_stuff
 
         public CharacterStatus CasterOrOwner { get; }
         public ICanBeAndNeedHit WhoTake { get; }
-
-        public IHitMedia HitMedia { get; }
+        public LockArea HitMedia { get; }
     }
 }

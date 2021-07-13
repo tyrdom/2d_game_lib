@@ -85,7 +85,6 @@ namespace game_stuff
 
         private void SetAct(ICharAct charAct)
         {
-            NowProtectValue = 0;
             if (charAct is Skill skill)
             {
                 CostAmmo(skill.AmmoCost);
@@ -382,7 +381,7 @@ namespace game_stuff
         }
 
 
-        private CharGoTickResult LoadSkill(TwoDVector? aim, Skill skill, SkillAction skillAction, TwoDVector? moveOp)
+        private CharGoTickResult LoadSkill(TwoDVector? aim, Skill skill, TwoDVector? moveOp = null)
         {
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
@@ -590,21 +589,21 @@ namespace game_stuff
             return NowCastAct == null ? new CharGoTickResult() : GoNowActATick(NowCastAct, moveOp, aimOp);
         }
 
-        private IPosMedia? SelfEffectFilter(IEffectMedia? effectMedia)
-        {
-            switch (effectMedia)
-            {
-                case null:
-                    return null;
-                case IPosMedia posMedia:
-                    return posMedia;
-                case SelfEffect selfEffect:
-                    HitBySelfEffect(selfEffect);
-                    return null;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(effectMedia));
-            }
-        }
+        // private IPosMedia? SelfEffectFilter(IEffectMedia? effectMedia)
+        // {
+        //     switch (effectMedia)
+        //     {
+        //         case null:
+        //             return null;
+        //         case IPosMedia posMedia:
+        //             return posMedia;
+        //         case SelfEffect selfEffect:
+        //             HitBySelfEffect(selfEffect);
+        //             return null;
+        //         default:
+        //             throw new ArgumentOutOfRangeException(nameof(effectMedia));
+        //     }
+        // }
 
         private void HitBySelfEffect(SelfEffect selfEffect)
         {
@@ -679,7 +678,15 @@ namespace game_stuff
                 ResetSnipe();
             }
 
-            var selfEffectFilter = SelfEffectFilter(bullet);
+            var ieToHashSet = bullet.IeToHashSet();
+            var selfEffects = ieToHashSet.OfType<SelfEffect>();
+            foreach (var selfEffect in selfEffects)
+            {
+                HitBySelfEffect(selfEffect);
+            }
+
+            var selfEffectFilter = ieToHashSet.OfType<IPosMedia>().ToArray();
+            // var selfEffectFilter = SelfEffectFilter(bullet);
 
             if (getThing == null)
             {
@@ -792,7 +799,7 @@ namespace game_stuff
 
             var aim = operateAim ?? NextSkill.Value.Aim;
 
-            var charGoTickResult = LoadSkill(aim, NextSkill.Value.skill, NextSkill.Value.opAction, moveOp);
+            var charGoTickResult = LoadSkill(aim, NextSkill.Value.skill, moveOp);
 
             NextSkill = null;
             return charGoTickResult;
@@ -876,10 +883,11 @@ namespace game_stuff
                     NowVehicle = null;
                     NowProtectTick = 0;
 
-                    var mapInteractables = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
-                    var dropThings = new DropThings(mapInteractables);
+                    var mapInteractableS = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
+                    var dropThings = new DropThings(mapInteractableS);
                     var dropThingsList = new[] {dropThings}.OfType<IActResult>().ToImmutableArray();
-                    return new CharGoTickResult(launchBullet: destroyBullet, actResults: dropThingsList);
+                    return new CharGoTickResult(launchBullet: new IPosMedia[] {destroyBullet},
+                        actResults: dropThingsList);
                 }
             }
 
@@ -918,9 +926,13 @@ namespace game_stuff
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
                 Console.Out.WriteLine($"skill move {actNowActATick.Move}");
                 var launchBullet = actNowActATick.LaunchBullet;
-                if (launchBullet != null)
-                    Console.Out.WriteLine(
-                        $"launch IHitAble::{launchBullet.GetType()}::{launchBullet.Aim}||{launchBullet.Pos}");
+                if (launchBullet.Any())
+                    foreach (var bMedia in launchBullet)
+                    {
+                        Console.Out.WriteLine(
+                            $"launch IHitAble::{bMedia.GetType()}::{bMedia.Aim}||{bMedia.Pos}");
+                    }
+
 #endif
 
 
@@ -955,10 +967,11 @@ namespace game_stuff
                 switch (NowCastAct.InWhichPeriod())
                 {
                     case SkillPeriod.Casting:
+                        //释放中则进入预输入动作
                         NextSkill ??= (operateAim, skill, opAction.Value);
                         break;
                     case SkillPeriod.CanCombo:
-                        actNowActATick = LoadSkill(operateAim, skill, opAction.Value, operateMove);
+                        actNowActATick = LoadSkill(operateAim, skill, operateMove);
                         NowWeapon = toUse;
                         var switchWeapon = new SwitchWeapon(GetWeapons()[NowWeapon].WId);
                         CharEvents.Add(switchWeapon);
@@ -1066,7 +1079,7 @@ namespace game_stuff
                     Console.Out.WriteLine($"Now Weapon {NowWeapon} in {GetWeapons().Count()}");
 #endif
                     ResetSnipe();
-                    LoadSkill(operate.Aim, DefaultTakeOutWeapon, SkillAction.Switch, operate.Move);
+                    LoadSkill(operate.Aim, DefaultTakeOutWeapon, operate.Move);
                 }
                 // 发动当前武器技能组的起始技能0
                 else
@@ -1076,7 +1089,7 @@ namespace game_stuff
                         !value1.TryGetValue(opAction.Value, out var value) ||
                         !value.TryGetValue(0, out var skill)) return new CharGoTickResult();
 
-                    return LoadSkill(null, skill, opAction.Value, operate.Move);
+                    return LoadSkill(null, skill, operate.Move);
                 }
             }
 
@@ -1243,15 +1256,28 @@ namespace game_stuff
         public Damage GenDamage(float damageMulti, bool b4)
         {
             var multi = GetBuffs<MakeDamageBuff>().GetDamageMulti();
-            var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus());
-
+            var f = GetNowProtectMulti();
+            var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus(), f);
+            var onBreakMulti = DamageMultiStatus.OnBreakMulti;
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
-            return attackStatus.GenDamage(damageMulti, b4, multi + totalMulti);
+            NowProtectValue = 0;
+            return attackStatus.GenDamage(damageMulti, b4, multi + totalMulti, onBreakMulti);
+        }
+
+        private float GetNowProtectMulti()
+        {
+            if (NowProtectTick > 0)
+            {
+                return 1f;
+            }
+
+            var nowProtectValue = (float) NowProtectValue / MaxProtectValue;
+            return nowProtectValue;
         }
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
         {
-            LoadSkill(aim, catchAntiActBuffMaker.TrickSkill, SkillAction.CatchTrick, null);
+            LoadSkill(aim, catchAntiActBuffMaker.TrickSkill, null);
             NextSkill = null;
         }
 
@@ -1362,8 +1388,8 @@ namespace game_stuff
                     RegenStatusRefresh(vector);
                     NowVehicle?.RegenStatusRefresh(vector);
                     break;
-                case SpecialSurviveDamageAddEffect _:
-                    SurvivalDamageMultiStatusRefresh(vector);
+                case SpecialDamageAddEffect _:
+                    SpecialDamageMultiStatusRefresh(vector);
                     break;
                 case AtkAboutPassiveEffect _:
                     AttackStatusRefresh(vector);
@@ -1407,7 +1433,7 @@ namespace game_stuff
             TransRegenEffectStatus.TransRegenerationEffectChange(vector);
         }
 
-        private void SurvivalDamageMultiStatusRefresh(float[] vector)
+        private void SpecialDamageMultiStatusRefresh(float[] vector)
         {
             DamageMultiStatus.RefreshSurvivalDmgMulti(vector);
         }
@@ -1576,7 +1602,7 @@ namespace game_stuff
         public DmgShow? TakeDamage(Damage genDamage)
         {
             var damageMulti = MathTools.Max(0, 1 + GetBuffs<TakeDamageBuff>().GetDamageMulti());
-            genDamage.GetBuffMulti(damageMulti);
+            genDamage.GetOtherMulti(damageMulti);
             if (NowVehicle == null)
             {
                 var isDead = SurvivalStatus.IsDead();
@@ -1747,6 +1773,37 @@ namespace game_stuff
             var isBlockSightLine = map?.IsBlockSightLine(twoDVectorLine) ?? false;
 
             return !isBlockSightLine;
+        }
+
+        public void TrickBlockSkill(TwoDPoint pos)
+        {
+            if (NowCastAct != null)
+            {
+                return;
+            }
+
+            var weapon = GetWeapons()[NowWeapon];
+            if (weapon.BlockSkills.TryGetValue(CharacterBody.GetSize(), out var skill))
+            {
+                var twoDVector = GetPos().GenVector(pos).GetUnit2();
+                LoadSkill(twoDVector, skill);
+            }
+
+            NextSkill = null;
+        }
+
+        public void NowSkillTryTrickSkill(TwoDPoint twoDPoint)
+        {
+            if (!(NowCastAct is Skill skill)) return;
+            var skillEnemyFailTrickSkill = skill.EnemyFailTrickSkill;
+            if (skillEnemyFailTrickSkill == null)
+            {
+                return;
+            }
+
+            var twoDVector = GetPos().GenVector(twoDPoint).GetUnit2();
+            LoadSkill(twoDVector, skillEnemyFailTrickSkill);
+            NextSkill = null;
         }
     }
 

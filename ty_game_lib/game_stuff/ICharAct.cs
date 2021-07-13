@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
 
@@ -6,7 +7,7 @@ namespace game_stuff
 {
     public interface ICharAct
     {
-        (ITwoDTwoP? move, IEffectMedia? bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
+        (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
             GoATick(TwoDPoint getPos,
                 TwoDVector sightAim,
                 TwoDVector? rawMoveVector, TwoDVector? limitV);
