@@ -34,15 +34,15 @@ namespace collision_and_rigid
 
         public ClockwiseTurning(ClockwiseBalanceAngle aob, float r, TwoDVectorLine? last, TwoDVectorLine? next)
         {
-            if (aob.CheckTuring())
-            {
-                Aob = aob;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"{aob.Log()} not clock turing");
-            }
-
+            // if (aob.CheckTuring())
+            // {
+            //     
+            // }
+            // else
+            // {
+            //     throw new ArgumentOutOfRangeException($"{aob.Log()} not clock turing");
+            // }
+            Aob = aob;
             R = r;
 
             Last = last;

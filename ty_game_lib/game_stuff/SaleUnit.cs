@@ -88,7 +88,6 @@ namespace game_stuff
 
         public static ISaleUnit GenByConfig(sale_unit saleUnit)
         {
-            var saleUnitId = saleUnit.id;
             var firstOrDefault = saleUnit.Cost.FirstOrDefault();
             var genByConfigGain = firstOrDefault == null
                 ? new GameItem(item_id.coin, 0)
@@ -98,6 +97,7 @@ namespace game_stuff
             {
                 sale_type.prop => new ISaleStuff[] {Prop.GenById(chooseRandCanSame)},
                 sale_type.passive => GenManyById(chooseRandCanSame, 1).OfType<ISaleStuff>().ToArray(),
+                sale_type.weapon => new ISaleStuff[] {Weapon.GenById(chooseRandCanSame)},
                 _ => throw new ArgumentOutOfRangeException()
             };
 
