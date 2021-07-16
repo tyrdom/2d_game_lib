@@ -1,3 +1,4 @@
+using System;
 using collision_and_rigid;
 using game_config;
 
@@ -224,6 +225,11 @@ namespace game_stuff
         public void AddAKillScore(CharacterBody characterBody)
         {
             Owner.AddAKillScore(characterBody);
+        }
+
+        public bool IsDeadOrCantDmg()
+        {
+            return SurvivalStatus == null || SurvivalStatus.IsDead();
         }
 
         public void FailAtk()

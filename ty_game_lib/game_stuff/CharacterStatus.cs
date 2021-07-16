@@ -115,7 +115,7 @@ namespace game_stuff
 
         public int NowPropPoint { get; private set; }
 
-        private int MaxPropPoint { get; set; }
+        public int MaxPropPoint { get; private set; }
 
         private Skill DefaultTakeOutWeapon { get; }
 
@@ -390,8 +390,12 @@ namespace game_stuff
             OpChangeAim(aim);
 
 
-            if (!skill.Launch(NowSnipeStep, GetAmmo()))
+            if (!skill.Launch(NowSnipeStep, GetAmmo(), out var isLowAmmo))
             {
+                if (!isLowAmmo) return new CharGoTickResult();
+                var lowAmmo = new LowAmmo();
+                CharEvents.Add(lowAmmo);
+
                 return new CharGoTickResult();
             }
 
@@ -1144,7 +1148,7 @@ namespace game_stuff
         {
             if (NowVehicle == null) return new CharGoTickResult();
             {
-                NowVehicle.OutAct.Launch(0, 0);
+                NowVehicle.OutAct.Launch(0, 0, out _);
                 SetAct(NowVehicle.OutAct);
                 NowVehicle.WhoDriveOrCanDrive = null;
 
@@ -1240,7 +1244,7 @@ namespace game_stuff
 #endif
             AddAmmo(ammoAddWhenSuccess);
             //如果没有锁定目标，则锁定当前命中的目标
-            LockingWho ??= targetCharacterStatus;
+            // LockingWho ??= targetCharacterStatus;
         }
 
         public (UnitType unitType, int gid) GetTypeAndId()
@@ -1277,7 +1281,7 @@ namespace game_stuff
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
         {
-            LoadSkill(aim, catchAntiActBuffMaker.TrickSkill, null);
+            LoadSkill(aim, catchAntiActBuffMaker.TrickSkill);
             NextSkill = null;
         }
 
@@ -1289,6 +1293,11 @@ namespace game_stuff
         public void AddAKillScore(CharacterBody characterBody)
         {
             ScoreData.AddScore();
+        }
+
+        public bool IsDeadOrCantDmg()
+        {
+            return SurvivalStatus.IsDead();
         }
 
         private void AddProtect(int protectValueAdd)

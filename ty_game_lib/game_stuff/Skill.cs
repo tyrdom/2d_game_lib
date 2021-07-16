@@ -242,9 +242,11 @@ namespace game_stuff
             return (posMediaS, NowOnTick < CanInputMove);
         }
 
-        public bool Launch(int nowSnipeStep, int nowAmmo)
+        public bool Launch(int nowSnipeStep, int nowAmmo, out bool isLowAmmo)
         {
-            if (nowSnipeStep < SnipeStepNeed || nowAmmo < AmmoCost)
+            var b = nowAmmo < AmmoCost;
+            isLowAmmo = b;
+            if (nowSnipeStep < SnipeStepNeed || b)
             {
 #if DEBUG
                 Console.Out.WriteLine(

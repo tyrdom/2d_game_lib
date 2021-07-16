@@ -92,7 +92,7 @@ namespace game_stuff
         public IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit)
         {
             if (!(Caster is CharacterStatus characterStatus)) return null;
-            if (characterStatus.LockingWho == null)
+            if (characterStatus.LockingWho == null || characterStatus.LockingWho.IsDeadOrCantDmg())
             {
                 characterStatus.LockingWho = canBeAndNeedHit.GetBattleUnitStatus();
             }
@@ -111,13 +111,9 @@ namespace game_stuff
             {
                 case CharacterBody characterBody1:
 
-
                     return new LockHit(characterBody1, Caster.GetFinalCaster().CharacterStatus, this);
                 case Trap trap:
-                    if (characterStatus.LockingWho == null)
-                    {
-                        characterStatus.LockingWho = trap;
-                    }
+                    characterStatus.LockingWho ??= trap;
 
                     return new LockHit(trap, Caster.GetFinalCaster().CharacterStatus, this);
                 default:

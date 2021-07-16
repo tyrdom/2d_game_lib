@@ -7,6 +7,13 @@ namespace game_stuff
     {
     }
 
+    public class LowAmmo : ICharEvent
+    {
+        public LowAmmo()
+        {
+        }
+    }
+
     public class SwitchWeapon : ICharEvent
     {
         public SwitchWeapon(weapon_id wId)
@@ -147,7 +154,8 @@ namespace game_stuff
             HitDirV = twoDVectorByPt;
             BulletId = bulletId;
         }
-public bullet_id BulletId { get; }
+
+        public bullet_id BulletId { get; }
         public TwoDVector HitDirV { get; }
     }
 
@@ -185,4 +193,3 @@ public bullet_id BulletId { get; }
         public int GetTick { get; }
     }
 }
-

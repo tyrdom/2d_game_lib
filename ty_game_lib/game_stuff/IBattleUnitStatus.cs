@@ -16,5 +16,6 @@ namespace game_stuff
         void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker);
         float GetRr();
         void AddAKillScore(CharacterBody characterBody);
+        bool IsDeadOrCantDmg();
     }
 }
