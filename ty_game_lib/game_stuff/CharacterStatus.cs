@@ -154,8 +154,9 @@ namespace game_stuff
 
         public void SetStunBuff(IStunBuff stunBuff)
         {
+            if (StunBuff != null) stunBuff.RestTick = MathTools.Max(StunBuff.RestTick, stunBuff.RestTick);
             StunBuff = stunBuff;
-            var getStunBuff = new GetStunBuff(stunBuff.RestTick);
+            var getStunBuff = new GetStunBuff(StunBuff.RestTick);
             CharEvents.Add(getStunBuff);
         }
 
@@ -1109,6 +1110,11 @@ namespace game_stuff
                         {
                             NowPropPoint -= Prop.PropPointCost;
                             SetAct(Prop);
+                        }
+                        else
+                        {
+                            var lowProp = new LowProp();
+                            CharEvents.Add(lowProp);
                         }
 
                         break;

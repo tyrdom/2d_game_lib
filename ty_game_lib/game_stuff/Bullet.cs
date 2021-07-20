@@ -391,6 +391,7 @@ namespace game_stuff
                 // 释放方基本状态
                 caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetCharacterStatus);
 
+
                 // 被击中方基本状态改变 包括伤害
                 var dmgShow =
                     targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back,
@@ -401,17 +402,18 @@ namespace game_stuff
 
                 void InitBuff()
                 {
-                    targetCharacterStatus.SetPauseTick(MathTools.Max((int) PauseToOpponent,
+                    targetCharacterStatus.SetPauseTick(MathTools.Max(PauseToOpponent,
                         targetCharacterStatus.PauseTick));
 #if DEBUG
                     Console.Out.WriteLine($"bullet hit!! target pause tick {targetCharacterStatus.PauseTick}");
 #endif
-                    targetCharacterStatus.SetStunBuff(antiActBuffConfig
+                    var stunBuff = antiActBuffConfig
                         .GenBuff(Pos,
                             targetCharacterStatus.GetPos(),
                             Aim,
                             null, 0,
-                            targetCharacterBodyBodySize, caster));
+                            targetCharacterBodyBodySize, caster);
+                    targetCharacterStatus.SetStunBuff(stunBuff);
                     //初始化buff时，如果是抓取技能，会触发技能
                     switch (antiActBuffConfig)
                     {
@@ -426,6 +428,7 @@ namespace game_stuff
                 switch (opponentCharacterStatusAntiActBuff)
                 {
                     case null:
+
                         InitBuff();
                         break;
                     //对手被其他人抓取时，不在添加停顿帧和改变其buff 除非是自己抓的目标
@@ -438,6 +441,7 @@ namespace game_stuff
                         break;
                     // 其他情况刷新buff
                     case PushOnAir pushOnAir:
+
                         if (PauseToOpponent > targetCharacterStatus.PauseTick)
                         {
                             targetCharacterStatus.SetPauseTick(PauseToOpponent);
@@ -452,7 +456,6 @@ namespace game_stuff
                         targetCharacterStatus.SetStunBuff(antiActBuff);
                         break;
                     case PushOnEarth _:
-
                         InitBuff();
                         break;
                     default:

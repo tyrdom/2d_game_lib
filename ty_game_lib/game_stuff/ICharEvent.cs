@@ -7,6 +7,13 @@ namespace game_stuff
     {
     }
 
+    public class LowProp : ICharEvent
+    {
+        public LowProp()
+        {
+        }
+    }
+
     public class LowAmmo : ICharEvent
     {
         public LowAmmo()
