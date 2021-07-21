@@ -137,14 +137,15 @@ namespace game_stuff
                 tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
-            var bulletProtectValue = bullet.ProtectValue;
+
             var valuePerSecToValuePerTick = ((float) pairKey).ValuePerSecToValuePerTick();
 
 
             var bulletDamageMulti = bullet.DamageMulti <= 0
                 ? valuePerSecToValuePerTick
                 : bullet.DamageMulti;
-
+            
+            var bulletProtectValue = bullet.ProtectValue;
             if (bulletProtectValue < 0)
             {
                 bulletProtectValue = (int) (bulletDamageMulti *
@@ -155,7 +156,7 @@ namespace game_stuff
             var bulletSuccessAmmoAdd = bullet.SuccessAmmoAdd;
             if (bulletSuccessAmmoAdd < 0)
             {
-                bulletSuccessAmmoAdd = (int) (pairKey * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+                bulletSuccessAmmoAdd = (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,

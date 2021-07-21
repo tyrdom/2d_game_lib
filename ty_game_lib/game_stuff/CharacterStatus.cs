@@ -1587,6 +1587,7 @@ namespace game_stuff
         {
             ResetSpeed();
             ResetSnipe();
+            ResetSight();
             ResetCastAct();
             SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId);
 
@@ -1606,6 +1607,12 @@ namespace game_stuff
             }
 
             return takeDamage;
+        }
+
+        private void ResetSight()
+        {
+            CharacterBody.Sight.Reset();
+            BaseChangeMarks.Add(BaseChangeMark.NowRc);
         }
 
         private float GetProtectAbsorb()

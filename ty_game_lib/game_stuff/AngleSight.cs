@@ -15,6 +15,11 @@ namespace game_stuff
             return new AngleSight(StuffLocalConfig.StandardSightVector);
         }
 
+        public void Reset()
+        {
+            NowR = StandardScope.MaxR;
+        }
+
         private AngleSight(TwoDVector upLeft)
         {
             var nowR = upLeft.Norm();
