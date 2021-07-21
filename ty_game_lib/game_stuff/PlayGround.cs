@@ -463,13 +463,20 @@ namespace game_stuff
                 var dd = mapToDicGidToSth.Where(x => x.Value.HasValue)
                     .Select(x => x.Key).ToArray();
 
-                var buffDmgMsgs = mapToDicGidToSth.ToDictionary(
+                var buffDmgMsgS = mapToDicGidToSth.ToDictionary(
                     x => x.Key, x => x.Value!.Value.buffDmgMsg);
-                foreach (var keyValuePair in buffDmgMsgs)
+                foreach (var keyValuePair in buffDmgMsgS)
                 {
-                    if (keyValuePair.Value.HasValue && playerBeHit.TryGetValue(keyValuePair.Key, out var hashSet))
+                    var buffDmgMsg = keyValuePair.Value;
+                    if (!buffDmgMsg.HasValue) continue;
+                    var key = keyValuePair.Key;
+                    if (playerBeHit.TryGetValue(key, out var hashSet))
                     {
-                        hashSet.Add(keyValuePair.Value);
+                        hashSet.Add(buffDmgMsg);
+                    }
+                    else
+                    {
+                        playerBeHit[key] = new HashSet<IRelationMsg> {buffDmgMsg};
                     }
                 }
 #if DEBUG
