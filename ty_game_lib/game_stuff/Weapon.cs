@@ -235,10 +235,10 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
-                    characterStatus.FullAmmo();
+                    characterStatus.RecycleWeapon(InWhichMapInteractive?.MapMarkId ?? -1);
                     return ImmutableArray<IActResult>.Empty;
                 case MapInteract.PickCall:
-                    var picAWeapon = characterStatus.PicAWeapon(this);
+                    var picAWeapon = characterStatus.PicAWeapon(this, InWhichMapInteractive?.MapMarkId ?? -1);
                     return picAWeapon == null
                         ? ImmutableArray<IActResult>.Empty
                         : new IActResult[] {new DropThings(new List<IMapInteractable> {picAWeapon})}.ToImmutableArray();

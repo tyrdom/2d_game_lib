@@ -70,14 +70,14 @@ namespace lib_test
             // var passiveTrait = PassiveTrait.GenById(passive_id.main_atk, 1);
             // genCharacterBody.CharacterStatus.FullAmmo();
 
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 300; i++)
             {
                 var twoDVector = new TwoDVector(0, 1f);
 
                 var dVector = new TwoDVector(1f, 0f);
-                var operate = i < 99
-                    ? new Operate(aim: dVector, specialAction: SpecialAction.UseProp)
-                    : new Operate(aim: dVector, move: dVector);
+                var operate = i < 59
+                    ? new Operate(aim: dVector, skillAction: SkillAction.Op1)
+                    : new Operate(aim: dVector, skillAction: SkillAction.Op2);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1, specialAction: SpecialAction.UseProp);
                 var opDic = new Dictionary<int, Operate>

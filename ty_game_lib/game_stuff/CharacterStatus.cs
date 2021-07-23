@@ -89,8 +89,11 @@ namespace game_stuff
             {
                 CostAmmo(skill.AmmoCost);
             }
-
+#if DEBUG
+            Console.Out.WriteLine($"now set act {charAct.GetTypeEnum()} : {charAct.GetIntId()}");
+#endif
             NowCastAct = charAct;
+            NextSkill = null;
             var startAct = new StartAct(charAct.GetTypeEnum(), charAct.GetIntId(),
                 charAct.NowOnTick);
             CharEvents.Add(startAct);
@@ -724,10 +727,13 @@ namespace game_stuff
         }
 
 
-        internal void RecycleAProp(Prop prop)
+        internal void RecycleAProp(Prop prop, int mapMarkId = -1)
         {
             NowPropPoint = Math.Min(MaxPropPoint,
                 (int) (NowPropPoint + prop.RecyclePropStack * (1 + GetRecycleMulti())));
+            if (mapMarkId < 0) return;
+            var removeMapMark = new RemoveMapMark(mapMarkId);
+            CharEvents.Add(removeMapMark);
         }
 
         private float GetRecycleMulti()
@@ -740,11 +746,14 @@ namespace game_stuff
             NowPropPoint = v;
         }
 
-        public IMapInteractable? PicAWeapon(Weapon weapon)
+        public IMapInteractable? PicAWeapon(Weapon weapon, int mapMarkId = -1)
         {
             var pickedBySomebody = weapon.PickedBySomebody(this);
             var pickWeapon = new PickWeapon(weapon.WId);
             CharEvents.Add(pickWeapon);
+            if (mapMarkId < 0) return pickedBySomebody;
+            var removeMapMark = new RemoveMapMark(mapMarkId);
+            CharEvents.Add(removeMapMark);
             return pickedBySomebody;
         }
 
@@ -764,11 +773,17 @@ namespace game_stuff
             return mapIntractable;
         }
 
-        public IMapInteractable? PickAProp(Prop prop)
+        public IMapInteractable? PickAProp(Prop prop, int mapMarkId = -1)
         {
             prop.Sign(this);
             var pickAProp = new PickAProp(prop.PId);
             CharEvents.Add(pickAProp);
+            if (mapMarkId >= 0)
+            {
+                var removeMapMark = new RemoveMapMark(mapMarkId);
+                CharEvents.Add(removeMapMark);
+            }
+
             if (Prop != null)
             {
                 var dropAsIMapInteractable = Prop.DropAsIMapInteractable(GetPos());
@@ -1826,6 +1841,14 @@ namespace game_stuff
             var twoDVector = GetPos().GenVector(twoDPoint).GetUnit2();
             LoadSkill(twoDVector, skillEnemyFailTrickSkill);
             NextSkill = null;
+        }
+
+        public void RecycleWeapon(int mapMarkId)
+        {
+            FullAmmo();
+            if (mapMarkId < 0) return;
+            var removeMapMark = new RemoveMapMark(mapMarkId);
+            CharEvents.Add(removeMapMark);
         }
     }
 

@@ -111,7 +111,7 @@ namespace game_stuff
 
     public class PushEarthStunBuffMaker : IStunBuffMaker
     {
-        private float PushForce { get; } //推力
+        private float PushForce { get; } //推动量
         private PushType PushType { get; } //方向或者中心
         private TwoDVector? PushFixVector { get; } //修正向量，中心push为中心点，方向为方向修正
         public uint TickLast { get; }

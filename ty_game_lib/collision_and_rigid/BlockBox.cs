@@ -94,8 +94,8 @@ namespace collision_and_rigid
                 {
 //
 #if DEBUG
-                    Console.Out.WriteLine($"{z.ToString()}");
-                    Console.Out.WriteLine($"{Shape.ToString()}:::{vertical}");
+                    // Console.Out.WriteLine($"{z.ToString()}");
+                    // Console.Out.WriteLine($"{Shape.ToString()}:::{vertical}");
 #endif
 
                     var (lZones, rZones) = Shape.CutByV(vertical, z);

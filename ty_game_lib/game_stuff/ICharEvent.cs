@@ -84,6 +84,16 @@ namespace game_stuff
         public passive_id PassiveId { get; }
     }
 
+    public class RemoveMapMark : ICharEvent
+    {
+        public RemoveMapMark(int markId)
+        {
+            MarkId = markId;
+        }
+
+        public int MarkId { get; }
+    }
+
     public class PickWeapon : ICharEvent
     {
         public PickWeapon(weapon_id weaponWId)

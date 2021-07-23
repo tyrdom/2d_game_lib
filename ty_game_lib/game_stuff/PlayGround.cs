@@ -415,11 +415,11 @@ namespace game_stuff
                                 .Select(x => x.IdPointShape).OfType<Trap>()
                                 .Where(t => t.CanBeSee);
 #if DEBUG
-                        Console.Out.WriteLine(
-                            $" {characterBody.GetId()} : pos {characterBody.GetAnchor()}in t {characterBody.Team}:" +
-                            $"look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
-                        Console.Out.WriteLine(
-                            $"look other team trap:{bTeam}::see {trapsSee.Count()}:in:{traps.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
+                        // Console.Out.WriteLine(
+                        //     $" {characterBody.GetId()} : pos {characterBody.GetAnchor()}in t {characterBody.Team}:" +
+                        //     $"look other team:{bTeam}::see {bodies.Count()}:in:{qSpace.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
+                        // Console.Out.WriteLine(
+                        //     $"look other team trap:{bTeam}::see {trapsSee.Count()}:in:{traps.Count()} all {GidToBody.Count()} now sight rad {characterBody.Sight.NowR}");
 #endif
 
                         characterBodies.UnionWith(bodies);

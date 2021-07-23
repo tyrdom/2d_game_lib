@@ -46,13 +46,13 @@ namespace game_stuff
 
             var push = PushVector;
 #if DEBUG
-            Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector}");
+            // Console.Out.WriteLine($"{push.GetType().TypeHandle.Value.ToString()}  PV before::{PushVector}");
 #endif
 
             var twoDVector = push.Minus(DecreasePerTick);
 #if DEBUG
-            Console.Out.WriteLine(
-                $" {GetType()} Decrease~~{DecreasePerTick}  PV  mid::{twoDVector}");
+            // Console.Out.WriteLine(
+            //     $" {GetType()} Decrease~~{DecreasePerTick}  PV  mid::{twoDVector}");
 #endif
             var dot = push.Dot(twoDVector);
             if (dot <= 0)
@@ -62,7 +62,7 @@ namespace game_stuff
 
             PushVector = twoDVector;
 #if DEBUG
-            Console.Out.WriteLine($"PV after::{PushVector}");
+            // Console.Out.WriteLine($"PV after::{PushVector}");
 #endif
             return (push, this);
         }
@@ -73,7 +73,9 @@ namespace game_stuff
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
 
-            return Caster.GenDamage(sqNorm * sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param, true);
+            var otherConfigHitWallDmgParam =MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max, sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
+            
+            return Caster.GenDamage(otherConfigHitWallDmgParam, true);
         }
     }
 
@@ -114,8 +116,8 @@ namespace game_stuff
             {
                 var decreasePerTick = PushVector.GetUnit().Multi(CommonConfig.OtherConfig.friction);
 #if DEBUG
-                Console.Out.WriteLine(
-                    $"{PushVector}~~~~~air gen_earth buff~~~~~~{decreasePerTick}");
+                // Console.Out.WriteLine(
+                //     $"{PushVector}~~~~~air gen_earth buff~~~~~~{decreasePerTick}");
 
 #endif
                 var pushOnEarth =
@@ -134,7 +136,8 @@ namespace game_stuff
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
-            return Caster.GenDamage(sqNorm * sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param, true);
+            var min = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max, sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
+            return Caster.GenDamage(min, true);
         }
     }
 

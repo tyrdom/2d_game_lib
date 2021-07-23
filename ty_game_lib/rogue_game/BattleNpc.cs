@@ -52,7 +52,7 @@ namespace rogue_game
             var characterStatus = genCharacterBody.CharacterStatus;
             characterStatus.FullAmmo();
             characterStatus.SetPropPoint(battleNpc.PropPoint);
-            
+
             var battleNpcWithVehicleId = battleNpc.WithVehicleId;
             if (battleNpcWithVehicleId != "")
             {

@@ -160,10 +160,10 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
-                    characterStatus.RecycleAProp(this);
+                    characterStatus.RecycleAProp(this,InWhichMapInteractive?.MapMarkId??-1);
                     return ImmutableArray<IActResult>.Empty;
                 case MapInteract.PickCall:
-                    var pickAProp = characterStatus.PickAProp(this);
+                    var pickAProp = characterStatus.PickAProp(this,InWhichMapInteractive?.MapMarkId??-1);
                     return pickAProp == null
                         ? ImmutableArray<IActResult>.Empty
                         : new IActResult[] {new DropThings(new List<IMapInteractable> {pickAProp})}.ToImmutableArray();
