@@ -52,8 +52,29 @@ namespace game_stuff
                 passive_type.AbsorbAdd => new AbsorbAboutPassiveEffect(passiveParamValues),
                 passive_type.SpecialDamageAdd => new SpecialDamageAddEffect(passiveParamValues),
                 passive_type.TransRegeneration => new TransRegenerationEffect(passiveParamValues),
+                passive_type.StunFix => new StunFixEffect(passiveParamValues),
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+    }
+
+    public readonly struct StunFixEffect : IPassiveTraitEffect
+    {
+        private float[] V { get; }
+
+        public StunFixEffect(float[] vector)
+        {
+            V = vector;
+        }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new StunFixEffect(ArrayTools.Multiply(level, GetVector()));
+        }
+
+        public float[] GetVector()
+        {
+            return V;
         }
     }
 

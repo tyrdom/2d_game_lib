@@ -232,6 +232,11 @@ namespace game_stuff
             return SurvivalStatus == null || SurvivalStatus.IsDead();
         }
 
+        public StunFixStatus GetStunFixStatus()
+        {
+            return StunFixStatus.Unit();
+        }
+
         public void FailAtk()
         {
             if (FailChanceStack != null) FailChanceStack -= 1;

@@ -128,14 +128,18 @@ namespace game_stuff
         private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction,
             IBattleUnitStatus battleUnitStatus)
         {
-            var dVector1 = unit.Multi(speed);
+            var stunFixStatus = battleUnitStatus.GetStunFixStatus();
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti;
+            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti;
+            var u = MathTools.Max(1, (uint) (makeStunTickMulti * TickLast));
+            var dVector1 = unit.Multi(speed * makeStunForceMulti);
 
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
 
 
             if (height == null)
             {
-                var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast, battleUnitStatus);
+                var pushOnEarth = new PushOnEarth(dVector1, vector1, u, battleUnitStatus);
 #if DEBUG
                 Console.Out.WriteLine($" vector1~~~~ {vector1} push {dVector1}");
 #endif
@@ -143,7 +147,7 @@ namespace game_stuff
             }
 
             {
-                var pushOnAir = new PushOnAir(dVector1, height.Value, upSpeed, TickLast, battleUnitStatus);
+                var pushOnAir = new PushOnAir(dVector1, height.Value, upSpeed, u, battleUnitStatus);
                 return pushOnAir;
             }
         }
@@ -206,6 +210,7 @@ namespace game_stuff
             , float upSpeed, size bodySize, IBattleUnitStatus whoDid)
         {
             var mass = CommonConfig.Configs.bodys[bodySize].mass;
+
             switch (PushType)
             {
                 case PushType.Center:
@@ -229,8 +234,12 @@ namespace game_stuff
         private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f,
             IBattleUnitStatus battleUnitStatus)
         {
+            var stunFixStatus = battleUnitStatus.GetStunFixStatus();
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti;
+            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti;
+            var u = MathTools.Max(1, (uint) (makeStunTickMulti * TickLast));
             var max = MathTools.Max(GenUp(height, f), upSpeed);
-            var pushOnAir = new PushOnAir(unit.Multi(speed), height.GetValueOrDefault(0), max, TickLast,
+            var pushOnAir = new PushOnAir(unit.Multi(speed * makeStunForceMulti), height.GetValueOrDefault(0), max, u,
                 battleUnitStatus);
             return pushOnAir;
         }

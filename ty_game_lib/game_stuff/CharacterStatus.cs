@@ -190,6 +190,8 @@ namespace game_stuff
         public AttackStatus AttackStatus { get; }
         public DamageMultiStatus DamageMultiStatus { get; }
 
+        public StunFixStatus StunFixStatus { get; }
+
         public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
         {
             BattleUnitMoverStandard.AtkStatusRefresh(atkAboutPassiveEffects, this);
@@ -272,7 +274,7 @@ namespace game_stuff
             NowMoveSpeed = 0f;
             CharEvents = new HashSet<ICharEvent>();
             BaseChangeMarks = new HashSet<BaseChangeMark>();
-
+            StunFixStatus = new StunFixStatus();
             TransRegenEffectStatus = new TransRegenEffectStatus();
             ResetSnipe();
             Prop = null;
@@ -1321,6 +1323,11 @@ namespace game_stuff
             return SurvivalStatus.IsDead();
         }
 
+        public StunFixStatus GetStunFixStatus()
+        {
+            return StunFixStatus;
+        }
+
         private void AddProtect(int protectValueAdd)
         {
             NowProtectValue += protectValueAdd;
@@ -1421,6 +1428,9 @@ namespace game_stuff
                 case SpecialDamageAddEffect _:
                     SpecialDamageMultiStatusRefresh(vector);
                     break;
+                case StunFixEffect _:
+                    StunFixStatusRefresh(vector);
+                    break;
                 case AtkAboutPassiveEffect _:
                     AttackStatusRefresh(vector);
                     NowVehicle?.AttackStatusRefresh(vector);
@@ -1456,6 +1466,11 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void StunFixStatusRefresh(float[] vector)
+        {
+            StunFixStatus.PassiveEffectChange(vector);
         }
 
         private void TransRegenerationEffectRefresh(float[] vector)

@@ -38,9 +38,12 @@ namespace rogue_game
 
             var chooseRandCanSame =
                 battleNpc.PassiveRange.ChooseRandCanSame(battleNpc.PassiveNum + nowChapterExtraPassiveNum, random);
-            var selectMany = chooseRandCanSame.SelectMany(x => PassiveTrait.GenManyById(x, 1));
 
-            var passiveTraits = selectMany.GroupBy(x => x.PassId)
+            var selectMany = chooseRandCanSame.SelectMany(x => PassiveTrait.GenManyById(x, 1));
+            var enumerable = battleNpc.MustPassive.SelectMany(x => PassiveTrait.GenManyById(x.pass, x.level));
+            var traits = selectMany.Union(enumerable);
+
+            var passiveTraits = traits.GroupBy(x => x.PassId)
                 .ToDictionary(x => x.Key, x =>
                 {
                     var passiveTrait = x.First();

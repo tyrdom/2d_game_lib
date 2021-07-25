@@ -17,5 +17,6 @@ namespace game_stuff
         float GetRr();
         void AddAKillScore(CharacterBody characterBody);
         bool IsDeadOrCantDmg();
+        StunFixStatus GetStunFixStatus();
     }
 }
