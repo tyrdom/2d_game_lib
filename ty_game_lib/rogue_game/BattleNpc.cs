@@ -47,7 +47,8 @@ namespace rogue_game
                 .ToDictionary(x => x.Key, x =>
                 {
                     var passiveTrait = x.First();
-                    passiveTrait.SetLevel((uint) x.Count());
+                    var sum = x.Sum(pp => pp.Level);
+                    passiveTrait.SetLevel((uint) sum);
                     return passiveTrait;
                 });
 

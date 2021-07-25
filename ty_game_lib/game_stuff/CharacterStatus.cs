@@ -1223,8 +1223,8 @@ namespace game_stuff
         {
             var dot = move.Dot(CharacterBody.Sight.Aim);
             var normalSpeedMinCos = MathTools.Max(0f, MathTools.Min(1f,
-                (dot + CommonConfig.OtherConfig.DecreaseMinCos) / (CommonConfig.OtherConfig.DecreaseMinCos +
-                                                                   CommonConfig.OtherConfig.NormalSpeedMinCos)
+                (dot - CommonConfig.OtherConfig.DecreaseMinCos) /
+                (CommonConfig.OtherConfig.NormalSpeedMinCos - CommonConfig.OtherConfig.DecreaseMinCos)
             ));
             var moveDecreaseMinMulti = CommonConfig.OtherConfig.MoveDecreaseMinMulti +
                                        (1f - CommonConfig.OtherConfig.MoveDecreaseMinMulti) * normalSpeedMinCos;
