@@ -144,7 +144,7 @@ namespace game_stuff
             var bulletDamageMulti = bullet.DamageMulti <= 0
                 ? valuePerSecToValuePerTick
                 : bullet.DamageMulti;
-            
+
             var bulletProtectValue = bullet.ProtectValue;
             if (bulletProtectValue < 0)
             {
@@ -156,7 +156,8 @@ namespace game_stuff
             var bulletSuccessAmmoAdd = bullet.SuccessAmmoAdd;
             if (bulletSuccessAmmoAdd < 0)
             {
-                bulletSuccessAmmoAdd = (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+                bulletSuccessAmmoAdd =
+                    (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
@@ -566,7 +567,7 @@ namespace game_stuff
                 var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), bodyCaster.GetPos(),
                     targetCharacterStatus.GetAim(),
                     null,
-                    0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
+                    0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus, false);
                 bodyCaster.SetStunBuff(antiActBuff);
             }
             else //对手在攻击状态，通过通用失败buff读取
@@ -576,7 +577,7 @@ namespace game_stuff
 #endif
                 var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                     bodyCaster.GetPos(), TwoDVector.Zero(),
-                    null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
+                    null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus, false);
                 bodyCaster.SetStunBuff(antiActBuff);
             }
         }

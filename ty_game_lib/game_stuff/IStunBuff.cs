@@ -5,6 +5,15 @@ using game_config;
 
 namespace game_stuff
 {
+    public interface ICanFixStunBuff : IStunBuff
+    {
+        public float TickFixMulti { get; }
+
+        public float ForceFixMulti { get; }
+        TwoDVector PushVector { get; set; }
+        void FixByTaker(StunFixStatus stunFixStatus);
+    }
+
     public interface IStunBuff
     {
         public IBattleUnitStatus Caster { get; }
@@ -15,21 +24,28 @@ namespace game_stuff
         public Damage HitWall();
     }
 
-    public class PushOnEarth : IStunBuff
+    public class PushOnEarth : ICanFixStunBuff
     {
-        private TwoDVector PushVector { get; set; }
+        public TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
 
-        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick, IBattleUnitStatus caster)
+        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick, IBattleUnitStatus caster,
+            float forceFixMulti = -1f, float tickFixMulti = -1f)
         {
             PushVector = pushVector;
             DecreasePerTick = decreasePerTick;
             RestTick = restTick;
             Caster = caster;
+            ForceFixMulti = forceFixMulti;
+            TickFixMulti = tickFixMulti;
         }
 
         public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
+
+        public float TickFixMulti { get; }
+
+        public float ForceFixMulti { get; }
 
         public ITwoDTwoP GetItp()
         {
@@ -73,30 +89,43 @@ namespace game_stuff
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
 
-            var otherConfigHitWallDmgParam =MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max, sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
-            
+            var otherConfigHitWallDmgParam = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max,
+                sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
+
             return Caster.GenDamage(otherConfigHitWallDmgParam, true);
+        }
+
+        public void FixByTaker(StunFixStatus stunFixStatus)
+        {
+            StunBuffStandard.FixByTaker(this, stunFixStatus);
         }
     }
 
-    public class PushOnAir : IStunBuff
+    public class PushOnAir : ICanFixStunBuff
     {
-        private TwoDVector PushVector { get; set; }
+        public TwoDVector PushVector { get; set; }
         public float Height;
         public float UpSpeed;
 
 
-        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick, IBattleUnitStatus caster)
+        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick, IBattleUnitStatus caster,
+            float forceFixMulti = -1, float tickFixMulti = -1)
         {
             PushVector = pushVector;
             Height = height;
             UpSpeed = upSpeed;
             RestTick = restTick;
             Caster = caster;
+            ForceFixMulti = forceFixMulti;
+            TickFixMulti = tickFixMulti;
         }
 
         public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
+
+        public float TickFixMulti { get; }
+
+        public float ForceFixMulti { get; }
 
         public ITwoDTwoP GetItp()
         {
@@ -136,8 +165,14 @@ namespace game_stuff
             var sqNorm = PushVector.SqNorm();
             PushVector = TwoDVector.Zero();
             RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
-            var min = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max, sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
+            var min = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max,
+                sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
             return Caster.GenDamage(min, true);
+        }
+
+        public void FixByTaker(StunFixStatus stunFixStatus)
+        {
+            StunBuffStandard.FixByTaker(this, stunFixStatus);
         }
     }
 
@@ -191,6 +226,10 @@ namespace game_stuff
             RestTick += StuffLocalConfig.HitWallCatchTickParam;
             MovesOnPoints.Clear();
             return Caster.GenDamage(CommonConfig.OtherConfig.hit_wall_catch_dmg_param, true);
+        }
+
+        public void FixByTaker(StunFixStatus stunFixStatus)
+        {
         }
     }
 }

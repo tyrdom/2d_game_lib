@@ -327,13 +327,13 @@ namespace game_stuff
         private void ArmorAbs(float absorbStatusArmorAbs, uint damage, uint hit, uint damageShardedDamage)
         {
             var shieldInstability = Math.Max(0, (damage - hit * Math.Min(ArmorDefence, damageShardedDamage)));
-            NowArmor = (uint) (NowArmor + shieldInstability * absorbStatusArmorAbs);
+            NowArmor = (uint) MathTools.Min(MaxArmor, NowArmor + shieldInstability * absorbStatusArmorAbs);
             SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
         }
 
         private void HpAbs(float absorbStatusHpAbs, uint damage)
         {
-            NowHp = (uint) (NowHp + damage * absorbStatusHpAbs);
+            NowHp = (uint) MathTools.Min(MaxHp, NowHp + damage * absorbStatusHpAbs);
             SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
         }
 

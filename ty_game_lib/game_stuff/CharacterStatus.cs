@@ -157,6 +157,12 @@ namespace game_stuff
 
         public void SetStunBuff(IStunBuff stunBuff)
         {
+            if (stunBuff is ICanFixStunBuff canFixStunBuff)
+            {
+                canFixStunBuff.FixByTaker(StunFixStatus);
+                stunBuff = canFixStunBuff;
+            }
+
             if (StunBuff != null) stunBuff.RestTick = MathTools.Max(StunBuff.RestTick, stunBuff.RestTick);
             StunBuff = stunBuff;
             var getStunBuff = new GetStunBuff(StunBuff.RestTick);
