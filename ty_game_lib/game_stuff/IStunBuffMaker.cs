@@ -11,27 +11,11 @@ namespace game_stuff
         public uint TickLast { get; }
 
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            size bodySize, IBattleUnitStatus whoDid, bool canFix = true);
+            CharacterStatus whoTake, IBattleUnitStatus whoDid, bool canFix = true);
     }
 
     public static class StunBuffStandard
     {
-        public static void FixByTaker(ICanFixStunBuff canFixStunBuff, StunFixStatus stunFixStatus)
-        {
-            if (canFixStunBuff.ForceFixMulti > 0)
-            {
-                var twoDVector =
-                    canFixStunBuff.PushVector.Multi(stunFixStatus.TakeStunForceMulti * canFixStunBuff.ForceFixMulti);
-                canFixStunBuff.PushVector = twoDVector;
-            }
-
-            if (canFixStunBuff.TickFixMulti > 0)
-            {
-                canFixStunBuff.RestTick = (uint) MathTools.Max(1,
-                    canFixStunBuff.RestTick * canFixStunBuff.TickFixMulti * stunFixStatus.TakeStunTickMulti);
-            }
-        }
-
         public static IStunBuffMaker GenBuffByConfig(push_buff pushBuff)
         {
             var pushType = pushBuff.PushType switch
@@ -127,34 +111,34 @@ namespace game_stuff
 
     public class PushEarthStunBuffMaker : IStunBuffMaker
     {
-        private float PushForce { get; } //推动量
+        private float PushMomentum { get; } //推动量
         private PushType PushType { get; } //方向或者中心
         private TwoDVector? PushFixVector { get; } //修正向量，中心push为中心点，方向为方向修正
         public uint TickLast { get; }
 
-        public PushEarthStunBuffMaker(float pushForce, PushType pushType, TwoDVector? pushFixVector,
+        public PushEarthStunBuffMaker(float pushMomentum, PushType pushType, TwoDVector? pushFixVector,
             uint lastTick)
         {
-            PushForce = pushForce;
+            PushMomentum = pushMomentum;
             PushType = pushType;
             PushFixVector = pushFixVector;
             TickLast = lastTick;
         }
 
         private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float friction,
-            IBattleUnitStatus battleUnitStatus, bool canFix)
+            IBattleUnitStatus battleUnitStatus, IBattleUnitStatus whoTake, bool canFix)
         {
             var stunFixStatus = battleUnitStatus.GetStunFixStatus();
-            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti;
-            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti;
+            var fixStatus = whoTake.GetStunFixStatus();
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
+            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var u = canFix ? MathTools.Max(1, (uint) MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
             var dVector1 = canFix ? unit.Multi(speed * makeStunForceMulti) : unit.Multi(speed);
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
 
             if (height == null)
             {
-                var pushOnEarth = new PushOnEarth(dVector1, vector1, TickLast, battleUnitStatus,
-                    canFix ? makeStunForceMulti : -1f, canFix ? makeStunTickMulti : -1f);
+                var pushOnEarth = new PushStunOnEarth(dVector1, vector1, u, battleUnitStatus);
 #if DEBUG
                 Console.Out.WriteLine($" vector1~~~~ {vector1} push {dVector1}");
 #endif
@@ -162,24 +146,23 @@ namespace game_stuff
             }
 
             {
-                var pushOnAir = new PushOnAir(dVector1, height.Value, upSpeed, TickLast, battleUnitStatus,
-                    canFix ? makeStunForceMulti : -1f, canFix ? makeStunTickMulti : -1f);
+                var pushOnAir = new PushStunOnAir(dVector1, height.Value, upSpeed, u, battleUnitStatus);
                 return pushOnAir;
             }
         }
 
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            size bodySize, IBattleUnitStatus whoDid, bool canFix)
+            CharacterStatus whoTake, IBattleUnitStatus whoDid, bool canFix)
         {
-            var mass = CommonConfig.Configs.bodys[bodySize].mass;
+            var mass = CommonConfig.Configs.bodys[whoTake.CharacterBody.GetSize()].mass;
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector) : pos;
+                    var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector.ClockwiseTurn(aim)) : pos;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit =
-                        GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed,
-                            CommonConfig.OtherConfig.friction, whoDid, canFix);
+                        GenBuffFromUnit(twoDVector, PushMomentum / mass, height, upSpeed,
+                            CommonConfig.OtherConfig.friction, whoDid, whoTake, canFix);
                     return genBuffFromUnit;
 
 
@@ -187,8 +170,8 @@ namespace game_stuff
                     var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
-                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, CommonConfig.OtherConfig.friction,
-                            whoDid, canFix);
+                        GenBuffFromUnit(unit, PushMomentum / mass, height, upSpeed, CommonConfig.OtherConfig.friction,
+                            whoDid, whoTake, canFix);
                     return genBuffFromUnit1;
 
                 default:
@@ -199,19 +182,19 @@ namespace game_stuff
 
     public class PushAirStunBuffMaker : IStunBuffMaker
     {
-        private float PushForce { get; }
+        private float PushMomentum { get; }
         private PushType PushType { get; }
-        private float UpForce { get; }
+        private float UpMomentum { get; }
 
         private TwoDVector? PushFixVector { get; }
         public uint TickLast { get; }
 
-        public PushAirStunBuffMaker(float pushForce, PushType pushType, float upForce,
+        public PushAirStunBuffMaker(float pushMomentum, PushType pushType, float upMomentum,
             TwoDVector? pushFixVector, uint tickLast)
         {
-            PushForce = pushForce;
+            PushMomentum = pushMomentum;
             PushType = pushType;
-            UpForce = upForce;
+            UpMomentum = upMomentum;
             PushFixVector = pushFixVector;
             TickLast = tickLast;
         }
@@ -219,20 +202,21 @@ namespace game_stuff
         private float GenUp(float? air, float bodyMass)
         {
             var maxUp = GameTools.GetMaxUpSpeed(air);
-            return MathTools.Min(maxUp, UpForce / bodyMass);
+            return MathTools.Min(maxUp, UpMomentum / bodyMass);
         }
 
         public IStunBuff GenBuff(TwoDPoint anchor, TwoDPoint obPos, TwoDVector aim, float? height
-            , float upSpeed, size bodySize, IBattleUnitStatus whoDid, bool canFix)
+            , float upSpeed, CharacterStatus whoTake, IBattleUnitStatus whoDid, bool canFix)
         {
-            var mass = CommonConfig.Configs.bodys[bodySize].mass;
+            var mass = CommonConfig.Configs.bodys[whoTake.CharacterBody.GetSize()].mass;
 
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDPoint = PushFixVector != null ? anchor.Move(PushFixVector) : anchor;
+                    var twoDPoint = PushFixVector != null ? anchor.Move(PushFixVector.ClockwiseTurn(aim)) : anchor;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
-                    var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushForce / mass, height, upSpeed, mass, whoDid,
+                    var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushMomentum / mass, height, upSpeed, mass,
+                        whoDid, whoTake,
                         canFix);
                     return genBuffFromUnit;
 
@@ -241,7 +225,7 @@ namespace game_stuff
                     var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
-                        GenBuffFromUnit(unit, PushForce / mass, height, upSpeed, mass, whoDid, canFix);
+                        GenBuffFromUnit(unit, PushMomentum / mass, height, upSpeed, mass, whoDid, whoTake, canFix);
                     return genBuffFromUnit1;
 
                 default:
@@ -250,15 +234,17 @@ namespace game_stuff
         }
 
         private IStunBuff GenBuffFromUnit(TwoDVector unit, float speed, float? height, float upSpeed, float f,
-            IBattleUnitStatus battleUnitStatus, bool canFix)
+            IBattleUnitStatus battleUnitStatus, IBattleUnitStatus whoTake, bool canFix)
         {
             var stunFixStatus = battleUnitStatus.GetStunFixStatus();
-            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti;
-            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti;
+            var fixStatus = whoTake.GetStunFixStatus();
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
+            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var max = MathTools.Max(GenUp(height, f), upSpeed);
-            var twoDVector = unit.Multi(speed);
-            var pushOnAir = new PushOnAir(twoDVector, height.GetValueOrDefault(0), max, TickLast,
-                battleUnitStatus, canFix ? makeStunForceMulti : -1f, canFix ? makeStunTickMulti : -1f);
+            var twoDVector = !canFix ? unit.Multi(speed) : unit.Multi(speed * makeStunForceMulti);
+            var u = !canFix ? TickLast : MathTools.Max(1, (uint) (TickLast * makeStunTickMulti));
+            var pushOnAir = new PushStunOnAir(twoDVector, height.GetValueOrDefault(0), max, u,
+                battleUnitStatus);
             return pushOnAir;
         }
     }
@@ -267,6 +253,58 @@ namespace game_stuff
     {
         Center,
         Vector
+    }
+
+
+    public class PullStunBuffMaker : IStunBuffMaker
+    {
+        public uint TickLast { get; }
+        public float PullMomentum { get; }
+        private TwoDVector? PullFixVector { get; }
+
+        public PullStunBuffMaker(uint tickLast, float pullMomentum, TwoDVector? pullFixVector)
+        {
+            TickLast = tickLast;
+            PullMomentum = pullMomentum;
+            PullFixVector = pullFixVector;
+        }
+
+        public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
+            CharacterStatus whoTake,
+            IBattleUnitStatus whoDid, bool canFix = true)
+        {
+            var mass = CommonConfig.Configs.bodys[whoTake.CharacterBody.GetSize()].mass;
+
+            var twoDPoint = PullFixVector != null ? pos.Move(PullFixVector.ClockwiseTurn(aim)) : pos;
+
+            var genVector = twoDPoint.GenVector(obPos);
+            var l = genVector.Norm();
+            var unit = l <= 0 ? new TwoDVector(0f, 0f) : new TwoDVector(genVector.X / l, genVector.Y / l);
+            var genBuffFromUnit =
+                GenBuffFromUnit(unit, PullMomentum / mass, height, upSpeed,
+                    CommonConfig.OtherConfig.friction, whoDid, whoTake, l, canFix);
+            return genBuffFromUnit;
+        }
+
+        private IStunBuff GenBuffFromUnit(TwoDVector unit, float pullMaxSpeed, float? height, float upSpeed,
+            float otherConfigFriction, IBattleUnitStatus whoDid, IBattleUnitStatus whoTake, float length, bool canFix)
+        {
+            var stunFixStatus = whoDid.GetStunFixStatus();
+            var fixStatus = whoTake.GetStunFixStatus();
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
+            var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
+            var u = canFix ? MathTools.Max(1, (uint) MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
+            if (height == null) // 
+            {
+                var sq = otherConfigFriction * length;
+                if (sq > pullMaxSpeed * pullMaxSpeed)
+                {   
+              // todo finish code      
+                }
+            }
+
+            throw new NotImplementedException();
+        }
     }
 
     public class CatchStunBuffMaker : IStunBuffMaker
@@ -306,7 +344,7 @@ namespace game_stuff
         }
 
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
-            size bodySize, IBattleUnitStatus whoDid, bool canFix = false)
+            CharacterStatus whoTake, IBattleUnitStatus whoDid, bool canFix = true)
         {
             var antiActBuff = GenABuff(pos, aim, whoDid);
             return antiActBuff;

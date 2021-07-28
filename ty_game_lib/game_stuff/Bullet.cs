@@ -414,7 +414,7 @@ namespace game_stuff
                             targetCharacterStatus.GetPos(),
                             Aim,
                             null, 0,
-                            targetCharacterBodyBodySize, caster);
+                            targetCharacterStatus, caster);
                     targetCharacterStatus.SetStunBuff(stunBuff);
                     //初始化buff时，如果是抓取技能，会触发技能
                     switch (antiActBuffConfig)
@@ -442,7 +442,7 @@ namespace game_stuff
 
                         break;
                     // 其他情况刷新buff
-                    case PushOnAir pushOnAir:
+                    case PushStunOnAir pushOnAir:
 
                         if (PauseToOpponent > targetCharacterStatus.PauseTick)
                         {
@@ -454,10 +454,10 @@ namespace game_stuff
                             targetCharacterStatus.GetPos(),
                             Aim,
                             height,
-                            pushOnAir.UpSpeed, targetCharacterBodyBodySize, caster);
+                            pushOnAir.UpSpeed, targetCharacterStatus, caster);
                         targetCharacterStatus.SetStunBuff(antiActBuff);
                         break;
-                    case PushOnEarth _:
+                    case PushStunOnEarth _:
                         InitBuff();
                         break;
                     default:
@@ -478,6 +478,7 @@ namespace game_stuff
                             case hit_type.range:
                                 targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
                                     DamageMulti, back, BulletId);
+                                // targetCharacterStatus.TrickBuffsToBothSide(characterStatus);
                                 if (!IsFAtk)
                                 {
                                     targetCharacterStatus.TrickBlockSkill(Pos);
@@ -486,7 +487,7 @@ namespace game_stuff
 
                                 break;
                             case hit_type.melee:
-                                CharAtkFail(characterStatus, targetCharacterStatus, isActSkill,
+                                CharMeleeAtkFail(characterStatus, targetCharacterStatus, isActSkill,
                                     targetCharacterBodyBodySize);
                                 break;
                             default:
@@ -529,16 +530,17 @@ namespace game_stuff
 
             var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                 bodyCaster.GetPos(), Aim,
-                null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus);
+                null, 0, bodyCaster, targetCharacterStatus);
             bodyCaster.SetStunBuff(antiActBuff);
             var antiActBuff2 = StuffLocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
                 targetCharacterStatus.GetPos(), Aim,
-                null, 0, targetCharacterStatus.CharacterBody.GetSize(), bodyCaster);
+                null, 0, targetCharacterStatus, bodyCaster);
             targetCharacterStatus.SetStunBuff(antiActBuff2);
         }
 
 
-        private void CharAtkFail(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus, bool isActSkill,
+        private void CharMeleeAtkFail(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus,
+            bool isActSkill,
             size targetCharacterBodyBodySize)
         {
             //清除技能数据
@@ -567,7 +569,7 @@ namespace game_stuff
                 var antiActBuff = failAntiBuff.GenBuff(targetCharacterStatus.GetPos(), bodyCaster.GetPos(),
                     targetCharacterStatus.GetAim(),
                     null,
-                    0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus, false);
+                    0, bodyCaster, targetCharacterStatus, false);
                 bodyCaster.SetStunBuff(antiActBuff);
             }
             else //对手在攻击状态，通过通用失败buff读取
@@ -577,7 +579,7 @@ namespace game_stuff
 #endif
                 var antiActBuff = StuffLocalConfig.CommonBuffMaker.GenBuff(targetCharacterStatus.GetPos(),
                     bodyCaster.GetPos(), TwoDVector.Zero(),
-                    null, 0, bodyCaster.CharacterBody.GetSize(), targetCharacterStatus, false);
+                    null, 0, bodyCaster, targetCharacterStatus, false);
                 bodyCaster.SetStunBuff(antiActBuff);
             }
         }

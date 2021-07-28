@@ -97,9 +97,9 @@ namespace game_stuff
         public static float MaxUpSpeed { get; private set; } =
             MathTools.Sqrt(2f * CommonConfig.OtherConfig.g_acc * CommonConfig.OtherConfig.max_hegiht);
 
-        public static PushOnAir OutCaught(IBattleUnitStatus caster)
+        public static PushStunOnAir OutCaught(IBattleUnitStatus caster)
         {
-            return new PushOnAir(new TwoDVector(0, 0), 0.05f, 0, 6, caster);
+            return new PushStunOnAir(new TwoDVector(0, 0), 0.05f, 0, 6, caster);
         }
 
         public static uint HitWallTickParam { get; private set; } = 2;

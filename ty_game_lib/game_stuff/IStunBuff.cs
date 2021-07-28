@@ -5,13 +5,9 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface ICanFixStunBuff : IStunBuff
+    public interface IPushStunBuff : IStunBuff
     {
-        public float TickFixMulti { get; }
-
-        public float ForceFixMulti { get; }
         TwoDVector PushVector { get; set; }
-        void FixByTaker(StunFixStatus stunFixStatus);
     }
 
     public interface IStunBuff
@@ -24,28 +20,22 @@ namespace game_stuff
         public Damage HitWall();
     }
 
-    public class PushOnEarth : ICanFixStunBuff
+    public class PushStunOnEarth : IPushStunBuff
     {
         public TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
 
-        public PushOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick, IBattleUnitStatus caster,
-            float forceFixMulti = -1f, float tickFixMulti = -1f)
+        public PushStunOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick, IBattleUnitStatus caster)
         {
             PushVector = pushVector;
             DecreasePerTick = decreasePerTick;
             RestTick = restTick;
             Caster = caster;
-            ForceFixMulti = forceFixMulti;
-            TickFixMulti = tickFixMulti;
         }
 
         public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
 
-        public float TickFixMulti { get; }
-
-        public float ForceFixMulti { get; }
 
         public ITwoDTwoP GetItp()
         {
@@ -94,38 +84,27 @@ namespace game_stuff
 
             return Caster.GenDamage(otherConfigHitWallDmgParam, true);
         }
-
-        public void FixByTaker(StunFixStatus stunFixStatus)
-        {
-            StunBuffStandard.FixByTaker(this, stunFixStatus);
-        }
     }
 
-    public class PushOnAir : ICanFixStunBuff
+    public class PushStunOnAir : IPushStunBuff
     {
         public TwoDVector PushVector { get; set; }
         public float Height;
         public float UpSpeed;
 
 
-        public PushOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick, IBattleUnitStatus caster,
-            float forceFixMulti = -1, float tickFixMulti = -1)
+        public PushStunOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick, IBattleUnitStatus caster)
         {
             PushVector = pushVector;
             Height = height;
             UpSpeed = upSpeed;
             RestTick = restTick;
             Caster = caster;
-            ForceFixMulti = forceFixMulti;
-            TickFixMulti = tickFixMulti;
         }
 
         public IBattleUnitStatus Caster { get; }
         public uint RestTick { get; set; }
 
-        public float TickFixMulti { get; }
-
-        public float ForceFixMulti { get; }
 
         public ITwoDTwoP GetItp()
         {
@@ -150,7 +129,7 @@ namespace game_stuff
 
 #endif
                 var pushOnEarth =
-                    new PushOnEarth(PushVector, decreasePerTick, RestTick, Caster);
+                    new PushStunOnEarth(PushVector, decreasePerTick, RestTick, Caster);
                 return (PushVector, pushOnEarth);
             }
 
@@ -168,11 +147,6 @@ namespace game_stuff
             var min = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max,
                 sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
             return Caster.GenDamage(min, true);
-        }
-
-        public void FixByTaker(StunFixStatus stunFixStatus)
-        {
-            StunBuffStandard.FixByTaker(this, stunFixStatus);
         }
     }
 
@@ -214,7 +188,7 @@ namespace game_stuff
             if (RestTick > 0)
             {
                 Caster.CatchingWho = null;
-                return (pt, new PushOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick, Caster));
+                return (pt, new PushStunOnEarth(TwoDVector.Zero(), TwoDVector.Zero(), RestTick, Caster));
             }
 
             Caster.CatchingWho = null;
