@@ -184,7 +184,7 @@ namespace game_stuff
 
         public Dictionary<TrickCond, HashSet<IPlayingBuff>> BuffTrick { get; }
 
-        private Dictionary<int, IPlayingBuff> PlayingBuffs { get; }
+        private Dictionary<play_buff_id, IPlayingBuff> PlayingBuffs { get; }
 
         // Status
         public AttackStatus AttackStatus { get; }
@@ -259,7 +259,7 @@ namespace game_stuff
             NowCastAct = null;
             NextSkill = null;
             StunBuff = null;
-            PlayingBuffs = new Dictionary<int, IPlayingBuff>();
+            PlayingBuffs = new Dictionary<play_buff_id, IPlayingBuff>();
 
             NowProtectTick = 0;
             AddMoveSpeed = genBaseAttrById.MoveAddSpeed;
@@ -1707,7 +1707,7 @@ namespace game_stuff
         }
 
 
-        public bool CheckBuff(int id)
+        public bool CheckBuff(play_buff_id id)
         {
             return PlayingBuffs.TryGetValue(id, out var playingBuff) && playingBuff.Stack > 0;
         }
@@ -1727,7 +1727,8 @@ namespace game_stuff
             return ofType;
         }
 
-        public void UseBuff(int atkPassBuffId)
+        
+        public void UseBuff(play_buff_id atkPassBuffId)
         {
             if (PlayingBuffs.TryGetValue(atkPassBuffId, out var playingBuff))
             {

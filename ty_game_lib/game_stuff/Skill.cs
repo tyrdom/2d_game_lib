@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -49,6 +50,10 @@ namespace game_stuff
 
         private uint SnipeBreakTick { get; }
 
+        private ImmutableDictionary<size, IBuffMaker> GetBuffsWhenAbsorb { get; }
+
+        private ImmutableDictionary<size, IBuffMaker> SetBuffsToOpponentWhenAbsorb { get; }
+
         public string LogUser()
         {
             return LaunchTickToBullets.SelectMany(keyValuePair => keyValuePair.Value).Select(x => x.Caster)
@@ -61,7 +66,8 @@ namespace game_stuff
             uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
             LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove,
-            skill_id skillId, Skill? enemyFailTrickSkill)
+            skill_id skillId, Skill? enemyFailTrickSkill, ImmutableDictionary<size, IBuffMaker> getBuffsWhenAbsorb,
+            ImmutableDictionary<size, IBuffMaker> setBuffsToOpponentWhenAbsorb)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -94,6 +100,8 @@ namespace game_stuff
             CanInputMove = canInputMove;
             SkillId = skillId;
             EnemyFailTrickSkill = enemyFailTrickSkill;
+            GetBuffsWhenAbsorb = getBuffsWhenAbsorb;
+            SetBuffsToOpponentWhenAbsorb = setBuffsToOpponentWhenAbsorb;
         }
 
 
@@ -144,11 +152,31 @@ namespace game_stuff
                 : skill.BaseTough;
 
             var genSkillById = skill.EnemyFailTrickSkill == "" ? null : GenSkillById(skill.EnemyFailTrickSkill);
+
+            var immutableDictionary = skill.GetBuffWhenAbsorb.ToImmutableDictionary(p => p.size, GenBuffMakerByC);
+            var buffMakers = skill.SetBuffToOpponentWhenAbsorb.ToImmutableDictionary(p => p.size, GenBuffMakerByC);
+
+
             return new Skill(dictionary, twoDVectors, skill.MoveStartTime,
                 skill.SkillMustTime, skill.SkillMaxTime,
                 skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
                 skill.BreakSnipeTime,
-                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById);
+                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById,
+                immutableDictionary, buffMakers);
+        }
+
+        private static IBuffMaker GenBuffMakerByC(SimpleObj1 p)
+        {
+            return p.buff_type switch
+            {
+                buff_type.push_buff => StunBuffStandard.GenStunBuffMakerByC(buff_type.push_buff, p.buff_id.First()),
+                buff_type.caught_buff => StunBuffStandard.GenStunBuffMakerByC(buff_type.caught_buff,
+                    p.buff_id.First()),
+                buff_type.play_buff => new PlayingBuffMaker(p.buff_id.Select(x =>
+                        (play_buff_id) Enum.Parse(typeof(play_buff_id), x, true))
+                    .ToArray()) as IBuffMaker,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
 

@@ -201,9 +201,5 @@ namespace game_stuff
             MovesOnPoints.Clear();
             return Caster.GenDamage(CommonConfig.OtherConfig.hit_wall_catch_dmg_param, true);
         }
-
-        public void FixByTaker(StunFixStatus stunFixStatus)
-        {
-        }
     }
 }

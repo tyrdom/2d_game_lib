@@ -6,9 +6,29 @@ using game_config;
 
 namespace game_stuff
 {
+    public interface IBuffMaker
+    {
+    }
+
+    public class PlayingBuffMaker : IBuffMaker
+    {
+        public PlayingBuffMaker(play_buff_id[] playBuffIds)
+        {
+            PlayBuffIds = playBuffIds;
+        }
+
+        private play_buff_id[] PlayBuffIds { get; }
+
+        public IEnumerable<IPlayingBuff> GenBuffs()
+        {
+            var playingBuffs = PlayBuffIds.Select(PlayBuffStandard.GenById);
+            return playingBuffs;
+        }
+    }
+
     public interface IPlayingBuff
     {
-        int BuffId { get; }
+        play_buff_id BuffId { get; }
         int RestTick { get; set; }
         bool IsFinish();
         int Stack { get; set; }
@@ -19,7 +39,7 @@ namespace game_stuff
 
     public class MakeDamageBuff : IPlayingBuff, IDamageAboutBuff
     {
-        public MakeDamageBuff(int buffId, int restTick, float addDamageMulti, int stack, bool useStack)
+        public MakeDamageBuff(play_buff_id buffId, int restTick, float addDamageMulti, int stack, bool useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -28,7 +48,7 @@ namespace game_stuff
             UseStack = useStack;
         }
 
-        public int BuffId { get; }
+        public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
         public int Stack { get; set; }
 
@@ -56,7 +76,14 @@ namespace game_stuff
 
     public static class PlayBuffStandard
     {
-        public static IPlayingBuff GenById(int id)
+        public static IPlayingBuff GenById(string id)
+        {
+            var o = (play_buff_id) Enum.Parse(typeof(play_buff_id), id, true);
+            var genById = GenById(o);
+            return genById;
+        }
+
+        public static IPlayingBuff GenById(play_buff_id id)
         {
             var playBuff = GetBuffConfig(id);
             var intTickByTime = (int) (playBuff.LastTime);
@@ -73,7 +100,7 @@ namespace game_stuff
             };
         }
 
-        private static play_buff GetBuffConfig(int id)
+        private static play_buff GetBuffConfig(play_buff_id id)
         {
             return CommonConfig.Configs.play_buffs.TryGetValue(id, out var playBuff)
                 ? playBuff
@@ -93,7 +120,7 @@ namespace game_stuff
 
 
         public static void AddBuffs(
-            Dictionary<int, IPlayingBuff> playingBuffsDictionary,
+            Dictionary<play_buff_id, IPlayingBuff> playingBuffsDictionary,
             IEnumerable<IPlayingBuff> playingBuffsToAdd
         )
         {
@@ -116,7 +143,7 @@ namespace game_stuff
         }
 
         public static void AddABuff(
-            Dictionary<int, IPlayingBuff> playingBuffsDictionary,
+            Dictionary<play_buff_id, IPlayingBuff> playingBuffsDictionary,
             IPlayingBuff aPlayBuff)
         {
             var idBuffId = aPlayBuff.BuffId;
@@ -145,7 +172,7 @@ namespace game_stuff
 
     public class ToughBuff : IPlayingBuff
     {
-        public ToughBuff(int buffId, int restTick, int stack, bool useStack)
+        public ToughBuff(play_buff_id buffId, int restTick, int stack, bool useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -153,7 +180,7 @@ namespace game_stuff
             UseStack = useStack;
         }
 
-        public int BuffId { get; }
+        public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
 
         public bool IsFinish()
@@ -173,7 +200,7 @@ namespace game_stuff
 
     public class TakeDamageBuff : IPlayingBuff, IDamageAboutBuff
     {
-        public TakeDamageBuff(int buffId, int restTick, float takeDamageAdd, int stack, bool useStack)
+        public TakeDamageBuff(play_buff_id buffId, int restTick, float takeDamageAdd, int stack, bool useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -182,7 +209,7 @@ namespace game_stuff
             UseStack = useStack;
         }
 
-        public int BuffId { get; }
+        public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
         public float AddDamageMulti { get; }
 
@@ -203,7 +230,7 @@ namespace game_stuff
 
     public class BreakBuff : IPlayingBuff
     {
-        public BreakBuff(int buffId, int restTick, int stack, bool useStack)
+        public BreakBuff(play_buff_id buffId, int restTick, int stack, bool useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -211,7 +238,7 @@ namespace game_stuff
             UseStack = useStack;
         }
 
-        public int BuffId { get; }
+        public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
 
         public bool IsFinish()

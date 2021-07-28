@@ -119,7 +119,7 @@ namespace game_stuff
                     {
                         var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
                             x.size == pair.Key) ?? bulletFailActBuffConfigToSelf.First(a => a.size == size.@default);
-                        return StunBuffStandard.GenBuffByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
+                        return StunBuffStandard.GenStunBuffMakerByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
                     });
                 return actBuffConfigs;
             }

@@ -6,7 +6,7 @@ using game_config;
 
 namespace game_stuff
 {
-    public interface IStunBuffMaker
+    public interface IStunBuffMaker : IBuffMaker
     {
         public uint TickLast { get; }
 
@@ -83,7 +83,7 @@ namespace game_stuff
                 Skill.GenSkillById(caughtBuff.TrickSkill));
         }
 
-        public static IStunBuffMaker GenBuffByC(buff_type buffConfigToOpponentType, string configToOpponent)
+        public static IStunBuffMaker GenStunBuffMakerByC(buff_type buffConfigToOpponentType, string configToOpponent)
         {
             switch (buffConfigToOpponentType)
             {
@@ -277,16 +277,16 @@ namespace game_stuff
 
             var twoDPoint = PullFixVector != null ? pos.Move(PullFixVector.ClockwiseTurn(aim)) : pos;
 
-            var genVector = twoDPoint.GenVector(obPos);
+            var genVector = obPos.GenVector(twoDPoint);
             var l = genVector.Norm();
             var unit = l <= 0 ? new TwoDVector(0f, 0f) : new TwoDVector(genVector.X / l, genVector.Y / l);
             var genBuffFromUnit =
-                GenBuffFromUnit(unit, PullMomentum / mass, height, upSpeed,
+                GenBuffFromUnit(unit, PullMomentum / mass,
                     CommonConfig.OtherConfig.friction, whoDid, whoTake, l, canFix);
             return genBuffFromUnit;
         }
 
-        private IStunBuff GenBuffFromUnit(TwoDVector unit, float pullMaxSpeed, float? height, float upSpeed,
+        private IStunBuff GenBuffFromUnit(TwoDVector unit, float pullMaxSpeed,
             float otherConfigFriction, IBattleUnitStatus whoDid, IBattleUnitStatus whoTake, float length, bool canFix)
         {
             var stunFixStatus = whoDid.GetStunFixStatus();
@@ -294,16 +294,22 @@ namespace game_stuff
             var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var u = canFix ? MathTools.Max(1, (uint) MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
-            if (height == null) // 
-            {
-                var sq = otherConfigFriction * length;
-                if (sq > pullMaxSpeed * pullMaxSpeed)
-                {   
-              // todo finish code      
-                }
-            }
+            var vector1 = unit.Multi(pullMaxSpeed > 0 ? otherConfigFriction : -otherConfigFriction);
 
-            throw new NotImplementedException();
+            var sq = 2f * otherConfigFriction * length;
+            if (sq > pullMaxSpeed * pullMaxSpeed)
+            {
+                var twoDVector = canFix ? unit.Multi(pullMaxSpeed * makeStunForceMulti) : unit.Multi(pullMaxSpeed);
+                var pushOnEarth = new PushStunOnEarth(twoDVector, vector1, u, whoDid);
+                return pushOnEarth;
+            }
+            else
+            {
+                var sqrt = MathTools.Sqrt(sq);
+                var twoDVector = canFix ? unit.Multi(sqrt * makeStunForceMulti) : unit.Multi(sqrt);
+                var pushOnEarth = new PushStunOnEarth(twoDVector, vector1, u, whoDid);
+                return pushOnEarth;
+            }
         }
     }
 
