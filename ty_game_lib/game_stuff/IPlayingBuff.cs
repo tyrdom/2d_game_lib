@@ -10,11 +10,17 @@ namespace game_stuff
     {
     }
 
-    public class PlayingBuffMaker : IBuffMaker
+    public class PlayingBuffsMaker : IBuffMaker
     {
-        public PlayingBuffMaker(play_buff_id[] playBuffIds)
+        public PlayingBuffsMaker(play_buff_id[] playBuffIds)
         {
             PlayBuffIds = playBuffIds;
+        }
+
+        public PlayingBuffsMaker(IEnumerable<string> playBuffIds)
+        {
+            var buffIds = playBuffIds.Select(x => (play_buff_id) Enum.Parse(typeof(play_buff_id), x, true));
+            PlayBuffIds = buffIds.ToArray();
         }
 
         private play_buff_id[] PlayBuffIds { get; }
@@ -86,7 +92,7 @@ namespace game_stuff
         public static IPlayingBuff GenById(play_buff_id id)
         {
             var playBuff = GetBuffConfig(id);
-            var intTickByTime = (int) (playBuff.LastTime);
+            var intTickByTime = (int) playBuff.LastTime;
             var playBuffUseStack = playBuff.UseStack;
             return playBuff.EffectType switch
             {
@@ -96,6 +102,8 @@ namespace game_stuff
                 play_buff_effect_type.MakeDamageAdd => new MakeDamageBuff(id, intTickByTime, playBuff.EffectValue, 1,
                     playBuffUseStack),
                 play_buff_effect_type.Tough => new ToughBuff(id, intTickByTime, 1, playBuffUseStack),
+                play_buff_effect_type.ToughUp => new ToughUpBuff(id, intTickByTime, playBuff.EffectValue, 1,
+                    playBuffUseStack),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -168,6 +176,36 @@ namespace game_stuff
                     throw new ArgumentOutOfRangeException();
             }
         }
+    }
+
+    public class ToughUpBuff : IPlayingBuff
+    {
+        public ToughUpBuff(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i, bool playBuffUseStack)
+        {
+            BuffId = id;
+            RestTick = intTickByTime;
+            PlayBuffEffectValue = (int) playBuffEffectValue;
+            Stack = i;
+            UseStack = playBuffUseStack;
+        }
+
+        public play_buff_id BuffId { get; }
+        public int RestTick { get; set; }
+        public int PlayBuffEffectValue { get; }
+
+        public bool IsFinish()
+        {
+            return PlayBuffStandard.IsFinish(this);
+        }
+
+        public int Stack { get; set; }
+
+        public void GoATick()
+        {
+            PlayBuffStandard.GoATick(this);
+        }
+
+        public bool UseStack { get; }
     }
 
     public class ToughBuff : IPlayingBuff

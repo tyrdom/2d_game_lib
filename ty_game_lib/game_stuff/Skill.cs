@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -25,7 +24,7 @@ namespace game_stuff
             return (int) SkillId;
         }
 
-        public skill_id SkillId { get; }
+        private skill_id SkillId { get; }
         public int NowTough { get; set; }
 
         public int SnipeStepNeed { get; }
@@ -50,9 +49,11 @@ namespace game_stuff
 
         private uint SnipeBreakTick { get; }
 
-        private ImmutableDictionary<size, IBuffMaker> GetBuffsWhenAbsorb { get; }
+        private PlayingBuffsMaker GetBuffsWhenAbsorb { get; }
 
-        private ImmutableDictionary<size, IBuffMaker> SetBuffsToOpponentWhenAbsorb { get; }
+        private PlayingBuffsMaker SetBuffsToOpponentWhenAbsorb { get; }
+        private Dictionary<size, IStunBuffMaker>? SetStunBuffsToOpponentWhenAbsorb { get; }
+
 
         public string LogUser()
         {
@@ -66,8 +67,9 @@ namespace game_stuff
             uint moveStartTick, uint skillMustTick, uint totalTick,
             int baseTough, uint comboInputStartTick, int nextCombo,
             LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove,
-            skill_id skillId, Skill? enemyFailTrickSkill, ImmutableDictionary<size, IBuffMaker> getBuffsWhenAbsorb,
-            ImmutableDictionary<size, IBuffMaker> setBuffsToOpponentWhenAbsorb)
+            skill_id skillId, Skill? enemyFailTrickSkill, PlayingBuffsMaker getBuffsWhenAbsorb,
+            Dictionary<size, IStunBuffMaker>? setStunBuffsToOpponentWhenAbsorb,
+            PlayingBuffsMaker setBuffsToOpponentWhenAbsorb)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -101,6 +103,7 @@ namespace game_stuff
             SkillId = skillId;
             EnemyFailTrickSkill = enemyFailTrickSkill;
             GetBuffsWhenAbsorb = getBuffsWhenAbsorb;
+            SetStunBuffsToOpponentWhenAbsorb = setStunBuffsToOpponentWhenAbsorb;
             SetBuffsToOpponentWhenAbsorb = setBuffsToOpponentWhenAbsorb;
         }
 
@@ -122,7 +125,7 @@ namespace game_stuff
             return GenSkillById(o);
         }
 
-        public static Skill GenSkillById(skill_id id)
+        private static Skill GenSkillById(skill_id id)
         {
             if (CommonConfig.Configs.skills.TryGetValue(id, out var configsSkill))
             {
@@ -153,30 +156,19 @@ namespace game_stuff
 
             var genSkillById = skill.EnemyFailTrickSkill == "" ? null : GenSkillById(skill.EnemyFailTrickSkill);
 
-            var immutableDictionary = skill.GetBuffWhenAbsorb.ToImmutableDictionary(p => p.size, GenBuffMakerByC);
-            var buffMakers = skill.SetBuffToOpponentWhenAbsorb.ToImmutableDictionary(p => p.size, GenBuffMakerByC);
+            var immutableDictionary = new PlayingBuffsMaker(skill.GetPlayingBuffWhenAbsorb);
+            var playingBuffs = new PlayingBuffsMaker(skill.SetPlayingBuffToOpponentWhenAbsorb);
 
+            var buffMakers = skill.SetStunBuffToOpponentWhenAbsorb.Any()
+                ? Bullet.GAntiActBuffConfigs(skill.SetStunBuffToOpponentWhenAbsorb)
+                : null;
 
             return new Skill(dictionary, twoDVectors, skill.MoveStartTime,
                 skill.SkillMustTime, skill.SkillMaxTime,
                 skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
                 skill.BreakSnipeTime,
                 skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById,
-                immutableDictionary, buffMakers);
-        }
-
-        private static IBuffMaker GenBuffMakerByC(SimpleObj1 p)
-        {
-            return p.buff_type switch
-            {
-                buff_type.push_buff => StunBuffStandard.GenStunBuffMakerByC(buff_type.push_buff, p.buff_id.First()),
-                buff_type.caught_buff => StunBuffStandard.GenStunBuffMakerByC(buff_type.caught_buff,
-                    p.buff_id.First()),
-                buff_type.play_buff => new PlayingBuffMaker(p.buff_id.Select(x =>
-                        (play_buff_id) Enum.Parse(typeof(play_buff_id), x, true))
-                    .ToArray()) as IBuffMaker,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                immutableDictionary, buffMakers, playingBuffs);
         }
 
 
@@ -266,7 +258,7 @@ namespace game_stuff
         public (IPosMedia[]? posMedia, bool canInputMove) GetSkillStart(TwoDPoint casterPos, TwoDVector casterAim)
         {
             var posMedia = LockArea?.Active(casterPos, casterAim);
-            var posMediaS = posMedia == null ? null : new IPosMedia[] {posMedia};
+            var posMediaS = posMedia == null ? null : new[] {posMedia};
             return (posMediaS, NowOnTick < CanInputMove);
         }
 
@@ -286,6 +278,24 @@ namespace game_stuff
             NowTough = BaseTough;
             NowOnTick = 0;
             return true;
+        }
+
+        public void GenAbsorbBuffs(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus)
+        {
+            var playingBuffs = GetBuffsWhenAbsorb.GenBuffs();
+            targetCharacterStatus.AddPlayingBuff(playingBuffs);
+            var genBuffs = SetBuffsToOpponentWhenAbsorb.GenBuffs();
+            bodyCaster.AddPlayingBuff(genBuffs);
+            if (SetStunBuffsToOpponentWhenAbsorb == null)
+            {
+                return;
+            }
+
+            var buffMaker =
+                SetStunBuffsToOpponentWhenAbsorb[targetCharacterStatus.CharacterBody.GetSize()];
+            Bullet.NoMediaHit(bodyCaster, targetCharacterStatus, targetCharacterStatus.StunBuff, buffMaker, 3,
+                bodyCaster.GetPos(), bodyCaster.GetAim());
+            // buffMaker.GenBuff(bodyCaster.GetPos(), targetCharacterStatus.GetPos(), bodyCaster.GetAim(),)
         }
     }
 }

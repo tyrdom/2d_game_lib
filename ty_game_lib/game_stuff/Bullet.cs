@@ -111,19 +111,6 @@ namespace game_stuff
             var antiActBuffConfigs = GAntiActBuffConfigs(bulletFailActBuffConfigToSelf);
 
 
-            static Dictionary<size, IStunBuffMaker>
-                GAntiActBuffConfigs(IEnumerable<Buff> bulletFailActBuffConfigToSelf)
-            {
-                var actBuffConfigs = CommonConfig.Configs.bodys.ToDictionary(
-                    pair => pair.Key, pair =>
-                    {
-                        var firstOrDefault = bulletFailActBuffConfigToSelf.FirstOrDefault(x =>
-                            x.size == pair.Key) ?? bulletFailActBuffConfigToSelf.First(a => a.size == size.@default);
-                        return StunBuffStandard.GenStunBuffMakerByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
-                    });
-                return actBuffConfigs;
-            }
-
             var objType = bullet.TargetType switch
             {
                 target_type.other_team => ObjType.OtherTeam,
@@ -164,6 +151,20 @@ namespace game_stuff
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
                 bullet.SoundWaveRad);
+        }
+
+        public static Dictionary<size, IStunBuffMaker> GAntiActBuffConfigs(
+            IEnumerable<Buff> bulletFailActBuffConfigToSelf)
+        {
+            var actBuffConfigs = CommonConfig.Configs.bodys.ToDictionary(pair => pair.Key, pair =>
+            {
+                var failActBuffConfigToSelf =
+                    bulletFailActBuffConfigToSelf as Buff[] ?? bulletFailActBuffConfigToSelf.ToArray();
+                var firstOrDefault = failActBuffConfigToSelf.FirstOrDefault(x => x.size == pair.Key) ??
+                                     failActBuffConfigToSelf.First(a => a.size == size.@default);
+                return StunBuffStandard.GenStunBuffMakerByC(firstOrDefault.buff_type, firstOrDefault.buff_id);
+            });
+            return actBuffConfigs;
         }
 
         private Bullet(Dictionary<size, BulletBox> sizeToBulletCollision,
@@ -287,14 +288,13 @@ namespace game_stuff
             IsAtkPass(CharacterStatus targetCharacterStatus)
         {
             var nowCastSkill = targetCharacterStatus.NowCastAct;
-            var objTough = nowCastSkill?.NowTough;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.StunBuff;
             var opponentIsStun = opponentCharacterStatusAntiActBuff != null;
             var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var b3 = !isActSkill && IsFAtk; //如果对手不在释放技能，并且是快攻击子弹
-            var tough = objTough.GetValueOrDefault(0);
+            var tough = targetCharacterStatus.GetNowTough();
 
             var b2 = isActSkill && tough < Tough; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
 
@@ -402,67 +402,9 @@ namespace game_stuff
                 //stun buff方面
                 var antiActBuffConfig = SuccessStunBuffConfigToOpponent[targetCharacterBodyBodySize];
 
-                void InitBuff()
-                {
-                    targetCharacterStatus.SetPauseTick(MathTools.Max(PauseToOpponent,
-                        targetCharacterStatus.PauseTick));
-#if DEBUG
-                    Console.Out.WriteLine($"bullet hit!! target pause tick {targetCharacterStatus.PauseTick}");
-#endif
-                    var stunBuff = antiActBuffConfig
-                        .GenBuff(Pos,
-                            targetCharacterStatus.GetPos(),
-                            Aim,
-                            null, 0,
-                            targetCharacterStatus, caster);
-                    targetCharacterStatus.SetStunBuff(stunBuff);
-                    //初始化buff时，如果是抓取技能，会触发技能
-                    switch (antiActBuffConfig)
-                    {
-                        case CatchStunBuffMaker catchAntiActBuffConfig:
-                            caster.LoadCatchTrickSkill(null, catchAntiActBuffConfig);
-
-                            break;
-                    }
-                }
-
                 // 对手动作状态buff刷新
-                switch (opponentCharacterStatusAntiActBuff)
-                {
-                    case null:
-
-                        InitBuff();
-                        break;
-                    //对手被其他人抓取时，不在添加停顿帧和改变其buff 除非是自己抓的目标
-                    case Caught _:
-                        if (caster.CatchingWho == targetCharacterStatus)
-                        {
-                            InitBuff();
-                        }
-
-                        break;
-                    // 其他情况刷新buff
-                    case PushStunOnAir pushOnAir:
-
-                        if (PauseToOpponent > targetCharacterStatus.PauseTick)
-                        {
-                            targetCharacterStatus.SetPauseTick(PauseToOpponent);
-                        }
-
-                        var height = pushOnAir.Height;
-                        var antiActBuff = antiActBuffConfig.GenBuff(Pos,
-                            targetCharacterStatus.GetPos(),
-                            Aim,
-                            height,
-                            pushOnAir.UpSpeed, targetCharacterStatus, caster);
-                        targetCharacterStatus.SetStunBuff(antiActBuff);
-                        break;
-                    case PushStunOnEarth _:
-                        InitBuff();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(opponentCharacterStatusAntiActBuff));
-                }
+                SetStunBuffToTarget(targetCharacterStatus, caster, opponentCharacterStatusAntiActBuff,
+                    antiActBuffConfig, PauseToOpponent, Pos, Aim);
 
                 return dmgShow;
             }
@@ -519,6 +461,78 @@ namespace game_stuff
                         throw new ArgumentOutOfRangeException(nameof(caster));
                 }
             }
+        }
+
+        public static void NoMediaHit(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster,
+            IStunBuff? opponentCharacterStatusAntiActBuff, IStunBuffMaker antiActBuffConfig, int pauseToOpponent,
+            TwoDPoint pos
+            , TwoDVector aim
+        )
+        {
+            targetCharacterStatus.DirectStunBuffChange(pos);
+
+
+            // 对手动作状态buff刷新
+            SetStunBuffToTarget(targetCharacterStatus, caster, opponentCharacterStatusAntiActBuff,
+                antiActBuffConfig, pauseToOpponent, pos, aim);
+        }
+
+        public static void SetStunBuffToTarget(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster,
+            IStunBuff? opponentCharacterStatusAntiActBuff, IStunBuffMaker antiActBuffConfig, int pauseToOpponent,
+            TwoDPoint pos
+            , TwoDVector aim)
+        {
+            switch (opponentCharacterStatusAntiActBuff)
+            {
+                case null:
+
+                    InitBuff(targetCharacterStatus, antiActBuffConfig, caster, pauseToOpponent, pos, aim);
+                    break;
+                //对手被其他人抓取时，不在添加停顿帧和改变其buff 除非是自己抓的目标
+                case Caught _:
+                    if (caster.CatchingWho == targetCharacterStatus)
+                    {
+                        InitBuff(targetCharacterStatus, antiActBuffConfig, caster, pauseToOpponent, pos, aim);
+                    }
+
+                    break;
+                // 其他情况刷新buff
+                case PushStunOnAir pushOnAir:
+
+                    if (pauseToOpponent > targetCharacterStatus.PauseTick)
+                    {
+                        targetCharacterStatus.SetPauseTick(pauseToOpponent);
+                    }
+
+                    var height = pushOnAir.Height;
+                    var antiActBuff = antiActBuffConfig.GenBuff(pos,
+                        targetCharacterStatus.GetPos(),
+                        aim,
+                        height,
+                        pushOnAir.UpSpeed, targetCharacterStatus, caster);
+                    targetCharacterStatus.SetStunBuff(antiActBuff);
+                    break;
+                case PushStunOnEarth _:
+                    InitBuff(targetCharacterStatus, antiActBuffConfig, caster, pauseToOpponent, pos, aim);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(opponentCharacterStatusAntiActBuff));
+            }
+        }
+
+        private static void InitBuff(CharacterStatus targetCharacterStatus, IStunBuffMaker antiActBuffConfig,
+            IBattleUnitStatus caster, int pauseToOpponent, TwoDPoint pos, TwoDVector aim)
+        {
+            targetCharacterStatus.SetPauseTick(MathTools.Max(pauseToOpponent, targetCharacterStatus.PauseTick));
+#if DEBUG
+            Console.Out.WriteLine($"bullet hit!! target pause tick {targetCharacterStatus.PauseTick}");
+#endif
+            var stunBuff = antiActBuffConfig.GenBuff(pos, targetCharacterStatus.GetPos(), aim, null, 0,
+                targetCharacterStatus, caster);
+            targetCharacterStatus.SetStunBuff(stunBuff);
+            //初始化buff时，如果是抓取技能，会触发技能
+            if (antiActBuffConfig is CatchStunBuffMaker catchAntiActBuffConfig)
+                caster.LoadCatchTrickSkill(null, catchAntiActBuffConfig);
         }
 
         private void CharAtkDraw(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus)

@@ -103,9 +103,29 @@ namespace game_stuff
 
                     throw new KeyNotFoundException($"not such c buff {configToOpponent}");
 
+                case buff_type.pull_buff:
+                    if (CommonConfig.Configs.pull_buffs.TryGetValue(configToOpponent, out var value3))
+                    {
+                        return GenBuffByConfig(value3);
+                    }
+
+                    throw new KeyNotFoundException($"not such pull buff {configToOpponent}");
+
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private static IStunBuffMaker GenBuffByConfig(pull_buff pullBuff)
+        {
+#if DEBUG
+            Console.Out.WriteLine($"pull buff {pullBuff.id}");
+#endif
+            var pushAboutVector = pullBuff.FixVector.Any()
+                ? GameTools.GenVectorByConfig(pullBuff.FixVector.First())
+                : null;
+            return new PullStunBuffMaker(pullBuff.LastTime, pullBuff.PushForce, pushAboutVector);
         }
     }
 
