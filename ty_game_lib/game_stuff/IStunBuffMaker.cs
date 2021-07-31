@@ -178,7 +178,7 @@ namespace game_stuff
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector.ClockwiseTurn(aim)) : pos;
+                    var twoDPoint = PushFixVector != null ? pos.Move(PushFixVector.AntiClockwiseTurn(aim)) : pos;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit =
                         GenBuffFromUnit(twoDVector, PushMomentum / mass, height, upSpeed,
@@ -187,7 +187,7 @@ namespace game_stuff
 
 
                 case PushType.Vector:
-                    var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
+                    var clockwiseTurn = PushFixVector != null ? aim.AntiClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
                         GenBuffFromUnit(unit, PushMomentum / mass, height, upSpeed, CommonConfig.OtherConfig.friction,
@@ -233,7 +233,7 @@ namespace game_stuff
             switch (PushType)
             {
                 case PushType.Center:
-                    var twoDPoint = PushFixVector != null ? anchor.Move(PushFixVector.ClockwiseTurn(aim)) : anchor;
+                    var twoDPoint = PushFixVector != null ? anchor.Move(PushFixVector.AntiClockwiseTurn(aim)) : anchor;
                     var twoDVector = twoDPoint.GenVector(obPos).GetUnit();
                     var genBuffFromUnit = GenBuffFromUnit(twoDVector, PushMomentum / mass, height, upSpeed, mass,
                         whoDid, whoTake,
@@ -242,7 +242,7 @@ namespace game_stuff
 
 
                 case PushType.Vector:
-                    var clockwiseTurn = PushFixVector != null ? aim.ClockwiseTurn(PushFixVector) : aim;
+                    var clockwiseTurn = PushFixVector != null ? aim.AntiClockwiseTurn(PushFixVector) : aim;
                     var unit = clockwiseTurn.GetUnit();
                     var genBuffFromUnit1 =
                         GenBuffFromUnit(unit, PushMomentum / mass, height, upSpeed, mass, whoDid, whoTake, canFix);
@@ -295,7 +295,7 @@ namespace game_stuff
         {
             var mass = CommonConfig.Configs.bodys[whoTake.CharacterBody.GetSize()].mass;
 
-            var twoDPoint = PullFixVector != null ? pos.Move(PullFixVector.ClockwiseTurn(aim)) : pos;
+            var twoDPoint = PullFixVector != null ? pos.Move(PullFixVector.AntiClockwiseTurn(aim)) : pos;
 
             var genVector = obPos.GenVector(twoDPoint);
             var l = genVector.Norm();
