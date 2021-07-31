@@ -292,9 +292,10 @@ namespace game_stuff
             }
 
             var buffMaker =
-                SetStunBuffsToOpponentWhenAbsorb[targetCharacterStatus.CharacterBody.GetSize()];
-            Bullet.NoMediaHit(bodyCaster, targetCharacterStatus, targetCharacterStatus.StunBuff, buffMaker, 3,
-                bodyCaster.GetPos(), bodyCaster.GetAim());
+                SetStunBuffsToOpponentWhenAbsorb[bodyCaster.CharacterBody.GetSize()];
+            Bullet.NoMediaHit(bodyCaster, targetCharacterStatus, bodyCaster.StunBuff, buffMaker,
+                (int) CommonConfig.OtherConfig.absorb_stun_buff_pause,
+                targetCharacterStatus.GetPos(), targetCharacterStatus.GetAim());
             // buffMaker.GenBuff(bodyCaster.GetPos(), targetCharacterStatus.GetPos(), bodyCaster.GetAim(),)
         }
     }
