@@ -7,6 +7,16 @@ namespace game_stuff
     {
     }
 
+    public class AddBuffLogs : ICharEvent
+    {
+        public AddBuffLogs(play_buff_id[] toArray)
+        {
+            PlayBuffIds = toArray;
+        }
+
+        public play_buff_id[] PlayBuffIds { get; }
+    }
+
     public class LowProp : ICharEvent
     {
         public LowProp()

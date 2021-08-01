@@ -1389,6 +1389,8 @@ namespace game_stuff
         public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
         {
             PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffs);
+            var addBuffLogs = new AddBuffLogs(playingBuffs.Select(x=>x.BuffId).ToArray());
+            CharEvents.Add(addBuffLogs);
         }
 
         public void AddAPlayingBuff(IPlayingBuff playingBuff)

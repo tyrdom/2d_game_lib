@@ -345,7 +345,7 @@ namespace game_bot
 #endif
                         if (CheckStartCombo(immutableHashSet))
                         {
-                            ComboCtrl.ComboTurnOn();
+                            ComboCtrl.ComboTurnOn(Random);
                         }
 
                         return new BotOpAndThink();

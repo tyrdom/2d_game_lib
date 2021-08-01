@@ -178,6 +178,8 @@ namespace game_stuff
         }
     }
 
+   
+
     public class ToughUpBuff : IPlayingBuff
     {
         public ToughUpBuff(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i, bool playBuffUseStack)

@@ -1,3 +1,5 @@
+using System;
+
 namespace game_bot
 {
     public class ComboCtrl
@@ -22,17 +24,20 @@ namespace game_bot
         public void ActACombo()
         {
             ComboNow--;
-            if (ComboNow<=0)
+            if (ComboNow <= 0)
             {
                 ComboOn = false;
             }
         }
 
-        public void ComboTurnOn()
+        public void ComboTurnOn(Random random)
         {
             if (ComboOn) return;
-            ComboNow = ComboMax;
-            ComboOn = true;
+            ComboNow = random.Next(ComboMax);
+            if (ComboNow > 0)
+            {
+                ComboOn = true;
+            }
         }
 
         public void ComboLoss()

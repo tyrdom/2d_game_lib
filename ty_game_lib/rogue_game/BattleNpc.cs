@@ -32,8 +32,10 @@ namespace rogue_game
         private static (BattleNpc, int boId) GenByConfig(battle_npc battleNpc, int gid, int team, Random random,
             int nowChapterExtraPassiveNum)
         {
+            var battleNpcWeapons = battleNpc.Weapons;
+            var select = battleNpcWeapons.Select(x => x.ChooseRandOne()).ToList();
             var characterInitData =
-                CharacterInitData.GenNpcByConfig(gid, team, battleNpc.Weapons, battleNpc.BodyId, battleNpc.AttrId,
+                CharacterInitData.GenNpcByConfig(gid, team, select, battleNpc.BodyId, battleNpc.AttrId,
                     battleNpc.MaxWeaponSlot);
 
             var chooseRandCanSame =
