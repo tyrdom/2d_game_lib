@@ -1288,13 +1288,16 @@ namespace game_stuff
 
         public Damage GenDamage(float damageMulti, bool b4)
         {
-            var multi = GetBuffs<MakeDamageBuff>().GetDamageMulti();
+            var makeDamageBuffs = GetBuffs<MakeDamageBuff>().ToArray();
+
+            var multi = makeDamageBuffs.GetDamageMultiAdd();
+            var damageMultiDecrease = makeDamageBuffs.GetDamageMultiDecrease();
             var f = GetNowProtectMulti();
             var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus(), f);
             var onBreakMulti = DamageMultiStatus.OnBreakMulti;
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
             NowProtectValue = 0;
-            return attackStatus.GenDamage(damageMulti, b4, multi + totalMulti, onBreakMulti);
+            return attackStatus.GenDamage(damageMulti, b4, (multi + totalMulti), damageMultiDecrease, onBreakMulti);
         }
 
         private float GetNowProtectMulti()
@@ -1389,7 +1392,7 @@ namespace game_stuff
         public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
         {
             PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffs);
-            var addBuffLogs = new AddBuffLogs(playingBuffs.Select(x=>x.BuffId).ToArray());
+            var addBuffLogs = new AddBuffLogs(playingBuffs.Select(x => x.BuffId).ToArray());
             CharEvents.Add(addBuffLogs);
         }
 
@@ -1678,8 +1681,11 @@ namespace game_stuff
 
         public DmgShow? TakeDamage(Damage genDamage)
         {
-            var damageMulti = MathTools.Max(0, 1 + GetBuffs<TakeDamageBuff>().GetDamageMulti());
-            genDamage.GetOtherMulti(damageMulti);
+            var takeDamageBuffs = GetBuffs<TakeDamageBuff>().ToArray();
+            var damageMulti = takeDamageBuffs.GetDamageMultiAdd();
+            var damageMultiDecrease = takeDamageBuffs.GetDamageMultiDecrease();
+            var multiDecrease = (1f + damageMulti) / (1f + damageMultiDecrease);
+            genDamage.GetOtherMulti(multiDecrease);
             if (NowVehicle == null)
             {
                 var isDead = SurvivalStatus.IsDead();

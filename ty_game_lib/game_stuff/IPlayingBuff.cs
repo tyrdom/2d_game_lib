@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
@@ -144,10 +145,16 @@ namespace game_stuff
             playingBuff.Stack -= 1;
         }
 
-        public static float GetDamageMulti(this IEnumerable<IDamageAboutBuff> damageBuffs)
+        public static float GetDamageMultiAdd(this IEnumerable<IDamageAboutBuff> damageBuffs)
         {
-            var sum = damageBuffs.Sum(x => x.AddDamageMulti);
+            var sum = damageBuffs.Sum(x => MathTools.Max(0, x.AddDamageMulti));
             return sum;
+        }
+
+        public static float GetDamageMultiDecrease(this IEnumerable<IDamageAboutBuff> damageBuffs)
+        {
+            var sum = damageBuffs.Sum(x => MathTools.Min(0, x.AddDamageMulti));
+            return -sum;
         }
 
         public static void AddABuff(
@@ -178,7 +185,6 @@ namespace game_stuff
         }
     }
 
-   
 
     public class ToughUpBuff : IPlayingBuff
     {
