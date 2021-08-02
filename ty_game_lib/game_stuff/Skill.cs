@@ -296,6 +296,8 @@ namespace game_stuff
             Bullet.NoMediaHit(bodyCaster, targetCharacterStatus, bodyCaster.StunBuff, buffMaker,
                 (int) CommonConfig.OtherConfig.absorb_stun_buff_pause,
                 targetCharacterStatus.GetPos(), targetCharacterStatus.GetAim());
+
+            targetCharacterStatus.CharEvents.Add(new DirectHit(bodyCaster.GetPos()));
             // buffMaker.GenBuff(bodyCaster.GetPos(), targetCharacterStatus.GetPos(), bodyCaster.GetAim(),)
         }
     }

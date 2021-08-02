@@ -17,6 +17,16 @@ namespace game_stuff
         public play_buff_id[] PlayBuffIds { get; }
     }
 
+
+    public class DirectHit : ICharEvent
+    {
+        public DirectHit(TwoDPoint targetPos)
+        {
+            TargetPos = targetPos;
+        }
+
+        public TwoDPoint TargetPos { get; }
+    }
     public class LowProp : ICharEvent
     {
         public LowProp()
