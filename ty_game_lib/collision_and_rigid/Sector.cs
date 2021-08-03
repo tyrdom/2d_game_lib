@@ -34,22 +34,25 @@ namespace collision_and_rigid
 
             var oa = new TwoDVectorLine(o, a);
 
-            var oav = oa.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+            var twoDVector = oa.GetVector().GetUnit().Multi(r);
+            var oav = twoDVector.CounterClockwiseHalfPi();
             var oaOut = oa.MoveVector(oav);
-            var na = a.Move(oa.GetVector().GetUnit().Multi(r));
+            var na = a.Move(twoDVector);
 
 
             var bo = new TwoDVectorLine(b, o);
 
-            var bov = bo.GetVector().GetUnit().CounterClockwiseHalfPi().Multi(r);
+            var bov = bo.GetVector().GetUnit().Multi(r).CounterClockwiseHalfPi();
             var boOut = bo.MoveVector(bov);
             var nb = b.Move(bo.GetVector().GetUnit().Multi(-r));
 
             var naONb = new ClockwiseBalanceAngle(na, o, nb);
             var aobOut = new ClockwiseTurning(naONb, r + R, null, null);
-            var p1 = new ClockwiseBalanceAngle(oaOut.B, o, na);
+            
+            var p1 = new ClockwiseBalanceAngle(oaOut.B, a, na);
             var piece1 = new ClockwiseTurning(p1, r, null, null);
-            var p2 = new ClockwiseBalanceAngle(nb, o, boOut.A);
+            
+            var p2 = new ClockwiseBalanceAngle(nb, b, boOut.A);
             var piece2 = new ClockwiseTurning(p2, r, null, null);
 
             var p3 = new ClockwiseBalanceAngle(boOut.B, o, oaOut.A);

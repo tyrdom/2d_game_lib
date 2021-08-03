@@ -72,26 +72,23 @@ namespace collision_and_rigid
 
         public Zone GetZone(float r)
         {
-            var a = A;
-            var b = B;
-            var o = O;
-            var oa = new TwoDVectorLine(o, a);
+            var oa = new TwoDVectorLine(O, A);
             var oav = oa.GetVector();
-            var ob = new TwoDVectorLine(o, b);
+            var ob = new TwoDVectorLine(O, B);
             var obv = ob.GetVector();
             var oaq = oav.WhichQ();
             var obq = obv.WhichQ();
 
-            var up = MathTools.Max(a.Y, b.Y);
-            var down = MathTools.Min(a.Y, b.Y);
-            var right = MathTools.Max(a.X, b.X);
-            var left = MathTools.Min(a.X, b.X);
-
-            var oUp = o.Y + r;
-            var oDown = o.Y - r;
-            var oLeft = o.X - r;
-            var oRight = o.X + r;
-            var getposOnLine = b.GetPosOf(oa);
+            var up = MathTools.Max(A.Y, B.Y) + r;
+            var down = MathTools.Min(A.Y, B.Y) - r;
+            var right = MathTools.Max(A.X, B.X) + r;
+            var left = MathTools.Min(A.X, B.X) - r;
+            var rr = oav.Norm()+r;
+            var oUp = O.Y + rr;
+            var oDown = O.Y - rr;
+            var oLeft = O.X - rr;
+            var oRight = O.X + rr;
+            var getposOnLine = B.GetPosOf(oa);
 
             if (oaq == obq)
                 switch (getposOnLine)
@@ -114,6 +111,7 @@ namespace collision_and_rigid
                 {
                     case Quad.One:
                         right = oRight;
+
                         switch (obq)
                         {
                             case Quad.Two:
@@ -122,7 +120,6 @@ namespace collision_and_rigid
                                 break;
                             case Quad.Three:
                                 down = oDown;
-
                                 break;
                             case Quad.Four:
                                 break;
@@ -136,6 +133,7 @@ namespace collision_and_rigid
                         switch (obq)
                         {
                             case Quad.One:
+                                up = oUp;
                                 break;
 
                             case Quad.Three:

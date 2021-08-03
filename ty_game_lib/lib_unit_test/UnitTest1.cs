@@ -73,6 +73,17 @@ namespace lib_unit_test
             Assert.Pass(aggregate);
         }
 
+
+        [Test]
+        public void GenBulletDic()
+        {
+            var genById = Bullet.GenById(bullet_id.test_ss_l_1_b_1);
+            var bulletBox = genById.SizeToBulletCollision[size.small];
+            var b = bulletBox.BulletShape is SimpleBlocks ss ? ss.ToString() : ""; 
+            var s = bulletBox.Zone.ToString();
+            Assert.Pass(s +b);
+        }
+
         [Test]
         public void PathTest2()
         {

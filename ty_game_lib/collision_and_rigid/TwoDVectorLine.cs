@@ -369,7 +369,7 @@ namespace collision_and_rigid
         {
             var pt2LinePos = A.GetPosOf(lineB);
             var b = pt2LinePos != Pt2LinePos.Right;
-            var b1 = B.GetPosOf(lineB) == Pt2LinePos.Right;
+            var b1 = B.GetPosOf(lineB) != Pt2LinePos.Left;
 
             return b && b1;
         }

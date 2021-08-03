@@ -7,7 +7,7 @@ namespace game_stuff
 
     {
         public Zone Zone;
-        private IBulletShape BulletShape { get; }
+        public IBulletShape BulletShape { get; }
 
         public BulletBox(Zone zone, IBulletShape bulletShape)
         {
