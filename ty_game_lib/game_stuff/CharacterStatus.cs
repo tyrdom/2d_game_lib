@@ -817,14 +817,7 @@ namespace game_stuff
             TempMsgClear();
             //  
             BuffsGoATick();
-            // 命中停帧 输入无效
-            var b1 = PauseTick > 0;
 
-            if (b1)
-            {
-                PauseTick -= 1;
-                return new CharGoTickResult();
-            }
 
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
@@ -833,6 +826,15 @@ namespace game_stuff
                 NowProtectValue = 0;
                 var inProtect = new InProtect(NowProtectTick);
                 CharEvents.Add(inProtect);
+            }
+
+            // 命中停帧 输入无效
+            var b1 = PauseTick > 0;
+
+            if (b1)
+            {
+                PauseTick -= 1;
+                return new CharGoTickResult();
             }
 
             //  被硬直状态 输入无效

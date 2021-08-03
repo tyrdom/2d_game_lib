@@ -74,11 +74,16 @@ namespace game_stuff
 
 
         public float AddDamageMulti { get; }
+        public float GetAddDamage()
+        {
+            return AddDamageMulti * Stack;
+        }
     }
 
     public interface IDamageAboutBuff
     {
         float AddDamageMulti { get; }
+        float GetAddDamage();
     }
 
     public static class PlayBuffStandard
@@ -147,13 +152,13 @@ namespace game_stuff
 
         public static float GetDamageMultiAdd(this IEnumerable<IDamageAboutBuff> damageBuffs)
         {
-            var sum = damageBuffs.Sum(x => MathTools.Max(0, x.AddDamageMulti));
+            var sum = damageBuffs.Sum(x => MathTools.Max(0, x.GetAddDamage()));
             return sum;
         }
 
         public static float GetDamageMultiDecrease(this IEnumerable<IDamageAboutBuff> damageBuffs)
         {
-            var sum = damageBuffs.Sum(x => MathTools.Min(0, x.AddDamageMulti));
+            var sum = damageBuffs.Sum(x => MathTools.Min(0, x.GetAddDamage()));
             return -sum;
         }
 
@@ -258,6 +263,10 @@ namespace game_stuff
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
         public float AddDamageMulti { get; }
+        public float GetAddDamage()
+        {
+            return AddDamageMulti * Stack;
+        }
 
         public bool IsFinish()
         {
