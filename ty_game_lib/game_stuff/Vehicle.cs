@@ -339,7 +339,7 @@ namespace game_stuff
 
         public void AbsorbDamage(uint genDamageShardedDamage, uint genDamageShardedNum, uint shardedDamage)
         {
-            SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage);
+            SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage,RegenEffectStatus.ExtraChargeMulti);
         }
 
         public void AbsorbStatusRefresh(float[] vector)

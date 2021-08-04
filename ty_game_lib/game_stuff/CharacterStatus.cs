@@ -1631,7 +1631,7 @@ namespace game_stuff
 
         private void AbsorbDamage(uint total, uint times, uint shardedDamage)
         {
-            SurvivalStatus.AbsorbDamage(total, times, AbsorbStatus, shardedDamage);
+            SurvivalStatus.AbsorbDamage(total, times, AbsorbStatus, shardedDamage, RegenEffectStatus.ExtraChargeMulti);
         }
 
         public void DirectStunBuffChange(TwoDPoint pos)

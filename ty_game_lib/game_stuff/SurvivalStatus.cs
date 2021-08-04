@@ -310,17 +310,19 @@ namespace game_stuff
             return nowShield;
         }
 
-        public void AbsorbDamage(uint total, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage)
+        public void AbsorbDamage(uint total, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage,
+            float extraChargeMulti)
         {
             HpAbs(absorbStatus.HpAbs, total);
             ArmorAbs(absorbStatus.ArmorAbs, total, hit, damageShardedDamage);
-            ShieldAbs(absorbStatus.ShieldAbs, total, hit);
+            ShieldAbs(absorbStatus.ShieldAbs, total, hit, extraChargeMulti);
         }
 
-        private void ShieldAbs(float absorbStatusShieldAbs, uint damage, uint hit)
+        private void ShieldAbs(float absorbStatusShieldAbs, uint damage, uint hit, float extraChargeMulti)
         {
             var shieldInstability = damage + hit * ShieldInstability;
-            NowShield = (uint) (NowShield + shieldInstability * absorbStatusShieldAbs);
+            NowShield = (uint) MathTools.Min(NowShield + shieldInstability * absorbStatusShieldAbs,
+                MaxShield * (1 + extraChargeMulti));
             SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
         }
 
