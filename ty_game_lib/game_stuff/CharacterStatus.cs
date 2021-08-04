@@ -1906,10 +1906,11 @@ namespace game_stuff
 
         public int GetNowTough()
         {
-            var toughUpBuffs = GetBuffs<ToughUpBuff>().Sum(x => x.PlayBuffEffectValue);
+            var upBuffs = GetBuffs<ToughUpBuff>().ToArray();
+            var toughUpBuffs = upBuffs.Any() ? upBuffs.Sum(x => x.PlayBuffEffectValue) : 0;
             if (NowCastAct == null)
             {
-                return 0 + toughUpBuffs;
+                return toughUpBuffs;
             }
 
             var nowTough = NowCastAct.NowTough + toughUpBuffs;

@@ -295,7 +295,7 @@ namespace game_stuff
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var tough = targetCharacterStatus.GetNowTough();
             var b = tough < Tough;
-            var b3 = !isActSkill && IsFAtk && b; //如果对手不在释放技能，并且是快攻击子弹
+            var b3 = !isActSkill && IsFAtk && (HitType == hit_type.melee || b); //如果对手不在释放技能，并且是快攻击子弹
 
 
             var b2 = isActSkill && b; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
