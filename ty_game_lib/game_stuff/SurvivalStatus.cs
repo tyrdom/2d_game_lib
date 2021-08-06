@@ -64,6 +64,11 @@ namespace game_stuff
             return $"生命: {NowHp}/{MaxHp} 装甲: {NowArmor}/{MaxArmor} 护盾: {NowShield}/{MaxShield}延迟{NowDelayTick}";
         }
 
+        public string GetDetails()
+        {
+            return $"装甲防御:{ArmorDefence} 护盾不稳定:{ShieldInstability} 护盾恢复:{ShieldRecover}";
+        }
+
         public bool IsDead()
         {
             return NowHp <= 0;
