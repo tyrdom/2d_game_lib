@@ -8,8 +8,7 @@ namespace game_stuff
     public interface ICharAct
     {
         (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
-            GoATick(TwoDPoint getPos,
-                TwoDVector sightAim,
+            GoATick(CharacterStatus caster,
                 TwoDVector? rawMoveVector, TwoDVector? limitV);
 
         int GetIntId();

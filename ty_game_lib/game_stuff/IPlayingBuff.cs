@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using collision_and_rigid;
 using game_config;
@@ -26,9 +25,9 @@ namespace game_stuff
 
         private play_buff_id[] PlayBuffIds { get; }
 
-        public IEnumerable<IPlayingBuff> GenBuffs()
+        public IEnumerable<IPlayingBuff> GenBuffs(CharacterStatus? charMark = null)
         {
-            var playingBuffs = PlayBuffIds.Select(PlayBuffStandard.GenById);
+            var playingBuffs = PlayBuffIds.Select(x => PlayBuffStandard.GenById(x, charMark));
             return playingBuffs;
         }
     }
@@ -41,6 +40,7 @@ namespace game_stuff
         int Stack { get; set; }
         void GoATick();
         bool UseStack { get; }
+        void ActiveWhenUse(CharacterStatus characterStatus);
     }
 
 
@@ -66,6 +66,10 @@ namespace game_stuff
 
         public bool UseStack { get; }
 
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
+
 
         public bool IsFinish()
         {
@@ -74,6 +78,7 @@ namespace game_stuff
 
 
         public float AddDamageMulti { get; }
+
         public float GetAddDamage()
         {
             return AddDamageMulti * Stack;
@@ -95,7 +100,7 @@ namespace game_stuff
             return genById;
         }
 
-        public static IPlayingBuff GenById(play_buff_id id)
+        public static IPlayingBuff GenById(play_buff_id id, CharacterStatus? charMark = null)
         {
             var playBuff = GetBuffConfig(id);
             var intTickByTime = (int) playBuff.LastTime;
@@ -110,6 +115,10 @@ namespace game_stuff
                 play_buff_effect_type.Tough => new ToughBuff(id, intTickByTime, 1, playBuffUseStack),
                 play_buff_effect_type.ToughUp => new ToughUpBuff(id, intTickByTime, playBuff.EffectValue, 1,
                     playBuffUseStack),
+                play_buff_effect_type.ChangeComboStatus => new ChangeComboStatus(id, intTickByTime,
+                    playBuff.EffectValue, 1, playBuffUseStack),
+                play_buff_effect_type.PullMark => new PullMark(id, intTickByTime, playBuff.EffectString, 1,
+                    playBuffUseStack, charMark),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -190,6 +199,83 @@ namespace game_stuff
         }
     }
 
+    public class ChangeComboStatus : IPlayingBuff
+    {
+        public ChangeComboStatus(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i,
+            bool playBuffUseStack)
+        {
+            BuffId = id;
+            RestTick = intTickByTime;
+            ComboStatusFix = (int) playBuffEffectValue;
+            Stack = i;
+            UseStack = playBuffUseStack;
+        }
+
+        public play_buff_id BuffId { get; }
+        public int RestTick { get; set; }
+
+        public int ComboStatusFix { get; }
+
+        public bool IsFinish()
+        {
+            return PlayBuffStandard.IsFinish(this);
+        }
+
+        public int Stack { get; set; }
+
+        public void GoATick()
+        {
+            PlayBuffStandard.GoATick(this);
+        }
+
+        public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
+    }
+
+    public class PullMark : IPlayingBuff
+    {
+        public PullMark(play_buff_id id, int intTickByTime, string playBuffEffectString, int i, bool playBuffUseStack,
+            CharacterStatus? charMark)
+        {
+            TargetMark = charMark ?? throw new Exception("mark cant be null");
+            BuffId = id;
+            RestTick = intTickByTime;
+            var genStunBuffMakerByC = StunBuffStandard.GenStunBuffMakerByC(buff_type.pull_buff, playBuffEffectString);
+            PullStunBuffMaker = genStunBuffMakerByC;
+            Stack = i;
+            UseStack = playBuffUseStack;
+        }
+
+        public CharacterStatus TargetMark { get; }
+        public IStunBuffMaker PullStunBuffMaker { get; }
+        public play_buff_id BuffId { get; }
+        public int RestTick { get; set; }
+
+        public bool IsFinish()
+        {
+            return PlayBuffStandard.IsFinish(this);
+        }
+
+        public int Stack { get; set; }
+
+        public void GoATick()
+        {
+            PlayBuffStandard.GoATick(this);
+        }
+
+        public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+            var stunBuff = PullStunBuffMaker.GenBuff(characterStatus.GetPos(), TargetMark.GetPos(),
+                characterStatus.GetAim(), null, 0,
+                TargetMark, characterStatus);
+            TargetMark.SetStunBuff(stunBuff);
+        }
+    }
 
     public class ToughUpBuff : IPlayingBuff
     {
@@ -219,6 +305,10 @@ namespace game_stuff
         }
 
         public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
     }
 
     public class ToughBuff : IPlayingBuff
@@ -247,6 +337,10 @@ namespace game_stuff
         }
 
         public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
     }
 
     public class TakeDamageBuff : IPlayingBuff, IDamageAboutBuff
@@ -263,6 +357,7 @@ namespace game_stuff
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
         public float AddDamageMulti { get; }
+
         public float GetAddDamage()
         {
             return AddDamageMulti * Stack;
@@ -281,6 +376,10 @@ namespace game_stuff
         }
 
         public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
     }
 
     public class BreakBuff : IPlayingBuff
@@ -309,5 +408,9 @@ namespace game_stuff
         }
 
         public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
     }
 }

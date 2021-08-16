@@ -55,6 +55,8 @@ namespace game_stuff
         public bullet_id BulletId { get; }
         private int ProtectValueAdd { get; }
 
+        private PlayingBuffsMaker AddBuffToCastWhenHitPass { get; }
+
         public static Bullet GenById(bullet_id id, uint pairKey = 0)
         {
             if (CommonConfig.Configs.bullets.TryGetValue(id, out var bullet))
@@ -147,10 +149,13 @@ namespace game_stuff
                     (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
+
+            var playingBuffsMaker = new PlayingBuffsMaker(bullet.SuccessPlayBuffAdd);
+
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
-                bullet.SoundWaveRad);
+                bullet.SoundWaveRad, playingBuffsMaker);
         }
 
         public static Dictionary<size, IStunBuffMaker> GAntiActBuffConfigs(
@@ -171,7 +176,8 @@ namespace game_stuff
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, uint pauseToCaster, uint pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum, float waveCast)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum, float waveCast,
+            PlayingBuffsMaker playingBuffsMaker)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -198,7 +204,9 @@ namespace game_stuff
             CanOverBulletBlock = canOverBulletBlock;
             IsFAtk = !isHAtk;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
+            AddBuffToCastWhenHitPass = playingBuffsMaker;
         }
+
 
         public bool CanGoNextTick()
         {
@@ -394,6 +402,12 @@ namespace game_stuff
                 //基本方面
                 // 释放方基本状态
                 caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetCharacterStatus);
+
+                if (caster is CharacterStatus characterStatus)
+                {
+                    var playingBuffs = AddBuffToCastWhenHitPass.GenBuffs(targetCharacterStatus);
+                    characterStatus.AddPlayingBuff(playingBuffs);
+                }
 
 
                 // 被击中方基本状态改变 包括伤害

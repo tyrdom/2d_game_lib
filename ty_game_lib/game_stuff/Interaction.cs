@@ -20,8 +20,7 @@ namespace game_stuff
         }
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
-            MapInteract interactive) GoATick(TwoDPoint getPos,
-                TwoDVector sightAim,
+            MapInteract interactive) GoATick(CharacterStatus caster,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
             var b = NowOnTick == 0;

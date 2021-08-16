@@ -674,7 +674,7 @@ namespace game_stuff
 #endif
 
             var (move, bullet, snipeOff, getThing, interactive) = charAct
-                .GoATick(GetPos(), GetAim(), fixMove, limitV);
+                .GoATick(this, fixMove, limitV);
             if (snipeOff)
             {
 #if DEBUG
@@ -939,12 +939,18 @@ namespace game_stuff
 
                 if (weaponSkillStatus == null) return actNowActATick;
                 // 状态可用，则执行连技操作
-                var status = weaponSkillStatus.Value;
+                var skillStatus = weaponSkillStatus.Value;
+                var changeComboStatusEnumerable = GetBuffs<ChangeComboStatus>().FirstOrDefault();
+                if (changeComboStatusEnumerable != null)
+                {
+                    skillStatus = changeComboStatusEnumerable.ComboStatusFix;
+                }
+
                 var b = opAction == SkillAction.Switch;
                 var toUse = NowWeapon;
                 if (b)
                 {
-                    status = 0;
+                    skillStatus = 0;
                     toUse = (toUse + 1) % GetWeapons().Count;
                     ResetSnipe();
                 }
@@ -956,7 +962,7 @@ namespace game_stuff
                 if (!nowWeapon.SkillGroups.TryGetValue(CharacterBody.GetSize(), out var immutableDictionary) ||
                     !immutableDictionary.TryGetValue(opAction.Value, out var skills)
                 ) return actNowActATick;
-                if (!skills.TryGetValue(status, out var skill) && !skills.TryGetValue(-1, out skill))
+                if (!skills.TryGetValue(skillStatus, out var skill) && !skills.TryGetValue(-1, out skill))
                     return actNowActATick;
                 switch (NowCastAct.InWhichPeriod())
                 {
@@ -1397,8 +1403,9 @@ namespace game_stuff
 
         public void AddPlayingBuff(IEnumerable<IPlayingBuff> playingBuffs)
         {
-            PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffs);
-            var addBuffLogs = new AddBuffLogs(playingBuffs.Select(x => x.BuffId).ToArray());
+            var playingBuffsToAdd = playingBuffs as IPlayingBuff[] ?? playingBuffs.ToArray();
+            PlayBuffStandard.AddBuffs(PlayingBuffs, playingBuffsToAdd);
+            var addBuffLogs = new AddBuffLogs(playingBuffsToAdd.Select(x => x.BuffId).ToArray());
             CharEvents.Add(addBuffLogs);
         }
 
@@ -1770,6 +1777,7 @@ namespace game_stuff
             if (PlayingBuffs.TryGetValue(atkPassBuffId, out var playingBuff))
             {
                 playingBuff.Stack -= 1;
+                playingBuff.ActiveWhenUse(this);
             }
         }
 

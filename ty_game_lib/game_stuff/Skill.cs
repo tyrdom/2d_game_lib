@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using collision_and_rigid;
@@ -55,6 +56,8 @@ namespace game_stuff
         private Dictionary<size, IStunBuffMaker>? SetStunBuffsToOpponentWhenAbsorb { get; }
 
 
+        private ImmutableDictionary<uint, play_buff_id[]> LaunchTickToUseBuff { get; }
+
         public string LogUser()
         {
             return LaunchTickToBullets.SelectMany(keyValuePair => keyValuePair.Value).Select(x => x.Caster)
@@ -69,7 +72,8 @@ namespace game_stuff
             LockArea? lockArea, uint snipeBreakTick, int snipeStepNeed, int ammoCost, int canInputMove,
             skill_id skillId, Skill? enemyFailTrickSkill, PlayingBuffsMaker getBuffsWhenAbsorb,
             Dictionary<size, IStunBuffMaker>? setStunBuffsToOpponentWhenAbsorb,
-            PlayingBuffsMaker setBuffsToOpponentWhenAbsorb)
+            PlayingBuffsMaker setBuffsToOpponentWhenAbsorb,
+            ImmutableDictionary<uint, play_buff_id[]> immutableDictionary1)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -88,6 +92,7 @@ namespace game_stuff
             NowOnTick = 0;
             NowTough = baseTough;
             LaunchTickToBullets = launchTickToBullets;
+            LaunchTickToUseBuff = immutableDictionary1;
             Moves = moves;
             MoveStartTick = moveStartTick;
             SkillMustTick = skillMustTick;
@@ -163,12 +168,20 @@ namespace game_stuff
                 ? Bullet.GAntiActBuffConfigs(skill.SetStunBuffToOpponentWhenAbsorb)
                 : null;
 
+            var immutableDictionary1 = skill.LaunchTimeToCostPlayBuff.ToImmutableDictionary(
+                x => x.Key,
+                x => x.Value
+                    .Select
+                    (
+                        xx => (play_buff_id) Enum.Parse(typeof(play_buff_id), xx, true)
+                    ).ToArray()
+            );
             return new Skill(dictionary, twoDVectors, skill.MoveStartTime,
                 skill.SkillMustTime, skill.SkillMaxTime,
                 skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
                 skill.BreakSnipeTime,
                 skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById,
-                immutableDictionary, buffMakers, playingBuffs);
+                immutableDictionary, buffMakers, playingBuffs, immutableDictionary1);
         }
 
 
@@ -196,10 +209,11 @@ namespace game_stuff
         }
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
-            MapInteract interactive) GoATick(TwoDPoint casterPos,
-                TwoDVector casterAim,
+            MapInteract interactive) GoATick(CharacterStatus caster,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
+            var casterPos = caster.GetPos();
+            var casterAim = caster.GetAim();
             NowOnTick++;
             // 生成攻击运动
             TwoDVector? move = null;
@@ -245,6 +259,14 @@ namespace game_stuff
                 var posMediaS = nowBullet.Select(x => x.Active(casterPos, casterAim));
 
                 bullet.UnionWith(posMediaS);
+            }
+
+            if (LaunchTickToUseBuff.TryGetValue(NowOnTick, out var playBuffIds))
+            {
+                foreach (var playBuffId in playBuffIds)
+                {
+                    caster.UseBuff(playBuffId);
+                }
             }
 
             // 是否退出Snipe状态

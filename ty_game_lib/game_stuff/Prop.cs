@@ -74,10 +74,11 @@ namespace game_stuff
         private TwoDVector? AddSpeed { get; }
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
-            MapInteract interactive) GoATick(TwoDPoint getPos,
-                TwoDVector sightAim,
+            MapInteract interactive) GoATick(CharacterStatus caster,
                 TwoDVector? rawMoveVector, TwoDVector? limitV)
         {
+            var getPos = caster.GetPos();
+            var sightAim = caster.GetAim();
             var b = NowOnTick == 0;
             NowOnTick++;
             var bullet = PropBullets.TryGetValue(NowOnTick, out var aBullet) ? aBullet : null;
@@ -160,10 +161,10 @@ namespace game_stuff
             switch (interactive)
             {
                 case MapInteract.RecycleCall:
-                    characterStatus.RecycleAProp(this,InWhichMapInteractive?.MapMarkId??-1);
+                    characterStatus.RecycleAProp(this, InWhichMapInteractive?.MapMarkId ?? -1);
                     return ImmutableArray<IActResult>.Empty;
                 case MapInteract.PickCall:
-                    var pickAProp = characterStatus.PickAProp(this,InWhichMapInteractive?.MapMarkId??-1);
+                    var pickAProp = characterStatus.PickAProp(this, InWhichMapInteractive?.MapMarkId ?? -1);
                     return pickAProp == null
                         ? ImmutableArray<IActResult>.Empty
                         : new IActResult[] {new DropThings(new List<IMapInteractable> {pickAProp})}.ToImmutableArray();
