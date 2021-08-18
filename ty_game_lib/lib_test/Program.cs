@@ -25,7 +25,8 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_spear, weapon_id.test_cross_bow}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_spear, weapon_id.test_cross_bow},
+                    size.small,
                     1, new Dictionary<passive_id, uint>
                     {
                         {passive_id.revenge, 2}, {passive_id.absorb_up, 1}, {passive_id.on_break, 1}
@@ -138,8 +139,8 @@ namespace lib_test
 
                 if (genTickMsg != null)
                 {
-                    var theta = genTickMsg.Value.CharEvents.OfType<TickSnipeActionLaunch>().FirstOrDefault();
-                    if (theta != null) Console.Out.WriteLine($"out put angle change {theta?.SniperAction}");
+                    var theta = genTickMsg.Value.CharEvents.OfType<StartAct>().FirstOrDefault();
+                    if (theta != null) Console.Out.WriteLine($"act is {theta.TypeEnum} {theta.IntId}");
                 }
 #endif
             }

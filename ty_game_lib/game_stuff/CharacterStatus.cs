@@ -88,7 +88,7 @@ namespace game_stuff
             if (charAct is Skill skill)
             {
 #if DEBUG
-                Console.Out.WriteLine($"now set skill : {skill.SkillId}");
+                Console.Out.WriteLine($"now set skill : {skill.SkillId} {charAct.NowOnTick}");
 #endif
                 CostAmmo(skill.AmmoCost);
             }
