@@ -201,9 +201,15 @@ namespace collision_and_rigid
             return LogVector();
         }
 
-        public IEnumerable<TwoDVector> GenLinearListToAnother(TwoDVector v1, int k1)
+        public static IEnumerable<TwoDVector> GenLinearListToAnother(TwoDVector v1, int k1)
         {
-            return Enumerable.Range(1, k1).Select(x => v1.Multi((float) x / k1));
+            return Enumerable.Range(1, k1).Select(x => v1.Multi((float)x / k1));
+        }
+
+        public TwoDVector Sum(TwoDVector twoDVector)
+        {
+            var dVector = new TwoDVector(X + twoDVector.X, Y + twoDVector.Y);
+            return dVector;
         }
     }
 
