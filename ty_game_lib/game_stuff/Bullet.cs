@@ -405,7 +405,10 @@ namespace game_stuff
 
                 if (caster is CharacterStatus characterStatus)
                 {
-                    var playingBuffs = AddBuffToCastWhenHitPass.GenBuffs(targetCharacterStatus);
+                    var playingBuffs = AddBuffToCastWhenHitPass.GenBuffs(targetCharacterStatus).ToArray();
+#if DEBUG
+                    Console.Out.WriteLine($"{characterStatus.GetId()}:playing buffs add when atk ok {playingBuffs.Length}");
+#endif
                     characterStatus.AddPlayingBuff(playingBuffs);
                 }
 

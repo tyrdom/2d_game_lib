@@ -25,7 +25,8 @@ namespace game_stuff
         public TwoDVector PushVector { get; set; }
         private TwoDVector DecreasePerTick { get; }
 
-        public PushStunOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick, IBattleUnitStatus caster)
+        public PushStunOnEarth(TwoDVector pushVector, TwoDVector decreasePerTick, uint restTick,
+            IBattleUnitStatus caster)
         {
             PushVector = pushVector;
             DecreasePerTick = decreasePerTick;
@@ -93,7 +94,8 @@ namespace game_stuff
         public float UpSpeed;
 
 
-        public PushStunOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick, IBattleUnitStatus caster)
+        public PushStunOnAir(TwoDVector pushVector, float height, float upSpeed, uint restTick,
+            IBattleUnitStatus caster)
         {
             PushVector = pushVector;
             Height = height;
@@ -152,10 +154,10 @@ namespace game_stuff
 
     internal class Caught : IStunBuff
     {
-        private List<TwoDPoint> MovesOnPoints { get; }
+        private List<TwoDVector> MovesOnPoints { get; }
         public IBattleUnitStatus Caster { get; }
 
-        public Caught(List<TwoDPoint> movesOnPoints, uint restTick, IBattleUnitStatus caster)
+        public Caught(List<TwoDVector> movesOnPoints, uint restTick, IBattleUnitStatus caster)
         {
             MovesOnPoints = movesOnPoints;
             RestTick = restTick;
@@ -166,7 +168,7 @@ namespace game_stuff
 
         public ITwoDTwoP GetItp()
         {
-            return MovesOnPoints.Count > 0 ? MovesOnPoints[0] : TwoDPoint.Zero();
+            return MovesOnPoints.Count > 0 ? Caster.GetPos().Move(MovesOnPoints[0]) : TwoDPoint.Zero();
         }
 
         public (ITwoDTwoP, IStunBuff?) GoTickDrivePos(TwoDPoint oldPt)
@@ -174,7 +176,7 @@ namespace game_stuff
             RestTick -= 1;
             var count = MovesOnPoints.Count;
 
-            var pt = count <= 0 ? oldPt : MovesOnPoints[0];
+            var pt = count <= 0 ? oldPt : Caster.GetPos().Move(MovesOnPoints[0]);
 
 
             if (count > 0)

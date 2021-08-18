@@ -25,7 +25,7 @@ namespace game_stuff
             return (int) SkillId;
         }
 
-        private skill_id SkillId { get; }
+        public skill_id SkillId { get; }
         public int NowTough { get; set; }
 
         public int SnipeStepNeed { get; }
@@ -263,8 +263,13 @@ namespace game_stuff
 
             if (LaunchTickToUseBuff.TryGetValue(NowOnTick, out var playBuffIds))
             {
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"to use buff {playBuffIds.Length} ");
+#endif
                 foreach (var playBuffId in playBuffIds)
                 {
+
                     caster.UseBuff(playBuffId);
                 }
             }

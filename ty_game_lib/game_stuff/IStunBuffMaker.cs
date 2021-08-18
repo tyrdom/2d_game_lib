@@ -60,8 +60,6 @@ namespace game_stuff
             var (key, value) = twoDVectors.FirstOrDefault();
             if (key != 0 || value == null) throw new Exception($"no good key vectors at caught_buff {caughtBuff.id}");
             vectors.Add(value);
-            var nk = key;
-            var nowVector = value;
             if (twoDVectors.Count <= 1)
                 return new CatchStunBuffMaker(vectors.ToArray(), caughtBuff.LastTime,
                     Skill.GenSkillById(caughtBuff.TrickSkill));
@@ -70,7 +68,7 @@ namespace game_stuff
                 var (k1, v1) = twoDVectors[index];
                 if (v1 != null)
                 {
-                    var genLinearListToAnother = nowVector.GenLinearListToAnother(v1, (int) (k1 - nk));
+                    var genLinearListToAnother = value.GenLinearListToAnother(v1, (int) (k1 - key));
                     vectors.AddRange(genLinearListToAnother);
                 }
                 else
@@ -348,13 +346,12 @@ namespace game_stuff
         public Skill TrickSkill { get; }
 
 
-        private IStunBuff GenABuff(TwoDPoint anchor, TwoDVector aim, IBattleUnitStatus whoDid)
+        private IStunBuff GenABuff(TwoDVector aim, IBattleUnitStatus whoDid)
         {
             var twoDPoints = TwoDVectors.Select(twoDVector => twoDVector.AntiClockwiseTurn(aim.GetUnit()))
-                .Select(anchor.Move)
                 .ToList();
 #if DEBUG
-            Console.Out.WriteLine($"pos {anchor} aim {aim}");
+            Console.Out.WriteLine($" aim {aim}");
             foreach (var twoDVector in TwoDVectors)
             {
                 Console.Out.WriteLine($"{twoDVector}");
@@ -372,7 +369,7 @@ namespace game_stuff
         public IStunBuff GenBuff(TwoDPoint pos, TwoDPoint obPos, TwoDVector aim, float? height, float upSpeed,
             CharacterStatus whoTake, IBattleUnitStatus whoDid, bool canFix = true)
         {
-            var antiActBuff = GenABuff(pos, aim, whoDid);
+            var antiActBuff = GenABuff(aim, whoDid);
             return antiActBuff;
         }
 

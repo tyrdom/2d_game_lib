@@ -138,7 +138,7 @@ namespace game_stuff
 
         public static bool IsFinish(this IPlayingBuff playingBuff)
         {
-            return playingBuff.RestTick <= 0 || playingBuff.Stack == 0;
+            return playingBuff.RestTick <= 0 || playingBuff.Stack <= 0;
         }
 
 
@@ -176,26 +176,39 @@ namespace game_stuff
             IPlayingBuff aPlayBuff)
         {
             var idBuffId = aPlayBuff.BuffId;
+#if DEBUG
+            Console.Out.WriteLine($"to add buff {idBuffId.ToString()} restTick {aPlayBuff.RestTick}");
+#endif
             var playBuff = GetBuffConfig(idBuffId);
             var playBuffStackMode = playBuff.StackMode;
-            if (!playingBuffsDictionary.TryGetValue(idBuffId, out var playingBuff)) return;
-            switch (playBuffStackMode)
+            if (playingBuffsDictionary.TryGetValue(idBuffId, out var playingBuff))
             {
-                case stack_mode.OverWrite:
-                    playingBuff.RestTick = aPlayBuff.RestTick;
-                    playingBuff.Stack = 1;
-                    break;
-                case stack_mode.Time:
-                    playingBuff.RestTick += aPlayBuff.RestTick;
-                    playingBuff.Stack = 1;
-                    break;
-                case stack_mode.Stack:
-                    playingBuff.RestTick = aPlayBuff.RestTick;
-                    playingBuff.Stack += aPlayBuff.Stack;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (playBuffStackMode)
+                {
+                    case stack_mode.OverWrite:
+                        playingBuff.RestTick = aPlayBuff.RestTick;
+                        playingBuff.Stack = 1;
+                        break;
+                    case stack_mode.Time:
+                        playingBuff.RestTick += aPlayBuff.RestTick;
+                        playingBuff.Stack = 1;
+                        break;
+                    case stack_mode.Stack:
+                        playingBuff.RestTick = aPlayBuff.RestTick;
+                        playingBuff.Stack += aPlayBuff.Stack;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
+            else
+            {
+                playingBuffsDictionary[idBuffId] = aPlayBuff;
+            }
+#if DEBUG
+            var aggregate = playingBuffsDictionary.Keys.Aggregate("", (s, x) => s + " " + x);
+            Console.Out.WriteLine($"buffs is {aggregate}");
+#endif
         }
     }
 
@@ -270,7 +283,11 @@ namespace game_stuff
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
-            var stunBuff = PullStunBuffMaker.GenBuff(characterStatus.GetPos(), TargetMark.GetPos(),
+#if DEBUG
+            Console.Out.WriteLine($"active pull buff to target:{TargetMark.GetId()}");
+#endif
+            var stunBuff = PullStunBuffMaker.GenBuff(characterStatus.GetPos(),
+                TargetMark.GetPos(),
                 characterStatus.GetAim(), null, 0,
                 TargetMark, characterStatus);
             TargetMark.SetStunBuff(stunBuff);

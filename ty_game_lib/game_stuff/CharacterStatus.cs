@@ -87,6 +87,9 @@ namespace game_stuff
         {
             if (charAct is Skill skill)
             {
+#if DEBUG
+                Console.Out.WriteLine($"now set skill : {skill.SkillId}");
+#endif
                 CostAmmo(skill.AmmoCost);
             }
 #if DEBUG
@@ -940,10 +943,16 @@ namespace game_stuff
                 if (weaponSkillStatus == null) return actNowActATick;
                 // 状态可用，则执行连技操作
                 var skillStatus = weaponSkillStatus.Value;
+#if DEBUG
+                Console.Out.WriteLine($"{GId}:check Buff: {PlayingBuffs.Count}");
+#endif
                 var changeComboStatusEnumerable = GetBuffs<ChangeComboStatus>().FirstOrDefault();
                 if (changeComboStatusEnumerable != null)
                 {
                     skillStatus = changeComboStatusEnumerable.ComboStatusFix;
+#if DEBUG
+                    Console.Out.WriteLine($"skill Status change By Buff {skillStatus}");
+#endif
                 }
 
                 var b = opAction == SkillAction.Switch;

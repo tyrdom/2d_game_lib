@@ -25,14 +25,14 @@ namespace lib_test
 
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword_shield, weapon_id.test_cross_bow}, size.small,
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_spear, weapon_id.test_cross_bow}, size.small,
                     1, new Dictionary<passive_id, uint>
                     {
                         {passive_id.revenge, 2}, {passive_id.absorb_up, 1}, {passive_id.on_break, 1}
                     });
 
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 5,
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1,
                     new Dictionary<passive_id, uint>
                     {
                         {passive_id.main_atk, 10}, {passive_id.shield_overload, 3}, {passive_id.energy_armor, 1}
@@ -76,8 +76,8 @@ namespace lib_test
 
                 var dVector = new TwoDVector(1f, 0f);
                 var operate = i < 59
-                    ? new Operate(aim: dVector, skillAction: SkillAction.Op1)
-                    : new Operate(aim: dVector, skillAction: SkillAction.Op2);
+                    ? new Operate(aim: dVector, skillAction: SkillAction.Op2)
+                    : new Operate(aim: dVector, skillAction: SkillAction.Op1);
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1, specialAction: SpecialAction.UseProp);
                 var opDic = new Dictionary<int, Operate>
