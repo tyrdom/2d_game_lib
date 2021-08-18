@@ -354,7 +354,7 @@ namespace game_stuff
             Console.Out.WriteLine($" aim {aim}");
             foreach (var twoDVector in TwoDVectors)
             {
-                Console.Out.WriteLine($"{twoDVector}");
+                Console.Out.WriteLine($"gen caught by vector:{twoDVector}");
             }
 
             foreach (var twoDPoint in twoDPoints)
