@@ -291,6 +291,8 @@ namespace game_stuff
                 characterStatus.GetAim(), null, 0,
                 TargetMark, characterStatus);
             TargetMark.SetStunBuff(stunBuff);
+            characterStatus.CharEvents.Add(new DirectHit(TargetMark.GetPos()));
+           
         }
     }
 

@@ -137,10 +137,15 @@ namespace lib_test
                     Console.Out.WriteLine($"id 5 pos see is {twoDPoint}");
                 }
 
-                if (genTickMsg != null)
+                var theta = genTickMsg?.CharEvents.OfType<StartAct>().FirstOrDefault();
+                if (theta != null)
                 {
-                    var theta = genTickMsg.Value.CharEvents.OfType<StartAct>().FirstOrDefault();
-                    if (theta != null) Console.Out.WriteLine($"act is {theta.TypeEnum} {theta.IntId}");
+                    Console.Out.WriteLine($"act is {theta.TypeEnum} {theta.IntId}");
+                    if (theta.TypeEnum == action_type.skill)
+                    {
+                        var thetaIntId = (skill_id) theta.IntId;
+                        Console.Out.WriteLine($"{thetaIntId}");
+                    }
                 }
 #endif
             }

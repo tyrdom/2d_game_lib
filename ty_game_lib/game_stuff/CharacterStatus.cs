@@ -1334,8 +1334,16 @@ namespace game_stuff
 
         public void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker)
         {
-            LoadSkill(aim, catchAntiActBuffMaker.TrickSkill, out _);
-            NextSkill = null;
+            var trickSkill = catchAntiActBuffMaker.TrickSkill;
+            if (NowCastAct == null)
+            {
+                LoadSkill(aim, trickSkill, out _);
+            }
+            else
+            {
+                var nextSkill = new NextSkill(aim, trickSkill, SkillAction.Op2);
+                NextSkill = nextSkill;
+            }
         }
 
         public float GetRr()
