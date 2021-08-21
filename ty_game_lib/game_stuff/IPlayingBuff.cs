@@ -289,10 +289,9 @@ namespace game_stuff
             var stunBuff = PullStunBuffMaker.GenBuff(characterStatus.GetPos(),
                 TargetMark.GetPos(),
                 characterStatus.GetAim(), null, 0,
-                TargetMark, characterStatus);
+                TargetMark, characterStatus,false);
             TargetMark.SetStunBuff(stunBuff);
             characterStatus.CharEvents.Add(new DirectHit(TargetMark.GetPos()));
-           
         }
     }
 
