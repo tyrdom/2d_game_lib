@@ -8,7 +8,7 @@ namespace game_stuff
     {
         public Dictionary<size, WalkBlock> SizeToEdge { get; }
 
-        public WalkMap(Dictionary<size, WalkBlock> sizeToEdge)
+        private WalkMap(Dictionary<size, WalkBlock> sizeToEdge)
         {
             SizeToEdge = sizeToEdge;
         }

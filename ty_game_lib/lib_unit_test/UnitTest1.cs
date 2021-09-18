@@ -79,9 +79,9 @@ namespace lib_unit_test
         {
             var genById = Bullet.GenById(bullet_id.test_ss_l_1_b_1);
             var bulletBox = genById.SizeToBulletCollision[size.small];
-            var b = bulletBox.BulletShape is SimpleBlocks ss ? ss.ToString() : ""; 
+            var b = bulletBox.BulletShape is SimpleBlocks ss ? ss.ToString() : "";
             var s = bulletBox.Zone.ToString();
-            Assert.Pass(s +b);
+            Assert.Pass(s + b);
         }
 
         [Test]
@@ -206,6 +206,24 @@ namespace lib_unit_test
             var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2);
 
             Assert.Pass($"fin");
+        }
+
+        [Test]
+        public void  WalkBlockPushTest()
+        {
+            var configDictionaries = new ConfigDictionaries();
+            var mapRaws = configDictionaries.map_rawss[17];
+
+            var mapRawsWalkRawMap = mapRaws.WalkRawMap;
+            var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
+            var mapByPolys = WalkMap.CreateMapByPolys(enumerable.PloyListMark());
+            var walkBlock = mapByPolys.SizeToEdge[size.small];
+            var twoDPoint = new TwoDPoint(-2.668737f, 0.891917f);
+            var twoDPoint2 = new TwoDPoint(-1.96425f, 1.270991f);
+            var (isHitWall, pt) = walkBlock.PushOutToPt(twoDPoint, twoDPoint2);
+            var realCoverPoint = walkBlock.RealCoverPoint(pt);
+            //  Last[-2.668737|0.891917],Now [-1.96425|1.270991] = [-2.177649|1.3791]
+            Assert.Pass($"fin mapRaw {mapRaws.info}  hitWall:{isHitWall} pt:{pt} Cover:{realCoverPoint} \n");
         }
 
         private static string PathTest(WalkBlock genWalkBlockByPolys)

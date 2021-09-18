@@ -104,6 +104,7 @@ namespace game_stuff
             return playGround;
         }
 
+        
         public static MapInitData GenEmptyByConfig(map_raws mapRaws)
         {
             var mapRawsWalkRawMap = mapRaws.WalkRawMap;

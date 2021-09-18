@@ -325,13 +325,13 @@ namespace collision_and_rigid
             var notCross = Zone.RealNotCross(line.GenZone());
 
             if (notCross) return null;
+#if DEBUG
 
+            Console.Out.WriteLine($"cross Branch Zone ::: {AaBbPackBox.Count}");
+#endif
             var a = SomeTools.SlideTwoDPoint(AaBbPackBox, line, safe);
             if (a != null) return a;
-// #if DEBUG
-//
-//             Console.Out.WriteLine($"not cross Branch Zone {notCross}::: {AabbPackBoxShapes.Count}");
-// #endif
+
             var qSpaces = new[] {QuadOne, QuadTwo, QuadThree, QuadFour};
             return qSpaces.Select(qSpace => qSpace.GetSlidePoint(line, safe))
                 .FirstOrDefault(twoDPoint => twoDPoint != null);

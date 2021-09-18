@@ -133,11 +133,12 @@ namespace collision_and_rigid
             foreach (var aabbBoxShape in aabbBoxShapes)
             {
                 var notCross = moveLine.GenZone().RealNotCross(aabbBoxShape.Zone);
-// #if DEBUG
-//
-//                 Console.Out.WriteLine($"{moveLine.Log()} not cross sssssssssssssss shape {notCross}");
-// #endif
+#if DEBUG
+
+                Console.Out.WriteLine($"{moveLine}  cross  shape {aabbBoxShape} ? {!notCross}");
+#endif
                 if (notCross) continue;
+
                 var moveLineB = moveLine.B;
                 switch (aabbBoxShape.GetShape())
                 {
@@ -146,6 +147,11 @@ namespace collision_and_rigid
                         if (isCross)
                         {
                             var twoDPoint = blockClockwiseTurning.Slide(moveLineB, safe);
+#if DEBUG
+                            Console.Out.WriteLine(
+                                $" {moveLine} cross {blockClockwiseTurning} shape!!! {twoDPoint} ");
+
+#endif
                             return twoDPoint;
                         }
 
@@ -155,12 +161,12 @@ namespace collision_and_rigid
 
                         if (isCrossAnother)
                         {
-// #if DEBUG
-//                             Console.Out.WriteLine(
-//                                 $" {moveLine.Log()}cross {blockLine.Log()} qqqqqqqqqqq shape {isCrossAnother}");
-//                             
-// #endif
                             var twoDPoint = blockLine.Slide(moveLineB);
+
+#if DEBUG
+                            Console.Out.WriteLine(
+                                $" {moveLine} cross {blockLine} shape!!! {twoDPoint}");
+#endif
                             return twoDPoint;
                         }
 

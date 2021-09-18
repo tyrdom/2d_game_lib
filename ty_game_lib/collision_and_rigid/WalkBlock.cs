@@ -39,7 +39,7 @@ namespace collision_and_rigid
             PushOutToPt(TwoDPoint lastP, TwoDPoint nowP) //null表示不需要被动移动
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
-            var apt = QSpace.GetSlidePoint(inLine, true);
+            var apt = QSpace.GetSlidePoint(inLine);
 
             // if (safe)
             return (apt != null, apt ?? nowP);
