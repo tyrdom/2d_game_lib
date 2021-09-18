@@ -280,9 +280,10 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null && !safe ? Next.Slide(p) : b;
+                            return Next != null && !safe ? Next.Slide(p) :
+                                o.Move(ob.GetVector().Multi(1.01f));
                         case Pt2LinePos.On:
-                            return b;
+                            return o.Move(ob.GetVector().Multi(1.01f));;
                         case Pt2LinePos.Left:
                             var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R + 0.01f);
                             return o.Move(ovr);
@@ -294,13 +295,13 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null && !safe ? Next.Slide(p) : b;
+                            return Next != null && !safe ? Next.Slide(p) : o.Move(ob.GetVector().Multi(1.01f));;
                         case Pt2LinePos.On:
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
-                                .Multi(R);
+                                .Multi(R + 0.01f);
                             return o.Move(twoDVector);
                         case Pt2LinePos.Left:
-                            return a;
+                            return o.Move(oa.GetVector().Multi(1.01f));;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
