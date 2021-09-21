@@ -212,17 +212,18 @@ namespace lib_unit_test
         public void  WalkBlockPushTest()
         {
             var configDictionaries = new ConfigDictionaries();
-            var mapRaws = configDictionaries.map_rawss[17];
+            var mapRaws = configDictionaries.map_rawss[15];
 
             var mapRawsWalkRawMap = mapRaws.WalkRawMap;
             var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
             var mapByPolys = WalkMap.CreateMapByPolys(enumerable.PloyListMark());
             var walkBlock = mapByPolys.SizeToEdge[size.small];
-            var twoDPoint = new TwoDPoint(-2.668737f, 0.891917f);
-            var twoDPoint2 = new TwoDPoint(-1.96425f, 1.270991f);
+            var twoDPoint = new TwoDPoint(-0.06930432f,6.693746f);
+            var twoDPoint2 = new TwoDPoint(-0.7251987f,6.235703f);
             var (isHitWall, pt) = walkBlock.PushOutToPt(twoDPoint, twoDPoint2);
             var realCoverPoint = walkBlock.RealCoverPoint(pt);
-            //  Last[-2.668737|0.891917],Now [-1.96425|1.270991] = [-2.177649|1.3791]
+            //  Last[-0.06930432|6.693746],Now [-0.7251987|6.235703] = [-0.7251987|6.235703]
+
             Assert.Pass($"fin mapRaw {mapRaws.info}  hitWall:{isHitWall} pt:{pt} Cover:{realCoverPoint} \n");
         }
 

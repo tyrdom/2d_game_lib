@@ -149,12 +149,13 @@ namespace game_stuff
             //     $" lastPos:: {LastPos} nowPos::{NowPos} :: is hit wall ::{isHitWall}");
 #endif
 
-            if (walkBlock.RealCoverPoint(pt))
+            var realCoverPoint = walkBlock.RealCoverPoint(pt);
+            if (realCoverPoint)
             {
-                throw new Exception($"Last{LastPos},Now {NowPos} = {pt}");
+                pt = LastPos;
             }
 
-            if (!isHitWall)
+            if (!isHitWall && !realCoverPoint)
             {
                 return (NowPos, null);
             }
