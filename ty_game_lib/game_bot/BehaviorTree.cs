@@ -23,6 +23,8 @@ namespace game_bot
         public Operate Operate { get; }
     }
 
+ 
+
     public interface IBehaviorTreeNode
     {
         public NodeResult DoNode(IAgentStatus agentStatus, out ActingOperation? operate);
@@ -89,15 +91,6 @@ namespace game_bot
 
     public interface IBehaviorTreeLeaf : IBehaviorTreeNode
     {
-    }
-
-    public static class BehaviorTreeHelper
-    {
-        // public static void GoATickAndIsReturnRoot(this IBehaviorTreeNode behaviorTreeNode, IAgentStatus agentStatus,
-        //     out ActingOperation? actingOperation)
-        // {
-        //     var nodeResult = behaviorTreeNode.DoNode(agentStatus, out actingOperation);
-        // }
     }
 
     public interface IAgentStatus
