@@ -59,6 +59,7 @@ namespace game_bot
                 var canBeEnemies = perceivable.PlayerSee.TryGetValue(key, out var enumerable)
                     ? enumerable
                     : PlayerTickSense.Empty;
+                
                 var immutableHashSet = perceivable.CharacterHitSomeThing.TryGetValue(key, out var enumerable1)
                     ? enumerable1
                     : ImmutableHashSet<IHitMsg>.Empty;

@@ -1,24 +1,37 @@
+using System.Linq;
+using System.Transactions;
 using game_stuff;
 
 namespace game_bot
 {
     public static class NormalBotBehaviorTree
     {
-        public static BehaviorTreeSelectBranch Root { get; } = new BehaviorTreeSelectBranch(
-            new[]
-            {
-                OpForbidden,OpActs
-            }
-        );
+        public static bool ActingFunc(
+            IAgentStatus[] botAgent)
+        {
+            return botAgent.Any(x => x is BotActing);
+        }
+
+        public static BehaviorTreeCondLeaf Acting { get; } = new BehaviorTreeCondLeaf(ActingFunc);
 
         public static BehaviorTreeSelectBranch OpForbidden { get; }
-        
-        public static BehaviorTreeSelectBranch OpActs { get; }
+            = new BehaviorTreeSelectBranch(
+                new IBehaviorTreeNode[]
+                {
+                    Acting
+                });
 
-        public static (bool result, Operate? operate) BattleFunc(
-            BotAgent botAgent)
-        {
-            return (false, null);
-        }
+        public static BehaviorTreeSelectBranch OpActs { get; }
+            = new BehaviorTreeSelectBranch(
+                new IBehaviorTreeNode[]
+                {
+                });
+
+        public static BehaviorTreeSelectBranch Root { get; } = new BehaviorTreeSelectBranch(
+            new IBehaviorTreeNode[]
+            {
+                OpForbidden, OpActs
+            }
+        );
     }
 }

@@ -7,7 +7,7 @@ namespace game_bot
     {
         public IDecorator Decorator { get; }
 
-        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus agentStatus,
+        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate);
     }
 
@@ -28,7 +28,7 @@ namespace game_bot
             BehaviorTreeNodes = behaviorTreeNodes;
         }
 
-        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus agentStatus,
+        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
             operate = null;
@@ -80,7 +80,7 @@ namespace game_bot
 
         public IBehaviorTreeNode[] BehaviorTreeNodes { get; }
 
-        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus agentStatus,
+        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
             operate = null;
@@ -165,21 +165,23 @@ namespace game_bot
 
     public class BehaviorTreeCondLeaf : IBehaviorTreeLeaf
     {
-        public BehaviorTreeCondLeaf(Func<IAgentStatus, bool> func, IDecorator decorator)
+        public BehaviorTreeCondLeaf(Func<IAgentStatus[], bool> func, IDecorator decorator)
         {
             Func = func;
             Decorator = decorator;
         }
 
-        private Func<IAgentStatus, bool> Func { get; }
-
-        public bool DoNodeBase(IAgentStatus agentStatus, out Operate? operate)
+        public BehaviorTreeCondLeaf(Func<IAgentStatus[], bool> func)
         {
-            operate = null;
-            return Func(agentStatus);
+            Func = func;
+            Decorator = new NoneDecorator();
         }
 
-        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus agentStatus,
+        private Func<IAgentStatus[], bool> Func { get; }
+
+      
+
+        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
             operate = null;
@@ -193,22 +195,17 @@ namespace game_bot
 
     public class BehaviorTreeActLeaf : IBehaviorTreeLeaf
     {
-        public BehaviorTreeActLeaf(Func<IAgentStatus, (bool, Operate?)> func, IDecorator decorator)
+        public BehaviorTreeActLeaf(Func<IAgentStatus[], (bool, Operate?)> func, IDecorator decorator)
         {
             Func = func;
             Decorator = decorator;
         }
 
-        private Func<IAgentStatus, (bool, Operate?)> Func { get; }
+        private Func<IAgentStatus[], (bool, Operate?)> Func { get; }
 
-        public bool DoNodeBase(IAgentStatus agentStatus, out Operate? operate)
-        {
-            var (nodeResult, operation) = Func(agentStatus);
-            operate = operation;
-            return nodeResult;
-        }
+        
 
-        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus agentStatus,
+        public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
             var (item1, item2) = Func(agentStatus);

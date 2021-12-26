@@ -10,7 +10,7 @@ namespace game_stuff
     {
         public static PlayerTickSense Empty = new PlayerTickSense(ImmutableHashSet<IPerceivable>.Empty,
             ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty, ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty,
-            ImmutableHashSet<CharacterBody>.Empty, ImmutableHashSet<Bullet>.Empty, 
+            ImmutableHashSet<CharacterBody>.Empty, ImmutableHashSet<Bullet>.Empty,
             ImmutableHashSet<Bullet>.Empty);
 
         public ImmutableHashSet<IPerceivable> OnChange { get; }
@@ -40,14 +40,16 @@ namespace game_stuff
             (ImmutableHashSet<INotMoveCanBeAndNeedSew> lastTickSee, ImmutableHashSet<CharacterBody> characterBodies)
                 lastTickSee)
         {
-            var (perceivableS, hashSet, hear) = thisTickSee;
-            var characterBodies = perceivableS.OfType<CharacterBody>();
-            var (moveCanBeSews, immutableHashSet1) = lastTickSee;
-            var enumerable = characterBodies.Except(immutableHashSet1).ToImmutableHashSet();
-            var notMoveCanBeSews = perceivableS.OfType<INotMoveCanBeAndNeedSew>();
-            var immutableHashSet = perceivableS.Except(notMoveCanBeSews);
-            var appear = perceivableS.Except(moveCanBeSews).OfType<INotMoveCanBeAndNeedSew>().ToImmutableHashSet();
-            var vanish = moveCanBeSews.Except(perceivableS).OfType<INotMoveCanBeAndNeedSew>().ToImmutableHashSet();
+            var (thisTickPerceivable, bulletSee, hear) = thisTickSee;
+            var characterBodies = thisTickPerceivable.OfType<CharacterBody>();
+            var (lastNotMoveCanBeAndNeedSews, lastBodies) = lastTickSee;
+            var newCharBodies = characterBodies.Except(lastBodies).ToImmutableHashSet();
+            var notMoveCanBeSews = thisTickPerceivable.OfType<INotMoveCanBeAndNeedSew>();
+            var onChange = thisTickPerceivable.Except(notMoveCanBeSews);
+            var appear = thisTickPerceivable.Except(lastNotMoveCanBeAndNeedSews).OfType<INotMoveCanBeAndNeedSew>()
+                .ToImmutableHashSet();
+            var vanish = lastNotMoveCanBeAndNeedSews.Except(thisTickPerceivable).OfType<INotMoveCanBeAndNeedSew>()
+                .ToImmutableHashSet();
 #if DEBUG
             if (vanish.Any())
             {
@@ -55,7 +57,7 @@ namespace game_stuff
             }
 
 #endif
-            var playerTickSee = new PlayerTickSense(immutableHashSet, appear, vanish, enumerable, hashSet,
+            var playerTickSee = new PlayerTickSense(onChange, appear, vanish, newCharBodies, bulletSee,
                 hear);
             return playerTickSee;
         }
@@ -81,10 +83,12 @@ namespace game_stuff
             PlayerSee = playerSee;
             ActOutPut = actOutPut;
             var hitSomeThing = characterGidBeHit.Values.SelectMany(x => x);
-            var relationMsgS = trapGidTidBeHit.Values.SelectMany(x => x.Values.SelectMany(x => x));
+            var relationMsgS = trapGidTidBeHit.Values.SelectMany(x
+                => x.Values.SelectMany(x2 => x2));
             var characterHitSomeThing = hitSomeThing.Union(relationMsgS);
             var immutableDictionary = characterHitSomeThing.OfType<IHitMsg>().GroupBy(x => x.CasterOrOwner.GetId())
-                .ToImmutableDictionary(x => x.Key, x => x.ToImmutableHashSet());
+                .ToImmutableDictionary(x => x.Key,
+                    x => x.ToImmutableHashSet());
             CharacterHitSomeThing = immutableDictionary;
         }
 

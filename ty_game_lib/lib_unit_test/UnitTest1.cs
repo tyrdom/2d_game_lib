@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
 using collision_and_rigid;
 using cov_path_navi;
 using game_bot;
