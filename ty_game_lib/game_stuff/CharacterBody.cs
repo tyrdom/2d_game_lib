@@ -194,8 +194,12 @@ namespace game_stuff
             return charGoTick;
         }
 
-
         public ISeeTickMsg GenTickMsg(int? gid = null)
+        {
+            return GenCharTickMsg();
+        }
+
+        public CharTickMsg GenCharTickMsg(int? gid = null)
         {
             var characterStatusCharEvents = CharacterStatus.CharEvents;
             var gameItems = characterStatusCharEvents.OfType<ItemChange>().SelectMany(x => x.ItemNow).IeToHashSet()

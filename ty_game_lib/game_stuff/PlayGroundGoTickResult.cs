@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -6,64 +5,6 @@ using collision_and_rigid;
 
 namespace game_stuff
 {
-    public readonly struct PlayerTickSense
-    {
-        public static PlayerTickSense Empty = new PlayerTickSense(ImmutableHashSet<IPerceivable>.Empty,
-            ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty, ImmutableHashSet<INotMoveCanBeAndNeedSew>.Empty,
-            ImmutableHashSet<CharacterBody>.Empty, ImmutableHashSet<Bullet>.Empty,
-            ImmutableHashSet<Bullet>.Empty);
-
-        public ImmutableHashSet<IPerceivable> OnChange { get; }
-        public ImmutableHashSet<CharacterBody> NewCharBodies { get; }
-        public ImmutableHashSet<INotMoveCanBeAndNeedSew> Appear { get; }
-        public ImmutableHashSet<INotMoveCanBeAndNeedSew> Vanish { get; }
-
-        public ImmutableHashSet<Bullet> BulletSee { get; }
-
-        public ImmutableHashSet<Bullet> BulletHear { get; }
-
-        private PlayerTickSense(ImmutableHashSet<IPerceivable> onChange,
-            ImmutableHashSet<INotMoveCanBeAndNeedSew> appear,
-            ImmutableHashSet<INotMoveCanBeAndNeedSew> vanish, ImmutableHashSet<CharacterBody> newCharBodies,
-            ImmutableHashSet<Bullet> bulletSee, ImmutableHashSet<Bullet> bulletHear)
-        {
-            OnChange = onChange;
-            Appear = appear;
-            Vanish = vanish;
-            NewCharBodies = newCharBodies;
-            BulletSee = bulletSee;
-            BulletHear = bulletHear;
-        }
-
-        public static PlayerTickSense GenPlayerSense(
-            (ImmutableHashSet<IPerceivable>, ImmutableHashSet<Bullet>, ImmutableHashSet<Bullet>) thisTickSee,
-            (ImmutableHashSet<INotMoveCanBeAndNeedSew> lastTickSee, ImmutableHashSet<CharacterBody> characterBodies)
-                lastTickSee)
-        {
-            var (thisTickPerceivable, bulletSee, hear) = thisTickSee;
-            var characterBodies = thisTickPerceivable.OfType<CharacterBody>();
-            var (lastNotMoveCanBeAndNeedSews, lastBodies) = lastTickSee;
-            var newCharBodies = characterBodies.Except(lastBodies).ToImmutableHashSet();
-            var notMoveCanBeSews = thisTickPerceivable.OfType<INotMoveCanBeAndNeedSew>();
-            var onChange = thisTickPerceivable.Except(notMoveCanBeSews);
-            var appear = thisTickPerceivable.Except(lastNotMoveCanBeAndNeedSews).OfType<INotMoveCanBeAndNeedSew>()
-                .ToImmutableHashSet();
-            var vanish = lastNotMoveCanBeAndNeedSews.Except(thisTickPerceivable).OfType<INotMoveCanBeAndNeedSew>()
-                .ToImmutableHashSet();
-#if DEBUG
-            if (vanish.Any())
-            {
-                Console.Out.WriteLine($"vanish  {vanish.Count}");
-            }
-
-#endif
-            var playerTickSee = new PlayerTickSense(onChange, appear, vanish, newCharBodies, bulletSee,
-                hear);
-            return playerTickSee;
-        }
-    }
-
-
     public readonly struct PlayGroundGoTickResult
     {
         public static PlayGroundGoTickResult Empty = new PlayGroundGoTickResult(

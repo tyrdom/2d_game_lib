@@ -89,7 +89,7 @@ namespace lib_test
                         playerSee, playerTeleportTo, hitSomething) =
                     rogueGameGoTickResult.PlayGroundGoTickResult;
                 var canBeEnemies = playerSee.TryGetValue(2, out var enumerable)
-                    ? enumerable.OnChange.OfType<ICanBeEnemy>()
+                    ? enumerable.OnChangingBodyAndRadarSee.OfType<ICanBeEnemy>()
                     : new ICanBeEnemy[] { };
                 var immutableHashSet = hitSomething.TryGetValue(2, out var enumerable1)
                     ? enumerable1
@@ -118,7 +118,7 @@ namespace lib_test
                 Console.Out.WriteLine("");
 #endif
                 var characterBodies = playerSee.TryGetValue(1, out var tickSee)
-                    ? tickSee.OnChange.OfType<CharacterBody>()
+                    ? tickSee.OnChangingBodyAndRadarSee.OfType<CharacterBody>()
                     : new CharacterBody[] { };
                 var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
 

@@ -48,7 +48,7 @@ namespace game_stuff
         //Ammo
         public int NowAmmo { get; set; }
 
-        private int GetAmmo()
+        public int GetAmmo()
         {
             return NowVehicle?.NowAmmo ?? NowAmmo;
         }

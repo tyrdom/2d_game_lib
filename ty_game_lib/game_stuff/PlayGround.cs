@@ -156,7 +156,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    bodies[initDataTeamId] = new HashSet<CharacterBody> { genCharacterBody };
+                    bodies[initDataTeamId] = new HashSet<CharacterBody> {genCharacterBody};
                 }
 
                 characterBodies[initData.Gid] = genCharacterBody;
@@ -208,7 +208,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    dictionary[kv.Key] = new HashSet<CharInitMsg> { kv.Value };
+                    dictionary[kv.Key] = new HashSet<CharInitMsg> {kv.Value};
                 }
             }
 
@@ -229,7 +229,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    dictionary[characterBody.Team] = new Dictionary<int, Operate> { { kv.Key, kv.Value } };
+                    dictionary[characterBody.Team] = new Dictionary<int, Operate> {{kv.Key, kv.Value}};
                 }
             }
 
@@ -246,12 +246,13 @@ namespace game_stuff
             var trapBeHit = new Dictionary<int, Dictionary<int, HashSet<IRelationMsg>>>();
             var teamRadarSee = new Dictionary<int, HashSet<IPerceivable>>();
             var newBulletCollector = new HashSet<Bullet>();
-
+            //所有角色行动一次
             var everyBodyGoATick = EveryTeamGoATick(gidToOperates, actOut, newBulletCollector);
-
+            //交互物品行动
             MapInteractableGoATick(newBulletCollector);
+            //可碰撞媒介作用
             HitMediasDo(playerBeHit, trapBeHit, teamRadarSee);
-
+            //角色位置变化
             foreach (var twoDTwoP in everyBodyGoATick)
             {
                 if (GidToBody.TryGetValue(twoDTwoP.Key, out var characterBody))
@@ -262,8 +263,9 @@ namespace game_stuff
 
             BodiesQSpaceReplace(playerBeHit);
 
+            //
             var playerSee = GetPlayerSense(newBulletCollector);
-
+            //radarSee合并 radarSee会广播全队
             var playerPerceivable =
                 playerSee.ToImmutableDictionary(pair => pair.Key,
                     pair =>
@@ -302,7 +304,7 @@ namespace game_stuff
                     var (gid, telePortMsg) = tuple;
                     var toOutPutResults = actOut.TryGetValue(gid, out var acToOutPutResults)
                         ? acToOutPutResults.Append(telePortMsg)
-                        : new IToOutPutResult[] { telePortMsg };
+                        : new IToOutPutResult[] {telePortMsg};
                     actOut[gid] = toOutPutResults;
                 }
 
@@ -313,10 +315,12 @@ namespace game_stuff
             var valueTuple =
                 new PlayGroundGoTickResult(
                     playerBeHit.ToImmutableDictionary(p => p.Key,
-                        p => p.Value.ToImmutableHashSet()), trapBeHit.ToImmutableDictionary(pa => pa.Key,
+                        p => p.Value.ToImmutableHashSet()), 
+                    trapBeHit.ToImmutableDictionary(pa => pa.Key,
                         pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
                             pp => pp.Value.ToImmutableHashSet())),
-                    playerTickSees, actOut.ToImmutableDictionary(p => p.Key, p => p.Value.ToImmutableArray()));
+                    playerTickSees, actOut.ToImmutableDictionary(p => p.Key, 
+                        p => p.Value.ToImmutableArray()));
 
             return valueTuple;
         }
@@ -390,6 +394,7 @@ namespace game_stuff
 // #if DEBUG
 //                     Console.Out.WriteLine($"team{bTeam}:have:{qSpace.Count()} body");
 // #endif
+                    // 如果是同队伍，则位置可见
                     if (characterBody.Team == bTeam)
                     {
                         var filterToGIdPsList =
@@ -405,6 +410,7 @@ namespace game_stuff
                         characterBodies.UnionWith(filterToGIdPsList);
                         characterBodies.UnionWith(ofType);
                     }
+                    //不是的话就要判定视野
                     else
                     {
                         var filterToGIdPsList =
@@ -479,7 +485,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        playerBeHit[key] = new HashSet<IRelationMsg> { buffDmgMsg };
+                        playerBeHit[key] = new HashSet<IRelationMsg> {buffDmgMsg};
                     }
                 }
 #if DEBUG
@@ -509,7 +515,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    teamRadarSee[id] = new HashSet<IPerceivable> { radarSee };
+                    teamRadarSee[id] = new HashSet<IPerceivable> {radarSee};
                 }
 
                 return;
@@ -525,7 +531,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        gidD[key] = new HashSet<IRelationMsg> { relationMsg };
+                        gidD[key] = new HashSet<IRelationMsg> {relationMsg};
                     }
 
                     break;
@@ -540,14 +546,14 @@ namespace game_stuff
                         }
                         else
                         {
-                            hBullets2[tid] = new HashSet<IRelationMsg> { relationMsg };
+                            hBullets2[tid] = new HashSet<IRelationMsg> {relationMsg};
                         }
                     }
                     else
                     {
                         var dictionary = new Dictionary<int, HashSet<IRelationMsg>>
                         {
-                            [tid] = new HashSet<IRelationMsg> { relationMsg }
+                            [tid] = new HashSet<IRelationMsg> {relationMsg}
                         };
                         tidD[tid] = dictionary;
                     }
@@ -573,7 +579,7 @@ namespace game_stuff
                         case ObjType.OtherTeam:
                             var selectMany = TeamToBodies.Where(pair => pair.Key != team)
                                 .SelectMany(x => hitMedia
-                                    .HitTeam(new[] { x.Value.playerBodies, x.Value.Traps }, BulletBlockMap)
+                                    .HitTeam(new[] {x.Value.playerBodies, x.Value.Traps}, BulletBlockMap)
                                 );
 
                             foreach (var hr in selectMany)
@@ -585,7 +591,7 @@ namespace game_stuff
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
-                                var enumerable = hitMedia.HitTeam(new[] { qSpace.playerBodies, qSpace.Traps },
+                                var enumerable = hitMedia.HitTeam(new[] {qSpace.playerBodies, qSpace.Traps},
                                         BulletBlockMap)
                                     ;
                                 foreach (var hitResult in enumerable)
@@ -597,7 +603,7 @@ namespace game_stuff
                             break;
                         case ObjType.AllTeam:
                             var results = TeamToBodies.Values.SelectMany(x =>
-                                hitMedia.HitTeam(new[] { x.playerBodies, x.Traps }, BulletBlockMap));
+                                hitMedia.HitTeam(new[] {x.playerBodies, x.Traps}, BulletBlockMap));
 
                             foreach (var hitResult in results)
                             {
@@ -803,7 +809,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        TeamToHitMedia[team] = new List<IHitMedia> { hitAbleMedia };
+                        TeamToHitMedia[team] = new List<IHitMedia> {hitAbleMedia};
                     }
 
                     return null;
@@ -999,7 +1005,7 @@ namespace game_stuff
                 foreach (var (characterBody, pos) in valueTuples)
                 {
                     characterBody.Teleport(pos);
-                    characterBody.MakeProtect((int)CommonConfig.OtherConfig.teleport_protect_time);
+                    characterBody.MakeProtect((int) CommonConfig.OtherConfig.teleport_protect_time);
                     GidToBody[characterBody.GetId()] = characterBody;
                 }
 

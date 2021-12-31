@@ -59,10 +59,15 @@ namespace game_bot
                 var canBeEnemies = perceivable.PlayerSee.TryGetValue(key, out var enumerable)
                     ? enumerable
                     : PlayerTickSense.Empty;
-                
+
                 var immutableHashSet = perceivable.CharacterHitSomeThing.TryGetValue(key, out var enumerable1)
                     ? enumerable1
                     : ImmutableHashSet<IHitMsg>.Empty;
+                var bulletHits =
+                    perceivable.CharacterGidBeHit.TryGetValue(key, out var beHit)
+                        ? beHit.OfType<BulletHit>().ToImmutableHashSet()
+                        : ImmutableHashSet<BulletHit>.Empty;
+                
                 var pathTop = SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)
                     ? top
                     : throw new KeyNotFoundException($"size {bot.BotBody.GetSize()}");

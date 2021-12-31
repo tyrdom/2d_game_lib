@@ -150,12 +150,12 @@ namespace game_bot
         public BotOpAndThink BotSimpleGoATick(PlayerTickSense perceivable,
             ImmutableHashSet<IHitMsg> immutableHashSet, PathTop? pathTop)
         {
-            var notMoveCanBeAndNeedSews = perceivable.Appear.OfType<ICanBeAndNeedHit>()
+            var notMoveCanBeAndNeedSews = perceivable.AppearNotMove.OfType<ICanBeAndNeedHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
-            var moveCanBeAndNeedSews = perceivable.Vanish.OfType<ICanBeAndNeedHit>();
+            var moveCanBeAndNeedSews = perceivable.VanishNotMove.OfType<ICanBeAndNeedHit>();
             Traps.UnionWith(notMoveCanBeAndNeedSews);
             Traps.ExceptWith(moveCanBeAndNeedSews);
-            var canBeEnemies = perceivable.OnChange.ToList();
+            var canBeEnemies = perceivable.OnChangingBodyAndRadarSee.ToList();
             var canBeHits = canBeEnemies.OfType<ICanBeAndNeedHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
 
