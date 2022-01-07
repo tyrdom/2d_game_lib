@@ -7,13 +7,20 @@ namespace game_bot
 {
     public static class NormalBotBehaviorTree
     {
-        public static bool CanUseWeapon(IAgentStatus[] botAgent, out Operate? operate)
+        public static Random Random { get; } = new Random();
+
+
+        public static (bool, Operate?) ComboAct(IAgentStatus[] botAgent)
+        {
+            return (false, null);
+        }
+
+        public static (bool, Operate?) CanUseWeapon(IAgentStatus[] botAgent)
         {
             var ofType = botAgent.OfType<TargetMsg>().ToArray();
             if (!ofType.Any())
             {
-                operate = null;
-                return false;
+                return (false, null);
             }
 
             var targetMsg = ofType.FirstOrDefault();
@@ -34,18 +41,18 @@ namespace game_bot
                 if (any)
                 {
                     var botMemories = botAgent.OfType<BotMemory>().First();
-                    operate = null;
+                    var goATick = botMemories.FirstSkillCtrl.NoThinkAct(Random);
+                    var operate = new Operate(skillAction: goATick);
+                    return (true, operate);
                 }
                 else
                 {
-                    operate = new Operate(skillAction: SkillAction.Switch);
+                    var operate = new Operate(skillAction: SkillAction.Switch);
+                    return (true, operate);
                 }
-
-                return true;
             }
 
-            operate = null;
-            return false;
+            return (false, null);
         }
 
         public static bool ActingOrStunFunc(
@@ -58,6 +65,8 @@ namespace game_bot
         }
 
         public static BehaviorTreeCondLeaf CantAct { get; } = new BehaviorTreeCondLeaf(ActingOrStunFunc);
+
+        public static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new BehaviorTreeActLeaf(CanUseWeapon);
 
         public static BehaviorTreeSelectBranch OpForbidden { get; }
             = new BehaviorTreeSelectBranch(

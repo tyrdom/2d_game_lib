@@ -179,7 +179,6 @@ namespace game_bot
 
         private Func<IAgentStatus[], bool> Func { get; }
 
-      
 
         public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
@@ -201,9 +200,14 @@ namespace game_bot
             Decorator = decorator;
         }
 
+        public BehaviorTreeActLeaf(Func<IAgentStatus[], (bool, Operate?)> func)
+        {
+            Func = func;
+            Decorator = new NoneDecorator();
+        }
+
         private Func<IAgentStatus[], (bool, Operate?)> Func { get; }
 
-        
 
         public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)

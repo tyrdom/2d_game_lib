@@ -37,6 +37,27 @@ namespace game_bot
         private int ShowDelayNow { get; set; }
         private int ShowDelayMax { get; }
 
+
+        public SkillAction? NoThinkAct(Random random)
+        {
+            if (DoNothingRestTick > 0)
+            {
+                return null;
+            }
+
+            var next = random.Next(Total);
+            var (isGetOk, things) = StackWeightToSkillActions.GetWeightThings(next);
+            if (isGetOk)
+            {
+                return things;
+            }
+
+            var i = random.Next(DoNotMinTick, DoNotMaxTick);
+            DoNothingRestTick = i;
+
+            return null;
+        }
+
         private bool NeedThink()
         {
             var needThink = DoNothingRestTick <= 0 && NowThinkAction == null;
@@ -48,7 +69,6 @@ namespace game_bot
 
         internal SkillAction GetComboAction(Random random)
         {
-
             return StackWeightToSkillActions.GetWeightThings(random.Next(ComboTotal)).things;
         }
 
