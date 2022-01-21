@@ -9,7 +9,6 @@ using game_stuff;
 
 namespace game_bot
 {
-    
     public class LocalBehaviorTreeBot
     {
         private IBehaviorTreeNode StartNode { get; }
@@ -56,6 +55,15 @@ namespace game_bot
 
             var rangeToWeapon = new BodyStatus(RangeToWeapon, BotBody);
             agentStatusList.Add(rangeToWeapon);
+
+
+            // is direct hit sth
+            var b = immutableHashSet.OfType<BulletHit>().Any();
+            if (b)
+            {
+                var hitSth = new HitSth();
+                agentStatusList.Add(hitSth);
+            }
 
             //GenLockTarget
             var notMoveCanBeAndNeedSews = playerTickSense.AppearNotMove.OfType<Trap>()
@@ -110,11 +118,16 @@ namespace game_bot
                 agentStatusList.Add(targetMsg);
             }
 
-            if (NowTraceTick > 0)
+
+            if (NowTraceTick > 0 && TracePt != null)
             {
-                var traceMsg = new TraceMsg(TracePt, TraceAim, this);
+                var traceMsg = new TraceToMsg(TracePt);
                 agentStatusList.Add(traceMsg);
+                if (TracePt.GetDistance(BotBody.GetAnchor()) < BotLocalConfig.CloseEnoughDistance)
+                {
+                }
             }
+
 
             TempTarget = nearestTarget;
 
@@ -167,17 +180,18 @@ namespace game_bot
         }
     }
 
-    public record TraceMsg : IAgentStatus
+    public record TraceToMsg : IAgentStatus
     {
-        public TwoDPoint? TracePt { get; }
-        public TwoDVector? TraceAim { get; }
-        public LocalBehaviorTreeBot LocalBehaviorTreeBot { get; }
+        public TwoDPoint TracePt { get; }
 
-        public TraceMsg(TwoDPoint? tracePt, TwoDVector? traceAim, LocalBehaviorTreeBot localBehaviorTreeBot)
+
+        public TraceToMsg(TwoDPoint tracePt)
         {
             TracePt = tracePt;
-            TraceAim = traceAim;
-            LocalBehaviorTreeBot = localBehaviorTreeBot;
         }
+    }
+
+    public record HitSth : IAgentStatus
+    {
     }
 }

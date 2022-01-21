@@ -1,4 +1,5 @@
 using System;
+using game_stuff;
 
 namespace game_bot
 {
@@ -9,6 +10,38 @@ namespace game_bot
         private int ComboNow { get; set; }
 
         private bool ComboOn { get; set; }
+
+        public SkillAction? NextSkillAction { get; set; }
+
+
+        public bool GenNextSkillAction(FirstSkillCtrl firstSkillCtrl, Random random)
+        {
+            var b = ComboNow < ComboMax;
+            if (b)
+            {
+                var comboAction = firstSkillCtrl.GetComboAction(random);
+                NextSkillAction = comboAction;
+                ComboNow++;
+            }
+            else
+            {
+                ComboNow = 0;
+            }
+
+            return b;
+        }
+
+        public bool TryGetNextSkillAction(out SkillAction? skillAction)
+        {
+            skillAction = null;
+            if (NextSkillAction == null)
+            {
+                return false;
+            }
+
+            skillAction = NextSkillAction;
+            return true;
+        }
 
         public ComboCtrl(int comboMax)
         {

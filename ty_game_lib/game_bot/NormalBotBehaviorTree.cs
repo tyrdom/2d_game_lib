@@ -7,12 +7,42 @@ namespace game_bot
 {
     public static class NormalBotBehaviorTree
     {
-        public static Random Random { get; } = new Random();
+        public static Random Random { get; } = new();
 
 
-        public static (bool, Operate?) ComboAct(IAgentStatus[] botAgent)
+        public static (bool, Operate?) GetComboAct(IAgentStatus[] botAgent)
         {
-            return (false, null);
+            var firstOrDefault = botAgent.OfType<BotMemory>().First();
+            return (firstOrDefault.ComboCtrl.TryGetNextSkillAction(out var skillAction)
+                , new Operate(skillAction: skillAction));
+        }
+
+        public static bool CheckHitSth(IAgentStatus[] botAgent)
+        {
+            var checkHitSth = botAgent.OfType<HitSth>().Any();
+
+
+            return checkHitSth;
+        }
+
+        public static (bool, Operate?) SetComboStatus(IAgentStatus[] botAgent)
+        {
+            var botMemory = botAgent.OfType<BotMemory>().First();
+            var botMemoryFirstSkillCtrl = botMemory.FirstSkillCtrl;
+            var genNextSkillAction = botMemory.ComboCtrl.GenNextSkillAction(botMemoryFirstSkillCtrl, Random);
+            return (genNextSkillAction, null);
+        }
+
+
+        public static (bool, Operate?) TargetApproach(IAgentStatus[] botAgent)
+        {
+            var ofType = botAgent.OfType<TargetMsg>().ToArray();
+            if (!ofType.Any())
+            {
+                return (false, null);
+            }
+
+            return (true, null);
         }
 
         public static (bool, Operate?) CanUseWeapon(IAgentStatus[] botAgent)
@@ -33,7 +63,7 @@ namespace game_bot
 
             var valueTuples = bodyStatus.NowRangeToWeapon.Where(x =>
                 x.range > distance && x.maxAmmoUse <= bodyStatusCharacterBody.CharacterStatus.GetAmmo()).ToArray();
-            if (valueTuples.Any())
+            if (!valueTuples.Any()) return (false, null);
             {
                 var characterStatusNowWeapon = bodyStatusCharacterBody.CharacterStatus.NowWeapon;
                 var any = valueTuples.Any(x => x.weaponIndex == characterStatusNowWeapon);
@@ -51,37 +81,77 @@ namespace game_bot
                     return (true, operate);
                 }
             }
-
-            return (false, null);
         }
 
-        public static bool ActingOrStunFunc(
+        public static bool InActingFunc(
             IAgentStatus[] botAgent)
         {
             var bodyStatus = botAgent.OfType<BodyStatus>().First();
             var characterBodyCharacterStatus = bodyStatus.CharacterBody.CharacterStatus;
-            var b = characterBodyCharacterStatus.NowCastAct != null || characterBodyCharacterStatus.StunBuff != null;
-            return b;
+            return characterBodyCharacterStatus.NowCastAct != null;
         }
 
-        public static BehaviorTreeCondLeaf CantAct { get; } = new BehaviorTreeCondLeaf(ActingOrStunFunc);
+        public static bool IsStunFunc(
+            IAgentStatus[] botAgent)
+        {
+            var bodyStatus = botAgent.OfType<BodyStatus>().First();
+            var characterBodyCharacterStatus = bodyStatus.CharacterBody.CharacterStatus;
+            return characterBodyCharacterStatus.StunBuff != null;
+        }
 
-        public static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new BehaviorTreeActLeaf(CanUseWeapon);
+        public static bool IsDeadFunc(
+            IAgentStatus[] botAgent)
+        {
+            var bodyStatus = botAgent.OfType<BodyStatus>().First();
+            var characterBodyCharacterStatus = bodyStatus.CharacterBody.CharacterStatus;
+            var isDeadOrCantDmg = characterBodyCharacterStatus.SurvivalStatus.IsDead();
+            return isDeadOrCantDmg;
+        }
+
+        public static BehaviorTreeCondLeaf IsStun { get; } = new(IsStunFunc);
+
+        public static BehaviorTreeCondLeaf IsActing { get; } = new(InActingFunc);
+
+        public static BehaviorTreeCondLeaf IsDead { get; } = new(IsDeadFunc);
+
+        public static BehaviorTreeCondLeaf IsHitSth { get; } = new(CheckHitSth);
+
+        public static BehaviorTreeActLeaf SetCombo { get; } = new(SetComboStatus);
+
+        public static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new(CanUseWeapon);
+
+        public static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new(new AlwaysDecorator(true),
+            new IBehaviorTreeNode[]
+            {
+                IsHitSth, SetCombo
+            });
+
+        public static BehaviorTreeSequenceBranch ActingBranch { get; } =
+            new(new IBehaviorTreeNode[]
+            {
+                IsActing, ComboSetBranch
+            });
+
 
         public static BehaviorTreeSelectBranch OpForbidden { get; }
-            = new BehaviorTreeSelectBranch(
+            = new(
                 new IBehaviorTreeNode[]
                 {
-                    CantAct
+                    IsStun, IsDead, ActingBranch
                 });
+
+        public static BehaviorTreeActLeaf
+            GetCombo { get; } = new(GetComboAct);
 
         public static BehaviorTreeSelectBranch OpActs { get; }
-            = new BehaviorTreeSelectBranch(
+            = new(
                 new IBehaviorTreeNode[]
                 {
+                    GetCombo, CanUseWeaponAct ,
                 });
 
-        public static BehaviorTreeSelectBranch Root { get; } = new BehaviorTreeSelectBranch(
+
+        public static BehaviorTreeSelectBranch Root { get; } = new(
             new IBehaviorTreeNode[]
             {
                 OpForbidden, OpActs

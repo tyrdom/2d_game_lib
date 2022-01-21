@@ -112,6 +112,21 @@ namespace game_bot
         }
     }
 
+    public class AlwaysDecorator : IDecorator
+    {
+        public AlwaysDecorator(bool alwaysSet)
+        {
+            AlwaysSet = alwaysSet;
+        }
+
+        private bool AlwaysSet { get; }
+
+        public bool UseDecorator(bool nodeResult, out bool nextLoopThisStart)
+        {
+            nextLoopThisStart = false;
+            return AlwaysSet;
+        }
+    }
 
     public interface IDecorator
     {
