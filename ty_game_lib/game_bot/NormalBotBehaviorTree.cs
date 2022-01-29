@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Transactions;
+using collision_and_rigid;
 using game_stuff;
 
 namespace game_bot
@@ -21,7 +22,6 @@ namespace game_bot
         {
             var checkHitSth = botAgent.OfType<HitSth>().Any();
 
-
             return checkHitSth;
         }
 
@@ -33,6 +33,27 @@ namespace game_bot
             return (genNextSkillAction, null);
         }
 
+        public static (bool, Operate?) Trace(IAgentStatus[] botAgents)
+        {
+            var traceToPtMsg = botAgents.OfType<TraceToPtMsg>().FirstOrDefault();
+            if (traceToPtMsg != null)
+            {
+                var twoDPoint = traceToPtMsg.TracePt;
+                var bodyStatus = botAgents.OfType<BodyStatus>().First();
+                var dPoint = bodyStatus.CharacterBody.GetAnchor();
+                var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
+                var operate = new Operate(move: twoDVector);
+                return (true, operate);
+            }
+
+            var traceToAimMsg = botAgents.OfType<TraceToAimMsg>().FirstOrDefault();
+            if (traceToAimMsg == null) return (false, null);
+            {
+                var twoDVector = traceToAimMsg.Aim;
+                var operate = new Operate(twoDVector);
+                return (true, operate);
+            }
+        }
 
         public static (bool, Operate?) TargetApproach(IAgentStatus[] botAgent)
         {
@@ -42,10 +63,16 @@ namespace game_bot
                 return (false, null);
             }
 
-            return (true, null);
+            var targetMsg = ofType.First();
+            var twoDPoint = targetMsg.Target.GetAnchor();
+            var bodyStatus = botAgent.OfType<BodyStatus>().First();
+            var dPoint = bodyStatus.CharacterBody.GetAnchor();
+            var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
+            var operate = new Operate(move: twoDVector);
+            return (true, operate);
         }
 
-        public static (bool, Operate?) CanUseWeapon(IAgentStatus[] botAgent)
+        public static (bool, Operate?) CanUseWeaponToTarget(IAgentStatus[] botAgent)
         {
             var ofType = botAgent.OfType<TargetMsg>().ToArray();
             if (!ofType.Any())
@@ -118,7 +145,12 @@ namespace game_bot
 
         public static BehaviorTreeActLeaf SetCombo { get; } = new(SetComboStatus);
 
-        public static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new(CanUseWeapon);
+        public static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new(CanUseWeaponToTarget);
+
+
+        public static BehaviorTreeActLeaf ApproachingAct { get; } = new(TargetApproach);
+
+        public static BehaviorTreeActLeaf TraceAct { get; } = new BehaviorTreeActLeaf(Trace);
 
         public static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new(new AlwaysDecorator(true),
             new IBehaviorTreeNode[]
@@ -147,7 +179,7 @@ namespace game_bot
             = new(
                 new IBehaviorTreeNode[]
                 {
-                    GetCombo, CanUseWeaponAct ,
+                    GetCombo, CanUseWeaponAct, ApproachingAct, TraceAct,
                 });
 
 

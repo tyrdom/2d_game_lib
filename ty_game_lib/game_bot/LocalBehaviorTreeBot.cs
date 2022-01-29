@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace game_bot
 
         private HashSet<Trap> TrapsRecords { get; }
 
+        private List<TwoDPoint> TempPath { get; set; }
+
         private static List<(float range, int maxAmmoUse, int weaponIndex)> GetRangeAmmoWeapon(
             Dictionary<int, Weapon> weapons,
             size bodySize)
@@ -52,7 +55,7 @@ namespace game_bot
             var agentStatusList = new List<IAgentStatus>();
 
             //bodyStatus
-
+            var startPt = BotBody.GetAnchor();
             var rangeToWeapon = new BodyStatus(RangeToWeapon, BotBody);
             agentStatusList.Add(rangeToWeapon);
 
@@ -65,6 +68,7 @@ namespace game_bot
                 agentStatusList.Add(hitSth);
             }
 
+            TraceToPtMsg? traceMsg = null;
             //GenLockTarget
             var notMoveCanBeAndNeedSews = playerTickSense.AppearNotMove.OfType<Trap>()
                 .Where(x => x.GetTeam() != BotBody.Team);
@@ -72,7 +76,7 @@ namespace game_bot
             TrapsRecords.UnionWith(notMoveCanBeAndNeedSews);
             TrapsRecords.ExceptWith(moveCanBeAndNeedSews);
             var canBeEnemies = playerTickSense.OnChangingBodyAndRadarSee.ToList();
-            var radarSees = canBeEnemies.OfType<RadarSee>();
+
             var canBeHits = canBeEnemies.OfType<ICanBeAndNeedHit>()
                 .Where(x => x.GetTeam() != BotBody.Team);
 
@@ -116,23 +120,106 @@ namespace game_bot
                 NowTraceTick = 0;
                 var targetMsg = new TargetMsg(nearestTarget);
                 agentStatusList.Add(targetMsg);
+                TracePt = null;
+                TraceAim = null;
             }
 
 
-            if (NowTraceTick > 0 && TracePt != null)
+            if (NowTraceTick > 0)
             {
-                var traceMsg = new TraceToMsg(TracePt);
-                agentStatusList.Add(traceMsg);
-                if (TracePt.GetDistance(BotBody.GetAnchor()) < BotLocalConfig.CloseEnoughDistance)
+                if (TracePt == null || TracePt.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
                 {
+                    if (TraceAim != null)
+                    {
+                        var traceToAimMsg = new TraceToAimMsg(TraceAim);
+                        agentStatusList.Add(traceToAimMsg);
+                    }
+
+                    NowTraceTick--;
+                }
+                else
+                {
+                    traceMsg = new TraceToPtMsg(TracePt);
                 }
             }
 
-
             TempTarget = nearestTarget;
+            var ctrlPoints = PatrolCtrl.Points;
+            if (TempTarget == null && NowTraceTick <= 0)
+            {
+                var radarSees = canBeEnemies.OfType<RadarSee>();
+                var enumerable = radarSees as RadarSee[] ?? radarSees.ToArray();
+                var any = enumerable.Any();
+                if (any)
+                {
+                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?) null, Nearest);
+                    if (canBeEnemy != null)
+                    {
+                        var twoDPoint = canBeEnemy.GetAnchor();
+                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
+                        TempPath = twoDPoints.ToList();
+                    }
+                }
+                else
+                {
+                    var twoDPoint = ctrlPoints.Aggregate((TwoDPoint?) null, Nearest);
+                    if (twoDPoint != null)
+                    {
+                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
+                        TempPath = twoDPoints.ToList();
+                    }
+                }
+            }
 
+            if (TempPath.Any())
+            {
+                var twoDPoint = TempPath.First();
+                if (twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
+                {
+                    TempPath.RemoveAt(0);
+                }
+                else
+                {
+                    traceMsg = new TraceToPtMsg(twoDPoint);
+                }
+            }
+            else
+            {
+                var p = -1;
+                for (var i = 0; i < ctrlPoints.Length; i++)
+                {
+                    var twoDPoint = ctrlPoints[i];
+                    var b1 = twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance;
+                    if (!b1) continue;
+                    p = i;
+                    break;
+                }
+
+                if (p >= 0)
+                {
+                    PatrolCtrl.SetNowPt(p);
+
+                    var ptNum = PatrolCtrl.NextPt(10).ToList();
+                    TempPath = ptNum;
+                }
+            }
+
+            if (traceMsg != null) agentStatusList.Add(traceMsg);
 
             return agentStatusList.ToArray();
+        }
+
+        private TwoDPoint Nearest(TwoDPoint? s, TwoDPoint x)
+        {
+            if (s == null)
+            {
+                return x;
+            }
+
+            var distance1 = BotBody.GetAnchor().GetDistance(s);
+            var distance2 = BotBody.GetAnchor().GetDistance(x);
+            var canBeHit = distance1 > distance2 ? x : s;
+            return canBeHit;
         }
 
         private ICanBeEnemy Nearest(ICanBeEnemy? s, ICanBeEnemy x)
@@ -180,15 +267,25 @@ namespace game_bot
         }
     }
 
-    public record TraceToMsg : IAgentStatus
+    public record TraceToPtMsg : IAgentStatus
     {
         public TwoDPoint TracePt { get; }
 
 
-        public TraceToMsg(TwoDPoint tracePt)
+        public TraceToPtMsg(TwoDPoint tracePt)
         {
             TracePt = tracePt;
         }
+    }
+
+    public record TraceToAimMsg : IAgentStatus
+    {
+        public TraceToAimMsg(TwoDVector aim)
+        {
+            Aim = aim;
+        }
+
+        public TwoDVector Aim { get; }
     }
 
     public record HitSth : IAgentStatus

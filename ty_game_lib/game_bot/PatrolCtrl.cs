@@ -7,7 +7,7 @@ namespace game_bot
 {
     public class PatrolCtrl
     {
-        private TwoDPoint[] Points { get; }
+        public TwoDPoint[] Points { get; }
         private int NowToPt { get; set; }
 
         public PatrolCtrl(List<TwoDPoint> rawPoints)
@@ -27,8 +27,7 @@ namespace game_bot
 
         public TwoDPoint? GetNowPt()
         {
-            return       Points.Any() ? Points[NowToPt] : null;
-      
+            return Points.Any() ? Points[NowToPt] : null;
         }
 
 
@@ -61,6 +60,11 @@ namespace game_bot
             var dPoints = twoDPoints.Skip(start).Take(num);
             NowToPt = end % Points.Length;
             return dPoints.ToArray();
+        }
+
+        public void SetNowPt(int i)
+        {
+            NowToPt = i;
         }
     }
 }
