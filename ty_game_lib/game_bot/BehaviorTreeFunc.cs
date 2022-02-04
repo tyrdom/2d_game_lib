@@ -6,7 +6,7 @@ using game_stuff;
 
 namespace game_bot
 {
-    public static class NormalBotBehaviorTree
+    public static class BehaviorTreeFunc
     {
         public static Random Random { get; } = new();
 
@@ -134,61 +134,6 @@ namespace game_bot
             var isDeadOrCantDmg = characterBodyCharacterStatus.SurvivalStatus.IsDead();
             return isDeadOrCantDmg;
         }
-
-        public static BehaviorTreeCondLeaf IsStun { get; } = new(IsStunFunc);
-
-        public static BehaviorTreeCondLeaf IsActing { get; } = new(InActingFunc);
-
-        public static BehaviorTreeCondLeaf IsDead { get; } = new(IsDeadFunc);
-
-        public static BehaviorTreeCondLeaf IsHitSth { get; } = new(CheckHitSth);
-
-        public static BehaviorTreeActLeaf SetCombo { get; } = new(SetComboStatus);
-
-        public static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new(CanUseWeaponToTarget);
-
-
-        public static BehaviorTreeActLeaf ApproachingAct { get; } = new(TargetApproach);
-
-        public static BehaviorTreeActLeaf TraceAct { get; } = new BehaviorTreeActLeaf(Trace);
-
-        public static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new(new AlwaysDecorator(true),
-            new IBehaviorTreeNode[]
-            {
-                IsHitSth, SetCombo
-            });
-
-        public static BehaviorTreeSequenceBranch ActingBranch { get; } =
-            new(new IBehaviorTreeNode[]
-            {
-                IsActing, ComboSetBranch
-            });
-
-
-        public static BehaviorTreeSelectBranch OpForbidden { get; }
-            = new(
-                new IBehaviorTreeNode[]
-                {
-                    IsStun, IsDead, ActingBranch
-                });
-
-        public static BehaviorTreeActLeaf
-            GetCombo { get; } = new(GetComboAct);
-
-        public static BehaviorTreeSelectBranch OpActs { get; }
-            = new(
-                new IBehaviorTreeNode[]
-                {
-                    GetCombo, CanUseWeaponAct, ApproachingAct, TraceAct,
-                });
-
-
-        public static BehaviorTreeSelectBranch Root { get; } = new(
-            new IBehaviorTreeNode[]
-            {
-                OpForbidden, OpActs
-            }
-        );
     }
 
     public struct BotMemory : IAgentStatus

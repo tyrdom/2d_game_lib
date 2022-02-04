@@ -10,11 +10,8 @@ using game_stuff;
 
 namespace game_bot
 {
-    public class LocalBehaviorTreeBot
+    public class LocalBehaviorTreeBotAgent
     {
-        private IBehaviorTreeNode StartNode { get; }
-
-
         public PatrolCtrl PatrolCtrl { get; }
         public ComboCtrl ComboCtrl { get; }
         public FirstSkillCtrl FirstSkillCtrl { get; }
@@ -83,9 +80,9 @@ namespace game_bot
             ICanBeAndNeedHit? Func(ICanBeAndNeedHit? s, ICanBeAndNeedHit x) =>
                 Nearest(s, x) is ICanBeAndNeedHit canBeAndNeedHit ? canBeAndNeedHit : null;
 
-            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?) null,
+            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?)null,
                 Func);
-            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?) null, Func);
+            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?)null, Func);
             if (nearestTarget == null) //没有目标的时候
             {
                 if (TempTarget == null)
@@ -118,6 +115,7 @@ namespace game_bot
             else
             {
                 NowTraceTick = 0;
+                TempPath.Clear();
                 var targetMsg = new TargetMsg(nearestTarget);
                 agentStatusList.Add(targetMsg);
                 TracePt = null;
@@ -129,6 +127,7 @@ namespace game_bot
             {
                 if (TracePt == null || TracePt.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
                 {
+                    TracePt = null;
                     if (TraceAim != null)
                     {
                         var traceToAimMsg = new TraceToAimMsg(TraceAim);
@@ -145,62 +144,70 @@ namespace game_bot
 
             TempTarget = nearestTarget;
             var ctrlPoints = PatrolCtrl.Points;
-            if (TempTarget == null && NowTraceTick <= 0)
+            if (TempTarget == null && TracePt == null)
             {
                 var radarSees = canBeEnemies.OfType<RadarSee>();
                 var enumerable = radarSees as RadarSee[] ?? radarSees.ToArray();
                 var any = enumerable.Any();
                 if (any)
                 {
-                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?) null, Nearest);
+                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?)null, Nearest);
                     if (canBeEnemy != null)
                     {
                         var twoDPoint = canBeEnemy.GetAnchor();
-                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
+                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
                         TempPath = twoDPoints.ToList();
+                    }
+                }
+
+
+                if (TempPath.Any())
+                {
+                    var twoDPoint = TempPath.First();
+                    if (twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
+                    {
+                        TempPath.RemoveAt(0);
+                    }
+                    else
+                    {
+                        traceMsg = new TraceToPtMsg(twoDPoint);
                     }
                 }
                 else
                 {
-                    var twoDPoint = ctrlPoints.Aggregate((TwoDPoint?) null, Nearest);
+                    var p = -1;
+                    var l = -1f;
+                    for (var i = 0; i < ctrlPoints.Length; i++)
+                    {
+                        var twoDPoint2 = ctrlPoints[i];
+                        var distance = twoDPoint2.GetDistance(startPt);
+                        var b2 = distance < l || l < 0;
+                        if (!b2) continue;
+                        p = i;
+                        l = distance;
+                    }
+
+                    var twoDPoint = p < 0 ? null : ctrlPoints[p];
+
                     if (twoDPoint != null)
                     {
-                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
-                        TempPath = twoDPoints.ToList();
+                        var b1 = twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance;
+                        if (!b1)
+                        {
+                            var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
+                            TempPath = twoDPoints.ToList();
+                        }
+                        else
+                        {
+                            var random = BehaviorTreeFunc.Random;
+                            var next = random.Next(PatrolCtrl.GetPtNum());
+                            var ptNum = PatrolCtrl.TakePt(p, next).ToList();
+                            TempPath = ptNum;
+                            var nextDouble = (float)random.NextDouble() * MathTools.Pi();
+                            TraceAim = new TwoDVector(MathTools.Cos(nextDouble), MathTools.Sin(nextDouble));
+                            NowTraceTick = CommonConfig.OtherConfig.BotAimTraceDefaultTime;
+                        }
                     }
-                }
-            }
-
-            if (TempPath.Any())
-            {
-                var twoDPoint = TempPath.First();
-                if (twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
-                {
-                    TempPath.RemoveAt(0);
-                }
-                else
-                {
-                    traceMsg = new TraceToPtMsg(twoDPoint);
-                }
-            }
-            else
-            {
-                var p = -1;
-                for (var i = 0; i < ctrlPoints.Length; i++)
-                {
-                    var twoDPoint = ctrlPoints[i];
-                    var b1 = twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance;
-                    if (!b1) continue;
-                    p = i;
-                    break;
-                }
-
-                if (p >= 0)
-                {
-                    PatrolCtrl.SetNowPt(p);
-
-                    var ptNum = PatrolCtrl.NextPt(10).ToList();
-                    TempPath = ptNum;
                 }
             }
 

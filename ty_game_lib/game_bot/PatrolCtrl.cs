@@ -37,6 +37,29 @@ namespace game_bot
         }
 
 
+        public IEnumerable<TwoDPoint> TakePt(int start, int num)
+        {
+            if (!Points.Any())
+            {
+                return Points;
+            }
+
+
+            var end = start + num;
+
+            var pointsLength = end / Points.Length;
+            var twoDPoints = Points.ToList();
+            for (var i = 0; i < pointsLength; i++)
+            {
+                twoDPoints.AddRange(Points);
+            }
+#if DEBUG
+            Console.Out.WriteLine($"get patrol num {twoDPoints.Count}");
+#endif
+            var dPoints = twoDPoints.Skip(start).Take(num);
+            return dPoints.ToArray();
+        }
+
         public IEnumerable<TwoDPoint> NextPt(int num)
         {
             if (!Points.Any())
@@ -48,7 +71,7 @@ namespace game_bot
 
             var end = NowToPt + num;
 
-            var pointsLength = (start + end) / Points.Length;
+            var pointsLength = end / Points.Length;
             var twoDPoints = Points.ToList();
             for (var i = 0; i < pointsLength; i++)
             {
