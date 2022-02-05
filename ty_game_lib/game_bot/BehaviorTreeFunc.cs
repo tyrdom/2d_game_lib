@@ -1,15 +1,23 @@
 using System;
 using System.Linq;
-using System.Transactions;
 using collision_and_rigid;
 using game_stuff;
-
+using game_config;
 namespace game_bot
 {
     public static class BehaviorTreeFunc
     {
         public static Random Random { get; } = new();
-
+        public static SkillAction CovOp(botOp botOp)
+        {
+            return botOp switch
+            {
+                botOp.op1 => SkillAction.Op1,
+                botOp.op2 => SkillAction.Op2,
+                botOp.none => SkillAction.Op1,
+                _ => throw new ArgumentOutOfRangeException(nameof(botOp), botOp, null)
+            };
+        }
 
         public static (bool, Operate?) GetComboAct(IAgentStatus[] botAgent)
         {
@@ -80,7 +88,7 @@ namespace game_bot
                 return (false, null);
             }
 
-            var targetMsg = ofType.FirstOrDefault();
+            var targetMsg = ofType.First();
             var bodyStatus = botAgent.OfType<BodyStatus>().FirstOrDefault();
 
             var twoDPoint = targetMsg.Target.GetAnchor();
@@ -136,10 +144,5 @@ namespace game_bot
         }
     }
 
-    public struct BotMemory : IAgentStatus
-    {
-        public PatrolCtrl PatrolCtrl { get; }
-        public ComboCtrl ComboCtrl { get; }
-        public FirstSkillCtrl FirstSkillCtrl { get; }
-    }
+  
 }

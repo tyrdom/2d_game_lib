@@ -19,7 +19,7 @@ namespace game_bot
 
         private ICanBeEnemy? TempTarget { get; set; }
 
-        public List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
+        private List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
 
         private TwoDPoint? TracePt { get; set; }
 
@@ -30,6 +30,48 @@ namespace game_bot
         private HashSet<Trap> TrapsRecords { get; }
 
         private List<TwoDPoint> TempPath { get; set; }
+
+
+        public static LocalBehaviorTreeBotAgent GenByConfig(battle_bot battleBot, CharacterBody body,
+            PathTop? pathTop)
+        {
+            var polyCount = pathTop?.GetPolyCount() ?? 0;
+            var random = BehaviorTreeFunc.Random;
+            var next = random.Next((int)(polyCount * BotLocalConfig.PatrolMin),
+                (int)(polyCount * BotLocalConfig.PatrolMax + 1));
+            var twoDPoints = pathTop?.GetPatrolPts(random, next) ?? new List<TwoDPoint>();
+            var patrolCtrl = new PatrolCtrl(twoDPoints);
+            var battleNpcActWeight = battleBot.ActWeight;
+            var weight = battleNpcActWeight.FirstOrDefault(x => x.op == botOp.none)?.weight ?? 0;
+            var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
+                .Select(x => (x.weight, BehaviorTreeFunc.CovOp(x.op)));
+            var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
+                (int)(battleBot.DoNotMinMaxTime.item2),
+                (int)battleBot.DoNotMinMaxTime.item1,
+                (int)battleBot.ActShowDelayTime);
+            var comboCtrl = new ComboCtrl(battleBot.MaxCombo);
+            var valueTuples2 = GetRangeAmmoWeapon(body.CharacterStatus.GetWeapons(), body.GetSize());
+            var localBehaviorTreeBotAgent =
+                new LocalBehaviorTreeBotAgent(patrolCtrl, comboCtrl, firstSkillCtrl, body, valueTuples2);
+            return localBehaviorTreeBotAgent;
+        }
+
+        public LocalBehaviorTreeBotAgent(PatrolCtrl patrolCtrl, ComboCtrl comboCtrl, FirstSkillCtrl firstSkillCtrl,
+            CharacterBody botBody,
+            List<(float range, int maxAmmoUse, int weaponIndex)> rangeToWeapon)
+        {
+            PatrolCtrl = patrolCtrl;
+            ComboCtrl = comboCtrl;
+            FirstSkillCtrl = firstSkillCtrl;
+            BotBody = botBody;
+            TempTarget = null;
+            RangeToWeapon = rangeToWeapon;
+            TracePt = null;
+            TraceAim = null;
+            NowTraceTick = 0;
+            TrapsRecords = new HashSet<Trap>();
+            TempPath = new List<TwoDPoint>();
+        }
 
         private static List<(float range, int maxAmmoUse, int weaponIndex)> GetRangeAmmoWeapon(
             Dictionary<int, Weapon> weapons,
@@ -56,7 +98,11 @@ namespace game_bot
             var rangeToWeapon = new BodyStatus(RangeToWeapon, BotBody);
             agentStatusList.Add(rangeToWeapon);
 
+            //botMemory
 
+            var botMemory = new BotMemory(ComboCtrl, FirstSkillCtrl);
+            agentStatusList.Add(botMemory);
+            
             // is direct hit sth
             var b = immutableHashSet.OfType<BulletHit>().Any();
             if (b)
@@ -264,7 +310,7 @@ namespace game_bot
         }
     }
 
-    public readonly struct TargetMsg : IAgentStatus
+    public class TargetMsg : IAgentStatus
     {
         public ICanBeAndNeedHit Target { get; }
 
@@ -295,7 +341,17 @@ namespace game_bot
         public TwoDVector Aim { get; }
     }
 
-    public record HitSth : IAgentStatus
+    public record BotMemory : IAgentStatus
     {
+        public ComboCtrl ComboCtrl { get; }
+        public FirstSkillCtrl FirstSkillCtrl { get; }
+
+        public BotMemory(ComboCtrl comboCtrl, FirstSkillCtrl firstSkillCtrl)
+        {
+            ComboCtrl = comboCtrl;
+            FirstSkillCtrl = firstSkillCtrl;
+        }
     }
+
+    public record HitSth : IAgentStatus;
 }

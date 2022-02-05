@@ -71,7 +71,7 @@ namespace game_bot
             var battleNpcActWeight = battleBot.ActWeight;
             var weight = battleNpcActWeight.FirstOrDefault(x => x.op == botOp.none)?.weight ?? 0;
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
-                .Select(x => (x.weight, CovOp(x.op)));
+                .Select(x => (x.weight, BehaviorTreeFunc.CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
                 (int) (battleBot.DoNotMinMaxTime.item2),
                 (int) battleBot.DoNotMinMaxTime.item1,
@@ -80,16 +80,7 @@ namespace game_bot
             return new SimpleBot(body, random, twoDPoints, firstSkillCtrl, battleBot.MaxCombo);
         }
 
-        private static SkillAction CovOp(botOp botOp)
-        {
-            return botOp switch
-            {
-                botOp.op1 => SkillAction.Op1,
-                botOp.op2 => SkillAction.Op2,
-                botOp.none => SkillAction.Op1,
-                _ => throw new ArgumentOutOfRangeException(nameof(botOp), botOp, null)
-            };
-        }
+     
 
         private SimpleBot(CharacterBody botBody, Random random, List<TwoDPoint> patrolPts,
             FirstSkillCtrl firstSkillCtrl,

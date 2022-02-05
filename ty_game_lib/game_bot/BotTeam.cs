@@ -9,7 +9,7 @@ using game_stuff;
 
 namespace game_bot
 {
-    [Serializable]
+    
     public class BotTeam
     {
         private ImmutableDictionary<size, PathTop> SizeToNaviMap { get; set; }
@@ -17,6 +17,9 @@ namespace game_bot
 
         public Dictionary<int, BotOpAndThink> TempOpThinks { get; private set; }
 
+        public HashSet<NormalBehaviorBot> NormalBehaviorBots { get; set; }
+
+        public Dictionary<int, Operate> TempOperate { get; private set; }
         public BotTeam()
         {
             SimpleBots = new HashSet<SimpleBot>();
