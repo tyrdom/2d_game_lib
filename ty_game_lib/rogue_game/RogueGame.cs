@@ -323,10 +323,10 @@ namespace rogue_game
                 return RogueGameGoTickResult.Empty2;
             }
 
-            foreach (var botTeamTempOpThink in BotTeam.TempOpThinks.Where(botTeamTempOpThink =>
-                botTeamTempOpThink.Value.Operate != null))
+            foreach (var botTeamTempOpThink in BotTeam.TempOperate.Where(botTeamTempOpThink =>
+                botTeamTempOpThink.Value!= null))
             {
-                opDic[botTeamTempOpThink.Key] = botTeamTempOpThink.Value.Operate!;
+                opDic[botTeamTempOpThink.Key] = botTeamTempOpThink.Value!;
             }
 
             var playGroundGoTickResult = NowPlayMap.PlayGroundGoATick(opDic);

@@ -148,10 +148,10 @@ namespace lib_unit_test
 
             for (var i = 0; i < 10000; i++)
             {
-                Console.Out.WriteLine($"op num {botTeam.TempOpThinks.Count}");
+                Console.Out.WriteLine($"op num {botTeam.TempOperate.Count}");
 
-                var keyValuePairs = botTeam.TempOpThinks.Where(botTeamTempOpThink =>
-                    botTeamTempOpThink.Value.Operate != null).ToDictionary(p => p.Key, p => p.Value.Operate!);
+                var keyValuePairs = botTeam.TempOperate.Where(botTeamTempOpThink =>
+                    botTeamTempOpThink.Value != null).ToDictionary(p => p.Key, p => p.Value);
                 Console.Out.WriteLine($"~~~~{keyValuePairs.FirstOrDefault().Value?.GetMove() ?? TwoDVector.Zero()}");
                 var playGroundGoTickResult = genEmptyPveMap.PlayGroundGoATick(keyValuePairs);
                 botTeam.AllBotsGoATick(playGroundGoTickResult);

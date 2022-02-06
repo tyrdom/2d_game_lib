@@ -15,7 +15,7 @@ namespace game_bot
         public PatrolCtrl PatrolCtrl { get; }
         public ComboCtrl ComboCtrl { get; }
         public FirstSkillCtrl FirstSkillCtrl { get; }
-        private CharacterBody BotBody { get; }
+        public CharacterBody BotBody { get; }
 
         private ICanBeEnemy? TempTarget { get; set; }
 

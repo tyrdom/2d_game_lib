@@ -73,17 +73,18 @@ namespace rogue_game
         private int[] BossIdToSpawn { get; }
 
 
-        private HashSet<(SimpleBot simpleBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints,
+        private HashSet<(NormalBehaviorBot normalBehaviorBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints,
             Random random,
             BotTeam botTeam, bool isBoss, int nowChapterExtraPassiveNum)
         {
             var genBattleNpcAndBot = Enumerable.Range(0, ints.Count)
                 .Select(x =>
                 {
-                    var (battleNpc, boId) = BattleNpc.GenById(ints[x],
+                    var id = ints[x];
+                    var battleNpc = BattleNpc.GenById(id,
                         (1 + PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 100,
                         random, nowChapterExtraPassiveNum);
-                    var simpleBot = SimpleBot.GenById(boId, battleNpc.CharacterBody, random,
+                    var simpleBot = NormalBehaviorBot.GenById(id, battleNpc.CharacterBody,
                         botTeam.GetNaviMap(battleNpc.CharacterBody.GetSize()));
 
 
@@ -99,9 +100,9 @@ namespace rogue_game
             var battleNpc = GenBattleNpcWithBot(BossIdToSpawn, random, botTeam, true, nowChapterExtraPassiveNum);
             Bosses = battleNpc.Select(x => x.Item2).IeToHashSet();
             var valueTuples = genBattleNpc.Union(battleNpc)
-                .Select(x => (x.simpleBot, x.battleNpc.CharacterBody,
-                    x.simpleBot.GetStartPt() ?? PlayGround.GetEntrancePoint())).IeToHashSet();
-            var battleNpcS = valueTuples.Select(x => x.simpleBot);
+                .Select(x => (x.normalBehaviorBot, x.battleNpc.CharacterBody,
+                    x.normalBehaviorBot.GetStartPt() ?? PlayGround.GetEntrancePoint())).IeToHashSet();
+            var battleNpcS = valueTuples.Select(x => x.normalBehaviorBot);
             botTeam.SetBots(battleNpcS);
             TeleportToThisMap(valueTuples.Select(x => (x.CharacterBody, x.Item3)));
         }

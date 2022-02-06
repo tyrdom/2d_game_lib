@@ -9,22 +9,22 @@ using game_stuff;
 
 namespace game_bot
 {
-    
     public class BotTeam
     {
         private ImmutableDictionary<size, PathTop> SizeToNaviMap { get; set; }
-        private HashSet<SimpleBot> SimpleBots { get; set; }
-
-        public Dictionary<int, BotOpAndThink> TempOpThinks { get; private set; }
+        // private HashSet<SimpleBot> SimpleBots { get; set; }
+        //
+        // public Dictionary<int, BotOpAndThink> TempOpThinks { get; private set; }
 
         public HashSet<NormalBehaviorBot> NormalBehaviorBots { get; set; }
 
-        public Dictionary<int, Operate> TempOperate { get; private set; }
+        public Dictionary<int, Operate?> TempOperate { get; private set; }
+
         public BotTeam()
         {
-            SimpleBots = new HashSet<SimpleBot>();
+            NormalBehaviorBots = new HashSet<NormalBehaviorBot>();
             SizeToNaviMap = new Dictionary<size, PathTop>().ToImmutableDictionary();
-            TempOpThinks = new Dictionary<int, BotOpAndThink>();
+            TempOperate = new Dictionary<int, Operate?>();
         }
 
         public void SetNaviMaps(WalkMap walkMap)
@@ -45,45 +45,47 @@ namespace game_bot
         public void SetBots(IEnumerable<(int id, CharacterBody characterBody)> valueTuples, Random random)
         {
             var simpleBots = valueTuples.Select(x =>
-                SimpleBot.GenById(x.Item1, x.Item2, random,
+                NormalBehaviorBot.GenById(x.Item1, x.Item2,
                     SizeToNaviMap.TryGetValue(x.Item2.GetSize(), out var top)
                         ? top
                         : throw new KeyNotFoundException()));
 
 
-            SimpleBots = simpleBots.IeToHashSet();
+            NormalBehaviorBots = simpleBots.IeToHashSet();
         }
 
         public void AllBotsGoATick(PlayGroundGoTickResult perceivable)
         {
-            var botOpAndThinks = SimpleBots.ToDictionary(bot => bot.BotBody.GetId(), bot =>
-            {
-                var key = bot.BotBody.GetId();
-                var canBeEnemies = perceivable.PlayerSee.TryGetValue(key, out var enumerable)
-                    ? enumerable
-                    : PlayerTickSense.Empty;
+            var botOpAndThinks = NormalBehaviorBots.ToDictionary(bot => bot.LocalBehaviorTreeBotAgent.BotBody.GetId(),
+                bot =>
+                {
+                    var key = bot.LocalBehaviorTreeBotAgent.BotBody.GetId();
+                    var canBeEnemies = perceivable.PlayerSee.TryGetValue(key, out var enumerable)
+                        ? enumerable
+                        : PlayerTickSense.Empty;
 
-                var immutableHashSet = perceivable.CharacterHitSomeThing.TryGetValue(key, out var enumerable1)
-                    ? enumerable1
-                    : ImmutableHashSet<IHitMsg>.Empty;
-                var bulletHits =
-                    perceivable.CharacterGidBeHit.TryGetValue(key, out var beHit)
-                        ? beHit.OfType<BulletHit>().ToImmutableHashSet()
-                        : ImmutableHashSet<BulletHit>.Empty;
-                
-                var pathTop = SizeToNaviMap.TryGetValue(bot.BotBody.GetSize(), out var top)
-                    ? top
-                    : throw new KeyNotFoundException($"size {bot.BotBody.GetSize()}");
-                var botSimpleGoATick = bot.BotSimpleGoATick(canBeEnemies, immutableHashSet,
-                    pathTop);
+                    var immutableHashSet = perceivable.CharacterHitSomeThing.TryGetValue(key, out var enumerable1)
+                        ? enumerable1
+                        : ImmutableHashSet<IHitMsg>.Empty;
+                    var bulletHits =
+                        perceivable.CharacterGidBeHit.TryGetValue(key, out var beHit)
+                            ? beHit.OfType<BulletHit>().ToImmutableHashSet()
+                            : ImmutableHashSet<BulletHit>.Empty;
+
+                    var pathTop =
+                        SizeToNaviMap.TryGetValue(bot.LocalBehaviorTreeBotAgent.BotBody.GetSize(), out var top)
+                            ? top
+                            : throw new KeyNotFoundException($"size {bot.LocalBehaviorTreeBotAgent.BotBody.GetSize()}");
+                    var botSimpleGoATick = bot.GoATick(canBeEnemies, immutableHashSet,
+                        pathTop);
 
 #if DEBUG
                 Console.Out.WriteLine($" id{key} op move {botSimpleGoATick.Operate?.Move}");
 #endif
-                return botSimpleGoATick;
-            });
+                    return botSimpleGoATick;
+                });
 
-            TempOpThinks = botOpAndThinks;
+            TempOperate = botOpAndThinks;
         }
 
         public PathTop GetNaviMap(size getSize)
@@ -93,14 +95,14 @@ namespace game_bot
                 : throw new KeyNotFoundException($"not such size {getSize}");
         }
 
-        public void SetBots(IEnumerable<SimpleBot> valueTuples)
+        public void SetBots(IEnumerable<NormalBehaviorBot> valueTuples)
         {
-            SimpleBots = valueTuples.IeToHashSet();
+            NormalBehaviorBots = valueTuples.IeToHashSet();
         }
 
         public void ClearBot()
         {
-            SimpleBots.Clear();
+            NormalBehaviorBots.Clear();
         }
     }
 }

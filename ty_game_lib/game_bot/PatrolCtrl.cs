@@ -8,14 +8,14 @@ namespace game_bot
     public class PatrolCtrl
     {
         public TwoDPoint[] Points { get; }
-        private int NowToPt { get; set; }
+       
 
         public PatrolCtrl(List<TwoDPoint> rawPoints)
         {
             if (rawPoints.Count < 2)
             {
                 Points = new TwoDPoint[] { };
-                NowToPt = 0;
+                
                 return;
             }
 
@@ -25,17 +25,16 @@ namespace game_bot
             Points = rawPoints.ToArray();
         }
 
-        public TwoDPoint? GetNowPt()
-        {
-            return Points.Any() ? Points[NowToPt] : null;
-        }
-
 
         public int GetPtNum()
         {
             return Points.Length;
         }
 
+        public TwoDPoint GetPt(int i)
+        {
+            return Points[i];
+        }
 
         public IEnumerable<TwoDPoint> TakePt(int start, int num)
         {
@@ -58,36 +57,6 @@ namespace game_bot
 #endif
             var dPoints = twoDPoints.Skip(start).Take(num);
             return dPoints.ToArray();
-        }
-
-        public IEnumerable<TwoDPoint> NextPt(int num)
-        {
-            if (!Points.Any())
-            {
-                return Points;
-            }
-
-            var start = NowToPt;
-
-            var end = NowToPt + num;
-
-            var pointsLength = end / Points.Length;
-            var twoDPoints = Points.ToList();
-            for (var i = 0; i < pointsLength; i++)
-            {
-                twoDPoints.AddRange(Points);
-            }
-#if DEBUG
-            Console.Out.WriteLine($"get patrol num {twoDPoints.Count}");
-#endif
-            var dPoints = twoDPoints.Skip(start).Take(num);
-            NowToPt = end % Points.Length;
-            return dPoints.ToArray();
-        }
-
-        public void SetNowPt(int i)
-        {
-            NowToPt = i;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace rogue_game
         public WantedBonus WantedBonus { get; }
 
 
-        public static (BattleNpc, int boId) GenById(int id, int gid, int team, Random random,
+        public static BattleNpc GenById(int id, int gid, int team, Random random,
             int nowChapterExtraPassiveNum)
         {
             return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
@@ -29,7 +29,7 @@ namespace rogue_game
                 : throw new KeyNotFoundException();
         }
 
-        private static (BattleNpc, int boId) GenByConfig(battle_npc battleNpc, int gid, int team, Random random,
+        private static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random,
             int nowChapterExtraPassiveNum)
         {
             var battleNpcWeapons = battleNpc.Weapons;
@@ -50,7 +50,7 @@ namespace rogue_game
                 {
                     var passiveTrait = x.First();
                     var sum = x.Sum(pp => pp.Level);
-                    passiveTrait.SetLevel((uint) sum);
+                    passiveTrait.SetLevel((uint)sum);
                     return passiveTrait;
                 });
 
@@ -95,15 +95,16 @@ namespace rogue_game
 
             var wantedBonus = new WantedBonus(array, gameItems, mapInteractable);
             var genByConfig = new BattleNpc(genCharacterBody, wantedBonus, battleNpc.id);
-            var battleNpcBotId = battleNpc.botId;
+            var npcBotId = battleNpc.botId;
 
-            var b = battleNpc.botId == 0;
+
+            var b = npcBotId == 0;
             if (b)
             {
                 throw new Exception($"no good bot id in {battleNpc.id}");
             }
 
-            return (genByConfig, battleNpcBotId);
+            return genByConfig;
         }
     }
 }
