@@ -17,7 +17,15 @@ namespace game_bot
 
         private static BehaviorTreeActLeaf ApproachingAct { get; } = new(BehaviorTreeFunc.TargetApproach);
 
-        private static BehaviorTreeActLeaf TraceAct { get; } = new(BehaviorTreeFunc.Trace);
+        private static BehaviorTreeActLeaf TracePt { get; } = new(BehaviorTreeFunc.TracePt);
+        
+        
+        private static BehaviorTreeActLeaf TraceAim { get; } = new(BehaviorTreeFunc.TraceAim);
+
+        private static BehaviorTreeSelectBranch TraceAct { get; } = new(new IBehaviorTreeNode[]
+        {
+            TracePt, TraceAim
+        });
 
         private static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new(new AlwaysDecorator(true),
             new IBehaviorTreeNode[]
@@ -25,7 +33,7 @@ namespace game_bot
                 IsHitSth, SetCombo
             });
 
-        private static BehaviorTreeSequenceBranch ActingBranch { get; } =
+        private static BehaviorTreeSequenceBranch IsActingBranch { get; } =
             new(new IBehaviorTreeNode[]
             {
                 IsActing, ComboSetBranch
@@ -36,7 +44,7 @@ namespace game_bot
             = new(
                 new IBehaviorTreeNode[]
                 {
-                    IsStun, IsDead, ActingBranch
+                    IsStun, IsDead, IsActingBranch
                 });
 
         private static BehaviorTreeActLeaf

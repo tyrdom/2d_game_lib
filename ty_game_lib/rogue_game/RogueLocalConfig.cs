@@ -69,18 +69,18 @@ namespace rogue_game
             RogueRebornTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueRebornCountDownTime);
             ChapterPassTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueChapterPassCountDownTime);
         }
-#if NETCOREAPP
-        public static void LoadConfig()
-        {
-            var configs = new ConfigDictionaries();
-            ReLoadP(configs);
-        }
-#else
+// #if NETCOREAPP
+         public static void LoadConfig()
+         {
+             var configs = new ConfigDictionaries();
+             ReLoadP(configs);
+         }
+// #else
         public static void LoadConfig(Dictionary<string, string> jsons)
         {
             var configs = new ConfigDictionaries(jsons);
             ReLoadP(configs);
         }
-#endif
+// #endif
     }
 }

@@ -6,42 +6,16 @@ namespace game_bot
     public class ComboCtrl
     {
         private int ComboMax { get; }
-
         private int ComboNow { get; set; }
 
-        private bool ComboOn { get; set; }
-
-        public SkillAction? NextSkillAction { get; set; }
-
-
-        public bool GenNextSkillAction(FirstSkillCtrl firstSkillCtrl, Random random)
+        public void SetComboStart()
         {
-            var b = ComboNow < ComboMax;
-            if (b)
+            if (ComboNow == 0)
             {
-                var comboAction = firstSkillCtrl.GetComboAction(random);
-                NextSkillAction = comboAction;
-                ComboNow++;
+                ComboNow = ComboMax;
             }
-            else
-            {
-                ComboNow = 0;
-            }
-
-            return b;
         }
 
-        public bool TryGetNextSkillAction(out SkillAction? skillAction)
-        {
-            skillAction = null;
-            if (NextSkillAction == null)
-            {
-                return false;
-            }
-
-            skillAction = NextSkillAction;
-            return true;
-        }
 
         public ComboCtrl(int comboMax)
         {
@@ -49,34 +23,14 @@ namespace game_bot
             ComboNow = 0;
         }
 
-        public bool CanCombo()
+        public bool TryGetNextSkillAction(FirstSkillCtrl firstOrDefault, Random random, out SkillAction? skillAction)
         {
-            return ComboNow > 0;
-        }
-
-        public void ActACombo()
-        {
+            skillAction = null;
+            if (ComboNow <= 0) return false;
+            var comboAction = firstOrDefault.GetComboAction(random);
+            skillAction = comboAction;
             ComboNow--;
-            if (ComboNow <= 0)
-            {
-                ComboOn = false;
-            }
-        }
-
-        public void ComboTurnOn(Random random)
-        {
-            if (ComboOn) return;
-            ComboNow = random.Next(ComboMax);
-            if (ComboNow > 0)
-            {
-                ComboOn = true;
-            }
-        }
-
-        public void ComboLoss()
-        {
-            ComboNow = 0;
-            ComboOn = false;
+            return true;
         }
     }
 }

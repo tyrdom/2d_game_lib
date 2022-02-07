@@ -37,8 +37,8 @@ namespace game_bot
         {
             var polyCount = pathTop?.GetPolyCount() ?? 0;
             var random = BehaviorTreeFunc.Random;
-            var next = random.Next((int)(polyCount * BotLocalConfig.PatrolMin),
-                (int)(polyCount * BotLocalConfig.PatrolMax + 1));
+            var next = random.Next((int) (polyCount * BotLocalConfig.PatrolMin),
+                (int) (polyCount * BotLocalConfig.PatrolMax + 1));
             var twoDPoints = pathTop?.GetPatrolPts(random, next) ?? new List<TwoDPoint>();
             var patrolCtrl = new PatrolCtrl(twoDPoints);
             var battleNpcActWeight = battleBot.ActWeight;
@@ -46,9 +46,8 @@ namespace game_bot
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
                 .Select(x => (x.weight, BehaviorTreeFunc.CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
-                (int)(battleBot.DoNotMinMaxTime.item2),
-                (int)battleBot.DoNotMinMaxTime.item1,
-                (int)battleBot.ActShowDelayTime);
+                (int) (battleBot.DoNotMinMaxTime.item2),
+                (int) battleBot.DoNotMinMaxTime.item1);
             var comboCtrl = new ComboCtrl(battleBot.MaxCombo);
             var valueTuples2 = GetRangeAmmoWeapon(body.CharacterStatus.GetWeapons(), body.GetSize());
             var localBehaviorTreeBotAgent =
@@ -102,11 +101,14 @@ namespace game_bot
 
             var botMemory = new BotMemory(ComboCtrl, FirstSkillCtrl);
             agentStatusList.Add(botMemory);
-            
+
             // is direct hit sth
             var b = immutableHashSet.OfType<BulletHit>().Any();
             if (b)
             {
+#if DEBUG
+                Console.Out.WriteLine($"{BotBody.GetId()} hit sth ");
+#endif
                 var hitSth = new HitSth();
                 agentStatusList.Add(hitSth);
             }
@@ -126,9 +128,9 @@ namespace game_bot
             ICanBeAndNeedHit? Func(ICanBeAndNeedHit? s, ICanBeAndNeedHit x) =>
                 Nearest(s, x) is ICanBeAndNeedHit canBeAndNeedHit ? canBeAndNeedHit : null;
 
-            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?)null,
+            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?) null,
                 Func);
-            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?)null, Func);
+            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?) null, Func);
             if (nearestTarget == null) //没有目标的时候
             {
                 if (TempTarget == null)
@@ -148,9 +150,17 @@ namespace game_bot
                 if (TempTarget != null)
                 {
                     // 丢失目标，需要记录跟踪点和方向
-                    NowTraceTick += CommonConfig.OtherConfig.BotAimTraceDefaultTime;
+
+
+                    NowTraceTick = CommonConfig.OtherConfig.BotAimTraceDefaultTime;
+
+
                     var twoDPoint = TempTarget.GetAnchor();
                     TracePt = twoDPoint;
+#if DEBUG
+                    Console.Out.WriteLine(
+                        $"{BotBody.GetId()} LossTarget Start Trace To Pt {TracePt} tick:{NowTraceTick}");
+#endif
                     if (TempTarget is CharacterBody characterBody)
                     {
                         var twoDVector = characterBody.GetAim();
@@ -168,6 +178,8 @@ namespace game_bot
                 TraceAim = null;
             }
 
+            TempTarget = nearestTarget;
+            var ctrlPoints = PatrolCtrl.Points;
 
             if (NowTraceTick > 0)
             {
@@ -184,24 +196,26 @@ namespace game_bot
                 }
                 else
                 {
+#if DEBUG
+                    Console.Out.WriteLine($"{BotBody.GetId()}  Trace MayBePt {TracePt}");
+#endif
                     traceMsg = new TraceToPtMsg(TracePt);
                 }
             }
 
-            TempTarget = nearestTarget;
-            var ctrlPoints = PatrolCtrl.Points;
-            if (TempTarget == null && TracePt == null)
+
+            else if (TempTarget == null)
             {
                 var radarSees = canBeEnemies.OfType<RadarSee>();
                 var enumerable = radarSees as RadarSee[] ?? radarSees.ToArray();
                 var any = enumerable.Any();
                 if (any)
                 {
-                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?)null, Nearest);
+                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?) null, Nearest);
                     if (canBeEnemy != null)
                     {
                         var twoDPoint = canBeEnemy.GetAnchor();
-                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
+                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
                         TempPath = twoDPoints.ToList();
                     }
                 }
@@ -240,7 +254,7 @@ namespace game_bot
                         var b1 = twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance;
                         if (!b1)
                         {
-                            var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
+                            var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
                             TempPath = twoDPoints.ToList();
                         }
                         else
@@ -249,7 +263,7 @@ namespace game_bot
                             var next = random.Next(PatrolCtrl.GetPtNum());
                             var ptNum = PatrolCtrl.TakePt(p, next).ToList();
                             TempPath = ptNum;
-                            var nextDouble = (float)random.NextDouble() * MathTools.Pi();
+                            var nextDouble = (float) random.NextDouble() * MathTools.Pi();
                             TraceAim = new TwoDVector(MathTools.Cos(nextDouble), MathTools.Sin(nextDouble));
                             NowTraceTick = CommonConfig.OtherConfig.BotAimTraceDefaultTime;
                         }
@@ -293,65 +307,4 @@ namespace game_bot
         //     StartNode.DoNode()
         // }
     }
-
-    public readonly struct BodyStatus : IAgentStatus
-    {
-        public List<(float range, int maxAmmoUse, int weaponIndex)> NowRangeToWeapon { get; }
-
-        public CharacterBody CharacterBody { get; }
-
-
-        public BodyStatus(List<(float range, int maxAmmoUse, int weaponIndex)> nowRangeToWeapon,
-            CharacterBody characterBody)
-        {
-            NowRangeToWeapon = nowRangeToWeapon;
-
-            CharacterBody = characterBody;
-        }
-    }
-
-    public class TargetMsg : IAgentStatus
-    {
-        public ICanBeAndNeedHit Target { get; }
-
-        public TargetMsg(ICanBeAndNeedHit target)
-        {
-            Target = target;
-        }
-    }
-
-    public record TraceToPtMsg : IAgentStatus
-    {
-        public TwoDPoint TracePt { get; }
-
-
-        public TraceToPtMsg(TwoDPoint tracePt)
-        {
-            TracePt = tracePt;
-        }
-    }
-
-    public record TraceToAimMsg : IAgentStatus
-    {
-        public TraceToAimMsg(TwoDVector aim)
-        {
-            Aim = aim;
-        }
-
-        public TwoDVector Aim { get; }
-    }
-
-    public record BotMemory : IAgentStatus
-    {
-        public ComboCtrl ComboCtrl { get; }
-        public FirstSkillCtrl FirstSkillCtrl { get; }
-
-        public BotMemory(ComboCtrl comboCtrl, FirstSkillCtrl firstSkillCtrl)
-        {
-            ComboCtrl = comboCtrl;
-            FirstSkillCtrl = firstSkillCtrl;
-        }
-    }
-
-    public record HitSth : IAgentStatus;
 }

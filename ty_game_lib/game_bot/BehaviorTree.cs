@@ -235,9 +235,4 @@ namespace game_bot
 
         public IDecorator Decorator { get; }
     }
-
-
-    public interface IAgentStatus
-    {
-    }
 }

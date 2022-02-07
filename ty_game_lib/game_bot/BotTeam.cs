@@ -80,7 +80,7 @@ namespace game_bot
                         pathTop);
 
 #if DEBUG
-                Console.Out.WriteLine($" id{key} op move {botSimpleGoATick.Operate?.Move}");
+                    Console.Out.WriteLine($" id{key} op move {botSimpleGoATick}");
 #endif
                     return botSimpleGoATick;
                 });

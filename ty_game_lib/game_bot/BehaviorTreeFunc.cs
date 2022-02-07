@@ -3,11 +3,13 @@ using System.Linq;
 using collision_and_rigid;
 using game_stuff;
 using game_config;
+
 namespace game_bot
 {
     public static class BehaviorTreeFunc
     {
         public static Random Random { get; } = new();
+
         public static SkillAction CovOp(botOp botOp)
         {
             return botOp switch
@@ -22,14 +24,20 @@ namespace game_bot
         public static (bool, Operate?) GetComboAct(IAgentStatus[] botAgent)
         {
             var firstOrDefault = botAgent.OfType<BotMemory>().First();
-            return (firstOrDefault.ComboCtrl.TryGetNextSkillAction(out var skillAction)
+            var firstSkillCtrl = firstOrDefault.FirstSkillCtrl;
+            return (firstOrDefault.ComboCtrl.TryGetNextSkillAction(firstSkillCtrl, Random, out var skillAction)
                 , new Operate(skillAction: skillAction));
         }
 
         public static bool CheckHitSth(IAgentStatus[] botAgent)
         {
             var checkHitSth = botAgent.OfType<HitSth>().Any();
-
+#if DEBUG
+            if (checkHitSth)
+            {
+                Console.Out.WriteLine("hit sth");
+            }
+#endif
             return checkHitSth;
         }
 
@@ -37,23 +45,24 @@ namespace game_bot
         {
             var botMemory = botAgent.OfType<BotMemory>().First();
             var botMemoryFirstSkillCtrl = botMemory.FirstSkillCtrl;
-            var genNextSkillAction = botMemory.ComboCtrl.GenNextSkillAction(botMemoryFirstSkillCtrl, Random);
-            return (genNextSkillAction, null);
+            botMemory.ComboCtrl.SetComboStart();
+            return (true, null);
         }
 
-        public static (bool, Operate?) Trace(IAgentStatus[] botAgents)
+        public static (bool, Operate?) TracePt(IAgentStatus[] botAgents)
         {
             var traceToPtMsg = botAgents.OfType<TraceToPtMsg>().FirstOrDefault();
-            if (traceToPtMsg != null)
-            {
-                var twoDPoint = traceToPtMsg.TracePt;
-                var bodyStatus = botAgents.OfType<BodyStatus>().First();
-                var dPoint = bodyStatus.CharacterBody.GetAnchor();
-                var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
-                var operate = new Operate(move: twoDVector);
-                return (true, operate);
-            }
+            if (traceToPtMsg == null) return (false, null);
+            var twoDPoint = traceToPtMsg.TracePt;
+            var bodyStatus = botAgents.OfType<BodyStatus>().First();
+            var dPoint = bodyStatus.CharacterBody.GetAnchor();
+            var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
+            var operate = new Operate(move: twoDVector);
+            return (true, operate);
+        }
 
+        public static (bool, Operate?) TraceAim(IAgentStatus[] botAgents)
+        {
             var traceToAimMsg = botAgents.OfType<TraceToAimMsg>().FirstOrDefault();
             if (traceToAimMsg == null) return (false, null);
             {
@@ -106,8 +115,9 @@ namespace game_bot
                 if (any)
                 {
                     var botMemories = botAgent.OfType<BotMemory>().First();
-                    var goATick = botMemories.FirstSkillCtrl.NoThinkAct(Random);
-                    var operate = new Operate(skillAction: goATick);
+                    var goATick = botMemories.FirstSkillCtrl.GetAct(Random);
+                    var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit2();
+                    var operate = new Operate(skillAction: goATick, aim: twoDVector);
                     return (true, operate);
                 }
                 else
@@ -143,6 +153,4 @@ namespace game_bot
             return isDeadOrCantDmg;
         }
     }
-
-  
 }
