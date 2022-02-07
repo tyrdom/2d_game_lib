@@ -36,6 +36,8 @@ namespace game_stuff
         private float DamageMulti { get; }
         private int Tough { get; }
 
+        private int StunPower { get; }
+
         public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
         {
             return HitAbleMediaStandard.HitTeam(qSpaces, this, blockMap);
@@ -152,10 +154,11 @@ namespace game_stuff
 
             var playingBuffsMaker = new PlayingBuffsMaker(bullet.SuccessPlayBuffAdd);
 
+            var bulletStunPower = bullet.StunPower;
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
-                bullet.SoundWaveRad, playingBuffsMaker);
+                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower);
         }
 
         public static Dictionary<size, IStunBuffMaker> GAntiActBuffConfigs(
@@ -177,7 +180,7 @@ namespace game_stuff
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, uint pauseToCaster, uint pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
             hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum, float waveCast,
-            PlayingBuffsMaker playingBuffsMaker)
+            PlayingBuffsMaker playingBuffsMaker, int stunPower)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -205,6 +208,7 @@ namespace game_stuff
             IsFAtk = !isHAtk;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
             AddBuffToCastWhenHitPass = playingBuffsMaker;
+            StunPower = stunPower;
         }
 
 
@@ -292,39 +296,43 @@ namespace game_stuff
             }
         }
 
-        private (HitCond hitCond, bool backAtk, IStunBuff? opponentCharacterStatusAntiActBuff, bool isActSkill)
-            IsAtkPass(CharacterStatus targetCharacterStatus)
+        private (HitCond hitCond, bool backAtk, IStunBuff? opponentCharacterStatusAntiActBuff, bool isActingSkill)
+            IsAtkPass(CharacterStatus targetCharacterStatus, out bool isStunChangeToDaze)
         {
             var nowCastSkill = targetCharacterStatus.NowCastAct;
             var opponentCharacterStatusAntiActBuff = targetCharacterStatus.StunBuff;
             var opponentIsStun = opponentCharacterStatusAntiActBuff != null;
-            var isActSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
+            var isActingSkill = nowCastSkill != null && nowCastSkill.InWhichPeriod() == SkillPeriod.Casting;
             var twoDVector = targetCharacterStatus.CharacterBody.Sight.Aim;
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var tough = targetCharacterStatus.GetNowTough();
             var b = tough < Tough;
-            var b3 = !isActSkill && IsFAtk && (HitType == hit_type.melee || b); //如果对手不在释放技能，并且是快攻击子弹
+            var b3 = !isActingSkill && IsFAtk && (HitType == hit_type.melee || b); //如果对手不在释放技能，并且是快攻击子弹
 
 
-            var b2 = isActSkill && b; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
+            var b2 = isActingSkill && b; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
 
+            var characterBodyBodySize = targetCharacterStatus.CharacterBody.BodySize;
+            var steady = CommonConfig.Configs.bodys[characterBodyBodySize].steady;
+            var aStunPower = opponentIsStun ? 9 : b4 ? StunPower + 1 : StunPower;
 
+            isStunChangeToDaze = steady >= aStunPower;
             var atkOk = opponentIsStun || b4 || b3 || b2;
             if (atkOk)
             {
                 if (!(Caster is CharacterStatus character) ||
                     !character.BuffTrick.TryGetValue(TrickCond.MyAtkOk, out var hashSet))
-                    return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                    return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
 
 
                 var playingBuffs = hashSet.Select(x => x.DeepClone());
                 character.AddPlayingBuff(playingBuffs);
 
-                return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
             }
 
 
-            if (isActSkill)
+            if (isActingSkill)
             {
                 var toughBuffs = targetCharacterStatus.GetBuffs<ToughBuff>().ToArray();
                 var checkBuff = toughBuffs.Any();
@@ -335,30 +343,30 @@ namespace game_stuff
                     {
                         if (!checkBuff)
                         {
-                            return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                            return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
                         }
                     }
                     else if (checkBuff)
                     {
-                        return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                        return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
                     }
                 }
                 else if (checkBuff)
                 {
                     targetCharacterStatus.UseBuff(CommonConfig.OtherConfig.defPassBuffId);
-                    return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                    return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
                 }
             }
 
-            var b5 = isActSkill && tough == Tough;
+            var b5 = isActingSkill && tough == Tough;
             if (b5)
             {
-                return (HitCond.Draw, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+                return (HitCond.Draw, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
             }
 
 #if DEBUG
             Console.Out.WriteLine(
-                $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActSkill} now tough::{Tough},mid::{CommonConfig.OtherConfig.mid_tough}");
+                $"attack ~~~from back:: {b4} cast over:: {b2}  not back  ::{b3}   target is cast{isActingSkill} now tough::{Tough},mid::{CommonConfig.OtherConfig.mid_tough}");
 #endif
 
             if (targetCharacterStatus.BuffTrick.TryGetValue(TrickCond.OpponentAtkFail, out var value))
@@ -366,7 +374,7 @@ namespace game_stuff
                 targetCharacterStatus.AddPlayingBuff(value.Select(x => x.DeepClone()));
             }
 
-            return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActSkill);
+            return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
         }
 
 
@@ -378,7 +386,8 @@ namespace game_stuff
                 return null;
             }
 
-            var (atkOk, back, opponentCharacterStatusAntiActBuff, isActSkill) = IsAtkPass(targetCharacterStatus);
+            var (atkOk, back, opponentCharacterStatusAntiActBuff, isActSkill) =
+                IsAtkPass(targetCharacterStatus, out var changeToDaze);
 
             var targetCharacterBodyBodySize = targetCharacterStatus.CharacterBody.GetSize();
 
@@ -386,28 +395,29 @@ namespace game_stuff
             switch (atkOk)
             {
                 case HitCond.Ok:
-                    return HitOk();
+                    return HitOk(changeToDaze);
                 case HitCond.Fail:
                     HitFail();
                     return null;
                 case HitCond.Draw:
-                    HitDraw();
+                    HitDraw(changeToDaze);
                     return null;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            DmgShow? HitOk()
+            DmgShow? HitOk(bool b)
             {
                 //基本方面
                 // 释放方基本状态
                 caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetCharacterStatus);
 
-                if (caster is CharacterStatus characterStatus)
+                if (!b && caster is CharacterStatus characterStatus)
                 {
                     var playingBuffs = AddBuffToCastWhenHitPass.GenBuffs(targetCharacterStatus).ToArray();
 #if DEBUG
-                    Console.Out.WriteLine($"{characterStatus.GetId()}:playing buffs add when atk ok {playingBuffs.Length}");
+                    Console.Out.WriteLine(
+                        $"{characterStatus.GetId()}:playing buffs add when atk ok {playingBuffs.Length}");
 #endif
                     characterStatus.AddPlayingBuff(playingBuffs);
                 }
@@ -419,11 +429,21 @@ namespace game_stuff
                         BulletId);
 
                 //stun buff方面
-                var antiActBuffConfig = SuccessStunBuffConfigToOpponent[targetCharacterBodyBodySize];
+                if (b)
+                {
+                    targetCharacterStatus.ResetSpeed();
 
-                // 对手动作状态buff刷新
-                SetStunBuffToTarget(targetCharacterStatus, caster, opponentCharacterStatusAntiActBuff,
-                    antiActBuffConfig, PauseToOpponent, Pos, Aim);
+                    var genById = PlayBuffStandard.GenById(CommonConfig.OtherConfig.dazeBuffId);
+                    targetCharacterStatus.AddAPlayingBuff(genById);
+                }
+                else
+                {
+                    var antiActBuffConfig = SuccessStunBuffConfigToOpponent[targetCharacterBodyBodySize];
+
+                    // 对手动作状态buff刷新
+                    SetStunBuffToTarget(targetCharacterStatus, caster, opponentCharacterStatusAntiActBuff,
+                        antiActBuffConfig, PauseToOpponent, Pos, Aim);
+                }
 
                 return dmgShow;
             }
@@ -465,13 +485,13 @@ namespace game_stuff
                 }
             }
 
-            void HitDraw()
+            void HitDraw(bool b)
             {
                 //Draw
                 switch (caster)
                 {
                     case CharacterStatus characterStatus:
-                        CharAtkDraw(characterStatus, targetCharacterStatus);
+                        CharAtkDraw(characterStatus, targetCharacterStatus, b);
                         break;
                     case Trap trap:
                         trap.FailAtk();
@@ -554,7 +574,7 @@ namespace game_stuff
                 caster.LoadCatchTrickSkill(null, catchAntiActBuffConfig);
         }
 
-        private void CharAtkDraw(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus)
+        private void CharAtkDraw(CharacterStatus bodyCaster, CharacterStatus targetCharacterStatus, bool b)
         {
             bodyCaster.ResetSnipe();
             bodyCaster.ResetCastAct();
@@ -565,10 +585,17 @@ namespace game_stuff
                 bodyCaster.GetPos(), Aim,
                 null, 0, bodyCaster, targetCharacterStatus);
             bodyCaster.SetStunBuff(antiActBuff);
-            var antiActBuff2 = StuffLocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
-                targetCharacterStatus.GetPos(), Aim,
-                null, 0, targetCharacterStatus, bodyCaster);
-            targetCharacterStatus.SetStunBuff(antiActBuff2);
+            if (b)
+            {
+                targetCharacterStatus.ResetSpeed();
+            }
+            else
+            {
+                var antiActBuff2 = StuffLocalConfig.CommonBuffMaker.GenBuff(bodyCaster.GetPos(),
+                    targetCharacterStatus.GetPos(), Aim,
+                    null, 0, targetCharacterStatus, bodyCaster);
+                targetCharacterStatus.SetStunBuff(antiActBuff2);
+            }
         }
 
 

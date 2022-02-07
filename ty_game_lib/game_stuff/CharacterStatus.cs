@@ -429,7 +429,7 @@ namespace game_stuff
             return new CharGoTickResult(launchBullet: posMedia, move: fixMove);
         }
 
-        private void ResetSpeed()
+        public void ResetSpeed()
         {
             NowMoveSpeed = MinMoveSpeed;
         }
@@ -1273,7 +1273,12 @@ namespace game_stuff
 
         private float GetMaxMoveSpeed()
         {
-            return NowVehicle?.MaxMoveSpeed ?? MaxMoveSpeed;
+            var nowVehicleMaxMoveSpeed = NowVehicle?.MaxMoveSpeed ?? MaxMoveSpeed;
+            var sum = PlayingBuffs.Values.OfType<MaxSpeedChangeBuff>().Select(x => x.SpeedMaxAddMulti).Sum();
+            var f = 1 + sum;
+            var minMoveSpeed = GetMinMoveSpeed();
+            var max = MathTools.Max(nowVehicleMaxMoveSpeed * f, minMoveSpeed);
+            return max;
         }
 
         public TwoDPoint GetPos()

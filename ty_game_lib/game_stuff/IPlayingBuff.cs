@@ -119,6 +119,8 @@ namespace game_stuff
                     playBuff.EffectValue, 1, playBuffUseStack),
                 play_buff_effect_type.PullMark => new PullMark(id, intTickByTime, playBuff.EffectString, 1,
                     playBuffUseStack, charMark),
+                play_buff_effect_type.MaxSpeedChange => new MaxSpeedChangeBuff(id, intTickByTime, playBuff.EffectValue, 1,
+                    playBuffUseStack),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -289,7 +291,7 @@ namespace game_stuff
             var stunBuff = PullStunBuffMaker.GenBuff(characterStatus.GetPos(),
                 TargetMark.GetPos(),
                 characterStatus.GetAim(), null, 0,
-                TargetMark, characterStatus,false);
+                TargetMark, characterStatus, false);
             TargetMark.SetStunBuff(stunBuff);
             characterStatus.CharEvents.Add(new DirectHit(TargetMark.GetPos()));
         }
@@ -429,6 +431,40 @@ namespace game_stuff
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
+        }
+    }
+
+    public class MaxSpeedChangeBuff : IPlayingBuff
+    {
+        public play_buff_id BuffId { get; }
+        public int RestTick { get; set; }
+
+        public float SpeedMaxAddMulti { get; }
+        public bool IsFinish()
+        {
+            return PlayBuffStandard.IsFinish(this);
+        }
+
+        public int Stack { get; set; }
+
+        public void GoATick()
+        {
+            PlayBuffStandard.GoATick(this);
+        }
+
+        public bool UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
+
+        public MaxSpeedChangeBuff(play_buff_id buffId, int restTick, float speedMaxAddMulti, int stack, bool useStack)
+        {
+            BuffId = buffId;
+            RestTick = restTick;
+            SpeedMaxAddMulti = speedMaxAddMulti;
+            Stack = stack;
+            UseStack = useStack;
         }
     }
 }

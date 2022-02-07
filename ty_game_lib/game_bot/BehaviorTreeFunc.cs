@@ -25,8 +25,19 @@ namespace game_bot
         {
             var firstOrDefault = botAgent.OfType<BotMemory>().First();
             var firstSkillCtrl = firstOrDefault.FirstSkillCtrl;
-            return (firstOrDefault.ComboCtrl.TryGetNextSkillAction(firstSkillCtrl, Random, out var skillAction)
-                , new Operate(skillAction: skillAction));
+            var tryGetNextSkillAction =
+                firstOrDefault.ComboCtrl.TryGetNextSkillAction(firstSkillCtrl, Random, out var skillAction);
+
+            var orDefault = botAgent.OfType<TargetMsg>().FirstOrDefault();
+            if (orDefault == null)
+                return (tryGetNextSkillAction
+                    , new Operate(skillAction: skillAction));
+            var bodyStatus = botAgent.OfType<BodyStatus>().First();
+            var dPoint = bodyStatus.CharacterBody.GetAnchor();
+            var twoDPoint = orDefault.Target.GetAnchor();
+            var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit2();
+            return (tryGetNextSkillAction
+                , new Operate(skillAction: skillAction, aim: twoDVector));
         }
 
         public static bool CheckHitSth(IAgentStatus[] botAgent)
