@@ -55,7 +55,6 @@ namespace game_bot
         public static (bool, Operate?) SetComboStatus(IAgentStatus[] botAgent)
         {
             var botMemory = botAgent.OfType<BotMemory>().First();
-            var botMemoryFirstSkillCtrl = botMemory.FirstSkillCtrl;
             botMemory.ComboCtrl.SetComboStart();
             return (true, null);
         }

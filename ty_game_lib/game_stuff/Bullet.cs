@@ -316,7 +316,11 @@ namespace game_stuff
             var steady = CommonConfig.Configs.bodys[characterBodyBodySize].steady;
             var aStunPower = opponentIsStun ? 9 : b4 ? StunPower + 1 : StunPower;
 
-            isStunChangeToDaze = steady >= aStunPower;
+            isStunChangeToDaze = steady > aStunPower;
+
+#if DEBUG
+            Console.Out.WriteLine($"StunToDaze {isStunChangeToDaze} : {steady} vs {aStunPower}");
+#endif
             var atkOk = opponentIsStun || b4 || b3 || b2;
             if (atkOk)
             {
