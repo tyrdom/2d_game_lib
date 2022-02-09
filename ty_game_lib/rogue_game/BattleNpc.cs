@@ -22,11 +22,13 @@ namespace rogue_game
 
 
         public static BattleNpc GenById(int id, int gid, int team, Random random,
-            int nowChapterExtraPassiveNum)
+            int nowChapterExtraPassiveNum, out int botId)
         {
-            return CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
+            var genByConfig = CommonConfig.Configs.battle_npcs.TryGetValue(id, out var battleNpc)
                 ? GenByConfig(battleNpc, gid, team, random, nowChapterExtraPassiveNum)
                 : throw new KeyNotFoundException();
+            botId = battleNpc.botId;
+            return genByConfig;
         }
 
         private static BattleNpc GenByConfig(battle_npc battleNpc, int gid, int team, Random random,
@@ -50,7 +52,7 @@ namespace rogue_game
                 {
                     var passiveTrait = x.First();
                     var sum = x.Sum(pp => pp.Level);
-                    passiveTrait.SetLevel((uint)sum);
+                    passiveTrait.SetLevel((uint) sum);
                     return passiveTrait;
                 });
 

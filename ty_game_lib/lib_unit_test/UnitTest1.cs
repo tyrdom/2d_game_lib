@@ -201,7 +201,7 @@ namespace lib_unit_test
         [Test]
         public void NpcTest()
         {
-            var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2);
+            var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2,out _);
 
             Assert.Pass($"fin");
         }

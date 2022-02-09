@@ -73,7 +73,8 @@ namespace rogue_game
         private int[] BossIdToSpawn { get; }
 
 
-        private HashSet<(NormalBehaviorBot normalBehaviorBot, BattleNpc battleNpc)> GenBattleNpcWithBot(IReadOnlyList<int> ints,
+        private HashSet<(NormalBehaviorBot normalBehaviorBot, BattleNpc battleNpc)> GenBattleNpcWithBot(
+            IReadOnlyList<int> ints,
             Random random,
             BotTeam botTeam, bool isBoss, int nowChapterExtraPassiveNum)
         {
@@ -83,8 +84,8 @@ namespace rogue_game
                     var id = ints[x];
                     var battleNpc = BattleNpc.GenById(id,
                         (1 + PlayGround.MgId) * 1000 + (isBoss ? 100 : 0) + x, 100,
-                        random, nowChapterExtraPassiveNum);
-                    var simpleBot = NormalBehaviorBot.GenById(id, battleNpc.CharacterBody,
+                        random, nowChapterExtraPassiveNum, out var botId);
+                    var simpleBot = NormalBehaviorBot.GenById(botId, battleNpc.CharacterBody,
                         botTeam.GetNaviMap(battleNpc.CharacterBody.GetSize()));
 
 
