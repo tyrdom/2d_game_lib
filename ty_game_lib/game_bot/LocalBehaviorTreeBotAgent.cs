@@ -13,8 +13,8 @@ namespace game_bot
     public class LocalBehaviorTreeBotAgent
     {
         public PatrolCtrl PatrolCtrl { get; }
-        public ComboCtrl ComboCtrl { get; }
-        public FirstSkillCtrl FirstSkillCtrl { get; }
+        private ComboCtrl ComboCtrl { get; }
+        private FirstSkillCtrl FirstSkillCtrl { get; }
         public CharacterBody BotBody { get; }
 
         private ICanBeEnemy? TempTarget { get; set; }
@@ -31,6 +31,7 @@ namespace game_bot
 
         private List<TwoDPoint> TempPath { get; set; }
 
+        private bool IsSlowTempPath { get; set; }
 
         public static LocalBehaviorTreeBotAgent GenByConfig(battle_bot battleBot, CharacterBody body,
             PathTop? pathTop)
@@ -55,7 +56,7 @@ namespace game_bot
             return localBehaviorTreeBotAgent;
         }
 
-        public LocalBehaviorTreeBotAgent(PatrolCtrl patrolCtrl, ComboCtrl comboCtrl, FirstSkillCtrl firstSkillCtrl,
+        private LocalBehaviorTreeBotAgent(PatrolCtrl patrolCtrl, ComboCtrl comboCtrl, FirstSkillCtrl firstSkillCtrl,
             CharacterBody botBody,
             List<(float range, int maxAmmoUse, int weaponIndex)> rangeToWeapon)
         {
@@ -65,6 +66,7 @@ namespace game_bot
             BotBody = botBody;
             TempTarget = null;
             RangeToWeapon = rangeToWeapon;
+            IsSlowTempPath = true;
             TracePt = null;
             TraceAim = null;
             NowTraceTick = 0;
@@ -93,10 +95,18 @@ namespace game_bot
             var agentStatusList = new List<IAgentStatus>();
 
             //bodyStatus
+            var use = new PropUse();
             var startPt = BotBody.GetAnchor();
             var rangeToWeapon = new BodyStatus(RangeToWeapon, BotBody);
             agentStatusList.Add(rangeToWeapon);
 
+            var bodyCharacterStatus = BotBody.CharacterStatus;
+            var checkAppStatusToBotPropUse =
+                bodyCharacterStatus.Prop?.CheckAppStatusToBotPropUse(bodyCharacterStatus) ?? false;
+            if (checkAppStatusToBotPropUse)
+            {
+                agentStatusList.Add(use);
+            }
             //botMemory
 
             var botMemory = new BotMemory(ComboCtrl, FirstSkillCtrl);
@@ -131,6 +141,7 @@ namespace game_bot
             var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?) null,
                 Func);
             var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?) null, Func);
+
             if (nearestTarget == null) //没有目标的时候
             {
                 if (TempTarget == null)
@@ -170,6 +181,18 @@ namespace game_bot
             }
             else
             {
+                if (TempTarget == null)
+                {
+                    var botBodyCharacterStatus = bodyCharacterStatus;
+                    var botUseWhenSeeEnemy =
+                        botBodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(botBodyCharacterStatus) ?? false;
+                    if (botUseWhenSeeEnemy)
+                    {
+                        var propUse = use;
+                        agentStatusList.Add(propUse);
+                    }
+                }
+
                 NowTraceTick = 0;
                 TempPath.Clear();
                 var targetMsg = new TargetMsg(nearestTarget);
@@ -199,7 +222,7 @@ namespace game_bot
 #if DEBUG
                     Console.Out.WriteLine($"{BotBody.GetId()}  Trace MayBePt {TracePt}");
 #endif
-                    traceMsg = new TraceToPtMsg(TracePt);
+                    traceMsg = new TraceToPtMsg(TracePt, false);
                 }
             }
 
@@ -217,6 +240,7 @@ namespace game_bot
                         var twoDPoint = canBeEnemy.GetAnchor();
                         var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
                         TempPath = twoDPoints.ToList();
+                        IsSlowTempPath = false;
                     }
                 }
 
@@ -230,7 +254,7 @@ namespace game_bot
                     }
                     else
                     {
-                        traceMsg = new TraceToPtMsg(twoDPoint);
+                        traceMsg = new TraceToPtMsg(twoDPoint, IsSlowTempPath);
                     }
                 }
                 else
@@ -263,9 +287,18 @@ namespace game_bot
                             var next = random.Next(PatrolCtrl.GetPtNum());
                             var ptNum = PatrolCtrl.TakePt(p, next).ToList();
                             TempPath = ptNum;
+                            IsSlowTempPath = true;
                             var nextDouble = (float) random.NextDouble() * MathTools.Pi();
                             TraceAim = new TwoDVector(MathTools.Cos(nextDouble), MathTools.Sin(nextDouble));
                             NowTraceTick = CommonConfig.OtherConfig.BotAimTraceDefaultTime;
+
+                            var canUseWhenPatrol =
+                                bodyCharacterStatus.Prop?.CanUseWhenPatrol(bodyCharacterStatus,
+                                    BehaviorTreeFunc.Random) ?? false;
+                            if (canUseWhenPatrol)
+                            {
+                                agentStatusList.Add(use);
+                            }
                         }
                     }
                 }
@@ -301,10 +334,6 @@ namespace game_bot
             var canBeHit = distance1 > distance2 ? x : s;
             return canBeHit;
         }
-        //
-        // public Operate? GoATick()
-        // {
-        //     StartNode.DoNode()
-        // }
+   
     }
 }

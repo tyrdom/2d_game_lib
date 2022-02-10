@@ -8,6 +8,9 @@ namespace game_bot
     {
     }
 
+    public record PropUse : IAgentStatus;
+
+
     public class TargetMsg : IAgentStatus
     {
         public ICanBeAndNeedHit Target { get; }
@@ -38,10 +41,12 @@ namespace game_bot
     {
         public TwoDPoint TracePt { get; }
 
+        public bool IsSlow { get; }
 
-        public TraceToPtMsg(TwoDPoint tracePt)
+        public TraceToPtMsg(TwoDPoint tracePt, bool isSlow)
         {
             TracePt = tracePt;
+            IsSlow = isSlow;
         }
     }
 
@@ -54,7 +59,7 @@ namespace game_bot
 
         public TwoDVector Aim { get; }
     }
-    
+
     public record BotMemory : IAgentStatus
     {
         public ComboCtrl ComboCtrl { get; }

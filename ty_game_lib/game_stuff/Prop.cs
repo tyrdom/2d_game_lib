@@ -105,7 +105,7 @@ namespace game_stuff
 
         public int GetIntId()
         {
-            return this.GetId();
+            return GetId();
         }
 
         public int NowTough { get; set; }

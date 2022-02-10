@@ -14,18 +14,18 @@ namespace game_bot
 
         private static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new(BehaviorTreeFunc.CanUseWeaponToTarget);
 
-
         private static BehaviorTreeActLeaf ApproachingAct { get; } = new(BehaviorTreeFunc.TargetApproach);
 
         private static BehaviorTreeActLeaf TracePt { get; } = new(BehaviorTreeFunc.TracePt);
-        
-        
+
         private static BehaviorTreeActLeaf TraceAim { get; } = new(BehaviorTreeFunc.TraceAim);
 
         private static BehaviorTreeSelectBranch TraceAct { get; } = new(new IBehaviorTreeNode[]
         {
             TracePt, TraceAim
         });
+
+        private static BehaviorTreeActLeaf UsePropAct { get; } = new(BehaviorTreeFunc.PropUse);
 
         private static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new(new AlwaysDecorator(true),
             new IBehaviorTreeNode[]
@@ -54,7 +54,7 @@ namespace game_bot
             = new(
                 new IBehaviorTreeNode[]
                 {
-                    GetCombo, CanUseWeaponAct, ApproachingAct, TraceAct,
+                    GetCombo, CanUseWeaponAct, UsePropAct, ApproachingAct, TraceAct
                 });
 
 
