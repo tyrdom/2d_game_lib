@@ -142,7 +142,29 @@ namespace game_bot
                 Func);
             var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?)null, Func);
 
-            if (nearestTarget == null) //没有目标的时候
+            if (nearestTarget != null)
+            {
+                if (TempTarget == null)
+                {
+                    var botUseWhenSeeEnemy =
+                        bodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(bodyCharacterStatus) ?? false;
+                    if (botUseWhenSeeEnemy)
+                    {
+                        agentStatusList.Add(use);
+                    }
+                }
+
+                NowTraceTick = 0;
+                var twoDPoint = nearestTarget.GetAnchor();
+                var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
+                TempPath = twoDPoints.ToList();
+                IsSlowTempPath = false;
+                var targetMsg = new TargetMsg(nearestTarget);
+                agentStatusList.Add(targetMsg);
+                TracePt = null;
+                TraceAim = null;
+            }
+            else
             {
                 if (TempTarget == null)
                 {
@@ -178,30 +200,6 @@ namespace game_bot
                         TraceAim = twoDVector;
                     }
                 }
-            }
-            else
-            {
-                if (TempTarget == null)
-                {
-                    var botBodyCharacterStatus = bodyCharacterStatus;
-                    var botUseWhenSeeEnemy =
-                        botBodyCharacterStatus.Prop?.BotUseWhenSeeEnemy(botBodyCharacterStatus) ?? false;
-                    if (botUseWhenSeeEnemy)
-                    {
-                        var propUse = use;
-                        agentStatusList.Add(propUse);
-                    }
-                }
-
-                NowTraceTick = 0;
-                var twoDPoint = nearestTarget.GetAnchor();
-                var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
-                TempPath = twoDPoints.ToList();
-                IsSlowTempPath = false;
-                var targetMsg = new TargetMsg(nearestTarget);
-                agentStatusList.Add(targetMsg);
-                TracePt = null;
-                TraceAim = null;
             }
 
             TempTarget = nearestTarget;
