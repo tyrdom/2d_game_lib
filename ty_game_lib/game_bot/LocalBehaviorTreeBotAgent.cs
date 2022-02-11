@@ -38,8 +38,8 @@ namespace game_bot
         {
             var polyCount = pathTop?.GetPolyCount() ?? 0;
             var random = BehaviorTreeFunc.Random;
-            var next = random.Next((int) (polyCount * BotLocalConfig.PatrolMin),
-                (int) (polyCount * BotLocalConfig.PatrolMax + 1));
+            var next = random.Next((int)(polyCount * BotLocalConfig.PatrolMin),
+                (int)(polyCount * BotLocalConfig.PatrolMax + 1));
             var twoDPoints = pathTop?.GetPatrolPts(random, next) ?? new List<TwoDPoint>();
             var patrolCtrl = new PatrolCtrl(twoDPoints);
             var battleNpcActWeight = battleBot.ActWeight;
@@ -47,8 +47,8 @@ namespace game_bot
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
                 .Select(x => (x.weight, BehaviorTreeFunc.CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
-                (int) (battleBot.DoNotMinMaxTime.item2),
-                (int) battleBot.DoNotMinMaxTime.item1);
+                (int)(battleBot.DoNotMinMaxTime.item2),
+                (int)battleBot.DoNotMinMaxTime.item1);
             var comboCtrl = new ComboCtrl(battleBot.MaxCombo);
             var valueTuples2 = GetRangeAmmoWeapon(body.CharacterStatus.GetWeapons(), body.GetSize());
             var localBehaviorTreeBotAgent =
@@ -138,9 +138,9 @@ namespace game_bot
             ICanBeAndNeedHit? Func(ICanBeAndNeedHit? s, ICanBeAndNeedHit x) =>
                 Nearest(s, x) is ICanBeAndNeedHit canBeAndNeedHit ? canBeAndNeedHit : null;
 
-            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?) null,
+            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?)null,
                 Func);
-            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?) null, Func);
+            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?)null, Func);
 
             if (nearestTarget == null) //没有目标的时候
             {
@@ -194,7 +194,10 @@ namespace game_bot
                 }
 
                 NowTraceTick = 0;
-                TempPath.Clear();
+                var twoDPoint = nearestTarget.GetAnchor();
+                var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
+                TempPath = twoDPoints.ToList();
+                IsSlowTempPath = false;
                 var targetMsg = new TargetMsg(nearestTarget);
                 agentStatusList.Add(targetMsg);
                 TracePt = null;
@@ -222,7 +225,9 @@ namespace game_bot
 #if DEBUG
                     Console.Out.WriteLine($"{BotBody.GetId()}  Trace MayBePt {TracePt}");
 #endif
-                    traceMsg = new TraceToPtMsg(TracePt, false);
+                    var twoDPoints = pathTop?.FindGoPts(startPt, TracePt) ?? new[] { TracePt };
+                    TempPath = twoDPoints.ToList();
+                    IsSlowTempPath = false;
                 }
             }
 
@@ -234,75 +239,75 @@ namespace game_bot
                 var any = enumerable.Any();
                 if (any)
                 {
-                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?) null, Nearest);
+                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?)null, Nearest);
                     if (canBeEnemy != null)
                     {
                         var twoDPoint = canBeEnemy.GetAnchor();
-                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
+                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
                         TempPath = twoDPoints.ToList();
                         IsSlowTempPath = false;
                     }
                 }
+            }
 
-
-                if (TempPath.Any())
+            if (TempPath.Any())
+            {
+                var twoDPoint = TempPath.First();
+                if (twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
                 {
-                    var twoDPoint = TempPath.First();
-                    if (twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance)
-                    {
-                        TempPath.RemoveAt(0);
-                    }
-                    else
-                    {
-                        traceMsg = new TraceToPtMsg(twoDPoint, IsSlowTempPath);
-                    }
+                    TempPath.RemoveAt(0);
                 }
                 else
                 {
-                    var p = -1;
-                    var l = -1f;
-                    for (var i = 0; i < ctrlPoints.Length; i++)
+                    traceMsg = new TraceToPtMsg(twoDPoint, IsSlowTempPath);
+                }
+            }
+            else if (NowTraceTick == 0 || TempTarget==null)
+            {
+                var p = -1;
+                var l = -1f;
+                for (var i = 0; i < ctrlPoints.Length; i++)
+                {
+                    var twoDPoint2 = ctrlPoints[i];
+                    var distance = twoDPoint2.GetDistance(startPt);
+                    var b2 = distance < l || l < 0;
+                    if (!b2) continue;
+                    p = i;
+                    l = distance;
+                }
+
+                var twoDPoint = p < 0 ? null : ctrlPoints[p];
+
+                if (twoDPoint != null)
+                {
+                    var b1 = twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance;
+                    if (!b1)
                     {
-                        var twoDPoint2 = ctrlPoints[i];
-                        var distance = twoDPoint2.GetDistance(startPt);
-                        var b2 = distance < l || l < 0;
-                        if (!b2) continue;
-                        p = i;
-                        l = distance;
+                        var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] { twoDPoint };
+                        TempPath = twoDPoints.ToList();
                     }
-
-                    var twoDPoint = p < 0 ? null : ctrlPoints[p];
-
-                    if (twoDPoint != null)
+                    else
                     {
-                        var b1 = twoDPoint.GetDistance(startPt) < BotLocalConfig.CloseEnoughDistance;
-                        if (!b1)
-                        {
-                            var twoDPoints = pathTop?.FindGoPts(startPt, twoDPoint) ?? new[] {twoDPoint};
-                            TempPath = twoDPoints.ToList();
-                        }
-                        else
-                        {
-                            var random = BehaviorTreeFunc.Random;
-                            var next = random.Next(PatrolCtrl.GetPtNum());
-                            var ptNum = PatrolCtrl.TakePt(p, next).ToList();
-                            TempPath = ptNum;
-                            IsSlowTempPath = true;
-                            var nextDouble = (float) random.NextDouble() * MathTools.Pi();
-                            TraceAim = new TwoDVector(MathTools.Cos(nextDouble), MathTools.Sin(nextDouble));
-                            NowTraceTick = CommonConfig.OtherConfig.BotAimTraceDefaultTime;
+                        var random = BehaviorTreeFunc.Random;
+                        var next = random.Next(PatrolCtrl.GetPtNum());
+                        var ptNum = PatrolCtrl.TakePt(p, next).ToList();
+                        TempPath = ptNum;
+                        IsSlowTempPath = true;
+                        var nextDouble = (float)random.NextDouble() * MathTools.Pi();
+                        TraceAim = new TwoDVector(MathTools.Cos(nextDouble), MathTools.Sin(nextDouble));
+                        NowTraceTick = CommonConfig.OtherConfig.BotAimTraceDefaultTime;
 
-                            var canUseWhenPatrol =
-                                bodyCharacterStatus.Prop?.CanUseWhenPatrol(bodyCharacterStatus,
-                                    BehaviorTreeFunc.Random) ?? false;
-                            if (canUseWhenPatrol)
-                            {
-                                agentStatusList.Add(use);
-                            }
+                        var canUseWhenPatrol =
+                            bodyCharacterStatus.Prop?.CanUseWhenPatrol(bodyCharacterStatus,
+                                BehaviorTreeFunc.Random) ?? false;
+                        if (canUseWhenPatrol)
+                        {
+                            agentStatusList.Add(use);
                         }
                     }
                 }
             }
+
 
             if (traceMsg != null) agentStatusList.Add(traceMsg);
 
@@ -334,6 +339,5 @@ namespace game_bot
             var canBeHit = distance1 > distance2 ? x : s;
             return canBeHit;
         }
-   
     }
 }

@@ -54,7 +54,7 @@ namespace game_bot
             = new(
                 new IBehaviorTreeNode[]
                 {
-                    GetCombo, CanUseWeaponAct, UsePropAct, ApproachingAct, TraceAct
+                    GetCombo, CanUseWeaponAct, UsePropAct, TraceAct
                 });
 
 
