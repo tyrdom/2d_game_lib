@@ -17,8 +17,11 @@ namespace lib_test
         public static void Main()
         {
             var dictionary = ResNames.Names.ToDictionary(x => x, GetStringByFile);
-
+#if NET6_0
+            RogueLocalConfig.LoadConfig();
+#else
             RogueLocalConfig.LoadConfig(dictionary);
+#endif
 #if DEBUG
             Console.Out.WriteLine($"~~~~~~{RogueLocalConfig.RogueRebornTick}");
 #endif

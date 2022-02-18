@@ -86,6 +86,7 @@ namespace game_stuff
         private static bool GenActResultWhichChar(CharacterStatus characterStatus, ISaleUnit saleUnit,
             out ImmutableArray<IActResult> c)
         {
+            c = ImmutableArray<IActResult>.Empty;
             var cost = characterStatus.PlayingItemBagCost(saleUnit);
             var characterStatusGId = characterStatus.GId;
             var restStack = saleUnit.GetRestStack(characterStatusGId);

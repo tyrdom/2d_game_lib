@@ -3,16 +3,16 @@
     <PropertyGroup>
       <LangVersion>8</LangVersion>
       <Nullable>enable</Nullable>
-      <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
+      <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
       <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
       <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="lib" />
       <Folder Include="Resources" />
     </ItemGroup>
 
@@ -89,5 +89,15 @@
       <None Remove="Resources\new_helper_s.json" />
       <EmbeddedResource Include="Resources\new_helper_s.json" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+        <HintPath>lib\Newtonsoft.Json.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+  
+
+  
 
 </Project>

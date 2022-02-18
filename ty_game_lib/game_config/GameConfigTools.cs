@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+#if NETCOREAPP
 using System.Reflection;
 using System.Runtime.Loader;
+#endif
+
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -87,16 +90,17 @@ namespace game_config
             throw new Exception("ErrorResource:::" + fileInfo);
         }
 
+
+#endif
+#if NETCOREAPP
         private static string GetNameSpace()
         {
-            var declaringType = MethodBase.GetCurrentMethod().DeclaringType;
+            var declaringType = MethodBase.GetCurrentMethod()?.DeclaringType;
             return declaringType?.Namespace ?? "";
         }
 
         public static readonly string DllName = GetNameSpace() + ".dll";
         public static readonly string ResLocate = GetNameSpace() + ".Resources.";
-#endif
-#if NETCOREAPP
         public static ImmutableDictionary<TK, TV> GenConfigDict<TK, TV>()
         {
             var namesDictionary = ResNames.NamesDictionary;
