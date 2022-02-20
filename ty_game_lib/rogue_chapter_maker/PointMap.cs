@@ -17,6 +17,7 @@ namespace rogue_chapter_maker
         Hangar,
         Nothing
     }
+
     [Serializable]
     public class PointMap
     {
@@ -57,14 +58,14 @@ namespace rogue_chapter_maker
             return $"{t}\n{c}\n{b}\n";
         }
 
-        public PointMap((int x, int y) slot, MapType mapType, List<Link> links)
+        public PointMap(Slot slot, MapType mapType, List<Link> links)
         {
             Slot = slot;
             MapType = mapType;
             Links = links;
         }
 
-        public PointMap(MapType mapType, int n, int s, int e, int w, (int x, int y) slot)
+        public PointMap(MapType mapType, int n, int s, int e, int w, Slot slot)
         {
             MapType = mapType;
             Slot = slot;
@@ -91,7 +92,7 @@ namespace rogue_chapter_maker
             }
         }
 
-        public (int x, int y) Slot { get; }
+        public Slot Slot { get; }
         public MapType MapType { get; private set; }
 
         public List<Link> Links { get; set; }
@@ -113,12 +114,12 @@ namespace rogue_chapter_maker
         public (IEnumerable<Link> thisLink, IEnumerable<Link> thatLink, PointMap thisMap, PointMap thatMap)?
             IsNearAndGetLinks(PointMap toAnotherOne)
         {
-            var b1 = Slot.y == toAnotherOne.Slot.y;
-            var b2 = Slot.x == toAnotherOne.Slot.x;
-            var e = -Slot.x + toAnotherOne.Slot.x == 1 && b1;
-            var w = -Slot.x + toAnotherOne.Slot.x == -1 && b1;
-            var n = -Slot.y + toAnotherOne.Slot.y == 1 && b2;
-            var s = -Slot.y + toAnotherOne.Slot.y == -1 && b2;
+            var b1 = Slot.Y == toAnotherOne.Slot.Y;
+            var b2 = Slot.X == toAnotherOne.Slot.X;
+            var e = -Slot.X + toAnotherOne.Slot.X == 1 && b1;
+            var w = -Slot.X + toAnotherOne.Slot.X == -1 && b1;
+            var n = -Slot.Y + toAnotherOne.Slot.Y == 1 && b2;
+            var s = -Slot.Y + toAnotherOne.Slot.Y == -1 && b2;
 
 
             if (e)
@@ -156,8 +157,8 @@ namespace rogue_chapter_maker
 
         public int GetDistance(PointMap pointMap)
         {
-            var slotX = Slot.x - pointMap.Slot.x;
-            var slotY = Slot.y - pointMap.Slot.y;
+            var slotX = Slot.X - pointMap.Slot.X;
+            var slotY = Slot.Y - pointMap.Slot.Y;
             return Math.Abs(slotX) + Math.Abs(slotY);
         }
 
@@ -169,6 +170,19 @@ namespace rogue_chapter_maker
         public void SetVendor()
         {
             MapType = MapType.Vendor;
+        }
+    }
+
+    [Serializable]
+    public readonly struct Slot
+    {
+        public int X { get; }
+        public int Y { get; }
+
+        public Slot(int x, int y)
+        {
+            X = x;
+            Y = y;
         }
     }
 }

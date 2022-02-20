@@ -119,9 +119,9 @@ namespace game_stuff
         public static uint MaxCallActTwoTick { get; private set; } = 10;
 
 
-        public static void ReLoadP(ConfigDictionaries configDictionaries)
+        public static void ReLoadP()
         {
-            CommonConfig.ReLoadP(configDictionaries);
+
             PerLoadMapTransPort = CommonConfig.Configs.map_rawss.ToImmutableDictionary(p => p.Key,
                 p => p.Value.TransPoint.GroupBy(obj2 => obj2.Direction)
                     .ToImmutableDictionary(
@@ -150,21 +150,8 @@ namespace game_stuff
                 StunBuffStandard.GenBuffByConfig(
                     CommonConfig.Configs.push_buffs[configsOtherConfig.common_fail_antibuff]);
             MaxCallActTwoTick = configsOtherConfig.interaction_act2_call_time;
-            ProtectTick = (int) configsOtherConfig.protect_time;
+            ProtectTick = (int)configsOtherConfig.protect_time;
         }
 
-#if NETCOREAPP
-        public static void LoadConfig()
-        {
-            var configs = new ConfigDictionaries();
-            ReLoadP(configs);
-        }
-#else
-        public static void LoadConfig(Dictionary<string, string> jsons)
-        {
-            var configs = new ConfigDictionaries(jsons);
-            ReLoadP(configs);
-        }
-#endif
     }
 }

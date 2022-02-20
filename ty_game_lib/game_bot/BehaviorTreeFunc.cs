@@ -8,7 +8,7 @@ namespace game_bot
 {
     public static class BehaviorTreeFunc
     {
-        public static Random Random { get; } = new();
+        public static Random Random { get; } = new Random();
 
         public static SkillAction CovOp(botOp botOp)
         {

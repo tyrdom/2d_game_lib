@@ -43,12 +43,12 @@ namespace rogue_game
 
     public class PushChapterGoNext : IGameResp
     {
-        public PushChapterGoNext((int x, MapType MapType, int GMid)[][] ySlotArray)
+        public PushChapterGoNext(YSlot[][] ySlotArray)
         {
             YSlotArray = ySlotArray;
         }
 
-        public (int x, MapType MapType, int GMid)[][] YSlotArray { get; }
+        public YSlot[][] YSlotArray { get; }
     }
 
     public class InitChapter : IGameResp

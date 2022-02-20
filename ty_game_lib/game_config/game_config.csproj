@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
       <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     </ItemGroup>
@@ -90,11 +91,7 @@
       <EmbeddedResource Include="Resources\new_helper_s.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-        <HintPath>lib\Newtonsoft.Json.dll</HintPath>
-      </Reference>
-    </ItemGroup>
+    
 
   
 

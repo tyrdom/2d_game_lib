@@ -54,9 +54,7 @@ namespace game_config
             {
                 n--;
                 var k = random.Next(n + 1);
-                var value = list[k];
-                list[k] = list[n];
-                list[n] = value;
+                (list[k], list[n]) = (list[n], list[k]);
             }
         }
     }

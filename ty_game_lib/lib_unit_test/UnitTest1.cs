@@ -18,7 +18,8 @@ namespace lib_unit_test
         [SetUp]
         public void Setup()
         {
-            RogueLocalConfig.LoadConfig();
+            CommonConfig.LoadConfig();
+            RogueLocalConfig.ReLoadP();
         }
 
         [Test]
@@ -122,14 +123,14 @@ namespace lib_unit_test
         public void RGameInitTest()
         {
             var characterBodies = Players();
-            var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First().Gid);
-            Assert.Pass(genByConfig.genByConfig.PlayerLeaderGid.ToString());
+            var genByConfig = RogueGame.GenByConfig(characterBodies, characterBodies.First().Gid, out var gameRespS);
+            Assert.Pass(genByConfig.PlayerLeaderGid.ToString());
         }
 
         [Test]
         public void PassiveTest()
         {
-            var floats = new[] {1.2f, 0f, 0f, 4.1f, 5.4f, 4f, 4f, 4f, 4f};
+            var floats = new[] { 1.2f, 0f, 0f, 4.1f, 5.4f, 4f, 4f, 4f, 4f };
             Span<float> span = floats;
             var vector = new Vector<float>(floats);
             var hashCode = vector[1];
@@ -139,8 +140,8 @@ namespace lib_unit_test
         [Test]
         public void BotTest()
         {
-            var pointMap = new PointMap(MapType.Small, 1, 1, 1, 1, (0, 0));
-            var genEmptyPveMap = PveMap.GenEmptyPveMap(pointMap, 1, 1, new[] {4, 8}, new int[] { });
+            var pointMap = new PointMap(MapType.Small, 1, 1, 1, 1, new Slot(0, 0));
+            var genEmptyPveMap = PveMap.GenEmptyPveMap(pointMap, 1, 1, new[] { 4, 8 }, new int[] { });
             var botTeam = new BotTeam();
             botTeam.SetNaviMaps(genEmptyPveMap.PlayGround.ResMId);
             genEmptyPveMap.SpawnNpcWithBot(new Random(), botTeam, 5);
@@ -162,7 +163,7 @@ namespace lib_unit_test
 
         private static HashSet<CharacterInitData> Players()
         {
-            var characterInitDataS = new[] {TestStuff.TestPlayer1(), TestStuff.TestPlayer2()};
+            var characterInitDataS = new[] { TestStuff.TestPlayer1(), TestStuff.TestPlayer2() };
 
             return characterInitDataS.IeToHashSet();
         }
@@ -179,10 +180,10 @@ namespace lib_unit_test
             var poly1 = TestStuff.TestPoly2();
             var poly2 = TestStuff.TestPoly3();
             var poly3 = new Poly(new[]
-                {new TwoDPoint(2, 1), new TwoDPoint(4, 1), new TwoDPoint(4, -1), new TwoDPoint(2, -1),});
+                { new TwoDPoint(2, 1), new TwoDPoint(4, 1), new TwoDPoint(4, -1), new TwoDPoint(2, -1), });
 
             var poly4 = new Poly(new[]
-                {new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4)});
+                { new TwoDPoint(-2, 2), new TwoDPoint(-4, 2), new TwoDPoint(-4, 4), new TwoDPoint(-2, 4) });
 
             var poly5 = new Poly(new[]
             {
@@ -201,13 +202,13 @@ namespace lib_unit_test
         [Test]
         public void NpcTest()
         {
-            var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2,out _);
+            var genById = BattleNpc.GenById(5, 1111, 2, new Random(), 2, out _);
 
             Assert.Pass($"fin");
         }
 
         [Test]
-        public void  WalkBlockPushTest()
+        public void WalkBlockPushTest()
         {
             var configDictionaries = new ConfigDictionaries();
             var mapRaws = configDictionaries.map_rawss[15];
@@ -216,8 +217,8 @@ namespace lib_unit_test
             var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
             var mapByPolys = WalkMap.CreateMapByPolys(enumerable.PloyListMark());
             var walkBlock = mapByPolys.SizeToEdge[size.small];
-            var twoDPoint = new TwoDPoint(-0.06930432f,6.693746f);
-            var twoDPoint2 = new TwoDPoint(-0.7251987f,6.235703f);
+            var twoDPoint = new TwoDPoint(-0.06930432f, 6.693746f);
+            var twoDPoint2 = new TwoDPoint(-0.7251987f, 6.235703f);
             var (isHitWall, pt) = walkBlock.PushOutToPt(twoDPoint, twoDPoint2);
             var realCoverPoint = walkBlock.RealCoverPoint(pt);
             //  Last[-0.06930432|6.693746],Now [-0.7251987|6.235703] = [-0.7251987|6.235703]

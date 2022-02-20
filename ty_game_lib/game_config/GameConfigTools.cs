@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 #if NETCOREAPP
 using System.Reflection;
 using System.Runtime.Loader;
@@ -32,66 +34,55 @@ namespace game_config
 
     {
         private static readonly char Sep = Path.DirectorySeparatorChar;
-#if UNITY_2018_1_OR_NEWER
-#else
-        //二进制文件存取位置,不会弄
-        private static readonly string ByteDir = $".{Sep}Bytes{Sep}";
 
-        public static Dictionary<TK, TV> CovertIDictToDict<TK, TV>(ImmutableDictionary<TK, TV> immutableDictionary)
+        //二进制文件存取
+
+        public static string SerializeObj<T>(T obj)
         {
-            return immutableDictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
+            try
+            {
+                IFormatter formatter = new BinaryFormatter();
+                var stream = new MemoryStream();
+                formatter.Serialize(stream, obj);
+                stream.Position = 0;
+                var buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+                stream.Flush();
+                stream.Close();
+                return Convert.ToBase64String(buffer);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("序列化失败,原因:" + ex.Message);
+            }
         }
 
-        private static ImmutableDictionary<TK, TV> CovertDictToIDict<TK, TV>(Dictionary<TK, TV> immutableDictionary)
+        /// <summary>
+        /// 反序列化 字符串到对象
+        /// </summary>
+        /// <param name="str">要转换为对象的字符串</param>
+        /// <param name="obj">泛型对象</param>
+        /// <returns>反序列化出来的对象</returns>
+        public static T DesObj<T>(string str, T obj)
         {
-            return immutableDictionary.ToImmutableDictionary(pair => pair.Key, pair => pair.Value);
+            try
+            {
+                obj = default(T);
+                IFormatter formatter = new BinaryFormatter();
+                var buffer = Convert.FromBase64String(str);
+                var stream = new MemoryStream(buffer);
+                obj = (T)formatter.Deserialize(stream);
+                stream.Flush();
+                stream.Close();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("反序列化失败,原因:" + ex.Message);
+            }
+
+            return obj;
         }
 
-        public static FileInfo GenFileInfo<T>()
-        {
-            var s = typeof(T).ToString();
-
-            return new FileInfo($".{ByteDir}{s}.bytes");
-        }
-
-        public static void SaveDict<TK, TV>(ImmutableDictionary<TK, TV> dictionary)
-        {
-            var fileNameLocation = GenFileInfo<TV>();
-            if (fileNameLocation.Directory != null && !fileNameLocation.Directory.Exists)
-                fileNameLocation.Directory.Create();
-
-            SaveDictByByte(dictionary, fileNameLocation);
-        }
-
-        private static void SaveDictByByte<TK, TV>(ImmutableDictionary<TK, TV> dictionary, FileInfo fileNameLocation)
-        {
-            var vs = dictionary.ToDictionary(pair => pair.Key, pair => pair.Value);
-            var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-
-            using var binaryFile = fileNameLocation.Create();
-            binaryFormatter.Serialize(binaryFile, vs);
-            binaryFile.Flush();
-        }
-
-        public static ImmutableDictionary<TK, TV> LoadDict<TK, TV>()
-        {
-            return LoadDictByByte<TK, TV>(GenFileInfo<TV>());
-        }
-
-        private static ImmutableDictionary<TK, TV> LoadDictByByte<TK, TV>(FileInfo fileInfo)
-        {
-            var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-
-            using var binaryFile = fileInfo.OpenRead();
-            var readBack = binaryFormatter.Deserialize(binaryFile) as Dictionary<TK, TV>;
-            binaryFile.Flush();
-            Console.Out.WriteLine($"{readBack}");
-            if (readBack != null) return CovertDictToIDict(readBack);
-            throw new Exception("ErrorResource:::" + fileInfo);
-        }
-
-
-#endif
 #if NETCOREAPP
         private static string GetNameSpace()
         {
@@ -101,7 +92,7 @@ namespace game_config
 
         public static readonly string DllName = GetNameSpace() + ".dll";
         public static readonly string ResLocate = GetNameSpace() + ".Resources.";
-        public static ImmutableDictionary<TK, TV> GenConfigDict<TK, TV>()
+        public static Dictionary<TK, TV> GenConfigDict<TK, TV>()
         {
             var namesDictionary = ResNames.NamesDictionary;
             if (!namesDictionary.TryGetValue(typeof(TV), out var name))
@@ -118,12 +109,12 @@ namespace game_config
             return GenConfigDictByJsonString<TK, TV>(json);
         }
 #endif
-        public static ImmutableDictionary<TK, TV> GenConfigDictByJsonString<TK, TV>(string jsonSting)
+        public static Dictionary<TK, TV> GenConfigDictByJsonString<TK, TV>(string jsonSting)
         {
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(jsonSting);
             var jToken = deserializeObject["content"];
             // Console.Out.WriteLine($"cov {jToken}");
-            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
+            var genConfigDict = jToken?.ToObject<Dictionary<TK, TV>>();
             if (genConfigDict != null) return genConfigDict;
             throw new Exception("ErrorResource:::" + jsonSting);
         }
@@ -160,10 +151,11 @@ namespace game_config
 #else
 
 
-        public static ImmutableDictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
+        public static Dictionary<TK, TV> GenConfigDictByJsonFile<TK, TV>(string jsonPath = "")
         {
+            var genConfigDictByJsonFile = new Dictionary<TK, TV>();
             if (jsonPath == "")
-                return new Dictionary<TK, TV>().ToImmutableDictionary();
+                return genConfigDictByJsonFile;
             var namesDictionary = ResNames.NamesDictionary;
             if (!namesDictionary.TryGetValue(typeof(TV), out var name))
                 throw new Exception("ErrorTypeOfConfig:" + typeof(TV));
@@ -175,8 +167,8 @@ namespace game_config
             var json = File.ReadAllText(file, Encoding.UTF8);
             var deserializeObject = JsonConvert.DeserializeObject<JObject>(json);
             var jToken = deserializeObject["content"];
-            var genConfigDict = jToken?.ToObject<ImmutableDictionary<TK, TV>>();
-            return genConfigDict ?? new Dictionary<TK, TV>().ToImmutableDictionary();
+            var genConfigDict = jToken?.ToObject<Dictionary<TK, TV>>();
+            return genConfigDict ?? genConfigDictByJsonFile;
         }
 
         private static string? FindFile(string path, string name)

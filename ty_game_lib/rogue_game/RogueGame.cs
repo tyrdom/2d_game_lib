@@ -33,17 +33,17 @@ namespace rogue_game
         private Random Random { get; }
 
 
-   
-        public static (RogueGame genByConfig, ImmutableHashSet<IGameResp> gameResps) GenByConfig(
+        public static RogueGame GenByConfig(
             HashSet<CharacterInitData> characterBodies,
-            int leaderId)
+            int leaderId, out ImmutableHashSet<IGameResp> outGameRespS)
         {
             var gameRespS = new HashSet<IGameResp>();
             var genByConfig = new RogueGame(characterBodies, leaderId,
                 out var ySlotArray);
             var pushChapterGoNext = new PushChapterGoNext(ySlotArray);
             gameRespS.Add(pushChapterGoNext);
-            return (genByConfig, gameRespS.ToImmutableHashSet());
+            outGameRespS = gameRespS.ToImmutableHashSet();
+            return genByConfig;
         }
 
         public ImmutableHashSet<IGameResp> GenLoadRespS()
@@ -82,7 +82,7 @@ namespace rogue_game
         }
 
         private RogueGame(HashSet<CharacterInitData> characterBodies, int playerLeader,
-            out (int x, MapType MapType, int MGid)[][] ySlotArray)
+            out YSlot[][] ySlotArray)
         {
             CharacterInitDataS = characterBodies;
             var enumerable = CharacterInitDataS.Select(x => x.GenCharacterBody(TwoDPoint.Zero())).ToArray();
@@ -227,13 +227,13 @@ namespace rogue_game
 #endif
                 GoNextChapter _ => ChapterCountDownTick > 0 ? GoNextChapter() : new QuestFail(callSeat),
                 KickPlayer kickPlayer => callSeat == PlayerLeaderGid && LeaveGame(kickPlayer.Seat)
-                    ? (IGameResp) new QuestOkResult(callSeat, kickPlayer)
+                    ? (IGameResp)new QuestOkResult(callSeat, kickPlayer)
                     : new QuestFail(callSeat),
                 Leave leave => LeaveGame(callSeat)
-                    ? (IGameResp) new QuestOkResult(callSeat, leave)
+                    ? (IGameResp)new QuestOkResult(callSeat, leave)
                     : new QuestFail(callSeat),
                 RebornPlayer rebornPlayer => Reborn(callSeat, rebornPlayer.Seat)
-                    ? (IGameResp) new QuestOkResult(callSeat, rebornPlayer)
+                    ? (IGameResp)new QuestOkResult(callSeat, rebornPlayer)
                     : new QuestFail(callSeat),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(gameRequest))
@@ -324,7 +324,7 @@ namespace rogue_game
             }
 
             foreach (var botTeamTempOpThink in BotTeam.TempOperate.Where(botTeamTempOpThink =>
-                botTeamTempOpThink.Value!= null))
+                         botTeamTempOpThink.Value != null))
             {
                 opDic[botTeamTempOpThink.Key] = botTeamTempOpThink.Value!;
             }

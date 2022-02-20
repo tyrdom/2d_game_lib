@@ -23,7 +23,7 @@ namespace rogue_game
 
         public InitChapter GenInitChapterPush(int chapterIdsCount)
         {
-            return new InitChapter(chapterIdsCount,GetReachedMapsMGidS());
+            return new InitChapter(chapterIdsCount, GetReachedMapsMGidS());
         }
 
         public PushChapterGoNext GenNewChapterMap()
@@ -35,7 +35,7 @@ namespace rogue_game
 
         public ImmutableHashSet<IGameResp> GenLoadChapterMsg(int chapterIdsCount)
         {
-            var genLoadChapterMsg = new IGameResp[] {GenNewChapterMap(), GenInitChapterPush(chapterIdsCount)};
+            var genLoadChapterMsg = new IGameResp[] { GenNewChapterMap(), GenInitChapterPush(chapterIdsCount) };
             return genLoadChapterMsg.ToImmutableHashSet();
         }
 
@@ -69,7 +69,7 @@ namespace rogue_game
         }
 
 
-        public static (Chapter genByConfig, (int x, MapType MapType, int MGid)[][] ySlotArray) GenChapterById(int id,
+        public static (Chapter genByConfig, YSlot[][] ySlotArray) GenChapterById(int id,
             Random random)
         {
             return CommonConfig.Configs.rogue_game_chapters.TryGetValue(id, out var chapter)
@@ -134,32 +134,32 @@ namespace rogue_game
             };
         }
 
-        public static (MapType MapType, (int x, int y) Slot, int Value)[] GenChapterTuples(
+        public static ChapterTuple[] GenChapterTuples(
             Dictionary<PointMap, int> charMapTop)
         {
-            var valueTuples = charMapTop.Select(x => (x.Key.MapType, x.Key.Slot, x.Value)).ToArray();
+            var valueTuples = charMapTop.Select(x => new ChapterTuple(x.Key.MapType, x.Key.Slot, x.Value)).ToArray();
             return valueTuples;
         }
 
-        public static (int x, MapType MapType, int MGid)[][] ToYSlotArray(
-            (MapType MapType, (int x, int y) Slot, int GId)[] valueTuples)
+        public static YSlot[][] ToYSlotArray(
+            ChapterTuple[] valueTuples)
         {
-            var maxX = valueTuples.Select(tuple => tuple.Slot.x).Max();
-            var minX = valueTuples.Select(tuple => tuple.Slot.x).Min();
+            var maxX = valueTuples.Select(tuple => tuple.Slot.X).Max();
+            var minX = valueTuples.Select(tuple => tuple.Slot.X).Min();
             var enumerableX = Enumerable.Range(minX, maxX - minX + 1);
-            var list = valueTuples.GroupBy(t => t.Slot.y).ToList();
+            var list = valueTuples.GroupBy(t => t.Slot.Y).ToList();
             list.Sort((x, y) => x.Key.CompareTo(y.Key));
             var enumerable = list.Select(x =>
-                    x.Select(xx => (xx.Slot.x, xx.MapType, xx.GId))
+                    x.Select(xx => new YSlot(xx.Slot.X, xx.MapType, xx.MgId))
                         .ToArray())
                 ;
             return enumerable.ToArray();
         }
 
-        public static (MapType mapType, int mgid)[][] YSlotsToMapTypeMatrix(
-            (int x, MapType MapType, int GId)[][] list)
+        public static MapTypeInfo[][] YSlotsToMapTypeMatrix(
+            YSlot[][] list)
         {
-            var selectMany = list.SelectMany(x => x.Select(xx => xx.x)).ToArray();
+            var selectMany = list.SelectMany(x => x.Select(xx => xx.X)).ToArray();
             var maxX = selectMany.Max();
             var minX = selectMany.Min();
             var enumerableX = Enumerable.Range(minX, maxX - minX + 1);
@@ -167,11 +167,11 @@ namespace rogue_game
 
             var enumerable = list.Select(x =>
             {
-                var dictionary = x.ToDictionary(p => p.x, p => (p.MapType, p.GId));
+                var dictionary = x.ToDictionary(p => p.X, p => new MapTypeInfo(p.MapType, p.MGid));
 
                 return enumerableX.Select(xx => dictionary.TryGetValue(xx, out var mapType)
                         ? mapType
-                        : (MapType.Nothing, -1))
+                        : new MapTypeInfo(MapType.Nothing, -1))
                     .ToArray();
             }).ToArray();
             return enumerable;
@@ -223,7 +223,7 @@ namespace rogue_game
             return genByConfig;
         }
 
-        public static (Chapter genByConfig, (int x, MapType MapType, int MGid)[][] ySlotArray) GenByConfig(
+        public static (Chapter genByConfig, YSlot[][] ySlotArray) GenByConfig(
             rogue_game_chapter gameChapter, Random random)
         {
             var chapterMapTop = ChapterMapTop.GenAChapterTopByConfig(gameChapter);
@@ -288,7 +288,7 @@ namespace rogue_game
                 {
                     var linkTo = pointMapLink.FirstOrDefault()?.LinkTo
                                  ?? throw new IndexOutOfRangeException(
-                                     $"{pointMap.Links.Count} : direction {pointMapLink.Key} {pointMap.Slot.x}| {pointMap.Slot.y}");
+                                     $"{pointMap.Links.Count} : direction {pointMapLink.Key} {pointMap.Slot.X}| {pointMap.Slot.Y}");
                     var direction = pointMapLink.Key;
                     var playGroundResMId = value.PlayGround.ResMId;
 
@@ -322,6 +322,46 @@ namespace rogue_game
             return dictionary.TryGetValue(x ?? throw new InvalidOperationException(), out var value)
                 ? pveEmptyMaps.TryGetValue(value, out var map) ? map : throw new KeyNotFoundException()
                 : throw new KeyNotFoundException();
+        }
+    }
+
+    public readonly struct YSlot
+    {
+        public int X { get; }
+        public MapType MapType { get; }
+        public int MGid { get; }
+
+        public YSlot(int x, MapType mapType, int mGid)
+        {
+            X = x;
+            MapType = mapType;
+            MGid = mGid;
+        }
+    }
+
+    public readonly struct ChapterTuple
+    {
+        public MapType MapType { get; }
+        public Slot Slot { get; }
+        public int MgId { get; }
+
+        public ChapterTuple(MapType mapType, Slot slot, int mgId)
+        {
+            MapType = mapType;
+            Slot = slot;
+            MgId = mgId;
+        }
+    }
+
+    public readonly struct MapTypeInfo
+    {
+        public MapType MapType { get; }
+        public int MgId { get; }
+
+        public MapTypeInfo(MapType mapType, int mgId)
+        {
+            MapType = mapType;
+            MgId = mgId;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using game_bot;
 using game_config;
 using game_stuff;
 using rogue_chapter_maker;
@@ -11,12 +12,16 @@ namespace rogue_game
     {
         public static int GetRuleCheckIntTickByTime(float time)
         {
-            return (int) Math.Round(time / CommonConfig.OtherConfig.rogueGameCheckTickTime);
+            if (CommonConfig.OtherConfig != null)
+                return (int)Math.Round(time / CommonConfig.OtherConfig.rogueGameCheckTickTime);
+            throw new Exception("config not load");
         }
 
         public static int ConsoleTickAsGameTickNum()
         {
-            return (int) (CommonConfig.OtherConfig.rogueGameCheckTickTime / CommonConfig.OtherConfig.tick_time);
+            if (CommonConfig.OtherConfig != null)
+                return (int)(CommonConfig.OtherConfig.rogueGameCheckTickTime / CommonConfig.OtherConfig.tick_time);
+            throw new Exception("config not load");
         }
 
         public static bool CanEndRest(item_id itemId)
@@ -33,14 +38,14 @@ namespace rogue_game
         {
             return mapType switch
             {
-                MapType.BigStart => new[] {size.medium, size.small},
-                MapType.BigEnd => new[] {size.medium, size.small},
-                MapType.Small => new[] {size.small},
-                MapType.Big => new[] {size.medium, size.small},
-                MapType.SmallStart => new[] {size.small},
-                MapType.SmallEnd => new[] {size.small},
-                MapType.Vendor => new[] {size.small},
-                MapType.Hangar => new[] {size.medium, size.small},
+                MapType.BigStart => new[] { size.medium, size.small },
+                MapType.BigEnd => new[] { size.medium, size.small },
+                MapType.Small => new[] { size.small },
+                MapType.Big => new[] { size.medium, size.small },
+                MapType.SmallStart => new[] { size.small },
+                MapType.SmallEnd => new[] { size.small },
+                MapType.Vendor => new[] { size.small },
+                MapType.Hangar => new[] { size.medium, size.small },
                 _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
             };
         }
@@ -61,26 +66,21 @@ namespace rogue_game
         public static int RogueRebornTick { get; private set; } = 10;
 
         public static int ChapterPassTick { get; private set; } = 20;
-        public static void ReLoadP(ConfigDictionaries configs)
+
+        public static void ReLoadP()
         {
-            game_bot.BotLocalConfig.ReLoadP(configs);
+            if (CommonConfig.OtherConfig == null)
+            {
+                throw new Exception("config is not load");
+            }
+
+            StuffLocalConfig.ReLoadP();
+
+            BotLocalConfig.ReLoadP();
             var configsOtherConfig = CommonConfig.OtherConfig;
             RogueRebornCost = configsOtherConfig.rogue_reborn_cost.Select(GameItem.GenByConfigGain).ToArray();
             RogueRebornTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueRebornCountDownTime);
             ChapterPassTick = GetRuleCheckIntTickByTime(configsOtherConfig.rogueChapterPassCountDownTime);
         }
- #if NETCOREAPP
-         public static void LoadConfig()
-         {
-             var configs = new ConfigDictionaries();
-             ReLoadP(configs);
-         }
- #else
-        public static void LoadConfig(Dictionary<string, string> jsons)
-        {
-            var configs = new ConfigDictionaries(jsons);
-            ReLoadP(configs);
-        }
- #endif
     }
 }

@@ -20,9 +20,8 @@ namespace game_bot
                 p => p.Value.WalkMap.SizeToEdge
                     .ToImmutableDictionary(pp => pp.Key, pp => new PathTop(pp.Value)));
 
-        public static void ReLoadP(ConfigDictionaries configDictionaries)
+        public static void ReLoadP()
         {
-            game_stuff.StuffLocalConfig.ReLoadP(configDictionaries);
             NaviMapPerLoad =
                 game_stuff.StuffLocalConfig.PerLoadMapConfig.ToImmutableDictionary(p => p.Key,
                     p => p.Value.WalkMap.SizeToEdge.ToImmutableDictionary(pp => pp.Key, pp => new PathTop(pp.Value)));
@@ -35,18 +34,5 @@ namespace game_bot
             MaxTraceDistance = configsBotOtherConfig.MaxTraceDistance;
             LockTraceTickTime = (int) configsBotOtherConfig.LockTraceTickTime;
         }
-#if NETCOREAPP
-        public static void LoadConfig()
-        {
-            var configs = new ConfigDictionaries();
-            ReLoadP(configs);
-        }
-#else
-        public static void LoadConfig(Dictionary<string, string> jsons)
-        {
-            var configs = new ConfigDictionaries(jsons);
-            ReLoadP(configs);
-        }
-#endif
     }
 }

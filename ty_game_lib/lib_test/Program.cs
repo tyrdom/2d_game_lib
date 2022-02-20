@@ -16,38 +16,56 @@ namespace lib_test
     {
         public static void Main()
         {
-            var dictionary = ResNames.Names.ToDictionary(x => x, GetStringByFile);
+            var dictionary = ResNames.Names.ToDictionary(x => x, x => GetStringByFile(x, 4));
+
+            var configBinStringPath = CommonConfig.ConfigBinStringPath();
+            var exists = File.Exists(configBinStringPath);
+
+            if (exists)
+            {
+                Console.Out.WriteLine($"load from {configBinStringPath}");
+                CommonConfig.LoadConfigFormFile(configBinStringPath);
+            }
+            else
+            {
 #if NET6_0
-            RogueLocalConfig.LoadConfig();
+                CommonConfig.LoadConfig();
 #else
-            RogueLocalConfig.LoadConfig(dictionary);
+                CommonConfig.LoadConfig(dictionary);
 #endif
+            }
 #if DEBUG
             Console.Out.WriteLine($"~~~~~~{RogueLocalConfig.RogueRebornTick}");
 #endif
 
+            if (!exists)
+            {
+                CommonConfig.SaveConfigToFile(configBinStringPath);
+            }
+
+            RogueLocalConfig.ReLoadP();
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_spear, weapon_id.test_cross_bow},
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] { weapon_id.test_spear, weapon_id.test_cross_bow },
                     size.small,
                     1, new Dictionary<passive_id, uint>
                     {
-                        {passive_id.revenge, 2}, {passive_id.absorb_up, 1}, {passive_id.on_break, 1}
+                        { passive_id.revenge, 2 }, { passive_id.absorb_up, 1 }, { passive_id.on_break, 1 }
                     });
 
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1,
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] { weapon_id.test_sword }, size.small, 1,
                     new Dictionary<passive_id, uint>
                     {
-                        {passive_id.main_atk, 10}, {passive_id.shield_overload, 3}, {passive_id.energy_armor, 1}
+                        { passive_id.main_atk, 10 }, { passive_id.shield_overload, 3 }, { passive_id.energy_armor, 1 }
                     });
             var characterInitData2 =
-                CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(3, 1, new[] { weapon_id.test_sword }, size.small, 1);
             var characterInitData3 =
-                CharacterInitData.GenPlayerByConfig(4, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(4, 1, new[] { weapon_id.test_sword }, size.small, 1);
 
             var characterInitData4 =
-                CharacterInitData.GenPlayerByConfig(5, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(5, 1, new[] { weapon_id.test_sword }, size.small, 1);
 
             // var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             // var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
@@ -55,8 +73,8 @@ namespace lib_test
             // var body1 = characterInitData3.GenCharacterBody(TwoDPoint.Zero());
             // var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterInitData> {genPlayerByConfig, characterInitData},
-                    1).genByConfig;
+                RogueGame.GenByConfig(new HashSet<CharacterInitData> { genPlayerByConfig, characterInitData },
+                    1, out var gameRespS);
 
             var playerCharacterStatus = genByConfig.NowGamePlayers[1].Player.CharacterStatus;
             var playerCharacterStatus2 = genByConfig.NowGamePlayers[2].Player.CharacterStatus;
@@ -85,7 +103,7 @@ namespace lib_test
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1, specialAction: SpecialAction.UseProp);
                 var opDic = new Dictionary<int, Operate>
-                    {{1, operate}, {2, operate1}};
+                    { { 1, operate }, { 2, operate1 } };
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(opDic);
 
                 var (beHit, trapBeHit,
@@ -125,7 +143,7 @@ namespace lib_test
                     : new CharacterBody[] { };
                 var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
 
-                var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
+                var genTickMsg = (CharTickMsg?)(firstOrDefault?.GenTickMsg() ?? null);
 
                 var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
@@ -169,18 +187,18 @@ namespace lib_test
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);
                 var opDic = new Dictionary<int, Operate>()
-                    {{1, operate}, {2, operate1}};
+                    { { 1, operate }, { 2, operate1 } };
                 var rogueGameGoTickResult = rogueGame.GamePlayGoATick(opDic);
             }
         }
 
-        private static string GetStringByFile(string s)
+        private static string GetStringByFile(string s, int ll)
         {
             var directorySeparatorChar = Path.DirectorySeparatorChar;
             var currentDirectory = Environment.CurrentDirectory;
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < ll; i++)
             {
-                var x = currentDirectory.LastIndexOf("\\", StringComparison.Ordinal);
+                var x = currentDirectory.LastIndexOf($"{directorySeparatorChar}", StringComparison.Ordinal);
                 currentDirectory = currentDirectory.Substring(0, x);
             }
 
@@ -195,8 +213,8 @@ namespace lib_test
             Console.Out.WriteLine($"{p}");
 
 
-            using StreamReader sr = new StreamReader(p);
-            string ss = sr.ReadToEnd();
+            using var sr = new StreamReader(p);
+            var ss = sr.ReadToEnd();
             return ss;
         }
     }

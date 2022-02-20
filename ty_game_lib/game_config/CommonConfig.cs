@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace game_config
 {
@@ -9,20 +11,33 @@ namespace game_config
     {
         public static ConfigDictionaries Configs { get; private set; }
 
-#if NETCOREAPP
+
             = new ConfigDictionaries();
-#else
-            = new ConfigDictionaries("");
-#endif
 
-        public static other_config OtherConfig { get; private set; }
 
-        // public static uint GetTickByTime(float time)
-        // {
-        //     return (uint) Math.Round(time / OtherConfig.tick_time, 0);
-        // }
+        public static other_config? OtherConfig { get; private set; }
 
-       
+        public static string ConfigBinStringPath()
+        {
+            var upDir = UpDir(Environment.CurrentDirectory, 4);
+            var directorySeparatorChar = Path.DirectorySeparatorChar;
+            var s =
+                $"{upDir}{directorySeparatorChar}game_config{directorySeparatorChar}Resources{directorySeparatorChar}config.txt";
+            return s;
+        }
+
+        public static string UpDir(string path, int ll)
+        {
+            var directorySeparatorChar = Path.DirectorySeparatorChar;
+            var currentDirectory = path;
+            for (var i = 0; i < ll; i++)
+            {
+                var x = currentDirectory.LastIndexOf($"{directorySeparatorChar}", StringComparison.Ordinal);
+                currentDirectory = currentDirectory.Substring(0, x);
+            }
+
+            return currentDirectory;
+        }
 
         public static (bool isGetOk, T things) GetWeightThings<T>(this ImmutableArray<(int, T)> weightOverList,
             int randV)
@@ -54,7 +69,8 @@ namespace game_config
 
         public static float ValuePerSecToValuePerTick(this float numPerSec)
         {
-            return numPerSec * OtherConfig.tick_time;
+            if (OtherConfig != null) return numPerSec * OtherConfig.tick_time;
+            throw new Exception("config not loaded");
         }
 
 
@@ -77,5 +93,23 @@ namespace game_config
             ReLoadP(configs);
         }
 #endif
+        public static void SaveConfigToFile(string path)
+        {
+            var serializeObj = GameConfigTools.SerializeObj(Configs);
+            File.WriteAllText(path, serializeObj, Encoding.UTF8);
+        }
+
+        public static void LoadConfigFormFile(string path)
+        {
+            var readAllText = File.ReadAllText(path, Encoding.UTF8);
+            LoadConfigFromString(readAllText);
+        }
+
+        public static void LoadConfigFromString(string readAllText)
+        {
+            var configDictionaries = GameConfigTools.DesObj(readAllText, Configs);
+            Configs = configDictionaries;
+            OtherConfig = Configs.other_configs[1];
+        }
     }
 }

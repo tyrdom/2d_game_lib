@@ -18,19 +18,19 @@ namespace rogue_chapter_maker
         public override string ToString()
         {
             var valueTuples = PointMaps.Select(x => (x.To3Strings(), x.Slot)).ToArray();
-            var max = valueTuples.Select(tuple => tuple.Slot.x).Max();
-            var min = valueTuples.Select(tuple => tuple.Slot.x).Min();
+            var max = valueTuples.Select(tuple => tuple.Slot.X).Max();
+            var min = valueTuples.Select(tuple => tuple.Slot.X).Min();
             var enumerable = Enumerable.Range(min, max - min + 1);
-            var groupBy = valueTuples.GroupBy(t => t.Slot.y).Select(g =>
+            var groupBy = valueTuples.GroupBy(t => t.Slot.Y).Select(g =>
                 {
                     var argKey = g.Key;
-                    var ints = g.Select(p => p.Slot.x).ToArray();
+                    var ints = g.Select(p => p.Slot.X).ToArray();
                     foreach (var i in ints)
                     {
                         Console.Out.WriteLine($"x:{i},y{argKey}");
                     }
 
-                    var dictionary = g.ToDictionary(p => p.Slot.x, p => p.Item1);
+                    var dictionary = g.ToDictionary(p => p.Slot.X, p => p.Item1);
                     var valueTuple = enumerable.Aggregate(("", "", ""),
                         (s, x)
                             =>
@@ -86,7 +86,7 @@ namespace rogue_chapter_maker
             bool finishB, int vStart, int vRangeCount, int hStart, int hRangeCount)
         {
             var enumerable = Enumerable.Range(1, big + hangar);
-            var nowSlot = (0, 0);
+            var nowSlot = new Slot(0, 0);
             var enumerable2 = Enumerable.Range(1, small + vendor);
             var genAChapterMap = new ChapterMapTop();
             foreach (var _ in enumerable)
@@ -234,16 +234,17 @@ namespace rogue_chapter_maker
             CanLinks.ExceptWith(map.Links);
         }
 
-        private (int x, int y)[] GetNearSlotCanUse(PointMap findFarMap)
+        private Slot[] GetNearSlotCanUse(PointMap findFarMap)
         {
-            var slotX = findFarMap.Slot.x;
-            var slotY = findFarMap.Slot.y;
-            var valueTuples = new (int x, int y)[]
-                {(slotX + 1, slotY), (slotX - 1, slotY), (slotX, slotY + 1), (slotX, slotY - 1)};
+            var slotX = findFarMap.Slot.X;
+            var slotY = findFarMap.Slot.Y;
+            var valueTuples = new Slot[]
+                { new Slot(slotX + 1, slotY), new Slot(slotX - 1, slotY), new Slot(slotX, slotY + 1), new Slot(slotX, slotY - 1) };
             var enumerable = valueTuples.Except(valueTuples.Where(x => PointMaps.Any(xx =>
             {
-                var (i, y) = xx.Slot;
-                return i == x.x && y == x.y;
+                var i = xx.Slot.X;
+                var y = xx.Slot.Y;
+                return i == x.X && y == x.Y;
             })));
 
             return enumerable.ToArray();
@@ -283,18 +284,18 @@ namespace rogue_chapter_maker
             CanLinks.UnionWith(pointMapLinks);
         }
 
-        private (int x, int y) GenANewSlot()
+        private Slot GenANewSlot()
         {
             var next = MakerTools.Random.Next(CanLinks.Count);
             var canLink = CanLinks.ToList()[next];
-            var (x, y) = canLink.InPointMap.Slot;
-
+            var x = canLink.InPointMap.Slot.X;
+            var y = canLink.InPointMap.Slot.Y;
             return canLink.Side switch
             {
-                direction.East => (x + 1, y),
-                direction.West => (x - 1, y),
-                direction.North => (x, y + 1),
-                direction.South => (x, y - 1),
+                direction.East => new Slot(x + 1, y),
+                direction.West => new Slot(x - 1, y),
+                direction.North => new Slot(x, y + 1),
+                direction.South => new Slot(x, y - 1),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

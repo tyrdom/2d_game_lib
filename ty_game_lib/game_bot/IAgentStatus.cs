@@ -8,7 +8,9 @@ namespace game_bot
     {
     }
 
-    public record PropUse : IAgentStatus;
+    public class PropUse : IAgentStatus
+    {
+    }
 
 
     public class TargetMsg : IAgentStatus
@@ -37,7 +39,7 @@ namespace game_bot
         }
     }
 
-    public record TraceToPtMsg : IAgentStatus
+    public class TraceToPtMsg : IAgentStatus
     {
         public TwoDPoint TracePt { get; }
 
@@ -50,7 +52,7 @@ namespace game_bot
         }
     }
 
-    public record TraceToAimMsg : IAgentStatus
+    public class TraceToAimMsg : IAgentStatus
     {
         public TraceToAimMsg(TwoDVector aim)
         {
@@ -60,7 +62,7 @@ namespace game_bot
         public TwoDVector Aim { get; }
     }
 
-    public record BotMemory : IAgentStatus
+    public class BotMemory : IAgentStatus
     {
         public ComboCtrl ComboCtrl { get; }
         public FirstSkillCtrl FirstSkillCtrl { get; }
@@ -72,5 +74,7 @@ namespace game_bot
         }
     }
 
-    public record HitSth : IAgentStatus;
+    public class HitSth : IAgentStatus
+    {
+    }
 }
