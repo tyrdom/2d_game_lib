@@ -30,13 +30,20 @@ namespace rogue_game
         public static ChapterSave Save(Chapter chapter)
         {
             var chapterMapOnYSlotArray = chapter.MapOnYSlotArray;
-            var enumerable = chapter.MGidToMap.Where(x => x.Value.IsClear && x.Value.IsReached).Select(x => x.Key)
+            var keyValuePairs = chapter.MGidToMap
+                .Where(x => x.Value.IsClear && x.Value.IsReached);
+            var enumerable = keyValuePairs
+                .Select(x => x.Key)
                 .ToArray();
-            var ints = chapterMapOnYSlotArray
-                .Where(x => x.Key.MapType == MapType.Vendor || x.Key.MapType == MapType.Hangar).Select(x => x.Value);
+            var valuePairs = chapterMapOnYSlotArray
+                .Where(x => x.Key.MapType == MapType.Vendor 
+                            || x.Key.MapType == MapType.Hangar);
+            
+            var ints = valuePairs.Select(x => x.Value);
 
             var pveMaps = ints.Select(x => chapter.MGidToMap[x]);
-            var playGroundSaveDataS = pveMaps.Select(x => PlayGroundSaveData.GroundSaveData(x.PlayGround)).ToArray();
+            var playGroundSaveDataS = pveMaps.
+                Select(x => PlayGroundSaveData.GroundSaveData(x.PlayGround)).ToArray();
 
             var chapterSave =
                 new ChapterSave(playGroundSaveDataS, chapterMapOnYSlotArray, enumerable, chapter.ChapterId);

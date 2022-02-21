@@ -11,7 +11,7 @@ namespace game_stuff
     {
         public weapon_id WId { get; }
 
-        public ImmutableDictionary<size, ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>>>
+        public Dictionary<size, Dictionary<SkillAction, Dictionary<int, Skill>>>
             SkillGroups { get; }
 
         public ImmutableDictionary<size, Skill> BlockSkills { get; }
@@ -23,8 +23,7 @@ namespace game_stuff
         public Scope[] ZoomStepScopes { get; private set; }
 
         private Weapon(
-            ImmutableDictionary<size, ImmutableDictionary<SkillAction,
-                ImmutableDictionary<int, Skill>>> skillGroups,
+            Dictionary<size, Dictionary<SkillAction, Dictionary<int, Skill>>> skillGroups,
             float botRanges,
             ImmutableDictionary<SnipeAction, Snipe> snipes,
             weapon_id wId,
@@ -92,28 +91,28 @@ namespace game_stuff
             return dropAsIMapInteractable;
         }
 
-        private static ImmutableDictionary<SkillAction, ImmutableDictionary<int, Skill>> GenASkillGroup(
+        private static Dictionary<SkillAction, Dictionary<int, Skill>> GenASkillGroup(
             skill_group skillGroup)
         {
             var dictionary = skillGroup.Op1.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
-                .ToImmutableDictionary();
+                ;
             var dictionary2 = skillGroup.Op2.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
-                .ToImmutableDictionary();
+                ;
             var dictionary3 = skillGroup.Op3.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
-                .ToImmutableDictionary();
+                ;
             var dictionary4 = skillGroup.Switch.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
-                .ToImmutableDictionary();
+                ;
 
             var immutableDictionary =
-                new Dictionary<SkillAction, ImmutableDictionary<int, Skill>>
+                new Dictionary<SkillAction, Dictionary<int, Skill>>
                 {
                     {SkillAction.Op1, dictionary}, {SkillAction.Op2, dictionary2}, {SkillAction.Op3, dictionary3},
                     {SkillAction.Switch, dictionary4}
-                }.ToImmutableDictionary();
+                };
             return immutableDictionary;
         }
 
@@ -150,17 +149,18 @@ namespace game_stuff
 
         public static Weapon GenByConfig(weapon weapon)
         {
-            var immutableDictionary = weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => x.body,
-                x =>
-                {
-                    var argSkillGroup = x.skill_group;
-                    if (CommonConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
+            Dictionary<size, Dictionary<SkillAction, Dictionary<int, Skill>>> immutableDictionary =
+                weapon.BodySizeUseAndSnipeSpeedFix.ToDictionary(x => x.body,
+                    x =>
                     {
-                        return GenASkillGroup(skillGroup);
-                    }
+                        var argSkillGroup = x.skill_group;
+                        if (CommonConfig.Configs.skill_groups.TryGetValue(argSkillGroup, out var skillGroup))
+                        {
+                            return GenASkillGroup(skillGroup);
+                        }
 
-                    throw new Exception($"not such a group name::{skillGroup} in weapon {weapon.id} ");
-                }).ToImmutableDictionary();
+                        throw new Exception($"not such a group name::{skillGroup} in weapon {weapon.id} ");
+                    });
             var blockDic = weapon.BodySizeToBlockSkill
                 .ToDictionary(x => x.body, x => Skill.GenSkillById(x.blockSkill)).ToImmutableDictionary();
 

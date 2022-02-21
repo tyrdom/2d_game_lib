@@ -134,7 +134,7 @@ namespace game_stuff
             var mapInteractable = new List<IMapInteractable>();
             foreach (var keyValuePair in weapons)
             {
-                if (!keyValuePair.Value.SkillGroups.TryGetKey(bodySize, out _)) continue;
+                if (!keyValuePair.Value.SkillGroups.ContainsKey(bodySize)) continue;
                 var genIMapInteractable = keyValuePair.Value.DropAsIMapInteractable(pos);
                 mapInteractable.Add(genIMapInteractable);
                 weapons.Remove(keyValuePair.Key);
