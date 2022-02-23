@@ -323,6 +323,28 @@ namespace rogue_game
                 ? pveEmptyMaps.TryGetValue(value, out var map) ? map : throw new KeyNotFoundException()
                 : throw new KeyNotFoundException();
         }
+        
+        public  ChapterSave Save()
+        {
+            var keyValuePairs = MGidToMap
+                .Where(x => x.Value.IsClear && x.Value.IsReached);
+            var enumerable = keyValuePairs
+                .Select(x => x.Key)
+                .ToArray();
+            var valuePairs = MapOnYSlotArray
+                .Where(x => x.Key.MapType == MapType.Vendor 
+                            || x.Key.MapType == MapType.Hangar);
+            
+            var ints = valuePairs.Select(x => x.Value);
+
+            var pveMaps = ints.Select(x => MGidToMap[x]);
+            var playGroundSaveDataS = pveMaps.
+                Select(x => PlayGroundSaveData.GroundSaveData(x.PlayGround)).ToArray();
+
+            var chapterSave =
+                new ChapterSave(playGroundSaveDataS, MapOnYSlotArray, enumerable, ChapterId);
+            return chapterSave;
+        }
     }
 
     public readonly struct YSlot

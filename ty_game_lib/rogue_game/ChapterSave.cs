@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using game_config;
 using rogue_chapter_maker;
 
@@ -26,29 +25,6 @@ namespace rogue_game
 
         private int ChapterId { get; }
 
-
-        public static ChapterSave Save(Chapter chapter)
-        {
-            var chapterMapOnYSlotArray = chapter.MapOnYSlotArray;
-            var keyValuePairs = chapter.MGidToMap
-                .Where(x => x.Value.IsClear && x.Value.IsReached);
-            var enumerable = keyValuePairs
-                .Select(x => x.Key)
-                .ToArray();
-            var valuePairs = chapterMapOnYSlotArray
-                .Where(x => x.Key.MapType == MapType.Vendor 
-                            || x.Key.MapType == MapType.Hangar);
-            
-            var ints = valuePairs.Select(x => x.Value);
-
-            var pveMaps = ints.Select(x => chapter.MGidToMap[x]);
-            var playGroundSaveDataS = pveMaps.
-                Select(x => PlayGroundSaveData.GroundSaveData(x.PlayGround)).ToArray();
-
-            var chapterSave =
-                new ChapterSave(playGroundSaveDataS, chapterMapOnYSlotArray, enumerable, chapter.ChapterId);
-            return chapterSave;
-        }
 
         public Chapter Load(Random random)
         {

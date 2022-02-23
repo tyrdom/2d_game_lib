@@ -35,7 +35,7 @@ namespace rogue_game
             var playerStatusSaves = rogueGame.NowGamePlayers
                 .ToDictionary(x => x.Key,
                     x => x.Value.PlayerSave());
-            var chapterSave = ChapterSave.Save(rogueGame.NowChapter);
+            var chapterSave = rogueGame.NowChapter.Save();
             var rogueGameCharacterInitDataS = rogueGame.CharacterInitDataS.ToArray();
             var chapterIdsCount = rogueGame.ChapterIds.Count;
             var playGroundMgId = rogueGame.NowPlayMap.PlayGround.MgId;
