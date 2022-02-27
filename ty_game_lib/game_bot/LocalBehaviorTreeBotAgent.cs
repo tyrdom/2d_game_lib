@@ -160,6 +160,9 @@ namespace game_bot
                     pathTop?.FindGoPts(startPt, twoDPoint, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ??
                     new[] { twoDPoint };
                 TempPath = twoDPoints.ToList();
+#if DEBUG
+                Console.Out.WriteLine($"bot::{BotBody.GetId()} find enemy go path:{WayPtString()}");
+#endif
                 IsSlowTempPath = false;
                 var targetMsg = new TargetMsg(nearestTarget);
                 agentStatusList.Add(targetMsg);
@@ -194,7 +197,7 @@ namespace game_bot
                     TracePt = twoDPoint;
 #if DEBUG
                     Console.Out.WriteLine(
-                        $"{BotBody.GetId()} LossTarget Start Trace To Pt {TracePt} tick:{NowTraceTick}");
+                        $"bot::{BotBody.GetId()} LossTarget Start Trace To Pt {TracePt} tick:{NowTraceTick}");
 #endif
                     if (TempTarget is CharacterBody characterBody)
                     {
@@ -222,13 +225,14 @@ namespace game_bot
                 }
                 else
                 {
-#if DEBUG
-                    Console.Out.WriteLine($"{BotBody.GetId()}  Trace MayBePt {TracePt}");
-#endif
                     var twoDPoints =
                         pathTop?.FindGoPts(startPt, TracePt, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ??
                         new[] { TracePt };
                     TempPath = twoDPoints.ToList();
+#if DEBUG
+                    var aggregate = WayPtString();
+                    Console.Out.WriteLine($"bot::{BotBody.GetId()}  Trace MayBePt {TracePt} way point {aggregate}");
+#endif
                     IsSlowTempPath = false;
                 }
             }
@@ -249,6 +253,10 @@ namespace game_bot
                             pathTop?.FindGoPts(startPt, twoDPoint,
                                 BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] { twoDPoint };
                         TempPath = twoDPoints.ToList();
+#if DEBUG
+                        Console.Out.WriteLine(
+                            $"bot::{BotBody.GetId()} may be enemy at {twoDPoint} way point {WayPtString()}");
+#endif
                         IsSlowTempPath = false;
                     }
                 }
@@ -291,6 +299,10 @@ namespace game_bot
                             pathTop?.FindGoPts(startPt, twoDPoint,
                                 BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] { twoDPoint };
                         TempPath = twoDPoints.ToList();
+
+#if DEBUG
+                        Console.Out.WriteLine($"bot::{BotBody.GetId()} return to patrol way pt {WayPtString()}");
+#endif
                     }
                     else
                     {
@@ -319,6 +331,13 @@ namespace game_bot
 
             return agentStatusList.ToArray();
         }
+#if DEBUG
+        private string WayPtString()
+        {
+            return TempPath.Aggregate("", (s, x) => s + "=>" + x);
+        }
+#endif
+
 
         private TwoDPoint Nearest(TwoDPoint? s, TwoDPoint x)
         {
