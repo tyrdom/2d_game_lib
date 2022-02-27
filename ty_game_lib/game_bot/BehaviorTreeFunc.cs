@@ -68,7 +68,7 @@ namespace game_bot
             var bodyStatus = botAgents.OfType<BodyStatus>().First();
             var dPoint = bodyStatus.CharacterBody.GetAnchor();
             var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
-            var patrolSlowMulti = BotLocalConfig.PatrolSlowMulti;
+            var patrolSlowMulti = BotLocalConfig.BotOtherConfig.PatrolSlowMulti;
             var dVector = twoDVector.Multi(patrolSlowMulti);
             var vector = isSlow ? dVector : twoDVector;
             var operate = new Operate(move: vector);

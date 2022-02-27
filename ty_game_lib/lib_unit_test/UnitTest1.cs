@@ -215,7 +215,7 @@ namespace lib_unit_test
 
             var mapRawsWalkRawMap = mapRaws.WalkRawMap;
             var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
-            var mapByPolys = WalkMap.CreateMapByPolys(enumerable.PloyListMark());
+            var mapByPolys = WalkMap.CreateMapByPolys(enumerable.PloyListMark(), 1f);
             var walkBlock = mapByPolys.SizeToEdge[size.small];
             var twoDPoint = new TwoDPoint(-0.06930432f, 6.693746f);
             var twoDPoint2 = new TwoDPoint(-0.7251987f, 6.235703f);
@@ -284,7 +284,7 @@ namespace lib_unit_test
                 findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
             var twoDVectorLines = findAPathByPoint.Where(x => x.gothroughLine != null).Select(x => x.Item2);
-            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
+            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray(), 0f);
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x);
             Console.Out.WriteLine($"way Points are {s3}");
             return s3;

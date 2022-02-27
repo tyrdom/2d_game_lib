@@ -185,12 +185,12 @@ namespace collision_and_rigid
 
         public bool CheckAfter(IBlockShape another)
         {
-            return GetEndPt().Same(another.GetStartPt());
+            return GetEndPt()==another.GetStartPt();
         }
 
         public bool CheckBefore(IBlockShape another)
         {
-            return GetStartPt().Same(another.GetEndPt());
+            return GetStartPt()==another.GetEndPt();
         }
 
 

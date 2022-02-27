@@ -155,7 +155,7 @@ namespace cov_path_navi
         {
             while (true)
             {
-                if ((li == (ri + 2) % area.Count && !inALine) || area.Count <= 3)
+                if (li == (ri + 2) % area.Count && !inALine || area.Count <= 3)
                 {
 #if DEBUG
                     Console.Out.WriteLine($"just a cov l{li} m r{ri}");

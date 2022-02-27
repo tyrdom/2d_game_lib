@@ -121,7 +121,6 @@ namespace game_stuff
 
         public static void ReLoadP()
         {
-
             PerLoadMapTransPort = CommonConfig.Configs.map_rawss.ToImmutableDictionary(p => p.Key,
                 p => p.Value.TransPoint.GroupBy(obj2 => obj2.Direction)
                     .ToImmutableDictionary(
@@ -137,7 +136,7 @@ namespace game_stuff
 #if DEBUG
                     Console.Out.WriteLine($"now init map {x.Key}");
 #endif
-                    return PlayGround.GenEmptyByConfig(x.Value);
+                    return PlayGround.GenEmptyByConfig(x.Value, 1f);
                 });
 
             var configsOtherConfig = CommonConfig.OtherConfig;
@@ -152,6 +151,5 @@ namespace game_stuff
             MaxCallActTwoTick = configsOtherConfig.interaction_act2_call_time;
             ProtectTick = (int)configsOtherConfig.protect_time;
         }
-
     }
 }

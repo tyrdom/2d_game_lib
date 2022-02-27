@@ -80,7 +80,7 @@ namespace lib_unit_test
 #if DEBUG
             Console.Out.WriteLine("test_walk_map");
 #endif
-            var mapByPolys = WalkMap.CreateMapByPolys(tuples);
+            var mapByPolys = WalkMap.CreateMapByPolys(tuples,1f);
 #if DEBUG
             Console.Out.WriteLine("test_walk_map_ok");
 #endif

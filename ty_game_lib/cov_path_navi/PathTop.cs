@@ -33,7 +33,7 @@ namespace cov_path_navi
             if (!pathNodeCovPolygons.Any()) return new List<TwoDPoint>();
             var pathNodeCovPolygon = pathNodeCovPolygons.ChooseRandOne(random);
 
-            var twoDPoints = new List<TwoDPoint> {pathNodeCovPolygon.GetCenterPt()};
+            var twoDPoints = new List<TwoDPoint> { pathNodeCovPolygon.GetCenterPt() };
             for (var i = 0; i < polyNum; i++)
             {
                 var any = pathNodeCovPolygon.Links.Any();
@@ -117,7 +117,7 @@ namespace cov_path_navi
             return new List<(int, TwoDVectorLine?)>();
         }
 
-        public IEnumerable<TwoDPoint> FindGoPts(TwoDPoint startPt, TwoDPoint endPt, int? startPoly = null,
+        public IEnumerable<TwoDPoint> FindGoPts(TwoDPoint startPt, TwoDPoint endPt,float goThroughMulti , int? startPoly = null,
             int? endPoly = null)
         {
             var findAPathByPoint = FindAPathByPoint(startPt, endPt, startPoly, endPoly);
@@ -132,11 +132,11 @@ namespace cov_path_navi
                 .Where(x => x.gothroughLine != null)
                 .Select(x => x.gothroughLine!);
 
-            return GetGoPts(startPt, endPt, twoDVectorLines.ToArray());
+            return GetGoPts(startPt, endPt, twoDVectorLines.ToArray(),goThroughMulti);
         }
 
         public static IEnumerable<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end,
-            TwoDVectorLine[] twoDVectorLines)
+            TwoDVectorLine[] twoDVectorLines,float goThroughMulti)
         {
             var twoDPoints = new List<TwoDPoint>();
             if (!twoDVectorLines.Any())
@@ -146,8 +146,8 @@ namespace cov_path_navi
             }
 
             var vectorLine = twoDVectorLines.First();
-            var rightSidePt = vectorLine.GetStartPt();
-            var leftSidePt = vectorLine.GetEndPt();
+            var rightSidePt = vectorLine.GetPointFromStart(goThroughMulti);
+            var leftSidePt = vectorLine.GetPointFromEnd(goThroughMulti);
             var localPt = start;
 
             for (var i = 1; i < twoDVectorLines.Length; i++)
@@ -220,8 +220,8 @@ namespace cov_path_navi
                 thisLinesCollector.RemoveRange(cutRr, thisLinesCollector.Count - cutRr);
                 thisLinesCollector.Add(new TwoDVectorLine(startPt, point));
 #if DEBUG
-                    var aggregate = thisLinesCollector.Aggregate("", (s, x) => s + x.ToString() + "\n");
-                    Console.Out.WriteLine($"get direct link at {pos} :: \n{aggregate}");
+                var aggregate = thisLinesCollector.Aggregate("", (s, x) => s + x.ToString() + "\n");
+                Console.Out.WriteLine($"get direct link at {pos} :: \n{aggregate}");
 #endif
                 return;
             }
@@ -238,7 +238,7 @@ namespace cov_path_navi
             {
                 var a = rawOpLines[i1];
 #if DEBUG
-                    Console.Out.WriteLine($"  {point.GetPosOf(a)} vs_vs {pos}");
+                Console.Out.WriteLine($"  {point.GetPosOf(a)} vs_vs {pos}");
 #endif
                 if (point.GetPosOf(a) != pos) continue;
                 cutCount = i1 + 1;
@@ -247,7 +247,7 @@ namespace cov_path_navi
 
             if (cutCount < 0) return null;
 #if DEBUG
-                Console.Out.WriteLine($" pt is over {pos},turn {pos}");
+            Console.Out.WriteLine($" pt is over {pos},turn {pos}");
 #endif
             var before = rawOpLines.GetRange(0, cutCount);
             var opLines = rawOpLines.GetRange(cutCount, rawOpLines.Count - cutCount);
@@ -256,7 +256,7 @@ namespace cov_path_navi
             var twoDPoints = addPoints.ToList();
             var twoDPoint = twoDPoints.Last();
 
-            var thisLines = new List<TwoDVectorLine> {new TwoDVectorLine(twoDPoint, point)};
+            var thisLines = new List<TwoDVectorLine> { new TwoDVectorLine(twoDPoint, point) };
             return (opLines, thisLines, twoDPoints);
         }
 
@@ -268,13 +268,13 @@ namespace cov_path_navi
 #if DEBUG
                 Console.Out.WriteLine("in same poly just go");
 #endif
-                return new List<(int, TwoDVectorLine?)> {(start, null)};
+                return new List<(int, TwoDVectorLine?)> { (start, null) };
             }
 
             var pathTreeNode = new PathTreeNode(start, 0);
             var pathTreeNodes = new List<PathTreeNode>();
 
-            var treeNodes = new Dictionary<int, PathTreeNode> {{start, pathTreeNode}};
+            var treeNodes = new Dictionary<int, PathTreeNode> { { start, pathTreeNode } };
 
 
             pathTreeNode.GrowFromRoot(PolygonsTop, end, pathTreeNodes, treeNodes, startPt, endPt);
@@ -323,17 +323,17 @@ namespace cov_path_navi
                 ? new WalkAreaBlock(new List<List<IBlockShape>>(), new List<IBlockShape>())
                 : new WalkAreaBlock(new List<List<IBlockShape>>(), bs.First());
 
-            var blockUnits = new List<WalkAreaBlock> {firstBlockUnit};
+            var blockUnits = new List<WalkAreaBlock> { firstBlockUnit };
             for (var i = 1; i < bs.Count; i++)
             {
                 var shapes = bs[i];
                 var twoDPoint = shapes.First().GetStartPt();
                 var beChild = false;
                 foreach (var blockUnit in from blockUnit in blockUnits
-                    where blockUnit.ShellBlocks.IsEmpty() || blockUnit.ShellBlocks.PtRealInShape(twoDPoint)
-                    let all = blockUnit.ChildrenBlocks.All(x => !x.PtRealInShape(twoDPoint))
-                    where all
-                    select blockUnit)
+                         where blockUnit.ShellBlocks.IsEmpty() || blockUnit.ShellBlocks.PtRealInShape(twoDPoint)
+                         let all = blockUnit.ChildrenBlocks.All(x => !x.PtRealInShape(twoDPoint))
+                         where all
+                         select blockUnit)
                 {
                     blockUnit.AddChildren(shapes);
                     beChild = true;
@@ -379,7 +379,7 @@ namespace cov_path_navi
             {
                 var first = rawList.First();
 
-                List<IBlockShape> tempList = new List<IBlockShape> {first};
+                List<IBlockShape> tempList = new List<IBlockShape> { first };
                 rawList.RemoveAt(0);
                 var startPt = first.GetStartPt();
                 var endPt = first.GetEndPt();
@@ -432,17 +432,14 @@ namespace cov_path_navi
 #if DEBUG
                     Console.Out.WriteLine($" finding new ed  {edPt} vs {startPt}");
 #endif
-                    if (startPt == edPt
-                    )
+                    if (startPt == edPt )
                     {
                         tList.Add(blockShape);
-                        if (endPt == lstPt
-                        )
+                        if (endPt == lstPt )
                         {
 #if DEBUG
                             Console.Out.WriteLine($" found finish {endPt} vs {lstPt}");
 #endif
-
                             isEnd = true;
                             continue;
                         }

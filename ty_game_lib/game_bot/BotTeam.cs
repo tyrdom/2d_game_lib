@@ -27,11 +27,7 @@ namespace game_bot
             TempOperate = new Dictionary<int, Operate?>();
         }
 
-        public void SetNaviMaps(WalkMap walkMap)
-        {
-            SizeToNaviMap = walkMap.SizeToEdge.ToImmutableDictionary(p => p.Key,
-                p => new PathTop(p.Value));
-        }
+      
 
         public void SetNaviMaps(int mapResId)
         {

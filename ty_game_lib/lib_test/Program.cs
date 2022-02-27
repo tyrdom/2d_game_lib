@@ -19,29 +19,20 @@ namespace lib_test
             var dictionary = ResNames.Names.ToDictionary(x => x, x => GetStringByFile(x, 4));
 
             var configBinStringPath = CommonConfig.ConfigBinStringPath();
-            var exists = File.Exists(configBinStringPath);
 
-            if (exists)
-            {
-                Console.Out.WriteLine($"load from {configBinStringPath}");
-                CommonConfig.LoadConfigFormFile(configBinStringPath);
-            }
-            else
-            {
+
 #if NET6_0
                 CommonConfig.LoadConfig();
 #else
-                CommonConfig.LoadConfig(dictionary);
+            CommonConfig.LoadConfig(dictionary);
 #endif
-            }
+
 #if DEBUG
             Console.Out.WriteLine($"~~~~~~{RogueLocalConfig.RogueRebornTick}");
 #endif
 
-            if (!exists)
-            {
-                CommonConfig.SaveConfigToFile(configBinStringPath);
-            }
+
+            CommonConfig.SaveConfigToFile(configBinStringPath);
 
             RogueLocalConfig.ReLoadP();
 
@@ -164,7 +155,7 @@ namespace lib_test
                     Console.Out.WriteLine($"act is {theta.TypeEnum} {theta.IntId}");
                     if (theta.TypeEnum == action_type.skill)
                     {
-                        var thetaIntId = (skill_id) theta.IntId;
+                        var thetaIntId = (skill_id)theta.IntId;
                         Console.Out.WriteLine($"{thetaIntId}");
                     }
                 }

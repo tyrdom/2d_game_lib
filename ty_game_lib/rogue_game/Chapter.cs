@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using collision_and_rigid;
 using game_config;
 using game_stuff;
@@ -327,17 +325,17 @@ namespace rogue_game
         public  ChapterSave Save()
         {
             var keyValuePairs = MGidToMap
-                .Where(x => x.Value.IsClear && x.Value.IsReached);
+                .Where(x => x.Value.IsClear && x.Value.IsReached).ToArray();
             var enumerable = keyValuePairs
                 .Select(x => x.Key)
                 .ToArray();
             var valuePairs = MapOnYSlotArray
                 .Where(x => x.Key.MapType == MapType.Vendor 
-                            || x.Key.MapType == MapType.Hangar);
+                            || x.Key.MapType == MapType.Hangar).ToArray();
             
-            var ints = valuePairs.Select(x => x.Value);
+            var ints = valuePairs.Select(x => x.Value).ToArray();
 
-            var pveMaps = ints.Select(x => MGidToMap[x]);
+            var pveMaps = ints.Select(x => MGidToMap[x]).ToArray();
             var playGroundSaveDataS = pveMaps.
                 Select(x => PlayGroundSaveData.GroundSaveData(x.PlayGround)).ToArray();
 

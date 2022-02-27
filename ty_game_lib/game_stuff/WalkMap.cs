@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using collision_and_rigid;
 using game_config;
 
@@ -13,15 +14,21 @@ namespace game_stuff
             SizeToEdge = sizeToEdge;
         }
 
-      
 
-        public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp)
+        public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp, float fixRadMulti)
         {
             var sizeToR = CommonConfig.Configs.bodys;
             var walkBlocks = new Dictionary<size, WalkBlock>();
             foreach (var keyValuePair in sizeToR)
             {
-                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(lp, keyValuePair.Value.rad, 6);
+                var rad = keyValuePair.Value.rad;
+                var valueRad = rad * fixRadMulti;
+#if DEBUG
+                Console.Out.WriteLine(
+                    $"CreateMap for {keyValuePair.Key} : rad {rad} multi{fixRadMulti} result {valueRad}");
+
+#endif
+                var genWalkBlockByPolys = SomeTools.GenWalkBlockByPolygons(lp, valueRad, 6);
                 walkBlocks[keyValuePair.Key] = genWalkBlockByPolys;
             }
 

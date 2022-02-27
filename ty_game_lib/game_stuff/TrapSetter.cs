@@ -2,33 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using collision_and_rigid;
-using Force.DeepCloner;
 using game_config;
 
 namespace game_stuff
 {
     public class TrapSetter
     {
-        public TrapSetter(bool canBeSee, int? failChanceStack, size bodySize, uint callTrapTick,
-            uint? maxLifeTimeTick, IHitMedia trapMedia, uint trickDelayTick, int? trickStack, IHitMedia? launchMedia,
-            int? baseAttrId, trap_id trapId)
-        {
-            CanBeSee = canBeSee;
-            FailChanceStack = failChanceStack;
-            BodySize = bodySize;
-            CallTrapTick = callTrapTick;
-            MaxLifeTimeTick = maxLifeTimeTick;
-            TrapMedia = trapMedia;
-            BaseAttrId = baseAttrId;
-            TrapId = trapId;
-            LaunchMedia = launchMedia;
-            TrickDelayTick = trickDelayTick;
-            TrickStack = trickStack;
-        }
-
         public static TrapSetter GenById(string id)
         {
-            var trapId = (trap_id) Enum.Parse(typeof(trap_id), id, true);
+            var trapId = (trap_id)Enum.Parse(typeof(trap_id), id, true);
             return GenById(trapId);
         }
 
@@ -43,12 +25,12 @@ namespace game_stuff
         {
             TrapId = trap.id;
             CanBeSee = trap.CanBeSee;
-            FailChanceStack = trap.FailChance == 0 ? (int?) null : trap.FailChance;
+            FailChanceStack = trap.FailChance == 0 ? (int?)null : trap.FailChance;
             BodySize = trap.BodyId;
             CallTrapTick = MathTools.Max(2, trap.CallTrapRoundTime);
-            TrapMedia = StuffLocalConfig.GenHitMedia(trap.TrapMedia);
+            TrapMedia = trap.TrapMedia;
             BaseAttrId = trap.AttrId;
-            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?) null : trap.MaxLifeTime;
+            MaxLifeTimeTick = trap.MaxLifeTime == 0f ? (uint?)null : trap.MaxLifeTime;
 
             var firstOrDefault = trap.LauchMedia.FirstOrDefault();
             if (firstOrDefault == null)
@@ -59,16 +41,16 @@ namespace game_stuff
                 return;
             }
 
-            var genHitMedia = StuffLocalConfig.GenHitMedia(firstOrDefault);
-            LaunchMedia = genHitMedia;
-            TrickStack = (int?) trap.TrickStack;
+
+            LaunchMedia = firstOrDefault;
+            TrickStack = (int?)trap.TrickStack;
             TrickDelayTick = trap.TrickDelayTime;
         }
 
         public Trap GenATrap(CharacterStatus characterStatus, TwoDPoint pos, int mapInstanceId)
         {
-            var deepClone = TrapMedia.DeepClone();
-            var hitMedia = LaunchMedia?.DeepClone() ?? null;
+            var deepClone = StuffLocalConfig.GenHitMedia(TrapMedia);
+            var hitMedia = LaunchMedia != null ? StuffLocalConfig.GenHitMedia(LaunchMedia) : null;
             if (BaseAttrId == null)
                 return new Trap(characterStatus, null, CanBeSee, pos, BodySize,
                     CallTrapTick,
@@ -91,9 +73,9 @@ namespace game_stuff
         private size BodySize { get; }
         private uint CallTrapTick { get; }
         private uint? MaxLifeTimeTick { get; }
-        public IHitMedia TrapMedia { get; }
+        public Media TrapMedia { get; }
         private uint TrickDelayTick { get; }
         private int? TrickStack { get; }
-        public IHitMedia? LaunchMedia { get; }
+        public Media? LaunchMedia { get; }
     }
 }

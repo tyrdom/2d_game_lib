@@ -134,7 +134,6 @@ namespace collision_and_rigid
             {
                 var notCross = moveLine.GenZone().RealNotCross(aabbBoxShape.Zone);
 #if DEBUG
-
                 Console.Out.WriteLine($"{moveLine}  cross  shape {aabbBoxShape} ? {!notCross}");
 #endif
                 if (notCross) continue;
@@ -292,12 +291,12 @@ namespace collision_and_rigid
                             if (df1 != null)
                                 df1.Add((twoDPoint, item2));
                             else
-                                df1 = new List<(TwoDPoint, CondAfterCross)> {(twoDPoint, item2)};
+                                df1 = new List<(TwoDPoint, CondAfterCross)> { (twoDPoint, item2) };
 
                             if (df2 != null)
                                 df2.Add((twoDPoint, item3));
                             else
-                                df2 = new List<(TwoDPoint, CondAfterCross)> {(twoDPoint, item3)};
+                                df2 = new List<(TwoDPoint, CondAfterCross)> { (twoDPoint, item3) };
                         }
 
                         dicL2[j] = df2;
@@ -417,17 +416,19 @@ namespace collision_and_rigid
 
                 dic[i] = iPtAndCond;
             }
+#if DEBUG
 
-//            foreach (KeyValuePair<int, List<(TwoDPoint, CondAfterCross)>> keyValuePair in dic)
-//            {
-//                Console.Out.WriteLine("dic key::::" + keyValuePair.Key + ":::Count:::" + keyValuePair.Value.Count);
-//                foreach (var valueTuple in keyValuePair.Value)
-//                {
-//                    Console.Out.WriteLine("pt::" + valueTuple.Item1.X + '|' + valueTuple.Item1.Y + "  Sigh:::" +
-//                                          valueTuple.Item2);
-//                }
-//            }
 
+            foreach (KeyValuePair<int, List<(TwoDPoint, CondAfterCross)>> keyValuePair in dic)
+            {
+                Console.Out.WriteLine("dic key::::" + keyValuePair.Key + ":::Count:::" + keyValuePair.Value.Count);
+                foreach (var valueTuple in keyValuePair.Value)
+                {
+                    Console.Out.WriteLine("pt::" + valueTuple.Item1.X + '|' + valueTuple.Item1.Y + "  Sigh:::" +
+                                          valueTuple.Item2);
+                }
+            }
+#endif
             var nowCond = CondAfterCross.MaybeOutToIn;
 
             var temp = new List<IBlockShape>();
@@ -447,25 +448,29 @@ namespace collision_and_rigid
                 res.AddRange(blockShapes);
                 nowCond = condAfterCross;
                 temp = list;
-//                Console.Out.WriteLine("res::" + res.Count);
-//                foreach (var shape in res)
-//                {
-//                    var startPtPoint = shape.GetStartPt();
-//                    var ePoint = shape.GetEndPt();
-//
-//                    Console.Out.WriteLine("resBlockStart::" + startPtPoint.X + '|' + startPtPoint.Y + "  end:::" +
-//                                          ePoint.X + '|' + ePoint.Y);
-//                }
-//
-//                Console.Out.WriteLine("temp::" + temp.Count);
-//                foreach (var shape in temp)
-//                {
-//                    var startPtPoint = shape.GetStartPt();
-//                    var ePoint = shape.GetEndPt();
-//
-//                    Console.Out.WriteLine("tempBlockStart::" + startPtPoint.X + '|' + startPtPoint.Y + "  end:::" +
-//                                          ePoint.X + '|' + ePoint.Y);
-//                }
+#if DEBUG
+
+
+                Console.Out.WriteLine("res::" + res.Count);
+                foreach (var shape in res)
+                {
+                    var startPtPoint = shape.GetStartPt();
+                    var ePoint = shape.GetEndPt();
+
+                    Console.Out.WriteLine("resBlockStart::" + startPtPoint.X + '|' + startPtPoint.Y + "  end:::" +
+                                          ePoint.X + '|' + ePoint.Y);
+                }
+
+                Console.Out.WriteLine("temp::" + temp.Count);
+                foreach (var shape in temp)
+                {
+                    var startPtPoint = shape.GetStartPt();
+                    var ePoint = shape.GetEndPt();
+
+                    Console.Out.WriteLine("tempBlockStart::" + startPtPoint.X + '|' + startPtPoint.Y + "  end:::" +
+                                          ePoint.X + '|' + ePoint.Y);
+                }
+#endif
             }
 
             res.AddRange(temp);
@@ -514,7 +519,6 @@ namespace collision_and_rigid
             var (firstPoly, item2) = rawData[0];
 
 #if DEBUG
-
 #endif
 
             var genBlockShapes = (firstPoly.GenBlockShapes(r, item2), item2);

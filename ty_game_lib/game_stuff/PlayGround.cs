@@ -105,14 +105,14 @@ namespace game_stuff
         }
 
 
-        public static MapInitData GenEmptyByConfig(map_raws mapRaws)
+        public static MapInitData GenEmptyByConfig(map_raws mapRaws, float fixRadMulti)
         {
             var mapRawsWalkRawMap = mapRaws.WalkRawMap;
             var mapRawsSightRawMap = mapRaws.SightRawMap;
             var mapRawsBulletRawMap = mapRaws.BulletRawMap;
             var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
             var walkMap = enumerable.Any()
-                ? enumerable.PloyListCheckOk() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark()) :
+                ? enumerable.PloyListCheckOk() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark(), fixRadMulti) :
                 throw new Exception($"no good walk raw poly in {mapRaws.id} ")
                 : throw new Exception("must have walk map");
             var array = mapRawsSightRawMap.Select(x => x.GenPoly()).ToArray();
@@ -156,7 +156,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    bodies[initDataTeamId] = new HashSet<CharacterBody> {genCharacterBody};
+                    bodies[initDataTeamId] = new HashSet<CharacterBody> { genCharacterBody };
                 }
 
                 characterBodies[initData.Gid] = genCharacterBody;
@@ -208,7 +208,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    dictionary[kv.Key] = new HashSet<CharInitMsg> {kv.Value};
+                    dictionary[kv.Key] = new HashSet<CharInitMsg> { kv.Value };
                 }
             }
 
@@ -223,13 +223,13 @@ namespace game_stuff
             {
                 if (!GidToBody.TryGetValue(kv.Key, out var characterBody)) continue;
                 if (dictionary.TryGetValue(characterBody.Team, out var gidToOp)
-                )
+                   )
                 {
                     gidToOp[kv.Key] = kv.Value;
                 }
                 else
                 {
-                    dictionary[characterBody.Team] = new Dictionary<int, Operate> {{kv.Key, kv.Value}};
+                    dictionary[characterBody.Team] = new Dictionary<int, Operate> { { kv.Key, kv.Value } };
                 }
             }
 
@@ -304,7 +304,7 @@ namespace game_stuff
                     var (gid, telePortMsg) = tuple;
                     var toOutPutResults = actOut.TryGetValue(gid, out var acToOutPutResults)
                         ? acToOutPutResults.Append(telePortMsg)
-                        : new IToOutPutResult[] {telePortMsg};
+                        : new IToOutPutResult[] { telePortMsg };
                     actOut[gid] = toOutPutResults;
                 }
 
@@ -315,11 +315,11 @@ namespace game_stuff
             var valueTuple =
                 new PlayGroundGoTickResult(
                     playerBeHit.ToImmutableDictionary(p => p.Key,
-                        p => p.Value.ToImmutableHashSet()), 
+                        p => p.Value.ToImmutableHashSet()),
                     trapBeHit.ToImmutableDictionary(pa => pa.Key,
                         pa => pa.Value.ToImmutableDictionary(pp => pp.Key,
                             pp => pp.Value.ToImmutableHashSet())),
-                    playerTickSees, actOut.ToImmutableDictionary(p => p.Key, 
+                    playerTickSees, actOut.ToImmutableDictionary(p => p.Key,
                         p => p.Value.ToImmutableArray()));
 
             return valueTuple;
@@ -485,7 +485,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        playerBeHit[key] = new HashSet<IRelationMsg> {buffDmgMsg};
+                        playerBeHit[key] = new HashSet<IRelationMsg> { buffDmgMsg };
                     }
                 }
 #if DEBUG
@@ -515,7 +515,7 @@ namespace game_stuff
                 }
                 else
                 {
-                    teamRadarSee[id] = new HashSet<IPerceivable> {radarSee};
+                    teamRadarSee[id] = new HashSet<IPerceivable> { radarSee };
                 }
 
                 return;
@@ -531,7 +531,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        gidD[key] = new HashSet<IRelationMsg> {relationMsg};
+                        gidD[key] = new HashSet<IRelationMsg> { relationMsg };
                     }
 
                     break;
@@ -546,14 +546,14 @@ namespace game_stuff
                         }
                         else
                         {
-                            hBullets2[tid] = new HashSet<IRelationMsg> {relationMsg};
+                            hBullets2[tid] = new HashSet<IRelationMsg> { relationMsg };
                         }
                     }
                     else
                     {
                         var dictionary = new Dictionary<int, HashSet<IRelationMsg>>
                         {
-                            [tid] = new HashSet<IRelationMsg> {relationMsg}
+                            [tid] = new HashSet<IRelationMsg> { relationMsg }
                         };
                         tidD[tid] = dictionary;
                     }
@@ -579,7 +579,7 @@ namespace game_stuff
                         case ObjType.OtherTeam:
                             var selectMany = TeamToBodies.Where(pair => pair.Key != team)
                                 .SelectMany(x => hitMedia
-                                    .HitTeam(new[] {x.Value.playerBodies, x.Value.Traps}, BulletBlockMap)
+                                    .HitTeam(new[] { x.Value.playerBodies, x.Value.Traps }, BulletBlockMap)
                                 );
 
                             foreach (var hr in selectMany)
@@ -591,7 +591,7 @@ namespace game_stuff
                         case ObjType.SameTeam:
                             if (TeamToBodies.TryGetValue(team, out var qSpace))
                             {
-                                var enumerable = hitMedia.HitTeam(new[] {qSpace.playerBodies, qSpace.Traps},
+                                var enumerable = hitMedia.HitTeam(new[] { qSpace.playerBodies, qSpace.Traps },
                                         BulletBlockMap)
                                     ;
                                 foreach (var hitResult in enumerable)
@@ -603,7 +603,7 @@ namespace game_stuff
                             break;
                         case ObjType.AllTeam:
                             var results = TeamToBodies.Values.SelectMany(x =>
-                                hitMedia.HitTeam(new[] {x.playerBodies, x.Traps}, BulletBlockMap));
+                                hitMedia.HitTeam(new[] { x.playerBodies, x.Traps }, BulletBlockMap));
 
                             foreach (var hitResult in results)
                             {
@@ -809,7 +809,7 @@ namespace game_stuff
                     }
                     else
                     {
-                        TeamToHitMedia[team] = new List<IHitMedia> {hitAbleMedia};
+                        TeamToHitMedia[team] = new List<IHitMedia> { hitAbleMedia };
                     }
 
                     return null;
@@ -908,8 +908,8 @@ namespace game_stuff
         public bool RemoveBody(int gid)
         {
             if (GidToBody.TryGetValue(gid, out var gidCharacterBody) && TeamToBodies.TryGetValue(gidCharacterBody.Team,
-                out var valueTuple)
-            )
+                    out var valueTuple)
+               )
             {
                 return GidToBody.Remove(gid) &&
                        valueTuple.playerBodies.RemoveSingleAaBbBox(gidCharacterBody.IdPointBox);
@@ -1005,7 +1005,7 @@ namespace game_stuff
                 foreach (var (characterBody, pos) in valueTuples)
                 {
                     characterBody.Teleport(pos);
-                    characterBody.MakeProtect((int) CommonConfig.OtherConfig.teleport_protect_time);
+                    characterBody.MakeProtect((int)CommonConfig.OtherConfig.teleport_protect_time);
                     GidToBody[characterBody.GetId()] = characterBody;
                 }
 

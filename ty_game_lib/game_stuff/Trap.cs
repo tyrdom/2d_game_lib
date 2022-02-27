@@ -1,4 +1,3 @@
-using System;
 using collision_and_rigid;
 using game_config;
 

@@ -234,11 +234,11 @@ namespace collision_and_rigid
 
             var startWithACovNotFlush = StartWithACovAndClockwise();
 #if DEBUG
-            // Console.Out.WriteLine("poly ::~~~");
-            // foreach (var twoDPoint in startWithACovNotFlush.Pts)
-            // {
-            //     Console.Out.WriteLine($"poly pt::{twoDPoint.ToString()}");
-            // }
+            Console.Out.WriteLine($"poly ::~~~ rad {r}");
+            foreach (var twoDPoint in startWithACovNotFlush.Pts)
+            {
+                Console.Out.WriteLine($"poly pt::{twoDPoint}");
+            }
 #endif
             var pPts = isBlockIn ? startWithACovNotFlush.Pts : startWithACovNotFlush.Pts.Reverse().ToArray();
             // foreach (var twoDPoint in pPts)
@@ -310,17 +310,26 @@ namespace collision_and_rigid
             }
 
             var resShapes = SomeTools.CutInSingleShapeList(shapes);
-//            Console.Out.WriteLine("?????" + resShapes.Count);
 
+#if DEBUG
+            Console.Out.WriteLine("?????" + resShapes.Count);
+#endif
             var genBlockShapes = resShapes.Where(blockShape => !blockShape.IsEmpty()).ToList();
 
+#if DEBUG
 
-//            Console.Out.WriteLine("><><><>" + genBlockShapes.Count);
+            Console.Out.WriteLine("><><><>" + genBlockShapes.Count);
+#endif
 
             var checkCloseAndFilter = SomeTools.CheckCloseAndFilter(genBlockShapes);
-
-//            Console.Out.WriteLine("<!><!><!>" + checkCloseAndFilter.Count);
-
+#if DEBUG
+            var aggregate = checkCloseAndFilter.Aggregate("", (s, shape) => s + "::" + shape);
+            Console.Out.WriteLine("<!><!><!>" + checkCloseAndFilter.Count + aggregate);
+            if (checkCloseAndFilter.Count < genBlockShapes.Count)
+            {
+                throw new Exception("blocks not finish");
+            }
+#endif
             return checkCloseAndFilter;
         }
 

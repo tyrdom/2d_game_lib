@@ -35,7 +35,7 @@ namespace collision_and_rigid
 
         public List<BlockBox> GenAabbBoxShape()
         {
-            return new List<BlockBox> {CovToAabbPackBox()};
+            return new List<BlockBox> { CovToAabbPackBox() };
         }
 
         public override string ToString()
@@ -195,12 +195,12 @@ namespace collision_and_rigid
 
         public bool CheckAfter(IBlockShape another)
         {
-            return GetEndPt().Same(another.GetStartPt());
+            return GetEndPt() == another.GetStartPt();
         }
 
         public bool CheckBefore(IBlockShape another)
         {
-            return GetStartPt().Same(another.GetEndPt());
+            return GetStartPt() == another.GetEndPt();
         }
 
         public BlockBox CovToAabbPackBox()
@@ -822,8 +822,22 @@ namespace collision_and_rigid
             var clockwiseTurning1 = new ClockwiseTurning(clockwiseBalanceAngle1, r, twoDVectorLine1, twoDVectorLine2);
             var clockwiseTurning2 = new ClockwiseTurning(clockwiseBalanceAngle2, r, twoDVectorLine2, twoDVectorLine1);
             var blockShapes = new List<IBlockShape>
-                {twoDVectorLine1, clockwiseTurning1, twoDVectorLine2, clockwiseTurning2};
+                { twoDVectorLine1, clockwiseTurning1, twoDVectorLine2, clockwiseTurning2 };
             return new SimpleBlocks(blockShapes);
+        }
+
+        public TwoDPoint GetPointFromStart(float goThroughMulti)
+        {
+            var x = A.X * (1 - goThroughMulti) + B.X * goThroughMulti;
+            var y = A.Y * (1 - goThroughMulti) + B.Y * goThroughMulti;
+            return new TwoDPoint(x, y);
+        }
+
+        public TwoDPoint GetPointFromEnd(float goThroughMulti)
+        {
+            var x = B.X * (1 - goThroughMulti) + A.X * goThroughMulti;
+            var y = B.Y * (1 - goThroughMulti) + A.Y * goThroughMulti;
+            return new TwoDPoint(x, y);
         }
     }
 }

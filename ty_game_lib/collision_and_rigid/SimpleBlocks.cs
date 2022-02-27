@@ -6,7 +6,7 @@ namespace collision_and_rigid
 {
     public class SimpleBlocks : IBulletShape, IShape
     {
-        private List<BlockBox> AabbBoxShapes;
+        private List<BlockBox> AabbBoxShapes { get; }
 
 
         public SimpleBlocks(IEnumerable<IBlockShape> blockShapes)
@@ -15,7 +15,8 @@ namespace collision_and_rigid
             var checkFlush = SomeTools.CheckFlush(enumerable);
             if (!checkFlush)
             {
-                throw new Exception("not a flush simpleBlocks");
+                var aggregate = enumerable.Aggregate("", ((s, shape) => s + "::" + shape.ToString()));
+                throw new Exception($"not a flush simpleBlocks : {aggregate}");
             }
 
             AabbBoxShapes = enumerable.SelectMany(x => x.GenAabbBoxShape()).ToList();
@@ -67,9 +68,9 @@ namespace collision_and_rigid
         public bool LineCross(TwoDVectorLine line)
         {
             foreach (var aabbBoxShape in from aabbBoxShape in AabbBoxShapes
-                let notCross = line.GenZone().NotCross(aabbBoxShape.Zone)
-                where !notCross
-                select aabbBoxShape)
+                     let notCross = line.GenZone().NotCross(aabbBoxShape.Zone)
+                     where !notCross
+                     select aabbBoxShape)
             {
 #if DEBUG
                 Console.Out.WriteLine($"line {line} is cross zone ::{aabbBoxShape}");
