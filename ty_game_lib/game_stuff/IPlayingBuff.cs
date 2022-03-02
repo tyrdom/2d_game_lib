@@ -19,7 +19,7 @@ namespace game_stuff
 
         public PlayingBuffsMaker(IEnumerable<string> playBuffIds)
         {
-            var buffIds = playBuffIds.Select(x => (play_buff_id) Enum.Parse(typeof(play_buff_id), x, true));
+            var buffIds = playBuffIds.Select(x => (play_buff_id)Enum.Parse(typeof(play_buff_id), x, true));
             PlayBuffIds = buffIds.ToArray();
         }
 
@@ -95,15 +95,37 @@ namespace game_stuff
     {
         public static IPlayingBuff GenById(string id)
         {
-            var o = (play_buff_id) Enum.Parse(typeof(play_buff_id), id, true);
+            var o = (play_buff_id)Enum.Parse(typeof(play_buff_id), id, true);
             var genById = GenById(o);
+            return genById;
+        }
+
+        public static CharacterStatus? GetCharMark(this IPlayingBuff playingBuff)
+        {
+            return playingBuff is PullMark pullMark ? pullMark.TargetMark : null;
+        }
+
+        public static IPlayingBuff Copy(this IPlayingBuff playingBuff)
+        {
+            var playBuffId = playingBuff.BuffId;
+            var playingBuffStack = playingBuff.Stack;
+            var characterStatus = playingBuff.GetCharMark();
+            var genById = GenById(playBuffId, characterStatus);
+            genById.Stack = playingBuffStack;
             return genById;
         }
 
         public static IPlayingBuff GenById(play_buff_id id, CharacterStatus? charMark = null)
         {
             var playBuff = GetBuffConfig(id);
-            var intTickByTime = (int) playBuff.LastTime;
+
+            return PlayingBuff(charMark, playBuff);
+        }
+
+        private static IPlayingBuff PlayingBuff(CharacterStatus? charMark, play_buff playBuff)
+        {
+            var id = playBuff.id;
+            var intTickByTime = (int)playBuff.LastTime;
             var playBuffUseStack = playBuff.UseStack;
             return playBuff.EffectType switch
             {
@@ -119,7 +141,8 @@ namespace game_stuff
                     playBuff.EffectValue, 1, playBuffUseStack),
                 play_buff_effect_type.PullMark => new PullMark(id, intTickByTime, playBuff.EffectString, 1,
                     playBuffUseStack, charMark),
-                play_buff_effect_type.MaxSpeedChange => new MaxSpeedChangeBuff(id, intTickByTime, playBuff.EffectValue, 1,
+                play_buff_effect_type.MaxSpeedChange => new MaxSpeedChangeBuff(id, intTickByTime, playBuff.EffectValue,
+                    1,
                     playBuffUseStack),
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -221,7 +244,7 @@ namespace game_stuff
         {
             BuffId = id;
             RestTick = intTickByTime;
-            ComboStatusFix = (int) playBuffEffectValue;
+            ComboStatusFix = (int)playBuffEffectValue;
             Stack = i;
             UseStack = playBuffUseStack;
         }
@@ -303,7 +326,7 @@ namespace game_stuff
         {
             BuffId = id;
             RestTick = intTickByTime;
-            PlayBuffEffectValue = (int) playBuffEffectValue;
+            PlayBuffEffectValue = (int)playBuffEffectValue;
             Stack = i;
             UseStack = playBuffUseStack;
         }
@@ -440,6 +463,7 @@ namespace game_stuff
         public int RestTick { get; set; }
 
         public float SpeedMaxAddMulti { get; }
+
         public bool IsFinish()
         {
             return PlayBuffStandard.IsFinish(this);
