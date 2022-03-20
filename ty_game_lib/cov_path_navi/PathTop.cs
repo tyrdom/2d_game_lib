@@ -108,21 +108,26 @@ namespace cov_path_navi
         {
             var start = startPoly ?? InWhichPoly(startPt);
             var end = endPoly ?? InWhichPoly(endPt);
+
+
             if (start != null && end != null)
             {
                 return FindAPathById(start.Value, end.Value, startPt, endPt);
             }
-
+#if DEBUG
             Console.Out.WriteLine($"Pt{startPt} or {endPt} not in any area  ");
+#endif
             return new List<(int, TwoDVectorLine?)>();
         }
 
-        public IEnumerable<TwoDPoint> FindGoPts(TwoDPoint startPt, TwoDPoint endPt,float goThroughMulti , int? startPoly = null,
+        public IEnumerable<TwoDPoint> FindGoPts(TwoDPoint startPt, TwoDPoint endPt, float goThroughMulti,
+            int? startPoly = null,
             int? endPoly = null)
         {
             var findAPathByPoint = FindAPathByPoint(startPt, endPt, startPoly, endPoly);
             var aPathByPoint =
                 findAPathByPoint.ToArray();
+
             if (!aPathByPoint.Any())
             {
                 return new TwoDPoint[] { };
@@ -132,11 +137,14 @@ namespace cov_path_navi
                 .Where(x => x.gothroughLine != null)
                 .Select(x => x.gothroughLine!);
 
-            return GetGoPts(startPt, endPt, twoDVectorLines.ToArray(),goThroughMulti);
+            var twoDPoints = GetGoPts(startPt, endPt, twoDVectorLines.ToArray(), goThroughMulti);
+
+
+            return twoDPoints;
         }
 
         public static IEnumerable<TwoDPoint> GetGoPts(TwoDPoint start, TwoDPoint end,
-            TwoDVectorLine[] twoDVectorLines,float goThroughMulti)
+            TwoDVectorLine[] twoDVectorLines, float goThroughMulti)
         {
             var twoDPoints = new List<TwoDPoint>();
             if (!twoDVectorLines.Any())
@@ -432,10 +440,10 @@ namespace cov_path_navi
 #if DEBUG
                     Console.Out.WriteLine($" finding new ed  {edPt} vs {startPt}");
 #endif
-                    if (startPt == edPt )
+                    if (startPt == edPt)
                     {
                         tList.Add(blockShape);
-                        if (endPt == lstPt )
+                        if (endPt == lstPt)
                         {
 #if DEBUG
                             Console.Out.WriteLine($" found finish {endPt} vs {lstPt}");

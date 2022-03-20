@@ -139,7 +139,6 @@ namespace cov_path_navi
                 if (!nodeCovPolygon.LinkAndCost.TryGetValue(Father.Id, out var tuples))
                 {
 #if DEBUG
-
                     Console.Out.WriteLine(
                         $"dead end~~ not such link:{Father.Id} in poly:{Id} link keys:{nodeCovPolygon.LinkAndCost.Keys.Aggregate("", (s, x) => s + "|" + x)} ");
 #endif

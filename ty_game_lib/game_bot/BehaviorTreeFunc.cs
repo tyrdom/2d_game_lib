@@ -67,6 +67,9 @@ namespace game_bot
             var isSlow = traceToPtMsg.IsSlow;
             var bodyStatus = botAgents.OfType<BodyStatus>().First();
             var dPoint = bodyStatus.CharacterBody.GetAnchor();
+            
+            Console.Out.WriteLine($"bot:: {bodyStatus.CharacterBody.GetId()} trace pt {twoDPoint}");
+            
             var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
             var patrolSlowMulti = BotLocalConfig.BotOtherConfig.PatrolSlowMulti;
             var dVector = twoDVector.Multi(patrolSlowMulti);
@@ -91,7 +94,8 @@ namespace game_bot
         {
             var any = botAgents.OfType<PropUse>().Any();
             return (any,
-                any ? new Operate(specialAction: SpecialAction.UseProp) : null);
+                any ? new Operate(specialAction: SpecialAction.UseProp) 
+                    : null);
         }
 
         public static (bool, Operate?) TargetApproach(IAgentStatus[] botAgent)
@@ -155,7 +159,9 @@ namespace game_bot
         {
             var bodyStatus = botAgent.OfType<BodyStatus>().First();
             var characterBodyCharacterStatus = bodyStatus.CharacterBody.CharacterStatus;
-            return characterBodyCharacterStatus.NowCastAct != null;
+
+            return characterBodyCharacterStatus.NowCastAct != null &&
+                   characterBodyCharacterStatus.NowCastAct.InWhichPeriod() == SkillPeriod.Casting;
         }
 
         public static bool IsStunFunc(

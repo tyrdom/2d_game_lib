@@ -12,32 +12,38 @@ namespace game_bot
 
         private static BehaviorTreeActLeaf SetCombo { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.SetComboStatus);
 
-        private static BehaviorTreeActLeaf CanUseWeaponAct { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.CanUseWeaponToTarget);
+        private static BehaviorTreeActLeaf CanUseWeaponAct { get; } =
+            new BehaviorTreeActLeaf(BehaviorTreeFunc.CanUseWeaponToTarget, "UseWeapon");
 
-        private static BehaviorTreeActLeaf ApproachingAct { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.TargetApproach);
 
-        private static BehaviorTreeActLeaf TracePt { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.TracePt);
+        private static BehaviorTreeActLeaf TracePt { get; } =
+            new BehaviorTreeActLeaf(BehaviorTreeFunc.TracePt, "tracePt");
 
-        private static BehaviorTreeActLeaf TraceAim { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.TraceAim);
+        private static BehaviorTreeActLeaf TraceAim { get; } =
+            new BehaviorTreeActLeaf(BehaviorTreeFunc.TraceAim, "traceAim");
 
         private static BehaviorTreeSelectBranch TraceAct { get; } = new BehaviorTreeSelectBranch(new IBehaviorTreeNode[]
         {
             TracePt, TraceAim
         });
 
-        private static BehaviorTreeActLeaf UsePropAct { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.PropUse);
+        private static BehaviorTreeActLeaf UsePropAct { get; } =
+            new BehaviorTreeActLeaf(BehaviorTreeFunc.PropUse, "UseProp");
 
-        private static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new  BehaviorTreeSequenceBranch(new AlwaysDecorator(true),
+        private static BehaviorTreeSequenceBranch ComboSetBranch { get; } = new BehaviorTreeSequenceBranch(
+            new AlwaysDecorator(true),
             new IBehaviorTreeNode[]
             {
                 IsHitSth, SetCombo
-            });
+            }, "Combo");
 
         private static BehaviorTreeSequenceBranch IsActingBranch { get; } =
             new BehaviorTreeSequenceBranch(new IBehaviorTreeNode[]
-            {
-                IsActing, ComboSetBranch
-            });
+                {
+                    IsActing, ComboSetBranch
+                }
+                , "IsActing"
+            );
 
 
         private static BehaviorTreeSelectBranch OpForbidden { get; }
@@ -45,10 +51,10 @@ namespace game_bot
                 new IBehaviorTreeNode[]
                 {
                     IsStun, IsDead, IsActingBranch
-                });
+                }, "OpForbidden");
 
         private static BehaviorTreeActLeaf
-            GetCombo { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.GetComboAct);
+            GetCombo { get; } = new BehaviorTreeActLeaf(BehaviorTreeFunc.GetComboAct, "GetCombo");
 
         private static BehaviorTreeSelectBranch OpActs { get; }
             = new BehaviorTreeSelectBranch(
