@@ -29,16 +29,20 @@ namespace game_bot
         private static ImmutableDictionary<int, ImmutableDictionary<size, PathTop>> ToImmutableDictionary(
             Dictionary<int, map_raws> configsMapRawsS)
         {
-            return configsMapRawsS.ToImmutableDictionary(p => p.Key, p =>
-            {
-                var enumerable = p.Value.WalkRawMap.Select(x => x.GenPoly()).ToArray();
-                var walkMap = enumerable.Any()
-                    ? enumerable.PloyListCheckOk()
-                        ? WalkMap.CreateMapByPolys(enumerable.PloyListMark(), BotOtherConfig.NaviPloyRadMulti)
-                        : throw new Exception($"no good walk raw poly in {p.Key} ")
-                    : throw new Exception("must have walk map");
-                return walkMap.SizeToEdge.ToImmutableDictionary(pp => pp.Key, pp => new PathTop(pp.Value));
-            });
+            return configsMapRawsS.ToImmutableDictionary(p => p.Key,
+                p => GenPathTop(p.Value));
+        }
+
+        public static ImmutableDictionary<size, PathTop> GenPathTop(map_raws p)
+        {
+            var enumerable = p.WalkRawMap.Select(x => x.GenPoly()).ToArray();
+            var walkMap = enumerable.Any()
+                ? enumerable.PloyListCheckOk()
+                    ? WalkMap.CreateMapByPolys(enumerable.PloyListMark(), BotOtherConfig.NaviPloyRadMulti)
+                    : throw new Exception($"no good walk raw poly in {p.id} ")
+                : throw new Exception("must have walk map");
+            return walkMap.SizeToEdge.ToImmutableDictionary(pp => pp.Key,
+                pp => new PathTop(pp.Value));
         }
     }
 }

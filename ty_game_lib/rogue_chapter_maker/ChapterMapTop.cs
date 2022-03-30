@@ -109,7 +109,7 @@ namespace rogue_chapter_maker
             {
                 if (startP != null)
                 {
-                    genAChapterMap.SetFarthestSlot(startP, MapType.Big, MapType.BigEnd);
+                    endP = genAChapterMap.SetFarthestSlot(startP, MapType.Big, MapType.BigEnd);
                 }
                 else
                 {
@@ -130,7 +130,7 @@ namespace rogue_chapter_maker
             {
                 if (endP != null)
                 {
-                    genAChapterMap.SetFarthestSlot(endP, MapType.Small, MapType.SmallStart);
+                    startP = genAChapterMap.SetFarthestSlot(endP, MapType.Small, MapType.SmallStart);
                 }
                 else
                 {
@@ -217,7 +217,7 @@ namespace rogue_chapter_maker
             return pointMap == pointMap1 ? null : pointMap1;
         }
 
-        private void SetFarthestSlot(PointMap pointMap, MapType needType, MapType toSet)
+        private PointMap SetFarthestSlot(PointMap pointMap, MapType needType, MapType toSet)
         {
             var findFarMap = FindFarthestMap(pointMap, needType);
             if (findFarMap == null) throw new ArgumentNullException($"not big enough map ");
@@ -232,14 +232,18 @@ namespace rogue_chapter_maker
             var map = new PointMap(toSet, 1, 1, 1, 1, valueTuple);
             AddMapPoint(map);
             CanLinks.ExceptWith(map.Links);
+            return map;
         }
 
         private Slot[] GetNearSlotCanUse(PointMap findFarMap)
         {
             var slotX = findFarMap.Slot.X;
             var slotY = findFarMap.Slot.Y;
-            var valueTuples = new Slot[]
-                { new Slot(slotX + 1, slotY), new Slot(slotX - 1, slotY), new Slot(slotX, slotY + 1), new Slot(slotX, slotY - 1) };
+            var valueTuples = new[]
+            {
+                new Slot(slotX + 1, slotY), new Slot(slotX - 1, slotY), new Slot(slotX, slotY + 1),
+                new Slot(slotX, slotY - 1)
+            };
             var enumerable = valueTuples.Except(valueTuples.Where(x => PointMaps.Any(xx =>
             {
                 var i = xx.Slot.X;

@@ -25,7 +25,7 @@ namespace lib_unit_test
         [Test]
         public void Test1()
         {
-            var genAChapterMap = rogue_chapter_maker.ChapterMapTop.GenAChapterMap(7, 3, 1, 1, false, true, 2, 1, 3, 2);
+            var genAChapterMap = ChapterMapTop.GenAChapterMap(7, 3, 1, 1, false, true, 2, 1, 3, 2);
             var selectMany = genAChapterMap.PointMaps.SelectMany(x => x.ToString());
             var s = new string(selectMany.ToArray());
             Assert.Pass(s);
@@ -108,6 +108,19 @@ namespace lib_unit_test
         {
             var pathTest = PathTest(TestWb());
             Assert.Pass(pathTest);
+        }
+
+        [Test]
+        public void PathTopToPoint()
+        {
+            var mapRaws = CommonConfig.Configs.map_rawss.First().Value;
+            var genPathTop = BotLocalConfig.GenPathTop(mapRaws);
+            var pathTop = genPathTop[size.small];
+            var genPolyPoints = pathTop.GenPolyPoints();
+            var aggregate = genPolyPoints.Aggregate("",
+                (s, x) => s + "\n\n" + x.Aggregate($"mapRaws {mapRaws.id}\n",
+                    ((s1, point) => s1 + "|" + point.x + "," + point.y)));
+            Assert.Pass(aggregate);
         }
 
         [Test]

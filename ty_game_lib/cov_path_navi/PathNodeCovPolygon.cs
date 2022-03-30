@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using collision_and_rigid;
+using game_config;
 
 namespace cov_path_navi
 {
@@ -78,7 +79,7 @@ namespace cov_path_navi
                         else
                         {
                             var floats = new Dictionary<int, (float cost, TwoDVectorLine goThrough)>
-                                {{anotherId, (distance, go)}};
+                                { { anotherId, (distance, go) } };
                             res[thisId] = floats;
                         }
                     }
@@ -117,6 +118,16 @@ namespace cov_path_navi
                                     => $"\n>{xx.id}==Cost:{xx.cost}==Line{xx.GoTrough}"));
                 return $"{s1} edges::\n{aggregate} links::\n{aggregate1} cost::\n{aggregate2}";
             }
+        }
+
+        public Point[] GenPolyPoints()
+        {
+            var twoDPoints = Edges.Select(x =>
+            {
+                var twoDPoint = x.GetEndPt();
+                return new Point() { x = twoDPoint.X, y = twoDPoint.Y };
+            }).ToArray();
+            return twoDPoints;
         }
     }
 }

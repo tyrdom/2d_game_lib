@@ -21,6 +21,12 @@ namespace cov_path_navi
             return aggregate;
         }
 
+        public Point[][] GenPolyPoints()
+        {
+            var points = PolygonsTop.Values.Select(x => x.GenPolyPoints()).ToArray();
+            return points;
+        }
+
         public int GetPolyCount()
         {
             return PolygonsTop.Count;
