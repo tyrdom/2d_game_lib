@@ -14,6 +14,7 @@ namespace game_bot
 
         public BehaviorTreeSelectBranch Root { get; }
 
+      
         private IBehaviorTreeNode? Next { get; set; }
 
         private NormalBehaviorBot(LocalBehaviorTreeBotAgent localBehaviorTreeBotAgent, BehaviorTreeSelectBranch root)

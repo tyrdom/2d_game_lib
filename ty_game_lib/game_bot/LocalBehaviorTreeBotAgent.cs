@@ -12,6 +12,7 @@ namespace game_bot
 {
     public class LocalBehaviorTreeBotAgent
     {
+        private List<TwoDPoint> TempPath1;
         public PatrolCtrl PatrolCtrl { get; }
         private ComboCtrl ComboCtrl { get; }
         private FirstSkillCtrl FirstSkillCtrl { get; }
@@ -32,7 +33,30 @@ namespace game_bot
         private int GoEnemyTick { get; set; }
         private HashSet<Trap> TrapsRecords { get; }
 
-        private List<TwoDPoint> TempPath { get; set; }
+        public bool TempPathChanged { get; set; }
+
+        public List<TwoDPoint> TempPath
+        {
+            get => TempPath1;
+            set
+            {
+                TempPathChanged = true;
+                TempPath1 = value;
+            }
+        }
+
+        public bool TryToGetTempPath(out TwoDPoint[] tempPath)
+        {
+            if (TempPathChanged)
+            {
+                TempPathChanged = false;
+                tempPath = TempPath.ToArray();
+                return true;
+            }
+
+            tempPath = Array.Empty<TwoDPoint>();
+            return false;
+        }
 
         private bool IsSlowTempPath { get; set; }
 
@@ -41,8 +65,8 @@ namespace game_bot
         {
             var polyCount = pathTop?.GetPolyCount() ?? 0;
             var random = BehaviorTreeFunc.Random;
-            var next = random.Next((int) (polyCount * BotLocalConfig.BotOtherConfig.PatrolMin),
-                (int) (polyCount * BotLocalConfig.BotOtherConfig.PatrolMax + 1));
+            var next = random.Next((int)(polyCount * BotLocalConfig.BotOtherConfig.PatrolMin),
+                (int)(polyCount * BotLocalConfig.BotOtherConfig.PatrolMax + 1));
             var twoDPoints = pathTop?.GetPatrolPts(random, next) ?? new List<TwoDPoint>();
             var patrolCtrl = new PatrolCtrl(twoDPoints);
             var battleNpcActWeight = battleBot.ActWeight;
@@ -50,8 +74,8 @@ namespace game_bot
             var valueTuples = battleNpcActWeight.Where(x => x.op != botOp.none)
                 .Select(x => (x.weight, BehaviorTreeFunc.CovOp(x.op)));
             var firstSkillCtrl = new FirstSkillCtrl(valueTuples, weight,
-                (int) (battleBot.DoNotMinMaxTime.item2),
-                (int) battleBot.DoNotMinMaxTime.item1);
+                (int)(battleBot.DoNotMinMaxTime.item2),
+                (int)battleBot.DoNotMinMaxTime.item1);
             var comboCtrl = new ComboCtrl(battleBot.MaxCombo);
             var valueTuples2 = GetRangeAmmoWeapon(body.CharacterStatus.GetWeapons(), body.GetSize());
             var localBehaviorTreeBotAgent =
@@ -78,6 +102,7 @@ namespace game_bot
             NearestPathTick = 0;
             TrapsRecords = new HashSet<Trap>();
             TempPath = new List<TwoDPoint>();
+            TempPathChanged = false;
         }
 
         private static List<(float range, int maxAmmoUse, int weaponIndex)> GetRangeAmmoWeapon(
@@ -144,9 +169,9 @@ namespace game_bot
             ICanBeAndNeedHit? Func(ICanBeAndNeedHit? s, ICanBeAndNeedHit x) =>
                 Nearest(s, x) is ICanBeAndNeedHit canBeAndNeedHit ? canBeAndNeedHit : null;
 
-            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?) null,
+            var beAndNeedHit = canBeHits.Aggregate((ICanBeAndNeedHit?)null,
                 Func);
-            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?) null, Func);
+            var nearestTarget = beAndNeedHit ?? TrapsRecords.Aggregate((ICanBeAndNeedHit?)null, Func);
 
             if (NearestPathTick > 0)
             {
@@ -167,17 +192,17 @@ namespace game_bot
 
                 if (NearestPathTick <= 0) //重新定路径CD
                 {
-                    NearestPathTick = (int) BotLocalConfig.BotOtherConfig.LockTraceTickTime;
+                    NearestPathTick = (int)BotLocalConfig.BotOtherConfig.LockTraceTickTime;
                     var twoDPoint = nearestTarget.GetAnchor();
                     var twoDPoints =
                         pathTop?.FindGoPts(startPt, twoDPoint, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ??
-                        new[] {twoDPoint};
+                        new[] { twoDPoint };
                     TempPath = twoDPoints.ToList();
 // #if DEBUG
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} find enemy go path:{WayPtString()}");
 // #endif
                     IsSlowTempPath = false;
-                    GoEnemyTick = (int) BotLocalConfig.BotOtherConfig.LockTraceTickTime * 2;
+                    GoEnemyTick = (int)BotLocalConfig.BotOtherConfig.LockTraceTickTime * 2;
                 }
 
                 NowTraceTick = 0;
@@ -197,10 +222,11 @@ namespace game_bot
                     //有某方向攻击，放弃追踪目标 向那个方向看
                 {
                     TempPath.Clear();
+                    TempPathChanged = true;
                     TracePt = null;
                     var twoDVector = firstOrDefault.HitDirV;
                     TraceAim = twoDVector;
-                    NowTraceTick = (int) BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
+                    NowTraceTick = (int)BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
                 }
 
 
@@ -209,7 +235,7 @@ namespace game_bot
                     // 丢失目标一段时间，需要记录跟踪点和方向
 
 
-                    NowTraceTick = (int) BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
+                    NowTraceTick = (int)BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
 
 
                     var twoDPoint = TempTarget.GetAnchor();
@@ -255,7 +281,7 @@ namespace game_bot
                 {
                     var twoDPoints =
                         pathTop?.FindGoPts(startPt, TracePt, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ??
-                        new[] {TracePt};
+                        new[] { TracePt };
                     TempPath = twoDPoints.ToList();
                     TempTarget = null;
                     NeedGenTracePath = false;
@@ -275,13 +301,13 @@ namespace game_bot
                 var any = enumerable.Any();
                 if (any)
                 {
-                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?) null, Nearest);
+                    var canBeEnemy = enumerable.Aggregate((ICanBeEnemy?)null, Nearest);
                     if (canBeEnemy != null)
                     {
                         var twoDPoint = canBeEnemy.GetAnchor();
                         var twoDPoints =
                             pathTop?.FindGoPts(startPt, twoDPoint,
-                                BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] {twoDPoint};
+                                BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] { twoDPoint };
                         TempPath = twoDPoints.ToList();
 // #if DEBUG
                         Console.Out.WriteLine(
@@ -309,6 +335,7 @@ namespace game_bot
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} reach first pt TempPath {WayPtString()}");
 // #endif
                     TempPath.RemoveAt(0);
+                    TempPathChanged = true;
                 }
 
                 var firstOrDefault = TempPath.FirstOrDefault();
@@ -353,7 +380,7 @@ namespace game_bot
                         {
                             var twoDPoints =
                                 pathTop?.FindGoPts(startPt, twoDPoint,
-                                    BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] {twoDPoint};
+                                    BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] { twoDPoint };
                             TempPath = twoDPoints.ToList();
 
 #if DEBUG
@@ -374,10 +401,10 @@ namespace game_bot
                             $"bot::{BotBody.GetId()} close to patrol way from {startPt} to {twoDPoint} pt {WayPtString()}");
 #endif
 
-                            var nextDouble = (float) random.NextDouble() * MathTools.Pi();
+                            var nextDouble = (float)random.NextDouble() * MathTools.Pi();
                             TraceAim = new TwoDVector(MathTools.Cos(nextDouble), MathTools.Sin(nextDouble));
                             TracePt = null;
-                            NowTraceTick = (int) BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
+                            NowTraceTick = (int)BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
 
                             var canUseWhenPatrol =
                                 bodyCharacterStatus.Prop?.CanUseWhenPatrol(bodyCharacterStatus,
