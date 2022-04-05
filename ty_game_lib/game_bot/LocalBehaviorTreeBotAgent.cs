@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -21,7 +20,7 @@ namespace game_bot
         private ICanBeEnemy? TempTarget { get; set; }
 
         private int NearestPathTick { get; set; }
-        private List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; set; }
+        private List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; }
 
         private TwoDPoint? TracePt { get; set; }
 
@@ -33,9 +32,9 @@ namespace game_bot
         private int GoEnemyTick { get; set; }
         private HashSet<Trap> TrapsRecords { get; }
 
-        public bool TempPathChanged { get; set; }
+        private bool TempPathChanged { get; set; }
 
-        public List<TwoDPoint> TempPath
+        private List<TwoDPoint> TempPath
         {
             get => TempPath1;
             set
@@ -45,29 +44,36 @@ namespace game_bot
             }
         }
 
-        public bool TryToGetTempPath(out TwoDPoint[] tempPath)
+        private TwoDVectorLine[] GoThroughLines { get; set; }
+
+        public bool TryToGetTempPath(out TwoDPoint[] tempPath, out TwoDVectorLine[] goThroughLines)
         {
             if (TempPathChanged)
             {
+                var botBodyNowPos = BotBody.NowPos;
                 TempPathChanged = false;
-                tempPath = TempPath.ToArray();
+                var twoDPoints = new List<TwoDPoint> { botBodyNowPos };
+                twoDPoints.AddRange(TempPath);
+                tempPath = twoDPoints.ToArray();
+                goThroughLines = GoThroughLines;
                 return true;
             }
 
             tempPath = Array.Empty<TwoDPoint>();
+            goThroughLines = Array.Empty<TwoDVectorLine>();
             return false;
         }
 
         private bool IsSlowTempPath { get; set; }
 
         public static LocalBehaviorTreeBotAgent GenByConfig(battle_bot battleBot, CharacterBody body,
-            PathTop? pathTop)
+            PathTop pathTop)
         {
-            var polyCount = pathTop?.GetPolyCount() ?? 0;
+            var polyCount = pathTop.GetPolyCount();
             var random = BehaviorTreeFunc.Random;
             var next = random.Next((int)(polyCount * BotLocalConfig.BotOtherConfig.PatrolMin),
                 (int)(polyCount * BotLocalConfig.BotOtherConfig.PatrolMax + 1));
-            var twoDPoints = pathTop?.GetPatrolPts(random, next) ?? new List<TwoDPoint>();
+            var twoDPoints = pathTop.GetPatrolPts(random, next);
             var patrolCtrl = new PatrolCtrl(twoDPoints);
             var battleNpcActWeight = battleBot.ActWeight;
             var weight = battleNpcActWeight.FirstOrDefault(x => x.op == botOp.none)?.weight ?? 0;
@@ -101,8 +107,10 @@ namespace game_bot
             GoEnemyTick = 0;
             NearestPathTick = 0;
             TrapsRecords = new HashSet<Trap>();
-            TempPath = new List<TwoDPoint>();
+            TempPath1 = new List<TwoDPoint>();
             TempPathChanged = false;
+
+            GoThroughLines = Array.Empty<TwoDVectorLine>();
         }
 
         private static List<(float range, int maxAmmoUse, int weaponIndex)> GetRangeAmmoWeapon(
@@ -121,7 +129,7 @@ namespace game_bot
         }
 
         public IAgentStatus[] GenAgentStatus(PlayerTickSense playerTickSense,
-            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop? pathTop)
+            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop pathTop)
         {
             var agentStatusList = new List<IAgentStatus>();
 
@@ -132,6 +140,12 @@ namespace game_bot
             agentStatusList.Add(rangeToWeapon);
 
             var bodyCharacterStatus = BotBody.CharacterStatus;
+            if (bodyCharacterStatus.IsDeadOrCantDmg())
+            {
+                ClearTempPath();
+                return agentStatusList.ToArray();
+            }
+
             var checkAppStatusToBotPropUse =
                 bodyCharacterStatus.Prop?.CheckAppStatusToBotPropUse(bodyCharacterStatus) ?? false;
             if (checkAppStatusToBotPropUse)
@@ -147,9 +161,9 @@ namespace game_bot
             var b = immutableHashSet.OfType<BulletHit>().Any();
             if (b)
             {
-// #if DEBUG
+#if DEBUG
                 Console.Out.WriteLine($"{BotBody.GetId()} hit sth ");
-// #endif
+#endif
                 var hitSth = new HitSth();
                 agentStatusList.Add(hitSth);
             }
@@ -195,14 +209,19 @@ namespace game_bot
                     NearestPathTick = (int)BotLocalConfig.BotOtherConfig.LockTraceTickTime;
                     var twoDPoint = nearestTarget.GetAnchor();
                     var twoDPoints =
-                        pathTop?.FindGoPts(startPt, twoDPoint, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ??
-                        new[] { twoDPoint };
-                    TempPath = twoDPoints.ToList();
-// #if DEBUG
+                        pathTop.FindGoPts(startPt, twoDPoint, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti,
+#if DEBUG
+#endif
+                            out var pathGoThroughLine
+                        );
+                    SetPath(twoDPoints, pathGoThroughLine);
+
+
+#if DEBUG
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} find enemy go path:{WayPtString()}");
-// #endif
+#endif
                     IsSlowTempPath = false;
-                    GoEnemyTick = (int)BotLocalConfig.BotOtherConfig.LockTraceTickTime * 2;
+                    GoEnemyTick = (int)BotLocalConfig.BotOtherConfig.LockTraceTickTime;
                 }
 
                 NowTraceTick = 0;
@@ -221,16 +240,20 @@ namespace game_bot
                 if (firstOrDefault != null)
                     //有某方向攻击，放弃追踪目标 向那个方向看
                 {
-                    TempPath.Clear();
-                    TempPathChanged = true;
+                    ClearTempPath();
+                    NeedGenTracePath = false;
                     TracePt = null;
                     var twoDVector = firstOrDefault.HitDirV;
                     TraceAim = twoDVector;
                     NowTraceTick = (int)BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
+#if DEBUG
+#endif
+
+                    Console.Out.WriteLine($"bot::{BotBody.GetId()} be hit by {TraceAim}");
                 }
 
 
-                if (TempTarget != null && GoEnemyTick <= 0)
+                if (TempTarget != null)
                 {
                     // 丢失目标一段时间，需要记录跟踪点和方向
 
@@ -241,10 +264,11 @@ namespace game_bot
                     var twoDPoint = TempTarget.GetAnchor();
                     TracePt = twoDPoint;
                     NeedGenTracePath = true;
-// #if DEBUG
+                    TempTarget = null;
+#if DEBUG
                     Console.Out.WriteLine(
                         $"bot::{BotBody.GetId()} LossTarget Start Trace To Pt {TracePt} tick:{NowTraceTick}");
-// #endif
+#endif
                     if (TempTarget is CharacterBody characterBody)
                     {
                         var twoDVector = characterBody.GetAim();
@@ -256,7 +280,7 @@ namespace game_bot
 
             var ctrlPoints = PatrolCtrl.Points;
 
-            if (NowTraceTick > 0)
+            if (NowTraceTick > 0 && GoEnemyTick <= 0)
             {
                 if (TracePt == null || TracePt.GetSqDistance(startPt) <
                     BotLocalConfig.BotOtherConfig.CloseEnoughDistance *
@@ -268,9 +292,9 @@ namespace game_bot
                     {
                         var traceToAimMsg = new TraceToAimMsg(TraceAim);
 
-// #if DEBUG
+#if DEBUG
                         Console.Out.WriteLine($"bot::{BotBody.GetId()}  Trace Aim {TraceAim}");
-// #endif
+#endif
 
                         agentStatusList.Add(traceToAimMsg);
                     }
@@ -280,15 +304,15 @@ namespace game_bot
                 else if (NeedGenTracePath)
                 {
                     var twoDPoints =
-                        pathTop?.FindGoPts(startPt, TracePt, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ??
-                        new[] { TracePt };
-                    TempPath = twoDPoints.ToList();
-                    TempTarget = null;
+                        pathTop.FindGoPts(startPt, TracePt, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti,
+                            out var pathGoThroughLine);
+                    SetPath(twoDPoints, pathGoThroughLine);
+
                     NeedGenTracePath = false;
-// #if DEBUG
+#if DEBUG
                     var aggregate = WayPtString();
                     Console.Out.WriteLine($"bot::{BotBody.GetId()}  Trace MayBePt {TracePt} way point {aggregate}");
-// #endif
+#endif
                     IsSlowTempPath = false;
                 }
             }
@@ -306,13 +330,13 @@ namespace game_bot
                     {
                         var twoDPoint = canBeEnemy.GetAnchor();
                         var twoDPoints =
-                            pathTop?.FindGoPts(startPt, twoDPoint,
-                                BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] { twoDPoint };
-                        TempPath = twoDPoints.ToList();
-// #if DEBUG
+                            pathTop.FindGoPts(startPt, twoDPoint,
+                                BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti, out var pathGoThroughLine);
+                        SetPath(twoDPoints, pathGoThroughLine);
+#if DEBUG
                         Console.Out.WriteLine(
                             $"bot::{BotBody.GetId()} may be enemy at {twoDPoint} way point {WayPtString()}");
-// #endif
+#endif
                         IsSlowTempPath = false;
                     }
                 }
@@ -331,9 +355,9 @@ namespace game_bot
                     BotLocalConfig.BotOtherConfig.CloseEnoughDistance *
                     BotLocalConfig.BotOtherConfig.CloseEnoughDistance)
                 {
-// #if DEBUG
+#if DEBUG
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} reach first pt TempPath {WayPtString()}");
-// #endif
+#endif
                     TempPath.RemoveAt(0);
                     TempPathChanged = true;
                 }
@@ -342,9 +366,9 @@ namespace game_bot
 
                 if (firstOrDefault != null)
                 {
-                    // #if DEBUG
+#if DEBUG
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} go the TempPath {WayPtString()}");
-// #endif
+#endif
                     traceMsg = new TraceToPtMsg(twoDPoint, IsSlowTempPath);
                 }
             }
@@ -379,9 +403,9 @@ namespace game_bot
                         if (!b1)
                         {
                             var twoDPoints =
-                                pathTop?.FindGoPts(startPt, twoDPoint,
-                                    BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti) ?? new[] { twoDPoint };
-                            TempPath = twoDPoints.ToList();
+                                pathTop.FindGoPts(startPt, twoDPoint,
+                                    BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti, out var pathGoThroughLine);
+                            SetPath(twoDPoints, pathGoThroughLine);
 
 #if DEBUG
                         Console.Out.WriteLine(
@@ -421,16 +445,30 @@ namespace game_bot
 
             if (traceMsg == null) return agentStatusList.ToArray();
 
-// #if DEBUG
+#if DEBUG
             Console.Out.WriteLine(
                 $"bot::{BotBody.GetId()} go trace pt {traceMsg.TracePt}");
-// #endif
+#endif
             agentStatusList.Add(traceMsg);
 
             return agentStatusList.ToArray();
         }
 
-// #if DEBUG
+        private void SetPath(IEnumerable<TwoDPoint> twoDPoints,
+            List<(int polyId, TwoDVectorLine? gothroughLine)> pathGoThroughLine)
+        {
+            TempPath = twoDPoints.ToList();
+            GoThroughLines = pathGoThroughLine.Select(x => x.gothroughLine).Where(xx => xx != null)
+                .ToArray()!;
+        }
+
+        private void ClearTempPath()
+        {
+            TempPath.Clear();
+            TempPathChanged = true;
+        }
+
+        // #if DEBUG
         private string WayPtString()
         {
             return TempPath.Aggregate("", (s, x) => s + "=>" + x);

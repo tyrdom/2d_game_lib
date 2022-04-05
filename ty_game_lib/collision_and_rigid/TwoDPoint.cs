@@ -280,5 +280,10 @@ namespace collision_and_rigid
             return new TwoDPoint((pos.X + X) / 2,
                 (pos.Y + Y) / 2);
         }
+
+        public TwoDPoint Clone()
+        {
+            return new TwoDPoint(X, Y);
+        }
     }
 }

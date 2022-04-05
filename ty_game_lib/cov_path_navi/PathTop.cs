@@ -116,21 +116,31 @@ namespace cov_path_navi
             var end = endPoly ?? InWhichPoly(endPt);
 
 
-            if (start != null && end != null)
-            {
-                return FindAPathById(start.Value, end.Value, startPt, endPt);
-            }
+            if (start == null || end == null) return new List<(int, TwoDVectorLine?)>();
+            var findAPathByPoint = FindAPathById(start.Value, end.Value, startPt, endPt);
 #if DEBUG
-            Console.Out.WriteLine($"Pt{startPt} or {endPt} not in any area  ");
 #endif
-            return new List<(int, TwoDVectorLine?)>();
+            var aggregate = findAPathByPoint.Aggregate("get path ids", ((s, tuple) => s + "..." + tuple.Item1));
+            Console.Out.WriteLine(aggregate);
+            return findAPathByPoint;
+#if DEBUG
+            Console.Out.WriteLine($"path find error !!!!!Pt {startPt} or {endPt} not in any area  ");
+#endif
         }
 
         public IEnumerable<TwoDPoint> FindGoPts(TwoDPoint startPt, TwoDPoint endPt, float goThroughMulti,
+// #if DEBUG
+            out List<(int polyId, TwoDVectorLine? gothroughLine)> pathGoThroughLine,
+// #endif
             int? startPoly = null,
-            int? endPoly = null)
+            int? endPoly = null
+        )
         {
-            var findAPathByPoint = FindAPathByPoint(startPt, endPt, startPoly, endPoly);
+            var findAPathByPoint =
+                FindAPathByPoint(startPt, endPt, startPoly, endPoly);
+// #if DEBUG
+            pathGoThroughLine = findAPathByPoint;
+// #endif
             var aPathByPoint =
                 findAPathByPoint.ToArray();
 
@@ -143,7 +153,8 @@ namespace cov_path_navi
                 .Where(x => x.gothroughLine != null)
                 .Select(x => x.gothroughLine!);
 
-            var twoDPoints = GetGoPts(startPt, endPt, twoDVectorLines.ToArray(), goThroughMulti);
+            var twoDPoints = GetGoPts(startPt, endPt, twoDVectorLines.ToArray(),
+                goThroughMulti);
 
 
             return twoDPoints;
@@ -164,52 +175,73 @@ namespace cov_path_navi
             var leftSidePt = vectorLine.GetPointFromEnd(goThroughMulti);
             var localPt = start;
 
+            var pt2LinePos = Pt2LinePos.Right;
             for (var i = 1; i < twoDVectorLines.Length; i++)
             {
                 var twoDVectorLine = twoDVectorLines[i];
 
-                var rightPt = twoDVectorLine.GetStartPt();
-                var leftPt = twoDVectorLine.GetEndPt();
-
-                //getNextPt;
                 var lLine = new TwoDVectorLine(localPt, leftSidePt);
                 var rLine = new TwoDVectorLine(localPt, rightSidePt);
-                var b = rightPt.GetPosOf(lLine) == Pt2LinePos.Left;
+
+                var newRightPt = twoDVectorLine.GetPointFromStart(goThroughMulti);
+                var newLeftPt = twoDVectorLine.GetPointFromEnd(goThroughMulti);
+
+                //getNextPt;
+
+                var b = newRightPt.GetPosOf(lLine) == Pt2LinePos.Left;
                 if (b)
                 {
                     //右方点越过左射线当前点为新的起点，并加入路径点
-                    twoDPoints.Add(leftSidePt);
-                    localPt = leftSidePt;
-                    leftSidePt = leftPt;
-                    rightSidePt = rightPt;
+                    var twoDPoint = leftSidePt.Clone();
+                    twoDPoints.Add(twoDPoint);
+                    localPt = twoDPoint;
+                    leftSidePt = newLeftPt;
+                    rightSidePt = newRightPt;
                     continue;
                 }
 
-                var b1 = leftPt.GetPosOf(rLine) == Pt2LinePos.Right;
+                var b1 = newLeftPt.GetPosOf(rLine) == pt2LinePos;
                 if (b1)
                 {
                     //左方点越过右边点
-                    twoDPoints.Add(rightSidePt);
-                    localPt = rightSidePt;
-                    leftSidePt = leftPt;
-                    rightSidePt = rightPt;
+                    var twoDPoint = rightSidePt.Clone();
+                    twoDPoints.Add(twoDPoint);
+                    localPt = twoDPoint;
+                    leftSidePt = newLeftPt;
+                    rightSidePt = newRightPt;
                     continue;
                 }
 
                 //到这里说明都没转弯，比较夹角有没有收起
-                var b2 = leftPt.GetPosOf(lLine) != Pt2LinePos.Left;
+                var b2 = newLeftPt.GetPosOf(lLine) != Pt2LinePos.Left;
                 if (b2)
                 {
                     //左点不在左线的左边，更新左点
-                    leftSidePt = leftPt;
+                    leftSidePt = newLeftPt;
                 }
 
-                var b3 = rightPt.GetPosOf(rLine) != Pt2LinePos.Right;
+                var b3 = newRightPt.GetPosOf(rLine) != pt2LinePos;
                 if (b3)
                 {
                     //右点不在右线的右边，更新右点
-                    rightSidePt = rightPt;
+                    rightSidePt = newRightPt;
                 }
+            }
+
+            var lLastLine = new TwoDVectorLine(localPt, leftSidePt);
+            var rLastLine = new TwoDVectorLine(localPt, rightSidePt);
+            var b4 = end.GetPosOf(lLastLine) == Pt2LinePos.Left;
+            if (b4)
+            {
+                var twoDPoint = leftSidePt.Clone();
+                twoDPoints.Add(twoDPoint);
+            }
+
+            var b5 = end.GetPosOf(rLastLine) == pt2LinePos;
+            if (b5)
+            {
+                var twoDPoint = rightSidePt.Clone();
+                twoDPoints.Add(twoDPoint);
             }
 
             twoDPoints.Add(end);

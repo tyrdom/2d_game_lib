@@ -380,6 +380,7 @@ namespace rogue_game
             NowPlayMap.IsReached = true;
             NeedCheckClear = true;
             if (NowPlayMap.IsClear) return new RogueGameGoTickResult(playGroundGoTickResult, true);
+            BotTeam.ClearBot();
             BotTeam.SetNaviMaps(NowPlayMap.PlayGround.ResMId);
 
             NowPlayMap.SpawnNpcWithBot(Random, BotTeam, NowChapter.ExtraPassiveNum);

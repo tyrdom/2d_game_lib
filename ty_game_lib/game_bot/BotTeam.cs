@@ -20,14 +20,36 @@ namespace game_bot
 
         public Dictionary<int, Operate?> TempOperate { get; private set; }
 
+        private bool IsBotClear { get; set; }
+
         public BotTeam()
         {
             NormalBehaviorBots = new HashSet<NormalBehaviorBot>();
             SizeToNaviMap = new Dictionary<size, PathTop>().ToImmutableDictionary();
             TempOperate = new Dictionary<int, Operate?>();
+            IsBotClear = false;
         }
 
-      
+        public ImmutableDictionary<int, TwoDPoint[]> GetBotsPath(out bool isClear,
+            out ImmutableDictionary<int, TwoDVectorLine[]> goThroughVectorLinesMap)
+        {
+            var localBehaviorTreeBotAgents = NormalBehaviorBots.Select(x => x.LocalBehaviorTreeBotAgent);
+            var twoDPointsSet = new Dictionary<int, TwoDPoint[]>();
+            var goMap = new Dictionary<int, TwoDVectorLine[]>();
+            foreach (var localBehaviorTreeBotAgent in localBehaviorTreeBotAgents)
+            {
+                if (!localBehaviorTreeBotAgent.TryToGetTempPath(out var twoDPoints, out var throughLines)) continue;
+                var id = localBehaviorTreeBotAgent.BotBody.GetId();
+                twoDPointsSet[id] = twoDPoints;
+                goMap[id] = throughLines;
+            }
+
+            isClear = IsBotClear;
+            IsBotClear = false;
+            goThroughVectorLinesMap = goMap.ToImmutableDictionary();
+
+            return twoDPointsSet.ToImmutableDictionary();
+        }
 
         public void SetNaviMaps(int mapResId)
         {
@@ -99,6 +121,7 @@ namespace game_bot
         public void ClearBot()
         {
             NormalBehaviorBots.Clear();
+            IsBotClear = true;
         }
     }
 }

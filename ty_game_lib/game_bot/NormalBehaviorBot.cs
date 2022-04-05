@@ -52,7 +52,7 @@ namespace game_bot
         }
 
         public Operate? GoATick(PlayerTickSense perceivable,
-            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop? pathTop)
+            ImmutableHashSet<IHitMsg> immutableHashSet, PathTop pathTop)
         {
             var agentStatusArray = LocalBehaviorTreeBotAgent.GenAgentStatus(perceivable, immutableHashSet, pathTop);
             var behaviorTreeNode = Next ?? Root;

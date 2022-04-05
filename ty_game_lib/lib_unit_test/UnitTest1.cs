@@ -23,6 +23,21 @@ namespace lib_unit_test
         }
 
         [Test]
+        public void TestLine()
+        {
+            var a = new TwoDPoint(1f, 1f);
+
+            var b = new TwoDPoint(1f, 2f);
+
+            var o = new TwoDPoint(3f, 1f);
+
+            var twoDVectorLine = new TwoDVectorLine(a, b);
+            var pt2LinePos = o.GetPosOf(twoDVectorLine);
+
+            Assert.Pass(pt2LinePos.ToString());
+        }
+
+        [Test]
         public void Test1()
         {
             var genAChapterMap = ChapterMapTop.GenAChapterMap(7, 3, 1, 1, false, true, 2, 1, 3, 2);
@@ -108,6 +123,27 @@ namespace lib_unit_test
         {
             var pathTest = PathTest(TestWb());
             Assert.Pass(pathTest);
+        }
+
+        [Test]
+        public void PathFindTest()
+        {
+            // form [6.148036|0.06918547] to [-7.173766|0.9755833] get path -->[10.12993|5.775555]-->[-7.173766|0.9755833]
+
+            var info = CommonConfig.Configs.map_rawss[15].info;
+            var immutableDictionary = BotLocalConfig.NaviMapPerLoad[15];
+
+            var pathTop = immutableDictionary[size.small];
+            var twoDPoint = new TwoDPoint(6.148036f, 0.06918547f);
+            var dPoint = new TwoDPoint(-7.173766f, 0.9755833f);
+            var twoDPoints = pathTop.FindGoPts(twoDPoint, dPoint, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti,
+                    out var pathGoThroughLine)
+                .ToArray();
+            var aggregate = twoDPoints.Aggregate("", (s, point) => s + "-->" + point);
+
+            var buffer = $"{info} form {twoDPoint} to {dPoint} get path {aggregate}";
+            // Console.Out.WriteLine(buffer);
+            Assert.Pass(buffer);
         }
 
         [Test]
@@ -243,6 +279,7 @@ namespace lib_unit_test
         {
             Console.Out.WriteLine("path test~~~~~");
 
+
             var allIBlocks = genWalkBlockByPolys.QSpace?.GetAllIBlocks();
 
             var aggregate = allIBlocks!.Aggregate("", (s, x) => s + x.ToString() + "\n");
@@ -297,7 +334,8 @@ namespace lib_unit_test
                 findAPathByPoint.Aggregate("", (s, x) => s + "=>>" + x.Item2?.ToString() + "||" + x.Item1);
             Console.Out.WriteLine($"path::{aggregate4}");
             var twoDVectorLines = findAPathByPoint.Where(x => x.gothroughLine != null).Select(x => x.Item2);
-            var goPts = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray(), 0f);
+            var twoDPoints = PathTop.GetGoPts(startPt, endPt, twoDVectorLines.ToArray(), 0f);
+            var goPts = twoDPoints;
             var s3 = goPts.Aggregate("", (s, x) => s + "=>" + x);
             Console.Out.WriteLine($"way Points are {s3}");
             return s3;
