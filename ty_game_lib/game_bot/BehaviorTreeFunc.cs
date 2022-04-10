@@ -67,9 +67,9 @@ namespace game_bot
             var isSlow = traceToPtMsg.IsSlow;
             var bodyStatus = botAgents.OfType<BodyStatus>().First();
             var dPoint = bodyStatus.CharacterBody.GetAnchor();
-            
+
             Console.Out.WriteLine($"bot:: {bodyStatus.CharacterBody.GetId()} trace pt {twoDPoint}");
-            
+
             var twoDVector = new TwoDVector(dPoint, twoDPoint).GetUnit();
             var patrolSlowMulti = BotLocalConfig.BotOtherConfig.PatrolSlowMulti;
             var dVector = twoDVector.Multi(patrolSlowMulti);
@@ -81,10 +81,12 @@ namespace game_bot
         public static (bool, Operate?) TraceAim(IAgentStatus[] botAgents)
         {
             var traceToAimMsg = botAgents.OfType<TraceToAimMsg>().FirstOrDefault();
+            var botMemory = botAgents.OfType<BotMemory>().First();
             if (traceToAimMsg == null) return (false, null);
             {
                 var twoDVector = traceToAimMsg.Aim;
                 var operate = new Operate(twoDVector);
+                botMemory.AimTraced = true;
                 return (true, operate);
             }
         }
@@ -94,7 +96,8 @@ namespace game_bot
         {
             var any = botAgents.OfType<PropUse>().Any();
             return (any,
-                any ? new Operate(specialAction: SpecialAction.UseProp) 
+                any
+                    ? new Operate(specialAction: SpecialAction.UseProp)
                     : null);
         }
 

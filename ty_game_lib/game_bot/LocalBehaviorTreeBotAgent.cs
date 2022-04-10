@@ -12,23 +12,28 @@ namespace game_bot
     public class LocalBehaviorTreeBotAgent
     {
         private List<TwoDPoint> TempPath1;
+        private TwoDVector? TraceAim1;
         public PatrolCtrl PatrolCtrl { get; }
-        private ComboCtrl ComboCtrl { get; }
-        private FirstSkillCtrl FirstSkillCtrl { get; }
+
+        private BotMemory BotMemory { get; }
         public CharacterBody BotBody { get; }
-
         private ICanBeEnemy? TempTarget { get; set; }
-
         private int NearestPathTick { get; set; }
         private List<(float range, int maxAmmoUse, int weaponIndex)> RangeToWeapon { get; }
-
         private TwoDPoint? TracePt { get; set; }
 
-        private TwoDVector? TraceAim { get; set; }
+        private TwoDVector? TraceAim
+        {
+            get => TraceAim1;
+            set
+            {
+                BotMemory.AimTraced = value == null;
+                TraceAim1 = value;
+            }
+        }
 
         private bool NeedGenTracePath { get; set; }
         private int NowTraceTick { get; set; }
-
         private int GoEnemyTick { get; set; }
         private HashSet<Trap> TrapsRecords { get; }
 
@@ -94,8 +99,7 @@ namespace game_bot
             List<(float range, int maxAmmoUse, int weaponIndex)> rangeToWeapon)
         {
             PatrolCtrl = patrolCtrl;
-            ComboCtrl = comboCtrl;
-            FirstSkillCtrl = firstSkillCtrl;
+            BotMemory = new BotMemory(comboCtrl, firstSkillCtrl);
             BotBody = botBody;
             TempTarget = null;
             RangeToWeapon = rangeToWeapon;
@@ -154,8 +158,7 @@ namespace game_bot
             }
             //botMemory
 
-            var botMemory = new BotMemory(ComboCtrl, FirstSkillCtrl);
-            agentStatusList.Add(botMemory);
+            agentStatusList.Add(BotMemory);
 
             // is direct hit sth
             var b = immutableHashSet.OfType<BulletHit>().Any();
@@ -247,9 +250,8 @@ namespace game_bot
                     TraceAim = twoDVector;
                     NowTraceTick = (int)BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
 #if DEBUG
-#endif
-
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} be hit by {TraceAim}");
+#endif
                 }
 
 
@@ -257,10 +259,7 @@ namespace game_bot
                 {
                     // 丢失目标一段时间，需要记录跟踪点和方向
 
-
                     NowTraceTick = (int)BotLocalConfig.BotOtherConfig.BotAimTraceDefaultTime;
-
-
                     var twoDPoint = TempTarget.GetAnchor();
                     TracePt = twoDPoint;
                     NeedGenTracePath = true;
@@ -299,7 +298,10 @@ namespace game_bot
                         agentStatusList.Add(traceToAimMsg);
                     }
 
-                    NowTraceTick--;
+                    if (BotMemory.AimTraced)
+                    {
+                        NowTraceTick--;
+                    }
                 }
                 else if (NeedGenTracePath)
                 {

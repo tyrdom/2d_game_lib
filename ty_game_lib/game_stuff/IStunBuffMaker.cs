@@ -69,7 +69,8 @@ namespace game_stuff
                 var (k1, v1) = twoDVectors[index];
                 var dVector = v1.Minus(twoDVector);
 
-                var genLinearListToAnother = TwoDVector.GenLinearListToAnother(dVector, (int)(k1 - k0)).Select(x=>x.Sum(twoDVector));
+                var genLinearListToAnother = TwoDVector.GenLinearListToAnother(dVector, (int)(k1 - k0))
+                    .Select(x => x.Sum(twoDVector));
                 vectors.AddRange(genLinearListToAnother);
             }
 
@@ -102,10 +103,10 @@ namespace game_stuff
                     {
                         return GenBuffByConfig(value3);
                     }
-
                     throw new KeyNotFoundException($"not such pull buff {configToOpponent}");
 
-                    break;
+                case buff_type.play_buff:
+                    throw new KeyNotFoundException($"it is not stun buff {configToOpponent}");
                 default:
                     throw new ArgumentOutOfRangeException();
             }

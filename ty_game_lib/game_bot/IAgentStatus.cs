@@ -67,10 +67,13 @@ namespace game_bot
         public ComboCtrl ComboCtrl { get; }
         public FirstSkillCtrl FirstSkillCtrl { get; }
 
+        public bool AimTraced { get; set; }
+
         public BotMemory(ComboCtrl comboCtrl, FirstSkillCtrl firstSkillCtrl)
         {
             ComboCtrl = comboCtrl;
             FirstSkillCtrl = firstSkillCtrl;
+            AimTraced = true;
         }
     }
 

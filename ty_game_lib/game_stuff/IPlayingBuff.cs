@@ -39,14 +39,14 @@ namespace game_stuff
         bool IsFinish();
         int Stack { get; set; }
         void GoATick();
-        bool UseStack { get; }
+        int UseStack { get; }
         void ActiveWhenUse(CharacterStatus characterStatus);
     }
 
 
     public class MakeDamageBuff : IPlayingBuff, IDamageAboutBuff
     {
-        public MakeDamageBuff(play_buff_id buffId, int restTick, float addDamageMulti, int stack, bool useStack)
+        public MakeDamageBuff(play_buff_id buffId, int restTick, float addDamageMulti, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -64,7 +64,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -180,8 +180,8 @@ namespace game_stuff
 
         public static void UseBuff(this IPlayingBuff playingBuff)
         {
-            if (!playingBuff.UseStack) return;
-            playingBuff.Stack -= 1;
+            
+            playingBuff.Stack -= playingBuff.UseStack;
         }
 
         public static float GetDamageMultiAdd(this IEnumerable<IDamageAboutBuff> damageBuffs)
@@ -240,7 +240,7 @@ namespace game_stuff
     public class ChangeComboStatus : IPlayingBuff
     {
         public ChangeComboStatus(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i,
-            bool playBuffUseStack)
+            int playBuffUseStack)
         {
             BuffId = id;
             RestTick = intTickByTime;
@@ -266,7 +266,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -275,7 +275,7 @@ namespace game_stuff
 
     public class PullMark : IPlayingBuff
     {
-        public PullMark(play_buff_id id, int intTickByTime, string playBuffEffectString, int i, bool playBuffUseStack,
+        public PullMark(play_buff_id id, int intTickByTime, string playBuffEffectString, int i, int playBuffUseStack,
             CharacterStatus? charMark)
         {
             TargetMark = charMark ?? throw new Exception("mark cant be null");
@@ -304,7 +304,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -322,7 +322,7 @@ namespace game_stuff
 
     public class ToughUpBuff : IPlayingBuff
     {
-        public ToughUpBuff(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i, bool playBuffUseStack)
+        public ToughUpBuff(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i, int playBuffUseStack)
         {
             BuffId = id;
             RestTick = intTickByTime;
@@ -347,7 +347,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -356,7 +356,7 @@ namespace game_stuff
 
     public class ToughBuff : IPlayingBuff
     {
-        public ToughBuff(play_buff_id buffId, int restTick, int stack, bool useStack)
+        public ToughBuff(play_buff_id buffId, int restTick, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -379,7 +379,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -388,7 +388,7 @@ namespace game_stuff
 
     public class TakeDamageBuff : IPlayingBuff, IDamageAboutBuff
     {
-        public TakeDamageBuff(play_buff_id buffId, int restTick, float takeDamageAdd, int stack, bool useStack)
+        public TakeDamageBuff(play_buff_id buffId, int restTick, float takeDamageAdd, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -418,7 +418,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -427,7 +427,7 @@ namespace game_stuff
 
     public class BreakBuff : IPlayingBuff
     {
-        public BreakBuff(play_buff_id buffId, int restTick, int stack, bool useStack)
+        public BreakBuff(play_buff_id buffId, int restTick, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
@@ -450,7 +450,7 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
@@ -476,13 +476,13 @@ namespace game_stuff
             PlayBuffStandard.GoATick(this);
         }
 
-        public bool UseStack { get; }
+        public int UseStack { get; }
 
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
         }
 
-        public MaxSpeedChangeBuff(play_buff_id buffId, int restTick, float speedMaxAddMulti, int stack, bool useStack)
+        public MaxSpeedChangeBuff(play_buff_id buffId, int restTick, float speedMaxAddMulti, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;

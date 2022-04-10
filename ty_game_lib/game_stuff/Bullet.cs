@@ -337,11 +337,11 @@ namespace game_stuff
 
             if (isActingSkill)
             {
-                var toughBuffs = targetCharacterStatus.GetBuffs<ToughBuff>().ToArray();
+                var toughBuffs = targetCharacterStatus.GetAndUseBuffs<ToughBuff>().ToArray();
                 var checkBuff = toughBuffs.Any();
                 if (Caster is CharacterStatus caster)
                 {
-                    var breakBuffs = caster.GetBuffs<BreakBuff>().ToArray();
+                    var breakBuffs = caster.GetAndUseBuffs<BreakBuff>().ToArray();
                     if (breakBuffs.Any())
                     {
                         if (!checkBuff)

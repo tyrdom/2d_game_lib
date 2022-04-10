@@ -946,7 +946,7 @@ namespace game_stuff
 #if DEBUG
                 Console.Out.WriteLine($"{GId}:check Buff: {PlayingBuffs.Count}");
 #endif
-                var changeComboStatusEnumerable = GetBuffs<ChangeComboStatus>().FirstOrDefault();
+                var changeComboStatusEnumerable = GetAndUseBuffs<ChangeComboStatus>().FirstOrDefault();
                 if (changeComboStatusEnumerable != null)
                 {
                     skillStatus = changeComboStatusEnumerable.ComboStatusFix;
@@ -1314,7 +1314,7 @@ namespace game_stuff
 
         public Damage GenDamage(float damageMulti, bool b4)
         {
-            var makeDamageBuffs = GetBuffs<MakeDamageBuff>().ToArray();
+            var makeDamageBuffs = GetAndUseBuffs<MakeDamageBuff>().ToArray();
 
             var multi = makeDamageBuffs.GetDamageMultiAdd();
             var damageMultiDecrease = makeDamageBuffs.GetDamageMultiDecrease();
@@ -1716,7 +1716,7 @@ namespace game_stuff
 
         public DmgShow? TakeDamage(Damage genDamage)
         {
-            var takeDamageBuffs = GetBuffs<TakeDamageBuff>().ToArray();
+            var takeDamageBuffs = GetAndUseBuffs<TakeDamageBuff>().ToArray();
             var damageMulti = takeDamageBuffs.GetDamageMultiAdd();
             var damageMultiDecrease = takeDamageBuffs.GetDamageMultiDecrease();
             var multiDecrease = (1f + damageMulti) / (1f + damageMultiDecrease);
@@ -1778,7 +1778,7 @@ namespace game_stuff
             return PlayingBuffs.TryGetValue(id, out var playingBuff) && playingBuff.Stack > 0;
         }
 
-        public IEnumerable<T> GetBuffs<T>() where T : IPlayingBuff
+        public IEnumerable<T> GetAndUseBuffs<T>() where T : IPlayingBuff
         {
             var ofType = PlayingBuffs.Values.OfType<T>().ToArray();
             foreach (var playingBuff in ofType)
@@ -1936,7 +1936,7 @@ namespace game_stuff
 
         public int GetNowTough()
         {
-            var upBuffs = GetBuffs<ToughUpBuff>().ToArray();
+            var upBuffs = GetAndUseBuffs<ToughUpBuff>().ToArray();
             var toughUpBuffs = upBuffs.Any() ? upBuffs.Sum(x => x.PlayBuffEffectValue) : 0;
             if (NowCastAct == null)
             {

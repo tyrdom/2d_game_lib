@@ -15,7 +15,6 @@ namespace game_bot
         private static BehaviorTreeActLeaf CanUseWeaponAct { get; } =
             new BehaviorTreeActLeaf(BehaviorTreeFunc.CanUseWeaponToTarget, "UseWeapon");
 
-
         private static BehaviorTreeActLeaf TracePt { get; } =
             new BehaviorTreeActLeaf(BehaviorTreeFunc.TracePt, "tracePt");
 
