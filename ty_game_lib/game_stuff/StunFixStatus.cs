@@ -9,9 +9,9 @@ namespace game_stuff
 
         public float MakeStunForceMulti { get; private set; }
 
-        public float TakeStunTickMulti { get; set; }
+        public float TakeStunTickMulti { get; private set; }
 
-        public float TakeStunForceMulti { get; set; }
+        public float TakeStunForceMulti { get; private set; }
 
         public StunFixStatus()
         {

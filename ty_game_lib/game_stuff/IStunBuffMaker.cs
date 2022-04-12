@@ -103,6 +103,7 @@ namespace game_stuff
                     {
                         return GenBuffByConfig(value3);
                     }
+
                     throw new KeyNotFoundException($"not such pull buff {configToOpponent}");
 
                 case buff_type.play_buff:
@@ -145,7 +146,8 @@ namespace game_stuff
         {
             var stunFixStatus = battleUnitStatus.GetStunFixStatus();
             var fixStatus = whoTake.GetStunFixStatus();
-            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti *
+                                     battleUnitStatus.GetStunForceMultiFormBuff();
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var u = canFix ? MathTools.Max(1, (uint)MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
             var dVector1 = canFix ? unit.Multi(speed * makeStunForceMulti) : unit.Multi(speed);
@@ -253,7 +255,8 @@ namespace game_stuff
         {
             var stunFixStatus = battleUnitStatus.GetStunFixStatus();
             var fixStatus = whoTake.GetStunFixStatus();
-            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
+            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti *
+                                     battleUnitStatus.GetStunForceMultiFormBuff();
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var max = MathTools.Max(GenUp(height, f), upSpeed);
             var twoDVector = !canFix ? unit.Multi(speed) : unit.Multi(speed * makeStunForceMulti);
@@ -306,7 +309,9 @@ namespace game_stuff
         {
             var stunFixStatus = whoDid.GetStunFixStatus();
             var fixStatus = whoTake.GetStunFixStatus();
-            var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti;
+            var stunForceMultiFormBuff = whoDid.GetStunForceMultiFormBuff();
+            var makeStunForceMulti =
+                stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti * stunForceMultiFormBuff;
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var u = canFix ? MathTools.Max(1, (uint)MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
             var vector1 = unit.Multi(pullMaxSpeed > 0 ? otherConfigFriction : -otherConfigFriction);

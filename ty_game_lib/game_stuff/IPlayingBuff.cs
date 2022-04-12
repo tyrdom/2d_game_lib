@@ -144,6 +144,8 @@ namespace game_stuff
                 play_buff_effect_type.MaxSpeedChange => new MaxSpeedChangeBuff(id, intTickByTime, playBuff.EffectValue,
                     1,
                     playBuffUseStack),
+                play_buff_effect_type.PowerUp => new PowerUpBuff(id, intTickByTime, playBuff.EffectValue, 1,
+                    playBuffUseStack),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -180,7 +182,6 @@ namespace game_stuff
 
         public static void UseBuff(this IPlayingBuff playingBuff)
         {
-            
             playingBuff.Stack -= playingBuff.UseStack;
         }
 
@@ -437,6 +438,41 @@ namespace game_stuff
 
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
+
+        public bool IsFinish()
+        {
+            return PlayBuffStandard.IsFinish(this);
+        }
+
+        public int Stack { get; set; }
+
+        public void GoATick()
+        {
+            PlayBuffStandard.GoATick(this);
+        }
+
+        public int UseStack { get; }
+
+        public void ActiveWhenUse(CharacterStatus characterStatus)
+        {
+        }
+    }
+
+    public class PowerUpBuff : IPlayingBuff
+    {
+        public PowerUpBuff(play_buff_id buffId, int restTick, float stunForceAddMulti, int stack, int useStack)
+        {
+            BuffId = buffId;
+            RestTick = restTick;
+            StunForceAddMulti = stunForceAddMulti;
+            Stack = stack;
+            UseStack = useStack;
+        }
+
+        public play_buff_id BuffId { get; }
+        public int RestTick { get; set; }
+
+        public float StunForceAddMulti { get; }
 
         public bool IsFinish()
         {

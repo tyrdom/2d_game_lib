@@ -173,7 +173,7 @@ namespace game_stuff
 
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            return new TrapTickMsg(Pos, SurvivalStatus?.GenShortStatus() ?? -1f, Owner.GId, (int) TrapId);
+            return new TrapTickMsg(Pos, SurvivalStatus?.GenShortStatus() ?? -1f, Owner.GId, (int)TrapId);
         }
 
         public TwoDPoint GetAnchor()
@@ -234,6 +234,11 @@ namespace game_stuff
         public StunFixStatus GetStunFixStatus()
         {
             return StunFixStatus.Unit();
+        }
+
+        public float GetStunForceMultiFormBuff()
+        {
+            return 1f;
         }
 
         public void FailAtk()

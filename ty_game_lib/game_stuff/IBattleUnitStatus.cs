@@ -18,5 +18,7 @@ namespace game_stuff
         void AddAKillScore(CharacterBody characterBody);
         bool IsDeadOrCantDmg();
         StunFixStatus GetStunFixStatus();
+
+        float GetStunForceMultiFormBuff();
     }
 }
