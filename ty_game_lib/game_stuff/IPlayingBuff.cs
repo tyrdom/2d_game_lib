@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
@@ -78,18 +77,22 @@ namespace game_stuff
 
 
         public float ValueMulti { get; }
-
-       
     }
 
-    public interface IValueAboutBuff
+    public interface IValueAboutBuff : IPlayingBuff
     {
         float ValueMulti { get; }
-       
     }
 
     public static class PlayBuffStandard
     {
+        public static float GetValue(this IValueAboutBuff valueAboutBuff)
+        {
+            var stack = valueAboutBuff.Stack;
+            var valueMulti = valueAboutBuff.ValueMulti;
+            return valueMulti * stack;
+        }
+
         public static IPlayingBuff GenById(string id)
         {
             var o = (play_buff_id)Enum.Parse(typeof(play_buff_id), id, true);
@@ -180,18 +183,6 @@ namespace game_stuff
         public static void UseBuff(this IPlayingBuff playingBuff)
         {
             playingBuff.Stack -= playingBuff.UseStack;
-        }
-
-        public static float GetDamageMultiAdd(this IEnumerable<IValueAboutBuff> damageBuffs)
-        {
-            var sum = damageBuffs.Sum(x => MathTools.Max(0f, x.ValueMulti));
-            return sum;
-        }
-
-        public static float GetDamageMultiDecrease(this IEnumerable<IValueAboutBuff> damageBuffs)
-        {
-            var sum = damageBuffs.Sum(x => MathTools.Min(0f, x.ValueMulti));
-            return -sum;
         }
 
         public static void AddABuff(
@@ -318,20 +309,20 @@ namespace game_stuff
         }
     }
 
-    public class ToughUpBuff : IPlayingBuff
+    public class ToughUpBuff : IValueAboutBuff
     {
         public ToughUpBuff(play_buff_id id, int intTickByTime, float playBuffEffectValue, int i, int playBuffUseStack)
         {
             BuffId = id;
             RestTick = intTickByTime;
-            PlayBuffEffectValue = (int)playBuffEffectValue;
+            ValueMulti = playBuffEffectValue;
             Stack = i;
             UseStack = playBuffUseStack;
         }
 
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
-        public int PlayBuffEffectValue { get; }
+       
 
         public bool IsFinish()
         {
@@ -350,6 +341,8 @@ namespace game_stuff
         public void ActiveWhenUse(CharacterStatus characterStatus)
         {
         }
+
+        public float ValueMulti { get; }
     }
 
     public class ToughBuff : IPlayingBuff
@@ -384,7 +377,7 @@ namespace game_stuff
         }
     }
 
-    public class TakeDamageBuff : IPlayingBuff, IValueAboutBuff
+    public class TakeDamageBuff : IValueAboutBuff
     {
         public TakeDamageBuff(play_buff_id buffId, int restTick, float takeDamageAdd, int stack, int useStack)
         {
@@ -399,7 +392,6 @@ namespace game_stuff
         public int RestTick { get; set; }
         public float ValueMulti { get; }
 
-       
 
         public bool IsFinish()
         {
@@ -452,7 +444,7 @@ namespace game_stuff
         }
     }
 
-    public class PowerUpBuff : IPlayingBuff ,IValueAboutBuff
+    public class PowerUpBuff : IValueAboutBuff
     {
         public PowerUpBuff(play_buff_id buffId, int restTick, float stunForceAddMulti, int stack, int useStack)
         {

@@ -337,27 +337,24 @@ namespace game_stuff
 
             if (isActingSkill)
             {
-                var toughBuffs = targetCharacterStatus.GetBuffs<ToughBuff>().ToArray();
-                var checkBuff = toughBuffs.Any();
+                var toughBuffs = targetCharacterStatus.GetAndUseExistBuffs<ToughBuff>();
                 if (Caster is CharacterStatus caster)
                 {
-                    var breakBuffs = caster.GetBuffs<BreakBuff>().ToArray();
-                    var any = breakBuffs.Any();
-                    targetCharacterStatus.UseBuffs<ToughBuff>();
-                    caster.UseBuffs<BreakBuff>();
-                    if (any)
+                    var breakBuffs = caster.GetAndUseExistBuffs<BreakBuff>();
+
+                    if (breakBuffs)
                     {
-                        if (!checkBuff)
+                        if (!toughBuffs)
                         {
                             return (HitCond.Ok, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
                         }
                     }
-                    else if (checkBuff)
+                    else if (toughBuffs)
                     {
                         return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
                     }
                 }
-                else if (checkBuff)
+                else if (toughBuffs)
                 {
                     targetCharacterStatus.UseBuff(CommonConfig.OtherConfig.defPassBuffId);
                     return (HitCond.Fail, b4, opponentCharacterStatusAntiActBuff, isActingSkill);
