@@ -69,7 +69,7 @@ namespace game_stuff
                 var (k1, v1) = twoDVectors[index];
                 var dVector = v1.Minus(twoDVector);
 
-                var genLinearListToAnother = TwoDVector.GenLinearListToAnother(dVector, (int)(k1 - k0))
+                var genLinearListToAnother = TwoDVector.GenLinearListToAnother(dVector, (int) (k1 - k0))
                     .Select(x => x.Sum(twoDVector));
                 vectors.AddRange(genLinearListToAnother);
             }
@@ -106,8 +106,7 @@ namespace game_stuff
 
                     throw new KeyNotFoundException($"not such pull buff {configToOpponent}");
 
-                case buff_type.play_buff:
-                    throw new KeyNotFoundException($"it is not stun buff {configToOpponent}");
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -149,7 +148,7 @@ namespace game_stuff
             var makeStunForceMulti = stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti *
                                      battleUnitStatus.GetStunForceMultiFormBuff();
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
-            var u = canFix ? MathTools.Max(1, (uint)MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
+            var u = canFix ? MathTools.Max(1, (uint) MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
             var dVector1 = canFix ? unit.Multi(speed * makeStunForceMulti) : unit.Multi(speed);
             var vector1 = unit.Multi(speed > 0 ? friction : -friction);
 
@@ -260,7 +259,7 @@ namespace game_stuff
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
             var max = MathTools.Max(GenUp(height, f), upSpeed);
             var twoDVector = !canFix ? unit.Multi(speed) : unit.Multi(speed * makeStunForceMulti);
-            var u = !canFix ? TickLast : MathTools.Max(1, (uint)(TickLast * makeStunTickMulti));
+            var u = !canFix ? TickLast : MathTools.Max(1, (uint) (TickLast * makeStunTickMulti));
             var pushOnAir = new PushStunOnAir(twoDVector, height.GetValueOrDefault(0), max, u,
                 battleUnitStatus);
             return pushOnAir;
@@ -313,7 +312,7 @@ namespace game_stuff
             var makeStunForceMulti =
                 stunFixStatus.MakeStunForceMulti * fixStatus.TakeStunForceMulti * stunForceMultiFormBuff;
             var makeStunTickMulti = stunFixStatus.MakeStunTickMulti * fixStatus.TakeStunTickMulti;
-            var u = canFix ? MathTools.Max(1, (uint)MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
+            var u = canFix ? MathTools.Max(1, (uint) MathTools.Round(makeStunTickMulti * TickLast)) : TickLast;
             var vector1 = unit.Multi(pullMaxSpeed > 0 ? otherConfigFriction : -otherConfigFriction);
 
             var sq = 2f * otherConfigFriction * length;

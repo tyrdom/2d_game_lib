@@ -17,12 +17,12 @@ namespace game_stuff
             float onBreak = 0)
         {
             var bk = isBackStab ? BackStabAdd : 0;
-            var multi = (1f + bk + buffMulti) / (1 + buffDecrease);
+            var multi = (1f + bk + buffMulti) / (1f + buffDecrease);
             var mainDamage = (uint) MathTools.Max(0, MainAttack * damageMulti * multi);
             var shardedAttack = (uint) MathTools.Max(0, ShardedAttack * damageMulti);
             var shardedNum = (uint) MathTools.Max(0, ShardedNum * multi);
             var damage = new Damage(shardedNum, mainDamage, shardedAttack, onBreak);
-
+            
 #if DEBUG
             Console.Out.WriteLine(
                 $"{MainAttack} cause {mainDamage} and {ShardedAttack} cause {shardedAttack}~{shardedNum}");

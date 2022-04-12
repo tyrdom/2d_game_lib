@@ -70,7 +70,7 @@ namespace game_stuff
 
         public static Bullet GenById(string id, uint pairKey = 0)
         {
-            var o = (bullet_id)Enum.Parse(typeof(bullet_id), id, true);
+            var o = (bullet_id) Enum.Parse(typeof(bullet_id), id, true);
             return GenById(o, pairKey);
         }
 
@@ -124,11 +124,11 @@ namespace game_stuff
             var bulletIsHAtk = bullet.IsHAtk;
             if (bullet.Tough == -1)
             {
-                tough = (int)(pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
+                tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
 
-            var valuePerSecToValuePerTick = ((float)pairKey).ValuePerSecToValuePerTick();
+            var valuePerSecToValuePerTick = ((float) pairKey).ValuePerSecToValuePerTick();
 
 
             var bulletDamageMulti = bullet.DamageMulti <= 0
@@ -138,8 +138,8 @@ namespace game_stuff
             var bulletProtectValue = bullet.ProtectValue;
             if (bulletProtectValue < 0)
             {
-                bulletProtectValue = (int)(bulletDamageMulti *
-                                           CommonConfig.OtherConfig.protect_standardMulti);
+                bulletProtectValue = (int) (bulletDamageMulti *
+                                            CommonConfig.OtherConfig.protect_standardMulti);
             }
 
 
@@ -147,7 +147,7 @@ namespace game_stuff
             if (bulletSuccessAmmoAdd < 0)
             {
                 bulletSuccessAmmoAdd =
-                    (int)(bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+                    (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
 
@@ -187,9 +187,9 @@ namespace game_stuff
             Caster = null;
             SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
-            PauseToCaster = (int)pauseToCaster;
+            PauseToCaster = (int) pauseToCaster;
 
-            PauseToOpponent = (int)pauseToOpponent;
+            PauseToOpponent = (int) pauseToOpponent;
 #if DEBUG
             Console.Out.WriteLine($"{PauseToCaster} ----- {PauseToOpponent}");
 #endif
@@ -245,13 +245,13 @@ namespace game_stuff
                     return Caster != null && kill.HasValue
                         ? new BulletHit(targetCharacterBody, kill.Value,
                             Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?)null;
+                        : (IRelationMsg?) null;
 
                 case Trap trap:
                     var dmgShow = HitOne(trap);
                     return Caster != null && dmgShow.HasValue
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?)null;
+                        : (IRelationMsg?) null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));
             }
@@ -337,12 +337,15 @@ namespace game_stuff
 
             if (isActingSkill)
             {
-                var toughBuffs = targetCharacterStatus.GetAndUseBuffs<ToughBuff>().ToArray();
+                var toughBuffs = targetCharacterStatus.GetBuffs<ToughBuff>().ToArray();
                 var checkBuff = toughBuffs.Any();
                 if (Caster is CharacterStatus caster)
                 {
-                    var breakBuffs = caster.GetAndUseBuffs<BreakBuff>().ToArray();
-                    if (breakBuffs.Any())
+                    var breakBuffs = caster.GetBuffs<BreakBuff>().ToArray();
+                    var any = breakBuffs.Any();
+                    targetCharacterStatus.UseBuffs<ToughBuff>();
+                    caster.UseBuffs<BreakBuff>();
+                    if (any)
                     {
                         if (!checkBuff)
                         {

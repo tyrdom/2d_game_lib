@@ -44,13 +44,13 @@ namespace game_stuff
     }
 
 
-    public class MakeDamageBuff : IPlayingBuff, IDamageAboutBuff
+    public class MakeDamageBuff : IPlayingBuff, IValueAboutBuff
     {
         public MakeDamageBuff(play_buff_id buffId, int restTick, float addDamageMulti, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
-            AddDamageMulti = addDamageMulti;
+            ValueMulti = addDamageMulti;
             Stack = stack;
             UseStack = useStack;
         }
@@ -77,18 +77,15 @@ namespace game_stuff
         }
 
 
-        public float AddDamageMulti { get; }
+        public float ValueMulti { get; }
 
-        public float GetAddDamage()
-        {
-            return AddDamageMulti * Stack;
-        }
+       
     }
 
-    public interface IDamageAboutBuff
+    public interface IValueAboutBuff
     {
-        float AddDamageMulti { get; }
-        float GetAddDamage();
+        float ValueMulti { get; }
+       
     }
 
     public static class PlayBuffStandard
@@ -185,15 +182,15 @@ namespace game_stuff
             playingBuff.Stack -= playingBuff.UseStack;
         }
 
-        public static float GetDamageMultiAdd(this IEnumerable<IDamageAboutBuff> damageBuffs)
+        public static float GetDamageMultiAdd(this IEnumerable<IValueAboutBuff> damageBuffs)
         {
-            var sum = damageBuffs.Sum(x => MathTools.Max(0, x.GetAddDamage()));
+            var sum = damageBuffs.Sum(x => MathTools.Max(0f, x.ValueMulti));
             return sum;
         }
 
-        public static float GetDamageMultiDecrease(this IEnumerable<IDamageAboutBuff> damageBuffs)
+        public static float GetDamageMultiDecrease(this IEnumerable<IValueAboutBuff> damageBuffs)
         {
-            var sum = damageBuffs.Sum(x => MathTools.Min(0, x.GetAddDamage()));
+            var sum = damageBuffs.Sum(x => MathTools.Min(0f, x.ValueMulti));
             return -sum;
         }
 
@@ -387,25 +384,22 @@ namespace game_stuff
         }
     }
 
-    public class TakeDamageBuff : IPlayingBuff, IDamageAboutBuff
+    public class TakeDamageBuff : IPlayingBuff, IValueAboutBuff
     {
         public TakeDamageBuff(play_buff_id buffId, int restTick, float takeDamageAdd, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
-            AddDamageMulti = takeDamageAdd;
+            ValueMulti = takeDamageAdd;
             Stack = stack;
             UseStack = useStack;
         }
 
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
-        public float AddDamageMulti { get; }
+        public float ValueMulti { get; }
 
-        public float GetAddDamage()
-        {
-            return AddDamageMulti * Stack;
-        }
+       
 
         public bool IsFinish()
         {
@@ -458,13 +452,13 @@ namespace game_stuff
         }
     }
 
-    public class PowerUpBuff : IPlayingBuff
+    public class PowerUpBuff : IPlayingBuff ,IValueAboutBuff
     {
         public PowerUpBuff(play_buff_id buffId, int restTick, float stunForceAddMulti, int stack, int useStack)
         {
             BuffId = buffId;
             RestTick = restTick;
-            StunForceAddMulti = stunForceAddMulti;
+            ValueMulti = stunForceAddMulti;
             Stack = stack;
             UseStack = useStack;
         }
@@ -472,7 +466,7 @@ namespace game_stuff
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
 
-        public float StunForceAddMulti { get; }
+        public float ValueMulti { get; }
 
         public bool IsFinish()
         {
