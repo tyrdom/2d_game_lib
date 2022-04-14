@@ -52,14 +52,27 @@ namespace game_stuff
 
         public SkillAction? GetAction()
         {
-            return SkillAction;
+            var snipeAction = GetSnipe();
+            return snipeAction!=null ? SnipeToChargeOp(snipeAction.Value) : SkillAction;
         }
 
         public SnipeAction? GetSnipe()
         {
+           
             return SnipeAction;
         }
 
+        private static SkillAction SnipeToChargeOp( SnipeAction snipeAction)
+        {
+            return snipeAction switch
+            {
+                game_stuff.SnipeAction.SnipeOn1 => game_stuff.SkillAction.ChargeOp1,
+                game_stuff.SnipeAction.SnipeOn2 => game_stuff.SkillAction.ChargeOp2,
+                game_stuff.SnipeAction.SnipeOn3 => game_stuff.SkillAction.ChargeOp3,
+                game_stuff.SnipeAction.SnipeOff => game_stuff.SkillAction.ChargeOff,
+                _ => throw new ArgumentOutOfRangeException(nameof(snipeAction), snipeAction, null)
+            };
+        }
         public TwoDVector? GetMove()
         {
             return SkillAction == null ? Move : null;
@@ -73,7 +86,11 @@ namespace game_stuff
         Op2,
         Op3, //备用
         Switch,
-        CatchTrick //CantOperateInput
+        CatchTrick, //CantOperateInput
+        ChargeOp1,
+        ChargeOp2,
+        ChargeOp3,
+        ChargeOff
     }
 
     public enum SpecialAction
