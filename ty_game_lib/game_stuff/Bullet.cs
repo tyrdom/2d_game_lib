@@ -70,7 +70,7 @@ namespace game_stuff
 
         public static Bullet GenById(string id, uint pairKey = 0)
         {
-            var o = (bullet_id) Enum.Parse(typeof(bullet_id), id, true);
+            var o = (bullet_id)Enum.Parse(typeof(bullet_id), id, true);
             return GenById(o, pairKey);
         }
 
@@ -124,11 +124,11 @@ namespace game_stuff
             var bulletIsHAtk = bullet.IsHAtk;
             if (bullet.Tough == -1)
             {
-                tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
+                tough = (int)(pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
 
-            var valuePerSecToValuePerTick = ((float) pairKey).ValuePerSecToValuePerTick();
+            var valuePerSecToValuePerTick = ((float)pairKey).ValuePerSecToValuePerTick();
 
 
             var bulletDamageMulti = bullet.DamageMulti <= 0
@@ -138,8 +138,8 @@ namespace game_stuff
             var bulletProtectValue = bullet.ProtectValue;
             if (bulletProtectValue < 0)
             {
-                bulletProtectValue = (int) (bulletDamageMulti *
-                                            CommonConfig.OtherConfig.protect_standardMulti);
+                bulletProtectValue = (int)(bulletDamageMulti *
+                                           CommonConfig.OtherConfig.protect_standardMulti);
             }
 
 
@@ -147,7 +147,7 @@ namespace game_stuff
             if (bulletSuccessAmmoAdd < 0)
             {
                 bulletSuccessAmmoAdd =
-                    (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+                    (int)(bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
 
@@ -187,9 +187,9 @@ namespace game_stuff
             Caster = null;
             SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
-            PauseToCaster = (int) pauseToCaster;
+            PauseToCaster = (int)pauseToCaster;
 
-            PauseToOpponent = (int) pauseToOpponent;
+            PauseToOpponent = (int)pauseToOpponent;
 #if DEBUG
             Console.Out.WriteLine($"{PauseToCaster} ----- {PauseToOpponent}");
 #endif
@@ -208,13 +208,27 @@ namespace game_stuff
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
             AddBuffToCastWhenHitPass = playingBuffsMaker;
             StunPower = stunPower;
+            ChargeExtraDamageMulti = 0f;
         }
 
+        private float ChargeExtraDamageMulti { get; set; }
+
+        public void SetChargeExtraDamageMulti(float m)
+        {
+            ChargeExtraDamageMulti = m;
+        }
 
         public bool CanGoNextTick()
         {
             RestTick -= 1;
-            return RestTick > 0;
+
+            var canGoNextTick = RestTick > 0;
+            if (!canGoNextTick)
+            {
+                ChargeExtraDamageMulti = 0f;
+            }
+
+            return canGoNextTick;
         }
 
         public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
@@ -245,13 +259,13 @@ namespace game_stuff
                     return Caster != null && kill.HasValue
                         ? new BulletHit(targetCharacterBody, kill.Value,
                             Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?) null;
+                        : (IRelationMsg?)null;
 
                 case Trap trap:
                     var dmgShow = HitOne(trap);
                     return Caster != null && dmgShow.HasValue
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?) null;
+                        : (IRelationMsg?)null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));
             }
@@ -274,7 +288,7 @@ namespace game_stuff
             //目标为trap 直接成功攻击
             caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetTrap);
 
-            var genDamage = caster.GenDamage(DamageMulti, true);
+            var genDamage = caster.GenDamage(DamageMulti + ChargeExtraDamageMulti, true);
             var takeDamage = targetTrap.TakeDamage(genDamage);
             return takeDamage;
         }
@@ -428,7 +442,8 @@ namespace game_stuff
 
                 // 被击中方基本状态改变 包括伤害
                 var dmgShow =
-                    targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster, DamageMulti, back,
+                    targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster,
+                        DamageMulti + ChargeExtraDamageMulti, back,
                         BulletId);
 
                 //stun buff方面
@@ -461,7 +476,7 @@ namespace game_stuff
                         {
                             case hit_type.range:
                                 targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
-                                    DamageMulti, back, BulletId);
+                                    DamageMulti + ChargeExtraDamageMulti, back, BulletId);
                                 // targetCharacterStatus.TrickBuffsToBothSide(characterStatus);
                                 if (!IsFAtk)
                                 {
@@ -519,6 +534,7 @@ namespace game_stuff
                 antiActBuffConfig, pauseToOpponent, pos, aim);
         }
 
+        
         public static void SetStunBuffToTarget(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster,
             IStunBuff? opponentCharacterStatusAntiActBuff, IStunBuffMaker antiActBuffConfig, int pauseToOpponent,
             TwoDPoint pos

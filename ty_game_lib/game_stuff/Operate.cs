@@ -53,16 +53,15 @@ namespace game_stuff
         public SkillAction? GetAction()
         {
             var snipeAction = GetSnipe();
-            return snipeAction!=null ? SnipeToChargeOp(snipeAction.Value) : SkillAction;
+            return snipeAction != null ? SnipeToChargeOp(snipeAction.Value) : SkillAction;
         }
 
         public SnipeAction? GetSnipe()
         {
-           
             return SnipeAction;
         }
 
-        private static SkillAction SnipeToChargeOp( SnipeAction snipeAction)
+        private static SkillAction SnipeToChargeOp(SnipeAction snipeAction)
         {
             return snipeAction switch
             {
@@ -73,6 +72,7 @@ namespace game_stuff
                 _ => throw new ArgumentOutOfRangeException(nameof(snipeAction), snipeAction, null)
             };
         }
+
         public TwoDVector? GetMove()
         {
             return SkillAction == null ? Move : null;
@@ -82,15 +82,18 @@ namespace game_stuff
     public enum SkillAction
     {
         //Skill
-        Op1,
-        Op2,
-        Op3, //备用
-        Switch,
-        CatchTrick, //CantOperateInput
-        ChargeOp1,
-        ChargeOp2,
-        ChargeOp3,
-        ChargeOff
+        Op1 = 0,
+        Op2 = 1,
+        Op3 = 2, //备用
+        Switch = 3,
+        ChargeOff = 4,
+        
+        CatchTrick = 5, //CantOperateInput
+        
+        ChargeOp1 = 6,
+        ChargeOp2 = 7,
+        ChargeOp3 = 8,
+        ChargeSwitch = 9
     }
 
     public enum SpecialAction

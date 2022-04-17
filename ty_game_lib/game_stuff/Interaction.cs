@@ -21,7 +21,7 @@ namespace game_stuff
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
             MapInteract interactive) GoATick(CharacterStatus caster,
-                TwoDVector? rawMoveVector, TwoDVector? limitV)
+                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction)
         {
             var b = NowOnTick == 0;
             var twd = b ? InteractionPos : null;

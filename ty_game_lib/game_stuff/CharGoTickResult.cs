@@ -20,7 +20,7 @@ namespace game_stuff
             ActResults = actResults ?? ImmutableArray<IActResult>.Empty;
         }
 
-
+        public static CharGoTickResult CharGoTickResultEmpty { get; } = new CharGoTickResult();
         public bool StillActive { get; }
         public ITwoDTwoP? Move { get; }
         public IPosMedia[] LaunchBullet { get; }

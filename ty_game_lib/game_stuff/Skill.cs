@@ -22,7 +22,7 @@ namespace game_stuff
 
         public int GetIntId()
         {
-            return (int) SkillId;
+            return (int)SkillId;
         }
 
         public skill_id SkillId { get; }
@@ -58,6 +58,9 @@ namespace game_stuff
 
         private ImmutableDictionary<uint, play_buff_id[]> LaunchTickToUseBuff { get; }
 
+
+        private ChargeSkillCtrl? ChargeSkillCtrl { get; }
+
         public string LogUser()
         {
             return LaunchTickToBullets.SelectMany(keyValuePair => keyValuePair.Value).Select(x => x.Caster)
@@ -73,7 +76,7 @@ namespace game_stuff
             skill_id skillId, Skill? enemyFailTrickSkill, PlayingBuffsMaker getBuffsWhenAbsorb,
             Dictionary<size, IStunBuffMaker>? setStunBuffsToOpponentWhenAbsorb,
             PlayingBuffsMaker setBuffsToOpponentWhenAbsorb,
-            ImmutableDictionary<uint, play_buff_id[]> immutableDictionary1)
+            ImmutableDictionary<uint, play_buff_id[]> immutableDictionary1, ChargeSkillCtrl? chargeSkillCtrl)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -110,6 +113,7 @@ namespace game_stuff
             GetBuffsWhenAbsorb = getBuffsWhenAbsorb;
             SetStunBuffsToOpponentWhenAbsorb = setStunBuffsToOpponentWhenAbsorb;
             SetBuffsToOpponentWhenAbsorb = setBuffsToOpponentWhenAbsorb;
+            ChargeSkillCtrl = chargeSkillCtrl;
         }
 
 
@@ -126,7 +130,7 @@ namespace game_stuff
 
         public static Skill GenSkillById(string id)
         {
-            var o = (skill_id) Enum.Parse(typeof(skill_id), id, true);
+            var o = (skill_id)Enum.Parse(typeof(skill_id), id, true);
             return GenSkillById(o);
         }
 
@@ -156,7 +160,7 @@ namespace game_stuff
                 ? area
                 : null;
             var skillBaseTough = skill.BaseTough == 0
-                ? dictionary.Any() ? (int) dictionary.Keys.Min() : 0
+                ? dictionary.Any() ? (int)dictionary.Keys.Min() : 0
                 : skill.BaseTough;
 
             var genSkillById = skill.EnemyFailTrickSkill == "" ? null : GenSkillById(skill.EnemyFailTrickSkill);
@@ -173,15 +177,26 @@ namespace game_stuff
                 x => x.Value
                     .Select
                     (
-                        xx => (play_buff_id) Enum.Parse(typeof(play_buff_id), xx, true)
+                        xx => (play_buff_id)Enum.Parse(typeof(play_buff_id), xx, true)
                     ).ToArray()
             );
+
+            var charge = (skill.ChargePauseTime == 0)
+                ? null
+                : new ChargeSkillCtrl(
+                    skill.MaxChargeTime, skill.MaxChargeKeepTime, skill.ChargePauseTime,
+                    skill.ChargeDamageMultiAddPerTick,
+                    skill.ChargeChangeSkill.ToImmutableDictionary(x => x.t, x => Skill.GenSkillById(x.skillName)),
+                    skill.ChargeGetPlayingBuffs.ToImmutableDictionary(x => x.t, x => new PlayingBuffsMaker(x.buffs))
+                );
+
+
             return new Skill(dictionary, twoDVectors, skill.MoveStartTime,
                 skill.SkillMustTime, skill.SkillMaxTime,
                 skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
                 skill.BreakSnipeTime,
-                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById,
-                immutableDictionary, buffMakers, playingBuffs, immutableDictionary1);
+                skill.SnipeStepNeed - 1, skill.AmmoCost, (int)skill.CanInputMove, skill.id, genSkillById,
+                immutableDictionary, buffMakers, playingBuffs, immutableDictionary1, charge);
         }
 
 
@@ -200,7 +215,7 @@ namespace game_stuff
             // 返回连击id
             return NowOnTick >= ComboInputStartTick && NowOnTick < TotalTick
                 ? NextCombo
-                : (int?) null;
+                : (int?)null;
         }
 
         public action_type GetTypeEnum()
@@ -210,11 +225,22 @@ namespace game_stuff
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
             MapInteract interactive) GoATick(CharacterStatus caster,
-                TwoDVector? rawMoveVector, TwoDVector? limitV)
+                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction)
         {
             var casterPos = caster.GetPos();
             var casterAim = caster.GetAim();
-            NowOnTick++;
+
+            var goATickCharge = true;
+            if (ChargeSkillCtrl != null)
+            {
+                goATickCharge = ChargeSkillCtrl.GoATickCharge(skillAction, NowOnTick, caster);
+            }
+
+            if (goATickCharge)
+            {
+                NowOnTick++;
+            }
+
             // 生成攻击运动
             TwoDVector? move = null;
             if (NowOnTick < CanInputMove)
@@ -228,7 +254,7 @@ namespace game_stuff
                 move = Moves[moveOnTick];
                 if (limitV != null)
                 {
-                    var movesLengthRest = (float) (Moves.Length - moveOnTick);
+                    var movesLengthRest = (float)(Moves.Length - moveOnTick);
                     var min = MathTools.Min(limitV.X, move.X);
                     var max = MathTools.Max(limitV.Y, move.Y) / movesLengthRest;
 
@@ -240,7 +266,7 @@ namespace game_stuff
 
 
             // GenBullet 生成子弹
-            HashSet<IEffectMedia> bullet = new HashSet<IEffectMedia>();
+            var bullet = new HashSet<IEffectMedia>();
 
             if (NowOnTick == 0 && LockArea != null)
             {
@@ -256,7 +282,15 @@ namespace game_stuff
                     $"to launch {nowBullet.Length} bullet ~~~ {NowOnTick} ");
 #endif
 
-                var posMediaS = nowBullet.Select(x => x.Active(casterPos, casterAim));
+                var posMediaS = nowBullet.Select(x =>
+                {
+                    if (ChargeSkillCtrl != null)
+                    {
+                        x.SetChargeExtraDamageMulti(ChargeSkillCtrl.GetChargeDamageMulti());
+                    }
+
+                    return x.Active(casterPos, casterAim);
+                });
 
                 bullet.UnionWith(posMediaS);
             }
@@ -269,7 +303,6 @@ namespace game_stuff
 #endif
                 foreach (var playBuffId in playBuffIds)
                 {
-
                     caster.UseBuff(playBuffId);
                 }
             }
@@ -285,11 +318,11 @@ namespace game_stuff
         public (IPosMedia[]? posMedia, bool canInputMove) GetSkillStart(TwoDPoint casterPos, TwoDVector casterAim)
         {
             var posMedia = LockArea?.Active(casterPos, casterAim);
-            var posMediaS = posMedia == null ? null : new[] {posMedia};
+            var posMediaS = posMedia == null ? null : new[] { posMedia };
             return (posMediaS, NowOnTick < CanInputMove);
         }
 
-        public bool Launch(int nowSnipeStep, int nowAmmo, out bool isLowAmmo)
+        public bool Launch(int nowSnipeStep, int nowAmmo, out bool isLowAmmo, SkillAction? skillAction = null)
         {
             var b = nowAmmo < AmmoCost;
             isLowAmmo = b;
@@ -301,6 +334,12 @@ namespace game_stuff
 #endif
                 return false;
             }
+
+            if (ChargeSkillCtrl != null && skillAction != null && (int)skillAction.Value > 5)
+            {
+                if (ChargeSkillCtrl != null) ChargeSkillCtrl.StartCharging();
+            }
+
 
             NowTough = BaseTough;
             NowOnTick = 0;
@@ -321,11 +360,96 @@ namespace game_stuff
             var buffMaker =
                 SetStunBuffsToOpponentWhenAbsorb[bodyCaster.CharacterBody.GetSize()];
             Bullet.NoMediaHit(bodyCaster, targetCharacterStatus, bodyCaster.StunBuff, buffMaker,
-                (int) CommonConfig.OtherConfig.absorb_stun_buff_pause,
+                (int)CommonConfig.OtherConfig.absorb_stun_buff_pause,
                 targetCharacterStatus.GetPos(), targetCharacterStatus.GetAim());
 
             targetCharacterStatus.CharEvents.Add(new DirectHit(bodyCaster.GetPos()));
             // buffMaker.GenBuff(bodyCaster.GetPos(), targetCharacterStatus.GetPos(), bodyCaster.GetAim(),)
+        }
+    }
+
+    internal class ChargeSkillCtrl
+    {
+        public bool OnCharging { get; private set; }
+
+        public uint NowChargeTick { get; set; }
+
+        private Skill? ReleaseSkill { get; set; }
+        private uint MaxChargeTick { get; }
+
+        private uint MaxChargeKeepTick { get; }
+        private uint ChargePauseTick { get; }
+
+        private float ChargeDamageMultiAddPerTick { get; }
+
+        private ImmutableDictionary<uint, Skill> ChargeChangeSkills { get; }
+
+        private ImmutableDictionary<uint, PlayingBuffsMaker> TickAddBuffs { get; }
+
+        public ChargeSkillCtrl(uint maxChargeTick, uint maxChargeKeepTick, uint chargePauseTick,
+            float chargeDamageMultiAddPerTick, ImmutableDictionary<uint, Skill> chargeChangeSkills,
+            ImmutableDictionary<uint, PlayingBuffsMaker> tickAddBuffs)
+        {
+            OnCharging = false;
+            NowChargeTick = 0;
+            MaxChargeTick = maxChargeTick;
+            MaxChargeKeepTick = maxChargeKeepTick;
+            ChargePauseTick = chargePauseTick;
+            ChargeDamageMultiAddPerTick = chargeDamageMultiAddPerTick;
+            ChargeChangeSkills = chargeChangeSkills;
+            TickAddBuffs = tickAddBuffs;
+        }
+
+        public float GetChargeDamageMulti()
+        {
+            return ChargeDamageMultiAddPerTick * MathTools.Min(MaxChargeTick, NowChargeTick);
+        }
+
+        public bool GoATickCharge(SkillAction? skillAction, uint nowOnTick, CharacterStatus characterStatus)
+        {
+            if (OnCharging == false)
+            {
+                return true;
+            }
+
+            var b = skillAction != null && (int)skillAction < 6;
+            if (b)
+            {
+                OnCharging = false;
+                return true;
+            }
+
+            if (nowOnTick < ChargePauseTick)
+            {
+                return true;
+            }
+
+            GoATick(characterStatus);
+            return false;
+        }
+
+        private void GoATick(CharacterStatus characterStatus)
+        {
+            if (NowChargeTick >= MaxChargeKeepTick) return;
+            NowChargeTick++;
+
+            if (TickAddBuffs.TryGetValue(NowChargeTick, out var buffsMaker))
+            {
+                var playingBuffs = buffsMaker.GenBuffs(characterStatus);
+                characterStatus.AddPlayingBuff(playingBuffs);
+            }
+
+            if (ChargeChangeSkills.TryGetValue(NowChargeTick,out var skill))
+            {
+                ReleaseSkill = skill;
+            }
+        }
+
+        public void StartCharging()
+        {
+            NowChargeTick = 0;
+            OnCharging = true;
+            ReleaseSkill = null;
         }
     }
 }

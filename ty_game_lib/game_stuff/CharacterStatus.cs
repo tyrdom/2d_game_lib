@@ -391,7 +391,7 @@ namespace game_stuff
 
 
         private CharGoTickResult LoadSkill(TwoDVector? aim, Skill skill, out bool ok,
-            TwoDVector? moveOp = null)
+            TwoDVector? moveOp = null,SkillAction? skillAction = null)
         {
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
@@ -400,7 +400,7 @@ namespace game_stuff
             OpChangeAim(aim);
 
 
-            if (!skill.Launch(NowSnipeStep, GetAmmo(), out var isLowAmmo))
+            if (!skill.Launch(NowSnipeStep, GetAmmo(), out var isLowAmmo, skillAction))
             {
                 ok = false;
                 if (!isLowAmmo) return new CharGoTickResult();
@@ -640,7 +640,7 @@ namespace game_stuff
         }
 
         private CharGoTickResult GoNowActATick(ICharAct charAct,
-            TwoDVector? moveOp, TwoDVector? aim)
+            TwoDVector? moveOp, TwoDVector? aim, SkillAction? skillAction)
         {
             if (charAct is Prop {LockAim: false}) OpChangeAim(aim);
 
@@ -677,7 +677,7 @@ namespace game_stuff
 #endif
 
             var (move, bullet, snipeOff, getThing, interactive) = charAct
-                .GoATick(this, fixMove, limitV);
+                .GoATick(this, fixMove, limitV,skillAction);
             if (snipeOff)
             {
 #if DEBUG
@@ -900,7 +900,7 @@ namespace game_stuff
                 var operateAim = operate?.Aim ?? operate?.Move; // 检查下一个连续技能，如果有连续技能可以切换，则切换到下一个技能,NextSkill为null
                 var operateMove = operate?.Move;
                 var actNowActATick =
-                    ActNowActATickOrCombo(operateAim, operateMove);
+                    ActNowActATickOrCombo(operateAim, operateMove, opAction);
 
 #if DEBUG
                 Console.Out.WriteLine($"{GId} skill on {NowCastAct.NowOnTick}");
@@ -1148,17 +1148,18 @@ namespace game_stuff
             return new CharGoTickResult(move: dVector);
         }
 
-        private CharGoTickResult ActNowActATickOrCombo(TwoDVector? operateAim, TwoDVector? operateMove)
+        private CharGoTickResult ActNowActATickOrCombo(TwoDVector? operateAim, TwoDVector? operateMove,
+            SkillAction? skillAction)
         {
             if (NextSkill == null ||
                 NowCastAct == null ||
                 NowCastAct.InWhichPeriod() != SkillPeriod.CanCombo)
-                return ActNowActATick(operateAim, operateMove);
+                return ActNowActATick(operateAim, operateMove,skillAction);
             var twoDVector = NextSkill.Aim ?? null;
             var aim = operateAim ?? twoDVector;
             var valueSkill = NextSkill.Skill;
             var nextSkillOpAction = NextSkill.OpAction;
-            var charGoTickResult = LoadSkill(aim, valueSkill, out var ok, operateMove);
+            var charGoTickResult = LoadSkill(aim, valueSkill, out var ok, operateMove,skillAction);
 
             if (ok)
             {
@@ -1174,14 +1175,15 @@ namespace game_stuff
             return charGoTickResult;
         }
 
-        private CharGoTickResult ActNowActATick(TwoDVector? operateAim, TwoDVector? operateMove)
+        private CharGoTickResult ActNowActATick(TwoDVector? operateAim, TwoDVector? operateMove,
+            SkillAction? skillAction)
         {
-            return NowCastAct == null ? new CharGoTickResult() : GoNowActATick(NowCastAct, operateMove, operateAim);
+            return NowCastAct == null ? CharGoTickResult.CharGoTickResultEmpty: GoNowActATick(NowCastAct, operateMove, operateAim,skillAction);
         }
 
         private CharGoTickResult OutNowVehicle()
         {
-            if (NowVehicle == null) return new CharGoTickResult();
+            if (NowVehicle == null) return CharGoTickResult.CharGoTickResultEmpty;
             {
                 NowVehicle.OutAct.Launch(0, 0, out _);
                 SetAct(NowVehicle.OutAct);
@@ -1302,7 +1304,7 @@ namespace game_stuff
             var makeDamageBuffs = GetAndUseValueBuffs<MakeDamageBuff>(out var dec);
 
             // Console.Out.WriteLine($"make damage buff multi is {makeDamageBuffs}");
-
+         
             var f = GetNowProtectMulti();
             var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus(), f);
             var onBreakMulti = DamageMultiStatus.OnBreakMulti;
@@ -1310,6 +1312,10 @@ namespace game_stuff
             NowProtectValue = 0;
             return attackStatus.GenDamage(damageMulti, b4, makeDamageBuffs + totalMulti, dec, onBreakMulti);
         }
+
+        
+            
+        
 
         private float GetNowProtectMulti()
         {
