@@ -9,7 +9,7 @@ namespace game_stuff
     {
         (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage, MapInteract interactive)
             GoATick(CharacterStatus caster,
-                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction);
+                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction,out Skill? releaseSkill);
 
         int GetIntId();
         int NowTough { get; set; }

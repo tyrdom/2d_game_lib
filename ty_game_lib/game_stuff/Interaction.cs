@@ -21,8 +21,9 @@ namespace game_stuff
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
             MapInteract interactive) GoATick(CharacterStatus caster,
-                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction)
+                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction, out Skill? releaseSkill)
         {
+            releaseSkill = null;
             var b = NowOnTick == 0;
             var twd = b ? InteractionPos : null;
             NowOnTick++;
@@ -33,7 +34,7 @@ namespace game_stuff
 
         public int GetIntId()
         {
-            return (int) Id;
+            return (int)Id;
         }
 
         private MapInteract Interact { get; }

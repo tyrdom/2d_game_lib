@@ -225,15 +225,16 @@ namespace game_stuff
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
             MapInteract interactive) GoATick(CharacterStatus caster,
-                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction)
+                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction, out Skill? releaseSkill)
         {
+            releaseSkill = null;
             var casterPos = caster.GetPos();
             var casterAim = caster.GetAim();
 
             var goATickCharge = true;
             if (ChargeSkillCtrl != null)
             {
-                goATickCharge = ChargeSkillCtrl.GoATickCharge(skillAction, NowOnTick, caster);
+                goATickCharge = ChargeSkillCtrl.GoATickCharge(skillAction, NowOnTick, caster, out releaseSkill);
             }
 
             if (goATickCharge)
@@ -322,10 +323,16 @@ namespace game_stuff
             return (posMediaS, NowOnTick < CanInputMove);
         }
 
-        public bool Launch(int nowSnipeStep, int nowAmmo, out bool isLowAmmo, SkillAction? skillAction = null)
+        public bool Launch(int nowSnipeStep, int nowAmmo, HashSet<ICharEvent> charEvents,
+            SkillAction? skillAction = null)
         {
             var b = nowAmmo < AmmoCost;
-            isLowAmmo = b;
+            if (b)
+            {
+                var lowAmmo = new LowAmmo();
+                charEvents.Add(lowAmmo);
+            }
+
             if (nowSnipeStep < SnipeStepNeed || b)
             {
 #if DEBUG
@@ -337,7 +344,7 @@ namespace game_stuff
 
             if (ChargeSkillCtrl != null && skillAction != null && (int)skillAction.Value > 5)
             {
-                if (ChargeSkillCtrl != null) ChargeSkillCtrl.StartCharging();
+                ChargeSkillCtrl.StartCharging();
             }
 
 
@@ -366,90 +373,10 @@ namespace game_stuff
             targetCharacterStatus.CharEvents.Add(new DirectHit(bodyCaster.GetPos()));
             // buffMaker.GenBuff(bodyCaster.GetPos(), targetCharacterStatus.GetPos(), bodyCaster.GetAim(),)
         }
-    }
 
-    internal class ChargeSkillCtrl
-    {
-        public bool OnCharging { get; private set; }
-
-        public uint NowChargeTick { get; set; }
-
-        private Skill? ReleaseSkill { get; set; }
-        private uint MaxChargeTick { get; }
-
-        private uint MaxChargeKeepTick { get; }
-        private uint ChargePauseTick { get; }
-
-        private float ChargeDamageMultiAddPerTick { get; }
-
-        private ImmutableDictionary<uint, Skill> ChargeChangeSkills { get; }
-
-        private ImmutableDictionary<uint, PlayingBuffsMaker> TickAddBuffs { get; }
-
-        public ChargeSkillCtrl(uint maxChargeTick, uint maxChargeKeepTick, uint chargePauseTick,
-            float chargeDamageMultiAddPerTick, ImmutableDictionary<uint, Skill> chargeChangeSkills,
-            ImmutableDictionary<uint, PlayingBuffsMaker> tickAddBuffs)
+        public void TakeChargeValue(uint nowChargeTick)
         {
-            OnCharging = false;
-            NowChargeTick = 0;
-            MaxChargeTick = maxChargeTick;
-            MaxChargeKeepTick = maxChargeKeepTick;
-            ChargePauseTick = chargePauseTick;
-            ChargeDamageMultiAddPerTick = chargeDamageMultiAddPerTick;
-            ChargeChangeSkills = chargeChangeSkills;
-            TickAddBuffs = tickAddBuffs;
-        }
-
-        public float GetChargeDamageMulti()
-        {
-            return ChargeDamageMultiAddPerTick * MathTools.Min(MaxChargeTick, NowChargeTick);
-        }
-
-        public bool GoATickCharge(SkillAction? skillAction, uint nowOnTick, CharacterStatus characterStatus)
-        {
-            if (OnCharging == false)
-            {
-                return true;
-            }
-
-            var b = skillAction != null && (int)skillAction < 6;
-            if (b)
-            {
-                OnCharging = false;
-                return true;
-            }
-
-            if (nowOnTick < ChargePauseTick)
-            {
-                return true;
-            }
-
-            GoATick(characterStatus);
-            return false;
-        }
-
-        private void GoATick(CharacterStatus characterStatus)
-        {
-            if (NowChargeTick >= MaxChargeKeepTick) return;
-            NowChargeTick++;
-
-            if (TickAddBuffs.TryGetValue(NowChargeTick, out var buffsMaker))
-            {
-                var playingBuffs = buffsMaker.GenBuffs(characterStatus);
-                characterStatus.AddPlayingBuff(playingBuffs);
-            }
-
-            if (ChargeChangeSkills.TryGetValue(NowChargeTick,out var skill))
-            {
-                ReleaseSkill = skill;
-            }
-        }
-
-        public void StartCharging()
-        {
-            NowChargeTick = 0;
-            OnCharging = true;
-            ReleaseSkill = null;
+            ChargeSkillCtrl?.TakeChargeValue(nowChargeTick);
         }
     }
 }

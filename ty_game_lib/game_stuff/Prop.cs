@@ -23,7 +23,7 @@ namespace game_stuff
         public static Prop GenById(prop_id id)
         {
             if (CommonConfig.Configs.props.TryGetValue(id, out var prop)
-            )
+               )
             {
                 return new Prop(prop);
             }
@@ -45,7 +45,7 @@ namespace game_stuff
             BotUseCond = prop.BotUseCondType;
             CondParam = prop.BotUseCondParam.FirstOrDefault();
             var tickByTime = prop.MoveAddStartTime;
-            StartAddSpeedTick = tickByTime == 0 ? (uint?) null : tickByTime;
+            StartAddSpeedTick = tickByTime == 0 ? (uint?)null : tickByTime;
             var firstOrDefault = prop.MoveAdds.FirstOrDefault();
             AddSpeed = firstOrDefault == null
                 ? null
@@ -75,8 +75,9 @@ namespace game_stuff
 
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
             MapInteract interactive) GoATick(CharacterStatus caster,
-                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction)
+                TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction, out Skill? releaseSkill)
         {
+            releaseSkill = null;
             var getPos = caster.GetPos();
             var sightAim = caster.GetAim();
             var b = NowOnTick == 0;
@@ -87,7 +88,7 @@ namespace game_stuff
                 posMedia.Active(getPos, sightAim);
             }
 
-            var bb = bullet != null ? new[] {bullet} : new IEffectMedia[] { };
+            var bb = bullet != null ? new[] { bullet } : new IEffectMedia[] { };
 
             var twoDVector = rawMoveVector?.Multi(MoveMulti);
 
@@ -167,7 +168,8 @@ namespace game_stuff
                     var pickAProp = characterStatus.PickAProp(this, InWhichMapInteractive?.MapMarkId ?? -1);
                     return pickAProp == null
                         ? ImmutableArray<IActResult>.Empty
-                        : new IActResult[] {new DropThings(new List<IMapInteractable> {pickAProp})}.ToImmutableArray();
+                        : new IActResult[] { new DropThings(new List<IMapInteractable> { pickAProp }) }
+                            .ToImmutableArray();
                 default:
                     return ImmutableArray<IActResult>.Empty;
             }
@@ -175,7 +177,7 @@ namespace game_stuff
 
         public int GetId()
         {
-            return (int) PId;
+            return (int)PId;
         }
 
         public int GetNum()
