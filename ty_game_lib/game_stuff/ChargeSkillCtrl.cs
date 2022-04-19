@@ -7,19 +7,13 @@ namespace game_stuff
     internal class ChargeSkillCtrl
     {
         public bool OnCharging { get; private set; }
-
         public uint NowChargeTick { get; set; }
-
         private Skill? ReleaseSkill { get; set; }
         private uint MaxChargeTick { get; }
-
         private uint MaxChargeKeepTick { get; }
         private uint ChargePauseTick { get; }
-
         private float ChargeDamageMultiAddPerTick { get; }
-
         private ImmutableDictionary<uint, Skill> ChargeChangeSkills { get; }
-
         private ImmutableDictionary<uint, PlayingBuffsMaker> TickAddBuffs { get; }
 
         public ChargeSkillCtrl(uint maxChargeTick, uint maxChargeKeepTick, uint chargePauseTick,
@@ -50,13 +44,15 @@ namespace game_stuff
                 return true;
             }
 
-            var b = skillAction != null && (int)skillAction < 6;
-            if (b)
+            var b = skillAction != null && (int) skillAction < 6;
+            var b1 = NowChargeTick >= MaxChargeKeepTick;
+            if (b || b1)
             {
                 OnCharging = false;
+                var chargePause = new ChargePause(false);
+                characterStatus.CharEvents.Add(chargePause);
                 ReleaseSkill?.TakeChargeValue(NowChargeTick);
                 releaseSkill = ReleaseSkill;
-
                 return true;
             }
 
@@ -71,7 +67,12 @@ namespace game_stuff
 
         private void GoATick(CharacterStatus characterStatus)
         {
-            if (NowChargeTick >= MaxChargeKeepTick) return;
+            if (NowChargeTick == 0)
+            {
+                var chargePause = new ChargePause(true);
+                characterStatus.CharEvents.Add(chargePause);
+            }
+
             NowChargeTick++;
 
             if (TickAddBuffs.TryGetValue(NowChargeTick, out var buffsMaker))
@@ -97,5 +98,15 @@ namespace game_stuff
         {
             NowChargeTick = nowChargeTick;
         }
+    }
+
+    public class ChargePause : ICharEvent
+    {
+        public ChargePause(bool b)
+        {
+            PauseOn = b;
+        }
+
+        public bool PauseOn { get; }
     }
 }
