@@ -94,9 +94,11 @@ namespace game_stuff
         private static Dictionary<SkillAction, Dictionary<int, Skill>> GenASkillGroup(
             skill_group skillGroup)
         {
+            
             var dictionary = skillGroup.Op1.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 ;
+           
             var dictionary2 = skillGroup.Op2.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 ;
@@ -107,13 +109,43 @@ namespace game_stuff
                     pair => Skill.GenSkillById(pair.Value))
                 ;
 
-            var immutableDictionary =
+            var dictionary5 = skillGroup.ChargeOp1.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
+                ;
+            var dictionary6 = skillGroup.ChargeOp2.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
+                ;
+            var dictionary7 = skillGroup.ChargeOp3.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
+                ;
+            var dictionary8 = skillGroup.ChargeSwitch.ToDictionary(pair => pair.Key,
+                    pair => Skill.GenSkillById(pair.Value))
+                ;
+         var  aSkillGroup =
                 new Dictionary<SkillAction, Dictionary<int, Skill>>
                 {
                     {SkillAction.Op1, dictionary}, {SkillAction.Op2, dictionary2}, {SkillAction.Op3, dictionary3},
-                    {SkillAction.Switch, dictionary4}
+                    {SkillAction.Switch, dictionary4} 
                 };
-            return immutableDictionary;
+
+         if (dictionary5.Count>0)
+         {
+             aSkillGroup[SkillAction.ChargeOp1] = dictionary5;
+         }
+         if (dictionary6.Count>0)
+         {
+             aSkillGroup[SkillAction.ChargeOp2] = dictionary6;
+         }
+         if (dictionary7.Count>0)
+         {
+             aSkillGroup[SkillAction.ChargeOp3] = dictionary7;
+         }
+         if (dictionary8.Count>0)
+         {
+             aSkillGroup[SkillAction.ChargeSwitch] = dictionary8;
+         }
+            
+            return aSkillGroup;
         }
 
 
