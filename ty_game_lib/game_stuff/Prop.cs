@@ -127,6 +127,11 @@ namespace game_stuff
             return action_type.prop;
         }
 
+        public bool IsCharging()
+        {
+            return false;
+        }
+
         public bool Launch(int nowStack)
         {
             if (nowStack < PropPointCost) return false;
@@ -195,8 +200,7 @@ namespace game_stuff
 
         public bool BotUseWhenSeeEnemy(CharacterStatus characterStatusNowPropPoint)
         {
-            return BotUseCond == bot_use_cond.EnemyOnSight && characterStatusNowPropPoint.NowPropPoint >= PropPointCost
-                ;
+            return BotUseCond == bot_use_cond.EnemyOnSight && characterStatusNowPropPoint.NowPropPoint >= PropPointCost;
         }
 
         public bool CheckAppStatusToBotPropUse(CharacterStatus botBodyCharacterStatus)

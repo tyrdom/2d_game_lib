@@ -223,6 +223,11 @@ namespace game_stuff
             return action_type.skill;
         }
 
+        public bool IsCharging()
+        {
+            return ChargeSkillCtrl?.IsCharging() ?? false;
+        }
+
         public (ITwoDTwoP? move, IEnumerable<IEffectMedia> bullet, bool snipeOff, ICanPutInMapInteractable? getFromCage,
             MapInteract interactive) GoATick(CharacterStatus caster,
                 TwoDVector? rawMoveVector, TwoDVector? limitV, SkillAction? skillAction, out Skill? releaseSkill)

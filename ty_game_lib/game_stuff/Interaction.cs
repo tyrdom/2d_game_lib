@@ -61,6 +61,11 @@ namespace game_stuff
             return action_type.interaction;
         }
 
+        public bool IsCharging()
+        {
+           return false;
+        }
+
         public void Launch()
         {
             NowOnTick = 0;

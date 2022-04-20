@@ -1089,13 +1089,11 @@ namespace game_stuff
                     LoadSkill(operate.Aim, DefaultTakeOutWeapon, out _, opAction, operate.Move);
                 }
                 // 发动当前武器技能组的起始技能0
-                else
+                else if (GetWeapons().TryGetValue(NowWeapon, out var weapon) &&
+                         weapon.SkillGroups.TryGetValue(CharacterBody.GetSize(), out var value1) &&
+                         value1.TryGetValue(opAction.Value, out var value) &&
+                         value.TryGetValue(0, out var skill))
                 {
-                    if (!GetWeapons().TryGetValue(NowWeapon, out var weapon) ||
-                        !weapon.SkillGroups.TryGetValue(CharacterBody.GetSize(), out var value1) ||
-                        !value1.TryGetValue(opAction.Value, out var value) ||
-                        !value.TryGetValue(0, out var skill)) return new CharGoTickResult();
-
                     return LoadSkill(null, skill, out _, opAction, operate.Move);
                 }
             }
@@ -1637,6 +1635,11 @@ namespace game_stuff
             }
 
             SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId);
+            if (OnCharging())
+            {
+                return;
+            }
+
             var pa = GetProtectAbsorb();
             var valueAdd = (int) (protectValueAdd * (1 + pa));
             AddProtect(valueAdd);
@@ -1691,7 +1694,12 @@ namespace game_stuff
                 CatchingWho = null;
             }
 
-            AddProtect(protectValueAdd);
+            if (!OnCharging())
+            {
+                AddProtect(protectValueAdd);
+            }
+
+
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
             if (takeDamage is {IsKill: true} && b)
@@ -1700,6 +1708,11 @@ namespace game_stuff
             }
 
             return takeDamage;
+        }
+
+        private bool OnCharging()
+        {
+            return NowCastAct?.IsCharging() ?? false;
         }
 
         private void ResetSight()

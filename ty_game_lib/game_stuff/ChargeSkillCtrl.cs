@@ -104,6 +104,11 @@ namespace game_stuff
         {
             NowChargeTick = nowChargeTick;
         }
+
+        public bool IsCharging()
+        {
+            return NowChargeTick > 0 && OnCharging;
+        }
     }
 
     public class ChargePause : ICharEvent

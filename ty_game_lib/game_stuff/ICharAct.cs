@@ -18,5 +18,7 @@ namespace game_stuff
         SkillPeriod InWhichPeriod();
         int? ComboInputRes();
         action_type GetTypeEnum();
+
+        bool IsCharging();
     }
 }
