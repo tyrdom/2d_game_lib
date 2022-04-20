@@ -57,7 +57,7 @@ namespace game_bot
             var agentStatusArray = LocalBehaviorTreeBotAgent.GenAgentStatus(perceivable, immutableHashSet, pathTop);
             var behaviorTreeNode = Next ?? Root;
 
-            Console.Out.WriteLine($"Bot:: {LocalBehaviorTreeBotAgent.BotBody.GetId()} do bt tree:");
+            // Console.Out.WriteLine($"Bot:: {LocalBehaviorTreeBotAgent.BotBody.GetId()} do bt tree:");
             
             var (_, nextLoopStart) = behaviorTreeNode.DoNodeWithDecorator(agentStatusArray, out var operate);
             var b = nextLoopStart == null;

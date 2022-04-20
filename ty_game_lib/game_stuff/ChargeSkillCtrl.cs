@@ -46,12 +46,12 @@ namespace game_stuff
                 return true;
             }
 
-            Console.Out.WriteLine($"Skill On Charge Check : {skillAction}");
+            // Console.Out.WriteLine($"Skill On Charge Check : {skillAction}");
             var b = skillAction != null && (int) skillAction < 6;
             var b1 = NowChargeTick >= MaxChargeKeepTick;
             if (b || b1)
             {
-                Console.Out.WriteLine("Charge release");
+                // Console.Out.WriteLine("Charge release");
                 OnCharging = false;
                 var chargePause = new ChargePause(false);
                 characterStatus.CharEvents.Add(chargePause);
@@ -66,7 +66,7 @@ namespace game_stuff
                 return true;
             }
 
-            Console.Out.WriteLine("Charge ing");
+            // Console.Out.WriteLine("Charge ing");
             GoATick(characterStatus);
             return false;
         }

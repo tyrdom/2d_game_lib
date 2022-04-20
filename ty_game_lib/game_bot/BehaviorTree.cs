@@ -36,9 +36,9 @@ namespace game_bot
         public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
-            // #if DEBUG
+#if DEBUG
             Console.Out.WriteLine($"OnNode : {Name}");
-// #endif
+#endif
 
             operate = null;
             foreach (var behaviorTreeNode in BehaviorTreeNodes)
@@ -95,9 +95,9 @@ namespace game_bot
         public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
-            // #if DEBUG
+#if DEBUG
             Console.Out.WriteLine($"OnNode : {Name}");
-// #endif
+#endif
 
             operate = null;
             foreach (var behaviorTreeNode in BehaviorTreeNodes)
@@ -216,9 +216,9 @@ namespace game_bot
         public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
-            // #if DEBUG
+#if DEBUG
             Console.Out.WriteLine($"OnNode : {Name}");
-// #endif    
+#endif
             operate = null;
             var func = Func(agentStatus);
             var useDecorator = Decorator.UseDecorator(func, out var nextLoopThisStart);
@@ -252,9 +252,9 @@ namespace game_bot
         public (bool Result, IBehaviorTreeNode? NextLoopStart) DoNodeWithDecorator(IAgentStatus[] agentStatus,
             out Operate? operate)
         {
-// #if DEBUG
+#if DEBUG
             Console.Out.WriteLine($"OnNode : {Name}");
-// #endif
+#endif
 
 
             var (item1, item2) = Func(agentStatus);
