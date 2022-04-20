@@ -53,7 +53,9 @@ namespace game_stuff
         public SkillAction? GetAction()
         {
             var snipeAction = GetSnipe();
-            return snipeAction != null ? SnipeToChargeOp(snipeAction.Value) : SkillAction;
+            var snipeToChargeOp = snipeAction != null ? SnipeToChargeOp(snipeAction.Value) : (SkillAction?) null;
+            var toChargeOp = SkillAction ?? snipeToChargeOp;
+            return toChargeOp;
         }
 
         public SnipeAction? GetSnipe()
@@ -87,9 +89,9 @@ namespace game_stuff
         Op3 = 2, //备用
         Switch = 3,
         ChargeOff = 4,
-        
+
         CatchTrick = 5, //CantOperateInput
-        
+
         ChargeOp1 = 6,
         ChargeOp2 = 7,
         ChargeOp3 = 8,

@@ -172,7 +172,7 @@ namespace game_stuff
 
         public float GetProtectRate()
         {
-            var nowProtectValue = (float)NowProtectValue / MaxProtectValue;
+            var nowProtectValue = (float) NowProtectValue / MaxProtectValue;
             return nowProtectValue;
         }
 
@@ -247,7 +247,7 @@ namespace game_stuff
             ProtectTickMultiAdd = 0;
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
-            MaxTrap = Math.Min(genBaseAttrById.MaxTrapNum, (uint)CommonConfig.OtherConfig.up_trap_max);
+            MaxTrap = Math.Min(genBaseAttrById.MaxTrapNum, (uint) CommonConfig.OtherConfig.up_trap_max);
             Traps = new Queue<Trap>();
 
             CharacterBody = null!;
@@ -390,8 +390,8 @@ namespace game_stuff
         }
 
 
-        private CharGoTickResult LoadSkill(TwoDVector? aim, Skill skill, out bool ok,
-            TwoDVector? moveOp = null, SkillAction? skillAction = null)
+        private CharGoTickResult LoadSkill(TwoDVector? aim, Skill skill, out bool ok, SkillAction? skillAction,
+            TwoDVector? moveOp = null)
         {
             //装载技能时，重置速度和锁定角色
             ResetSpeed();
@@ -639,7 +639,7 @@ namespace game_stuff
         private CharGoTickResult GoNowActATick(ICharAct charAct,
             TwoDVector? moveOp, TwoDVector? aim, SkillAction? skillAction)
         {
-            if (charAct is Prop { LockAim: false }) OpChangeAim(aim);
+            if (charAct is Prop {LockAim: false}) OpChangeAim(aim);
 
             var limitV = charAct switch
             {
@@ -673,8 +673,9 @@ namespace game_stuff
             Console.Out.WriteLine($"skill lock {lockingWhoGId} limitV ::{limitV}");
 #endif
 
-            var (move, bullet, snipeOff, getThing, interactive) = charAct
-                .GoATick(this, fixMove, limitV, skillAction, out var releaseSkill);
+            var (move, bullet, snipeOff, getThing, interactive)
+                = charAct
+                    .GoATick(this, fixMove, limitV, skillAction, out var releaseSkill);
             if (snipeOff)
             {
 #if DEBUG
@@ -717,7 +718,7 @@ namespace game_stuff
         internal void RecycleAProp(Prop prop, int mapMarkId = -1)
         {
             NowPropPoint = Math.Min(MaxPropPoint,
-                (int)(NowPropPoint + prop.RecyclePropStack * (1 + GetRecycleMulti())));
+                (int) (NowPropPoint + prop.RecyclePropStack * (1 + GetRecycleMulti())));
             if (mapMarkId < 0) return;
             var removeMapMark = new RemoveMapMark(mapMarkId);
             CharEvents.Add(removeMapMark);
@@ -823,7 +824,7 @@ namespace game_stuff
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
             {
-                NowProtectTick = (int)(StuffLocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
+                NowProtectTick = (int) (StuffLocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
                 NowProtectValue = 0;
                 var inProtect = new InProtect(NowProtectTick);
                 CharEvents.Add(inProtect);
@@ -868,8 +869,8 @@ namespace game_stuff
 
                     var mapInteractableS = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
                     var dropThings = new DropThings(mapInteractableS);
-                    var dropThingsList = new[] { dropThings }.OfType<IActResult>().ToImmutableArray();
-                    return new CharGoTickResult(launchBullet: new IPosMedia[] { destroyBullet },
+                    var dropThingsList = new[] {dropThings}.OfType<IActResult>().ToImmutableArray();
+                    return new CharGoTickResult(launchBullet: new IPosMedia[] {destroyBullet},
                         actResults: dropThingsList);
                 }
             }
@@ -972,7 +973,7 @@ namespace game_stuff
 
                         break;
                     case SkillPeriod.CanCombo:
-                        var charGoTickResult = LoadSkill(operateAim, skill, out var ok, operateMove);
+                        var charGoTickResult = LoadSkill(operateAim, skill, out var ok, opAction, operateMove);
                         actNowActATick = charGoTickResult;
                         if (ok)
                         {
@@ -1085,7 +1086,7 @@ namespace game_stuff
                     Console.Out.WriteLine($"Now Weapon {NowWeapon} in {GetWeapons().Count()}");
 #endif
                     ResetSnipe();
-                    LoadSkill(operate.Aim, DefaultTakeOutWeapon, out _, operate.Move);
+                    LoadSkill(operate.Aim, DefaultTakeOutWeapon, out _, opAction, operate.Move);
                 }
                 // 发动当前武器技能组的起始技能0
                 else
@@ -1095,7 +1096,7 @@ namespace game_stuff
                         !value1.TryGetValue(opAction.Value, out var value) ||
                         !value.TryGetValue(0, out var skill)) return new CharGoTickResult();
 
-                    return LoadSkill(null, skill, out _, operate.Move);
+                    return LoadSkill(null, skill, out _, opAction, operate.Move);
                 }
             }
 
@@ -1162,7 +1163,7 @@ namespace game_stuff
             var aim = operateAim ?? twoDVector;
             var valueSkill = NextSkill.Skill;
             var nextSkillOpAction = NextSkill.OpAction;
-            var charGoTickResult = LoadSkill(aim, valueSkill, out var ok, operateMove, skillAction);
+            var charGoTickResult = LoadSkill(aim, valueSkill, out var ok, skillAction, operateMove);
 
             if (ok)
             {
@@ -1198,7 +1199,7 @@ namespace game_stuff
                 NowVehicle = null;
 
                 var immutableArray =
-                    new[] { (IActResult)new DropThings(new[] { genIMapInteractable }) }.ToImmutableArray();
+                    new[] {(IActResult) new DropThings(new[] {genIMapInteractable})}.ToImmutableArray();
                 return new CharGoTickResult(actResults: immutableArray);
             }
         }
@@ -1326,7 +1327,7 @@ namespace game_stuff
                 return 1f;
             }
 
-            var nowProtectValue = (float)NowProtectValue / MaxProtectValue;
+            var nowProtectValue = (float) NowProtectValue / MaxProtectValue;
             return nowProtectValue;
         }
 
@@ -1335,7 +1336,7 @@ namespace game_stuff
             var trickSkill = catchAntiActBuffMaker.TrickSkill;
             if (NowCastAct == null)
             {
-                LoadSkill(aim, trickSkill, out _);
+                LoadSkill(aim, trickSkill, out _, null);
             }
             else
             {
@@ -1394,14 +1395,14 @@ namespace game_stuff
         {
             var lossAmmo = MaxAmmo - NowAmmo;
             var (maxAmmo, moveMaxSpeed, _, moveAddSpeed, _, recycleMulti) = otherBaseStatus;
-            MaxAmmo = (int)(maxAmmo * (1f + otherAttrPassiveEffects[0]));
+            MaxAmmo = (int) (maxAmmo * (1f + otherAttrPassiveEffects[0]));
             NowAmmo = Math.Max(0, MaxAmmo - lossAmmo);
             var max = otherAttrPassiveEffects[1];
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
             AddMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
             var lossP = MaxPropPoint - NowPropPoint;
-            MaxPropPoint = (int)(CommonConfig.OtherConfig.standard_max_prop_stack * (1f + otherAttrPassiveEffects[3]));
+            MaxPropPoint = (int) (CommonConfig.OtherConfig.standard_max_prop_stack * (1f + otherAttrPassiveEffects[3]));
             NowPropPoint = MaxPropPoint - lossP;
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
@@ -1488,9 +1489,9 @@ namespace game_stuff
                     NowVehicle?.SurvivalStatusRefresh(vector);
                     break;
                 case AddItem _:
-                    var itemId = (int)vector[0];
-                    var num = (int)vector[1];
-                    var gameItem = new GameItem((item_id)itemId, num);
+                    var itemId = (int) vector[0];
+                    var num = (int) vector[1];
+                    var gameItem = new GameItem((item_id) itemId, num);
                     PickGameItem(gameItem);
                     break;
                 case AbsorbAboutPassiveEffect _:
@@ -1531,17 +1532,17 @@ namespace game_stuff
 
         private void HitBuffTrickRefresh(float[] vector)
         {
-            var passiveEffect = (int)vector[0];
+            var passiveEffect = (int) vector[0];
             var genById = PlayBuffStandard.GenById(CommonConfig.OtherConfig.atkPassBuffId);
             genById.Stack = passiveEffect;
-            BuffTrick[TrickCond.MyAtkOk] = new HashSet<IPlayingBuff> { genById };
+            BuffTrick[TrickCond.MyAtkOk] = new HashSet<IPlayingBuff> {genById};
 
 
-            var passiveEffect2 = (int)vector[1];
+            var passiveEffect2 = (int) vector[1];
             var genById2 = PlayBuffStandard.GenById(CommonConfig.OtherConfig.defPassBuffId);
             genById2.Stack = passiveEffect2;
 
-            BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> { genById };
+            BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> {genById};
         }
 
         private void AbsorbStatusRefresh(float[] vector)
@@ -1603,7 +1604,7 @@ namespace game_stuff
             if (!CommonConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
                 passive.recycle_money.Select(x =>
-                    GameItem.GenByConfigGain(new Gain { item = x.item, num = (int)(x.num * (1 + GetRecycleMulti())) }));
+                    GameItem.GenByConfigGain(new Gain {item = x.item, num = (int) (x.num * (1 + GetRecycleMulti()))}));
             foreach (var gameItem in passiveRecycleMoney)
             {
                 PickGameItem(gameItem);
@@ -1615,7 +1616,7 @@ namespace game_stuff
             PlayingItemBag.Gain(gameItem);
 
 
-            var itemChange = new ItemChange(new[] { gameItem.ItemId });
+            var itemChange = new ItemChange(new[] {gameItem.ItemId});
             CharEvents.Add(itemChange);
         }
 
@@ -1637,7 +1638,7 @@ namespace game_stuff
 
             SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId);
             var pa = GetProtectAbsorb();
-            var valueAdd = (int)(protectValueAdd * (1 + pa));
+            var valueAdd = (int) (protectValueAdd * (1 + pa));
             AddProtect(valueAdd);
 
             var genDamage = bodyCaster.GenDamage(damageMulti, back);
@@ -1645,7 +1646,7 @@ namespace game_stuff
             var times = genDamage.ShardedNum;
 
             var ammoAbsorb = GetAmmoAbsorb();
-            AddAmmo((int)(total * ammoAbsorb));
+            AddAmmo((int) (total * ammoAbsorb));
             if (NowVehicle != null)
                 NowVehicle.AbsorbDamage(total, times, genDamage.ShardedDamage);
             else
@@ -1693,7 +1694,7 @@ namespace game_stuff
             AddProtect(protectValueAdd);
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
-            if (takeDamage is { IsKill: true } && b)
+            if (takeDamage is {IsKill: true} && b)
             {
                 bodyCaster.AddAKillScore(CharacterBody);
             }
@@ -1891,7 +1892,7 @@ namespace game_stuff
             if (playingItemBagCost)
             {
                 var gameItem = saleUnitCost.ItemId;
-                var itemChange = new ItemChange(new[] { gameItem });
+                var itemChange = new ItemChange(new[] {gameItem});
                 CharEvents.Add(itemChange);
                 return playingItemBagCost;
             }
@@ -1902,7 +1903,7 @@ namespace game_stuff
                 var cost = PlayingItemBag.Cost(saleUnitOrCost);
                 if (!cost) continue;
                 var num = saleUnitOrCost.ItemId;
-                var itemChange = new ItemChange(new[] { num });
+                var itemChange = new ItemChange(new[] {num});
                 CharEvents.Add(itemChange);
                 return true;
             }
@@ -1951,7 +1952,7 @@ namespace game_stuff
             if (weapon.BlockSkills.TryGetValue(CharacterBody.GetSize(), out var skill))
             {
                 var twoDVector = GetPos().GenVector(pos).GetUnit2();
-                LoadSkill(twoDVector, skill, out _);
+                LoadSkill(twoDVector, skill, out _, null);
             }
 
             NextSkill = null;
@@ -1967,7 +1968,7 @@ namespace game_stuff
             }
 
             var twoDVector = GetPos().GenVector(twoDPoint).GetUnit2();
-            LoadSkill(twoDVector, skillEnemyFailTrickSkill, out _);
+            LoadSkill(twoDVector, skillEnemyFailTrickSkill, out _, null);
             NextSkill = null;
         }
 
@@ -1982,7 +1983,7 @@ namespace game_stuff
         public int GetNowTough()
         {
             var upBuffs = GetAndUseValueBuffs<ToughUpBuff>(out var dec);
-            var toughUpBuffs = (int)MathTools.Max(0, upBuffs - dec);
+            var toughUpBuffs = (int) MathTools.Max(0, upBuffs - dec);
             if (NowCastAct == null)
             {
                 return toughUpBuffs;

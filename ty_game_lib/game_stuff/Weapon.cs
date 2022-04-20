@@ -57,16 +57,12 @@ namespace game_stuff
 
         public IMapInteractable? PickedBySomebody(CharacterStatus characterStatus)
         {
-            foreach (var skill in
-                SkillGroups.Values)
+            foreach (var value in from skill in SkillGroups.Values
+                     from variable in skill.Values
+                     from value in variable.Values
+                     select value)
             {
-                foreach (var variable in skill.Values)
-                {
-                    foreach (var value in variable.Values)
-                    {
-                        value.PickedBySomeOne(characterStatus);
-                    }
-                }
+                value.PickedBySomeOne(characterStatus);
             }
 
             foreach (var keyValuePaiSkill in BlockSkills.Values)
@@ -94,11 +90,10 @@ namespace game_stuff
         private static Dictionary<SkillAction, Dictionary<int, Skill>> GenASkillGroup(
             skill_group skillGroup)
         {
-            
             var dictionary = skillGroup.Op1.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 ;
-           
+
             var dictionary2 = skillGroup.Op2.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 ;
@@ -121,30 +116,33 @@ namespace game_stuff
             var dictionary8 = skillGroup.ChargeSwitch.ToDictionary(pair => pair.Key,
                     pair => Skill.GenSkillById(pair.Value))
                 ;
-         var  aSkillGroup =
+            var aSkillGroup =
                 new Dictionary<SkillAction, Dictionary<int, Skill>>
                 {
                     {SkillAction.Op1, dictionary}, {SkillAction.Op2, dictionary2}, {SkillAction.Op3, dictionary3},
-                    {SkillAction.Switch, dictionary4} 
+                    {SkillAction.Switch, dictionary4}
                 };
 
-         if (dictionary5.Count>0)
-         {
-             aSkillGroup[SkillAction.ChargeOp1] = dictionary5;
-         }
-         if (dictionary6.Count>0)
-         {
-             aSkillGroup[SkillAction.ChargeOp2] = dictionary6;
-         }
-         if (dictionary7.Count>0)
-         {
-             aSkillGroup[SkillAction.ChargeOp3] = dictionary7;
-         }
-         if (dictionary8.Count>0)
-         {
-             aSkillGroup[SkillAction.ChargeSwitch] = dictionary8;
-         }
-            
+            if (dictionary5.Count > 0)
+            {
+                aSkillGroup[SkillAction.ChargeOp1] = dictionary5;
+            }
+
+            if (dictionary6.Count > 0)
+            {
+                aSkillGroup[SkillAction.ChargeOp2] = dictionary6;
+            }
+
+            if (dictionary7.Count > 0)
+            {
+                aSkillGroup[SkillAction.ChargeOp3] = dictionary7;
+            }
+
+            if (dictionary8.Count > 0)
+            {
+                aSkillGroup[SkillAction.ChargeSwitch] = dictionary8;
+            }
+
             return aSkillGroup;
         }
 
