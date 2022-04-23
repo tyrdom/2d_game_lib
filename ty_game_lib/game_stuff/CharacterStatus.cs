@@ -1872,7 +1872,8 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"gid:{GId} be hit form {twoDVectorByPt}");
 #endif
-            var hitMark = new HitMark(twoDVectorByPt, bulletId);
+            var twoDVector = twoDVectorByPt.GetUnit();
+            var hitMark = new HitMark(twoDVector, bulletId);
             CharEvents.Add(hitMark);
         }
 

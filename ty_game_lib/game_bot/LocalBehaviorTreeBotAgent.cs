@@ -32,6 +32,7 @@ namespace game_bot
             }
         }
 
+        private TwoDPoint? LastTargetPt { get; set; }
         private bool NeedGenTracePath { get; set; }
         private int NowTraceTick { get; set; }
         private int GoEnemyTick { get; set; }
@@ -115,6 +116,7 @@ namespace game_bot
             TempPathChanged = false;
 
             GoThroughLines = Array.Empty<TwoDVectorLine>();
+            LastTargetPt = null;
         }
 
         private static List<(float range, int maxAmmoUse, int weaponIndex)> GetRangeAmmoWeapon(
@@ -207,12 +209,12 @@ namespace game_bot
                     }
                 }
 
+                var targetPt = nearestTarget.GetAnchor();
                 if (NearestPathTick <= 0) //重新定路径CD
                 {
                     NearestPathTick = (int)BotLocalConfig.BotOtherConfig.LockTraceTickTime;
-                    var twoDPoint = nearestTarget.GetAnchor();
                     var twoDPoints =
-                        pathTop.FindGoPts(startPt, twoDPoint, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti,
+                        pathTop.FindGoPts(startPt, targetPt, BotLocalConfig.BotOtherConfig.NaviPathGoThroughMulti,
 #if DEBUG
 #endif
                             out var pathGoThroughLine
@@ -233,6 +235,10 @@ namespace game_bot
                 TracePt = null;
                 TraceAim = null;
                 TempTarget = nearestTarget;
+                if (LastTargetPt == null || targetPt.GetSqDistance(LastTargetPt) > 0)
+                {
+                    LastTargetPt = targetPt;
+                }
             }
             else
             {
