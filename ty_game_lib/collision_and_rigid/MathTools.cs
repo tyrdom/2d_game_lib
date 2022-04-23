@@ -113,5 +113,15 @@ namespace collision_and_rigid
             return (float) round;
 #endif
         }
+        
+        public static float Round(float makeStunTickMulti,int dig)
+        {
+#if NETCOREAPP
+            return MathF.Round(makeStunTickMulti,dig);
+#else
+            var round = Math.Round(makeStunTickMulti,dig);
+            return (float) round;
+#endif
+        }
     }
 }

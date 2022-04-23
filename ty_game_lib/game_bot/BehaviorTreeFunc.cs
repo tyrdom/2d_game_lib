@@ -85,7 +85,7 @@ namespace game_bot
             if (traceToAimMsg == null) return (false, null);
             {
                 var twoDVector = traceToAimMsg.Aim;
-                var operate = new Operate(twoDVector);
+                var operate = new Operate(twoDVector, move: twoDVector);
                 botMemory.AimTraced = true;
                 return (true, operate);
             }

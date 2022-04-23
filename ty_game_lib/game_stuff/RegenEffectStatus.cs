@@ -1,9 +1,10 @@
 using System.Numerics;
+using collision_and_rigid;
 using game_config;
 
 namespace game_stuff
 {
-    public struct RegenEffectStatus
+    public class RegenEffectStatus
     {
         private RegenEffectStatus(float healEffect, float fixEffect, float chargeEffect, float reloadEffect,
             float baseAttributeShieldChargeExtra)
@@ -41,6 +42,12 @@ namespace game_stuff
             ChargeEffect = regenBaseAttr.ChargeEffect * (1 + regenAttrPassiveEffects[2]);
             ReloadEffect = regenBaseAttr.ReloadEffect * (1 + regenAttrPassiveEffects[3]);
             ExtraChargeMulti = regenBaseAttr.ExtraChargeMulti * (1 + regenAttrPassiveEffects[4]);
+        }
+
+        public string GetDetails()
+        {
+            return
+                $"治疗效果:{MathTools.Round(HealEffect,2)} 修复效果:{MathTools.Round(FixEffect,2)} 充盾效果:{MathTools.Round(ChargeEffect,2)} 装弹效果:{MathTools.Round(ReloadEffect,2)} 额外护盾充盾上限比:{MathTools.Round(ExtraChargeMulti,2)} ";
         }
     }
 }

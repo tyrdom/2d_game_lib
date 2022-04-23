@@ -349,7 +349,7 @@ namespace game_stuff
                 return false;
             }
 
-            Console.Out.WriteLine($"Charge Test : skill action is {skillAction}");
+            // Console.Out.WriteLine($"Charge Test : skill action is {skillAction}");
 
             if (ChargeSkillCtrl != null && skillAction != null && (int) skillAction.Value > 5)
             {

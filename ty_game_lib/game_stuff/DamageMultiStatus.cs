@@ -40,7 +40,7 @@ namespace game_stuff
         {
             var noShieldMulti = survivalStatus.NowShield > 0 ? 0 : NoShieldMulti;
             var noArmorMulti = survivalStatus.NowArmor > 0 ? 0 : NoArmorMulti;
-            var lossP1 = MathTools.Max(0, 1 - survivalStatus.HpPercent());
+            var lossP1 = survivalStatus.NowHp == 1 ? 1f : MathTools.Max(0, 1f - survivalStatus.HpPercent());
             var lossP2 = MathTools.Max(0, 1 - survivalStatus.ArmorPercent());
             var survivalStatusMaxHp = lossP1 * LossPercentHpMulti;
             var survivalStatusMaxArmor = lossP2 * LossPercentArmorMulti;
@@ -48,6 +48,12 @@ namespace game_stuff
             var statusMaxHp = noShieldMulti + noArmorMulti + survivalStatusMaxHp + survivalStatusMaxArmor +
                               protectDamageMulti;
             return statusMaxHp;
+        }
+
+        public string GetDetails()
+        {
+            return
+                $"无盾时攻击加成:{MathTools.Round(NoShieldMulti, 2)} 无甲时攻击加成:{MathTools.Round(NoArmorMulti, 2)} 生命损失增伤:{MathTools.Round(LossPercentHpMulti, 2)} 装甲损失增伤:{MathTools.Round(LossPercentArmorMulti, 2)} 破坏增伤:{OnBreakMulti} 保护值增伤:{ProtectDamageMulti}";
         }
     }
 }

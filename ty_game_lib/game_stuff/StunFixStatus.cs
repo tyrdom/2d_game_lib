@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using collision_and_rigid;
 
 namespace game_stuff
 {
@@ -40,6 +41,12 @@ namespace game_stuff
 
             TakeStunTickMulti = (1f + passiveTrait[4]) / (1f + passiveTrait[5]);
             TakeStunForceMulti = (1f + passiveTrait[6]) / (1f + passiveTrait[7]);
+        }
+
+        public string GetDetail()
+        {
+            return
+                $"击退力比:{MathTools.Round(MakeStunForceMulti, 2)} 击晕时间比:{MathTools.Round(MakeStunTickMulti, 2)} 被击力比:{MathTools.Round(TakeStunForceMulti, 2)} 被击晕时间比:{MathTools.Round(TakeStunTickMulti, 2)}";
         }
     }
 }
