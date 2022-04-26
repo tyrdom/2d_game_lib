@@ -27,15 +27,17 @@ namespace game_bot
             get => TraceAim1;
             set
             {
-                BotMemory.AimTraced = value == null;
+                // BotMemory.AimTracing = value == null;
                 TraceAim1 = value;
             }
         }
 
         private TwoDPoint? LastTargetPt { get; set; }
         private bool NeedGenTracePath { get; set; }
+
         private int NowTraceTick { get; set; }
-        private int GoEnemyTick { get; set; }
+
+        // private int GoEnemyTick { get; set; }
         private HashSet<Trap> TrapsRecords { get; }
 
         private bool TempPathChanged { get; set; }
@@ -109,7 +111,7 @@ namespace game_bot
             TraceAim = null;
             NeedGenTracePath = false;
             NowTraceTick = 0;
-            GoEnemyTick = 0;
+            // GoEnemyTick = 0;
             NearestPathTick = 0;
             TrapsRecords = new HashSet<Trap>();
             TempPath1 = new List<TwoDPoint>();
@@ -226,7 +228,7 @@ namespace game_bot
                     Console.Out.WriteLine($"bot::{BotBody.GetId()} find enemy go path:{WayPtString()}");
 #endif
                     IsSlowTempPath = false;
-                    GoEnemyTick = (int) BotLocalConfig.BotOtherConfig.LockTraceTickTime;
+                    // GoEnemyTick = (int) BotLocalConfig.BotOtherConfig.LockTraceTickTime;
                 }
 
                 NowTraceTick = 0;
@@ -238,6 +240,8 @@ namespace game_bot
                 if (LastTargetPt == null || targetPt.GetSqDistance(LastTargetPt) > 0)
                 {
                     LastTargetPt = targetPt;
+
+                    // Console.Out.WriteLine($"bot::{BotBody.GetId()}  Set Last Pt {LastTargetPt}");
                 }
             }
             else
@@ -247,7 +251,7 @@ namespace game_bot
                 var firstOrDefault = hitMarks.FirstOrDefault();
 
                 if (firstOrDefault != null)
-                    //有某方向攻击，放弃追踪目标 向那个方向看
+                    //有某方向攻击，放弃追踪目标 向那个方向移动一段
                 {
                     ClearTempPath();
                     NeedGenTracePath = false;
@@ -274,15 +278,13 @@ namespace game_bot
                     Console.Out.WriteLine(
                         $"bot::{BotBody.GetId()} LossTarget Start Trace To Pt {TracePt} tick:{NowTraceTick}");
 #endif
-                    if (TempTarget is CharacterBody characterBody)
+
+                    if (LastTargetPt != null)
                     {
-                        if (LastTargetPt != null)
-                        {
-                            var dPoint = characterBody.GetAnchor();
-                            var twoDVector = LastTargetPt.GenVector(dPoint).GetUnit();
-                            TraceAim = twoDVector;
-                            LastTargetPt = null;
-                        }
+                        var twoDVector = LastTargetPt.GenVector(twoDPoint).GetUnit();
+                        // Console.Out.WriteLine($"bot::{BotBody.GetId()} Trace Vector {twoDVector}");
+                        TraceAim = twoDVector;
+                        LastTargetPt = null;
                     }
                 }
             }
@@ -290,7 +292,7 @@ namespace game_bot
 
             var ctrlPoints = PatrolCtrl.Points;
 
-            if (NowTraceTick > 0 && GoEnemyTick <= 0)
+            if (NowTraceTick > 0)
             {
                 if (TracePt == null || TracePt.GetSqDistance(startPt) <
                     BotLocalConfig.BotOtherConfig.CloseEnoughDistance *
@@ -307,10 +309,10 @@ namespace game_bot
 #endif
 
                         agentStatusList.Add(traceToAimMsg);
-                    }
-
-                    if (BotMemory.AimTraced)
-                    {
+                        // }
+                        //
+                        // if (BotMemory.AimTracing)
+                        // {
                         NowTraceTick--;
                     }
                 }
@@ -355,10 +357,10 @@ namespace game_bot
                 }
             }
 
-            if (GoEnemyTick > 0)
-            {
-                GoEnemyTick--;
-            }
+            // if (GoEnemyTick > 0)
+            // {
+            //     GoEnemyTick--;
+            // }
 
 
             if (TempPath.Any())
@@ -385,7 +387,7 @@ namespace game_bot
                     traceMsg = new TraceToPtMsg(twoDPoint, IsSlowTempPath);
                 }
             }
-            else if (NowTraceTick == 0)
+            else if (NowTraceTick <= 0)
             {
                 if (nearestTarget != null) //这时有目标，则清除寻路CD，让下一帧去找目标路径
                 {

@@ -23,7 +23,7 @@ namespace game_bot
 
         private static BehaviorTreeSelectBranch TraceAct { get; } = new BehaviorTreeSelectBranch(new IBehaviorTreeNode[]
         {
-            TracePt, TraceAim
+            TraceAim, TracePt
         });
 
         private static BehaviorTreeActLeaf UsePropAct { get; } =
