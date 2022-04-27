@@ -267,7 +267,7 @@ namespace rogue_chapter_maker
                 isNearAndGetLinksList.Shuffle();
                 var count = isNearAndGetLinksList.Count;
                 var i = MakerTools.Random.Next(count);
-                Console.Out.WriteLine($"{i + 1} of {count}");
+                
                 for (var i1 = 0; i1 <= i; i1++)
                 {
                     var isNearAndGetLinks = isNearAndGetLinksList[i1];
