@@ -61,6 +61,30 @@ namespace game_stuff
             };
         }
 
+
+        public static TwoDPoint GenBulletBladeWavePoint(float[] bulletShapeParams, int bulletLocalRotate,
+            Point localPoint, raw_shape rawShape)
+        {
+            switch (rawShape)
+            {
+                case raw_shape.line:
+                    return new TwoDPoint(bulletShapeParams[0], bulletShapeParams[1]);
+                    break;
+                case raw_shape.rectangle:
+                    return new TwoDPoint(localPoint.x + bulletShapeParams[0] / 2f, localPoint.y);
+                    break;
+                case raw_shape.sector:
+                    return new TwoDPoint(bulletShapeParams[0], 0f);
+                    
+                    
+                case raw_shape.round:
+                    return new TwoDPoint(0f, 0f);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(rawShape), rawShape, null);
+            }
+        }
+
         public static Dictionary<size, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
             Point localPoint, raw_shape rawShape)
         {

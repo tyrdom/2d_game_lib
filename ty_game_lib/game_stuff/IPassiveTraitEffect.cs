@@ -25,14 +25,6 @@ namespace game_stuff
             if (!CommonConfig.Configs.passives.TryGetValue(id, out var passive))
                 throw new KeyNotFoundException($"not such passive id {id}");
             var passiveParamValues = passive.param_values;
-            // var intPtr = 8 - passiveParamValues.Length;
-            // if (intPtr > 0)
-            // {
-            //     var enumerable = Enumerable.Range(0, intPtr).Select(x => 0f);
-            //     var floats = passiveParamValues.ToList();
-            //     floats.AddRange(enumerable);
-            //     passiveParamValues = floats.ToArray();
-            // }
 
 #if DEBUG
             // var aggregate = passiveParamValues.Aggregate("", (s, c) => s + c + ',');

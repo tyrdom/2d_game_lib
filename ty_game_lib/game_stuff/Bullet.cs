@@ -17,24 +17,23 @@ namespace game_stuff
     {
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
-
         public Zone RdZone { get; }
-
         private bool CanOverBulletBlock { get; }
         private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
-
         public float WaveCast { get; }
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
+
+        public TwoDPoint BladeWavePos { get; }
+
+        public Dictionary<size, BulletBox>? SizeToBladeWaveCollision { get; set; }
         public IBattleUnitStatus? Caster { get; set; }
         private Dictionary<size, IStunBuffMaker> SuccessStunBuffConfigToOpponent { get; }
         private Dictionary<size, IStunBuffMaker> FailActBuffConfigToSelf { get; }
-
         private int PauseToCaster { get; }
         private int PauseToOpponent { get; }
         private float DamageMulti { get; }
         private int Tough { get; }
-
         private int StunPower { get; }
 
         public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
@@ -70,7 +69,7 @@ namespace game_stuff
 
         public static Bullet GenById(string id, uint pairKey = 0)
         {
-            var o = (bullet_id)Enum.Parse(typeof(bullet_id), id, true);
+            var o = (bullet_id) Enum.Parse(typeof(bullet_id), id, true);
             return GenById(o, pairKey);
         }
 
@@ -101,7 +100,9 @@ namespace game_stuff
         {
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
                 bullet.ShapeType);
-
+            var genBulletBladeWavePoint = GameTools.GenBulletBladeWavePoint(bullet.ShapeParams, bullet.LocalRotate,
+                bullet.LocalPos,
+                bullet.ShapeType);
 
             var bulletSuccessAntiActBuffConfigToOpponent = bullet.SuccessAntiActBuffConfigToOpponent;
 
@@ -124,11 +125,11 @@ namespace game_stuff
             var bulletIsHAtk = bullet.IsHAtk;
             if (bullet.Tough == -1)
             {
-                tough = (int)(pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
+                tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
 
-            var valuePerSecToValuePerTick = ((float)pairKey).ValuePerSecToValuePerTick();
+            var valuePerSecToValuePerTick = ((float) pairKey).ValuePerSecToValuePerTick();
 
 
             var bulletDamageMulti = bullet.DamageMulti <= 0
@@ -138,8 +139,8 @@ namespace game_stuff
             var bulletProtectValue = bullet.ProtectValue;
             if (bulletProtectValue < 0)
             {
-                bulletProtectValue = (int)(bulletDamageMulti *
-                                           CommonConfig.OtherConfig.protect_standardMulti);
+                bulletProtectValue = (int) (bulletDamageMulti *
+                                            CommonConfig.OtherConfig.protect_standardMulti);
             }
 
 
@@ -147,7 +148,7 @@ namespace game_stuff
             if (bulletSuccessAmmoAdd < 0)
             {
                 bulletSuccessAmmoAdd =
-                    (int)(bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+                    (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
 
@@ -157,7 +158,7 @@ namespace game_stuff
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
-                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower);
+                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower, genBulletBladeWavePoint);
         }
 
         public static Dictionary<size, IStunBuffMaker> GAntiActBuffConfigs(
@@ -179,7 +180,7 @@ namespace game_stuff
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, uint pauseToCaster, uint pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
             hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum, float waveCast,
-            PlayingBuffsMaker playingBuffsMaker, int stunPower)
+            PlayingBuffsMaker playingBuffsMaker, int stunPower, TwoDPoint bladeWavePos)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -187,9 +188,9 @@ namespace game_stuff
             Caster = null;
             SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
-            PauseToCaster = (int)pauseToCaster;
+            PauseToCaster = (int) pauseToCaster;
 
-            PauseToOpponent = (int)pauseToOpponent;
+            PauseToOpponent = (int) pauseToOpponent;
 #if DEBUG
             Console.Out.WriteLine($"{PauseToCaster} ----- {PauseToOpponent}");
 #endif
@@ -208,6 +209,7 @@ namespace game_stuff
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
             AddBuffToCastWhenHitPass = playingBuffsMaker;
             StunPower = stunPower;
+            BladeWavePos = bladeWavePos;
             ChargeExtraDamageMulti = 0f;
         }
 
@@ -259,13 +261,13 @@ namespace game_stuff
                     return Caster != null && kill.HasValue
                         ? new BulletHit(targetCharacterBody, kill.Value,
                             Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?)null;
+                        : (IRelationMsg?) null;
 
                 case Trap trap:
                     var dmgShow = HitOne(trap);
                     return Caster != null && dmgShow.HasValue
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?)null;
+                        : (IRelationMsg?) null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));
             }
@@ -534,7 +536,7 @@ namespace game_stuff
                 antiActBuffConfig, pauseToOpponent, pos, aim);
         }
 
-        
+
         public static void SetStunBuffToTarget(CharacterStatus targetCharacterStatus, IBattleUnitStatus caster,
             IStunBuff? opponentCharacterStatusAntiActBuff, IStunBuffMaker antiActBuffConfig, int pauseToOpponent,
             TwoDPoint pos
