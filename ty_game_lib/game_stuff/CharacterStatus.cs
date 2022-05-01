@@ -189,6 +189,8 @@ namespace game_stuff
 
         private Dictionary<play_buff_id, IPlayingBuff> PlayingBuffs { get; }
 
+        private Dictionary<int, BladeWaveAvoidBuff> BladeWaveBuffs { get; }
+
         // Status
         public AttackStatus AttackStatus { get; }
         public DamageMultiStatus DamageMultiStatus { get; }
@@ -222,6 +224,9 @@ namespace game_stuff
 
         public TransRegenEffectStatus TransRegenEffectStatus { get; }
         public AbsorbStatus AbsorbStatus { get; }
+
+
+        public BladeWaveStatus BladeWaveStatus { get; }
 
         //wealth about
         private float RecycleMulti { get; set; }
@@ -292,18 +297,21 @@ namespace game_stuff
             MaxWeaponSlot = maxWeaponNum ?? CommonConfig.OtherConfig.weapon_num;
             RecycleMulti = genBaseAttrById.RecycleMulti;
             StartPassiveInitRefresh();
+            BladeWaveStatus = new BladeWaveStatus();
+            BladeWaveBuffs = new Dictionary<int, BladeWaveAvoidBuff>();
         }
 
         private void BuffsGoATick()
         {
             var playingBuffsValues = PlayingBuffs.Values.ToArray();
-            foreach (IPlayingBuff playingBuff in playingBuffsValues)
+            foreach (var playingBuff in playingBuffsValues)
             {
-                playingBuff.GoATick();
                 if (playingBuff.IsFinish())
                 {
                     PlayingBuffs.Remove(playingBuff.BuffId);
                 }
+
+                playingBuff.GoATick();
             }
         }
 
@@ -814,12 +822,15 @@ namespace game_stuff
             if (b1)
             {
                 PauseTick -= 1;
+                //一定比率后脱离pause状态
                 var b = NowProtectValue <= MaxProtectValue * CommonConfig.OtherConfig.PauseProtectMutli;
                 if (b)
                 {
                     return new CharGoTickResult();
                 }
             }
+
+            BladeWaveBuffsGoATick();
 
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
@@ -1148,6 +1159,21 @@ namespace game_stuff
             var dVector = twoDVector.Multi(multiSpeed);
 
             return new CharGoTickResult(move: dVector);
+        }
+
+        private void BladeWaveBuffsGoATick()
+        {
+            var bladeWaveBuffs = BladeWaveBuffs.Where(bladeWaveBuff => bladeWaveBuff.Value.IsFinish())
+                .Select(x => x.Key);
+            foreach (var bladeWaveBuff in bladeWaveBuffs)
+            {
+                BladeWaveBuffs.Remove(bladeWaveBuff);
+            }
+
+            foreach (var bladeWaveBuff in BladeWaveBuffs.Values)
+            {
+                bladeWaveBuff.GoATick();
+            }
         }
 
         private CharGoTickResult ActNowActATickOrCombo(TwoDVector? operateAim, TwoDVector? operateMove,
@@ -1937,13 +1963,13 @@ namespace game_stuff
 
         public bool Hear(Bullet bullet, SightMap? map)
         {
-            if (bullet.WaveCast < 0)
+            if (bullet.SoundWaveCast < 0)
             {
                 return false;
             }
 
             var twoDVectorLine = new TwoDVectorLine(GetPos(), bullet.Pos);
-            var bulletWaveCast = GetListenRange() + bullet.WaveCast;
+            var bulletWaveCast = GetListenRange() + bullet.SoundWaveCast;
             var distance = twoDVectorLine.GetVector().SqNorm();
             if (distance > bulletWaveCast * bulletWaveCast)
             {
@@ -2015,6 +2041,21 @@ namespace game_stuff
             var s1 = RegenEffectStatus.GetDetails();
             var detail = StunFixStatus.GetDetail();
             return $"{details}\n{s}\n{details1}\n{s1}\n{detail}";
+        }
+
+        public bool AvoidWave(int getId, bullet_id bulletId)
+        {
+            var genKey = BladeWaveAvoidBuff.GenKey(getId, bulletId);
+            return BladeWaveBuffs.ContainsKey(genKey);
+        }
+
+        public void AddBladeWaveBuff(IBattleUnitStatus? caster, bullet_id bulletId)
+        {
+            if (caster == null) return;
+            var id = caster.GetId();
+            var bladeWaveBuff = new BladeWaveAvoidBuff(id, bulletId, 1);
+            var genKey = bladeWaveBuff.GenKey();
+            BladeWaveBuffs[genKey] = bladeWaveBuff;
         }
     }
 

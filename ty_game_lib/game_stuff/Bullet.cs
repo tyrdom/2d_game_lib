@@ -13,6 +13,12 @@ namespace game_stuff
         AllTeam
     }
 
+    public enum BulletMode
+    {
+        Direct,
+        BladeWave
+    }
+
     public class Bullet : IHitMedia, IHaveAnchor
     {
         public TwoDPoint Pos { get; set; }
@@ -21,12 +27,8 @@ namespace game_stuff
         private bool CanOverBulletBlock { get; }
         private bool IsFAtk { get; }
         private int AmmoAddWhenSuccess { get; }
-        public float WaveCast { get; }
+        public float SoundWaveCast { get; }
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
-
-        public TwoDPoint BladeWavePos { get; }
-
-        public Dictionary<size, BulletBox>? SizeToBladeWaveCollision { get; set; }
         public IBattleUnitStatus? Caster { get; set; }
         private Dictionary<size, IStunBuffMaker> SuccessStunBuffConfigToOpponent { get; }
         private Dictionary<size, IStunBuffMaker> FailActBuffConfigToSelf { get; }
@@ -36,9 +38,15 @@ namespace game_stuff
         private int Tough { get; }
         private int StunPower { get; }
 
+        public float BaseWaveRange { get; }
+        public Dictionary<size, BulletBox> SizeToBladeWaveBaseCollision { get; }
+        // private TwoDPoint BladeWavePos { get; }
+        public BulletMode BulletMode { get; set; }
+
         public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap)
         {
-            return HitAbleMediaStandard.HitTeam(qSpaces, this, blockMap);
+            var relationMsgS = HitAbleMediaStandard.HitTeam(qSpaces, this, blockMap);
+            return relationMsgS;
         }
 
         public ObjType TargetType { get; }
@@ -69,7 +77,7 @@ namespace game_stuff
 
         public static Bullet GenById(string id, uint pairKey = 0)
         {
-            var o = (bullet_id) Enum.Parse(typeof(bullet_id), id, true);
+            var o = (bullet_id)Enum.Parse(typeof(bullet_id), id, true);
             return GenById(o, pairKey);
         }
 
@@ -100,9 +108,15 @@ namespace game_stuff
         {
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
                 bullet.ShapeType);
-            var genBulletBladeWavePoint = GameTools.GenBulletBladeWavePoint(bullet.ShapeParams, bullet.LocalRotate,
-                bullet.LocalPos,
-                bullet.ShapeType);
+            
+            var dictionary2 = new Dictionary<size, BulletBox>();
+            if (bullet.CanMakeBladeWave)
+            {
+                 GameTools.GenBulletBladeWavePoint(bullet.ShapeParams, bullet.LocalRotate,
+                    bullet.LocalPos,
+                    bullet.ShapeType, out dictionary2);
+            }
+
 
             var bulletSuccessAntiActBuffConfigToOpponent = bullet.SuccessAntiActBuffConfigToOpponent;
 
@@ -125,11 +139,11 @@ namespace game_stuff
             var bulletIsHAtk = bullet.IsHAtk;
             if (bullet.Tough == -1)
             {
-                tough = (int) (pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
+                tough = (int)(pairKey * (1 + CommonConfig.OtherConfig.tough_grow));
             }
 
 
-            var valuePerSecToValuePerTick = ((float) pairKey).ValuePerSecToValuePerTick();
+            var valuePerSecToValuePerTick = ((float)pairKey).ValuePerSecToValuePerTick();
 
 
             var bulletDamageMulti = bullet.DamageMulti <= 0
@@ -139,8 +153,8 @@ namespace game_stuff
             var bulletProtectValue = bullet.ProtectValue;
             if (bulletProtectValue < 0)
             {
-                bulletProtectValue = (int) (bulletDamageMulti *
-                                            CommonConfig.OtherConfig.protect_standardMulti);
+                bulletProtectValue = (int)(bulletDamageMulti *
+                                           CommonConfig.OtherConfig.protect_standardMulti);
             }
 
 
@@ -148,7 +162,7 @@ namespace game_stuff
             if (bulletSuccessAmmoAdd < 0)
             {
                 bulletSuccessAmmoAdd =
-                    (int) (bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
+                    (int)(bulletDamageMulti * CommonConfig.OtherConfig.melee_ammo_gain_standard_multi);
             }
 
 
@@ -158,7 +172,8 @@ namespace game_stuff
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
-                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower, genBulletBladeWavePoint);
+                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower, dictionary2,
+                bullet.BaseBladeWaveRange);
         }
 
         public static Dictionary<size, IStunBuffMaker> GAntiActBuffConfigs(
@@ -179,8 +194,10 @@ namespace game_stuff
             Dictionary<size, IStunBuffMaker> successStunBuffConfigToOpponent,
             Dictionary<size, IStunBuffMaker> failActBuffConfigToSelf, uint pauseToCaster, uint pauseToOpponent,
             ObjType targetType, int tough, int ammoAddWhenSuccess, float damageMulti, int protectValueAdd,
-            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum, float waveCast,
-            PlayingBuffsMaker playingBuffsMaker, int stunPower, TwoDPoint bladeWavePos)
+            hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum,
+            float soundWaveCast,
+            PlayingBuffsMaker playingBuffsMaker, int stunPower,
+            Dictionary<size, BulletBox> sizeToBladeWaveBaseCollision, float baseWaveRange)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -188,9 +205,9 @@ namespace game_stuff
             Caster = null;
             SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
-            PauseToCaster = (int) pauseToCaster;
+            PauseToCaster = (int)pauseToCaster;
 
-            PauseToOpponent = (int) pauseToOpponent;
+            PauseToOpponent = (int)pauseToOpponent;
 #if DEBUG
             Console.Out.WriteLine($"{PauseToCaster} ----- {PauseToOpponent}");
 #endif
@@ -199,7 +216,7 @@ namespace game_stuff
             RestTick = 1;
             BulletId = bulletId;
             HitLimitNum = hitLimitNum;
-            WaveCast = waveCast;
+            SoundWaveCast = soundWaveCast;
             AmmoAddWhenSuccess = ammoAddWhenSuccess;
             DamageMulti = damageMulti;
             ProtectValueAdd = protectValueAdd;
@@ -209,8 +226,11 @@ namespace game_stuff
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
             AddBuffToCastWhenHitPass = playingBuffsMaker;
             StunPower = stunPower;
-            BladeWavePos = bladeWavePos;
+            // BladeWavePos = bladeWavePos;
+            SizeToBladeWaveBaseCollision = sizeToBladeWaveBaseCollision;
+            BaseWaveRange = baseWaveRange;
             ChargeExtraDamageMulti = 0f;
+            BulletMode = BulletMode.Direct;
         }
 
         private float ChargeExtraDamageMulti { get; set; }
@@ -223,6 +243,10 @@ namespace game_stuff
         public bool CanGoNextTick()
         {
             RestTick -= 1;
+            if (BulletMode == BulletMode.Direct)
+            {
+                BulletMode = BulletMode.BladeWave;
+            }
 
             var canGoNextTick = RestTick > 0;
             if (!canGoNextTick)
@@ -233,11 +257,40 @@ namespace game_stuff
             return canGoNextTick;
         }
 
-        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
+        private bool IsWaveHit(ICanBeAndNeedHit canBeAndNeedHit)
+        {
+            if (!(Caster is CharacterStatus characterStatus) ||
+                !(canBeAndNeedHit is CharacterBody characterBody))
+            {
+                return false;
+            }
+
+            if (characterBody.AvoidWave(Caster.GetId(), BulletId))
+            {
+                return false;
+            }
+
+            var checkAlive = characterBody.CheckCanBeHit();
+            var waveRange = characterStatus.BladeWaveStatus.WaveRange;
+            var baseWaveRange = waveRange + BaseWaveRange;
+            var twoDVector = new TwoDVector(baseWaveRange, 0f);
+
+            return checkAlive && SizeToBladeWaveBaseCollision.TryGetValue(characterBody.GetSize(),
+                                  out var bulletBox)
+                              && bulletBox.IsHit(characterBody.GetAnchor(), Pos, Aim, twoDVector);
+        }
+
+        public bool IsCollisionHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
         {
             var isBlockSightLine =
                 blockMap?.IsBlockSightLine(new TwoDVectorLine(Pos, characterBody.GetAnchor())) ?? false;
-            var isHit = GameTools.IsHit(this, characterBody);
+            var isHit = BulletMode switch
+            {
+                BulletMode.Direct => this.IsHit(characterBody),
+                BulletMode.BladeWave => IsWaveHit(characterBody),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
 #if DEBUG
             Console.Out.WriteLine($"bullet hit? id {BulletId} ~ {isHit} and {!isBlockSightLine}");
 #endif
@@ -261,13 +314,13 @@ namespace game_stuff
                     return Caster != null && kill.HasValue
                         ? new BulletHit(targetCharacterBody, kill.Value,
                             Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?) null;
+                        : (IRelationMsg?)null;
 
                 case Trap trap:
                     var dmgShow = HitOne(trap);
                     return Caster != null && dmgShow.HasValue
                         ? new BulletHit(trap, dmgShow.Value, Caster.GetFinalCaster().CharacterStatus, this)
-                        : (IRelationMsg?) null;
+                        : (IRelationMsg?)null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(canBeAndNeedHit));
             }
@@ -405,6 +458,7 @@ namespace game_stuff
                 return null;
             }
 
+            targetCharacterStatus.AddBladeWaveBuff(Caster, BulletId);
             var (atkOk, back, opponentCharacterStatusAntiActBuff, isActSkill) =
                 IsAtkPass(targetCharacterStatus, out var changeToDaze);
 
@@ -429,7 +483,13 @@ namespace game_stuff
             {
                 //基本方面
                 // 释放方基本状态
-                caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetCharacterStatus);
+                var ptc = BulletMode switch
+                {
+                    BulletMode.Direct => PauseToCaster,
+                    BulletMode.BladeWave => 0,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                caster.BaseBulletAtkOk(ptc, AmmoAddWhenSuccess, targetCharacterStatus);
 
                 if (!b && caster is CharacterStatus characterStatus)
                 {
@@ -679,6 +739,11 @@ namespace game_stuff
         public TwoDPoint GetAnchor()
         {
             return Pos;
+        }
+
+        public bool CanMakeWave()
+        {
+            return SizeToBladeWaveBaseCollision.Any();
         }
     }
 

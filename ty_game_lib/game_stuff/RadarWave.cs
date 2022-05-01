@@ -75,7 +75,7 @@ namespace game_stuff
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
 
-        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
+        public bool IsCollisionHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
         {
             return IsHit(characterBody);
         }

@@ -229,6 +229,10 @@ namespace collision_and_rigid
             return b;
         }
 
+        public TwoDVector Vector()
+        {
+            return new TwoDVector( X,  Y);
+        }
         public TwoDVector GenVector(TwoDPoint b)
         {
             return new TwoDVector(b.X - X, b.Y - Y);

@@ -12,7 +12,7 @@ namespace game_stuff
         // public 
         public Zone RdZone { get; }
 
-        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap);
+        public bool IsCollisionHit(ICanBeAndNeedHit characterBody, SightMap? blockMap);
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IEnumerable<IRelationMsg> HitTeam(IEnumerable<IQSpace> qSpaces, SightMap? blockMap);
         public ObjType TargetType { get; }
@@ -26,7 +26,7 @@ namespace game_stuff
             SightMap? blockMap)
         {
             var idPointShapes = qSpace.SelectMany(x => x.FilterToBoxList<IdPointBox, IHitMedia>((bd, aHitMedia) =>
-                    bd.IdPointShape is ICanBeAndNeedHit canBeHit && aHitMedia.IsHit(canBeHit, blockMap), hitMedia,
+                    bd.IdPointShape is ICanBeAndNeedHit canBeHit && aHitMedia.IsCollisionHit(canBeHit, blockMap), hitMedia,
                 hitMedia.RdZone.MoveToAnchor(hitMedia.Pos)));
             if (!hitMedia.HitNumLimit(out var num))
                 return idPointShapes.Select(x => x.IdPointShape).OfType<ICanBeAndNeedHit>().Select(hitMedia.HitSth)

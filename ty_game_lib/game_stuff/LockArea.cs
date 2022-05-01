@@ -11,7 +11,7 @@ namespace game_stuff
         public TwoDPoint Pos { get; set; }
         public TwoDVector Aim { get; set; }
 
-        public bool IsHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
+        public bool IsCollisionHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
         {
             return IsHit(characterBody);
         }

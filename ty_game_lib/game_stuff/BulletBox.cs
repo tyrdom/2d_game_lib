@@ -15,9 +15,12 @@ namespace game_stuff
             BulletShape = bulletShape;
         }
 
-        public bool IsHit(TwoDPoint objPos, TwoDPoint bPos, TwoDVector bAim)
+        public bool IsHit(TwoDPoint objPos, TwoDPoint bPos, TwoDVector bAim, TwoDVector? localFix = null)
         {
-            var genPosInLocal = objPos.GenPosInLocal(bPos, bAim);
+            var posInLocal = objPos.GenPosInLocal(bPos, bAim);
+            var genPosInLocal = localFix == null ? posInLocal : posInLocal.Move(localFix);
+
+
 #if DEBUG
             Console.Out.WriteLine($"gen pos in local {genPosInLocal}");
 #endif

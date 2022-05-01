@@ -35,15 +35,16 @@ namespace game_stuff
     {
         play_buff_id BuffId { get; }
         int RestTick { get; set; }
-        bool IsFinish();
-        int Stack { get; set; }
-        void GoATick();
         int UseStack { get; }
+        int Stack { get; set; }
+        bool IsFinish();
+        void GoATick();
+
         void ActiveWhenUse(CharacterStatus characterStatus);
     }
 
 
-    public class MakeDamageBuff : IPlayingBuff, IValueAboutBuff
+    public class MakeDamageBuff : IValueAboutBuff
     {
         public MakeDamageBuff(play_buff_id buffId, int restTick, float addDamageMulti, int stack, int useStack)
         {
@@ -322,7 +323,7 @@ namespace game_stuff
 
         public play_buff_id BuffId { get; }
         public int RestTick { get; set; }
-       
+
 
         public bool IsFinish()
         {

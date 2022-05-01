@@ -62,24 +62,40 @@ namespace game_stuff
         }
 
 
-        public static TwoDPoint GenBulletBladeWavePoint(float[] bulletShapeParams, int bulletLocalRotate,
-            Point localPoint, raw_shape rawShape)
+        public static void GenBulletBladeWavePoint(float[] bulletShapeParams, int bulletLocalRotate,
+            Point localPoint, raw_shape rawShape, out Dictionary<size, BulletBox> bulletsBase)
         {
+            var bulletShapeParam = bulletShapeParams[1];
+            var shapeParam = bulletShapeParams[0];
             switch (rawShape)
             {
                 case raw_shape.line:
-                    return new TwoDPoint(bulletShapeParams[0], bulletShapeParams[1]);
-                    break;
+
+                    var genBulletBladeWavePoint = new TwoDPoint(shapeParam, bulletShapeParam);
+                    var round = new Round(genBulletBladeWavePoint, 0f);
+                    bulletsBase = GenDicBulletBox(round);
+                    return;
                 case raw_shape.rectangle:
-                    return new TwoDPoint(localPoint.x + bulletShapeParams[0] / 2f, localPoint.y);
-                    break;
+                    var bladeWavePoint = new TwoDPoint(localPoint.x + shapeParam / 2f, localPoint.y);
+                    var twoDVector = new TwoDVector(0, bulletShapeParam / 2f);
+                    var dVector = new TwoDVector(0, -bulletShapeParam / 2f);
+                    var twoDVectorLine = new TwoDVectorLine(bladeWavePoint.Move(twoDVector),
+                        bladeWavePoint.Move(dVector));
+                    bulletsBase = GenDicBulletBox(twoDVectorLine);
+                    return;
                 case raw_shape.sector:
-                    return new TwoDPoint(bulletShapeParams[0], 0f);
-                    
-                    
+                    var r = MathTools.Sqrt(shapeParam * shapeParam + bulletShapeParam * bulletShapeParam);
+                    var height = r - shapeParam;
+                    var rectangle2 = new Rectangle2(bulletShapeParam * 2f, height,
+                        new TwoDVector(shapeParam + height / 2f, 0f), TwoDVector.Zero());
+                    bulletsBase = rectangle2.GenDicBulletBox();
+                    new TwoDPoint(shapeParam, 0f);
+                    return;
                 case raw_shape.round:
-                    return new TwoDPoint(0f, 0f);
-                    break;
+
+                    var bulletBladeWavePoint = localPoint.GenPointByConfig();
+                    bulletsBase = new Round(bulletBladeWavePoint, shapeParam).GenDicBulletBox();
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(rawShape), rawShape, null);
             }
@@ -88,8 +104,14 @@ namespace game_stuff
         public static Dictionary<size, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
             Point localPoint, raw_shape rawShape)
         {
-            var twoDPoint = GenVectorByConfig(localPoint);
+            var twoDPoint = localPoint.GenVectorByConfig();
 
+            return GenBulletShapes(bulletShapeParams, bulletLocalRotate, twoDPoint, rawShape);
+        }
+
+        private static Dictionary<size, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
+            TwoDVector twoDPoint, raw_shape rawShape)
+        {
             var cos = MathTools.Cos(bulletLocalRotate * 180 / MathTools.Pi());
             var sin = MathTools.Sin(bulletLocalRotate * 180 / MathTools.Pi());
             var rotate = new TwoDVector(cos, sin);
@@ -107,13 +129,14 @@ namespace game_stuff
                 GenDicBulletBox(rawBulletShape);
         }
 
-        public static bool IsHit(IHitMedia hitMedia, ICanBeAndNeedHit canBeAndNeedHit)
+        public static bool IsHit(this IHitMedia hitMedia, ICanBeAndNeedHit canBeAndNeedHit)
         {
             var checkAlive = canBeAndNeedHit.CheckCanBeHit();
             var characterBodyBodySize = canBeAndNeedHit.GetSize();
             return checkAlive && hitMedia.SizeToBulletCollision.TryGetValue(characterBodyBodySize, out var bulletBox) &&
                    bulletBox.IsHit(canBeAndNeedHit.GetAnchor(), hitMedia.Pos, hitMedia.Aim);
         }
+
 
         public static float GetMaxUpSpeed(float? height)
         {
@@ -138,7 +161,7 @@ namespace game_stuff
             return bulletRdBox;
         }
 
-        private static Dictionary<size, BulletBox> GenDicBulletBox(IRawBulletShape rawBulletShape)
+        private static Dictionary<size, BulletBox> GenDicBulletBox(this IRawBulletShape rawBulletShape)
         {
             return
                 CommonConfig.Configs.bodys.ToDictionary(pair => pair.Key, pair =>
@@ -146,11 +169,15 @@ namespace game_stuff
                         rawBulletShape.GenBulletShape(pair.Value.rad)));
         }
 
-        public static TwoDVector GenVectorByConfig(Point pt)
+        public static TwoDVector GenVectorByConfig(this Point pt)
         {
             return new TwoDVector(pt.x, pt.y);
         }
 
+        public static TwoDPoint GenPointByConfig(this Point pt)
+        {
+            return new TwoDPoint(pt.x, pt.y);
+        }
 
         public static List<IMapInteractable> DropWeapon(Dictionary<int, Weapon> weapons, size bodySize,
             TwoDPoint pos)
