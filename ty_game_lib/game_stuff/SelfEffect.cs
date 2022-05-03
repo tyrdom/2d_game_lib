@@ -48,9 +48,9 @@ namespace game_stuff
 
         public IBattleUnitStatus? Caster { get; set; }
 
-        public void Sign(IBattleUnitStatus characterStatus)
+        public void Sign(IBattleUnitStatus battleStatus)
         {
-            Caster = characterStatus;
+            Caster = battleStatus;
         }
 
         public List<IPlayingBuff> PlayingBuffToAdd { get; }

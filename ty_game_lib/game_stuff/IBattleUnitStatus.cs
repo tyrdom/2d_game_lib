@@ -12,7 +12,8 @@ namespace game_stuff
 
         void BaseBulletAtkOk(int pauseToCaster, int ammoAddWhenSuccess, IBattleUnitStatus targetCharacterStatus);
         (UnitType unitType, int gid) GetTypeAndId();
-        Damage GenDamage(float damageMulti, bool back);
+        
+        Damage GenDamage(float damageMulti, bool back, bool wave = false);
         void LoadCatchTrickSkill(TwoDVector? aim, CatchStunBuffMaker catchAntiActBuffMaker);
         float GetRr();
         void AddAKillScore(CharacterBody characterBody);

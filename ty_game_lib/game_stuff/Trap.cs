@@ -207,7 +207,7 @@ namespace game_stuff
             return Pos;
         }
 
-        public Damage GenDamage(float damageMulti, bool b)
+        public Damage GenDamage(float damageMulti, bool b, bool wave)
         {
             return Owner.AttackStatus.GenDamage(damageMulti * DamageMulti, b);
         }

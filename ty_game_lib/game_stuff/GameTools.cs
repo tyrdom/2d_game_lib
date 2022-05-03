@@ -62,40 +62,41 @@ namespace game_stuff
         }
 
 
-        public static void GenBulletBladeWavePoint(float[] bulletShapeParams, int bulletLocalRotate,
-            Point localPoint, raw_shape rawShape, out Dictionary<size, BulletBox> bulletsBase)
+        public static IWaveRaw GenBulletBladeWaveRaw(float[] bulletShapeParams, int bulletLocalRotate,
+            Point localPoint, raw_shape rawShape, float baseBladeWaveRange)
         {
-            var bulletShapeParam = bulletShapeParams[1];
+            var rotate = DegreeToTwoDVector(bulletLocalRotate);
+            var genVectorByConfig = localPoint.GenVectorByConfig();
             var shapeParam = bulletShapeParams[0];
             switch (rawShape)
             {
                 case raw_shape.line:
 
-                    var genBulletBladeWavePoint = new TwoDPoint(shapeParam, bulletShapeParam);
-                    var round = new Round(genBulletBladeWavePoint, 0f);
-                    bulletsBase = GenDicBulletBox(round);
-                    return;
+                    var genBulletBladeWavePoint =
+                        new TwoDPoint(shapeParam, bulletShapeParams[1]).ClockTurnAboutZero(rotate)
+                            .Move(genVectorByConfig);
+                    var vector = genBulletBladeWavePoint.Vector().GetUnit2() ?? new TwoDVector(1f, 0f);
+                    return new ShootWaveRaw(baseBladeWaveRange, genBulletBladeWavePoint, vector);
                 case raw_shape.rectangle:
-                    var bladeWavePoint = new TwoDPoint(localPoint.x + shapeParam / 2f, localPoint.y);
-                    var twoDVector = new TwoDVector(0, bulletShapeParam / 2f);
-                    var dVector = new TwoDVector(0, -bulletShapeParam / 2f);
-                    var twoDVectorLine = new TwoDVectorLine(bladeWavePoint.Move(twoDVector),
-                        bladeWavePoint.Move(dVector));
-                    bulletsBase = GenDicBulletBox(twoDVectorLine);
-                    return;
-                case raw_shape.sector:
-                    var r = MathTools.Sqrt(shapeParam * shapeParam + bulletShapeParam * bulletShapeParam);
-                    var height = r - shapeParam;
-                    var rectangle2 = new Rectangle2(bulletShapeParam * 2f, height,
-                        new TwoDVector(shapeParam + height / 2f, 0f), TwoDVector.Zero());
-                    bulletsBase = rectangle2.GenDicBulletBox();
-                    new TwoDPoint(shapeParam, 0f);
-                    return;
-                case raw_shape.round:
+                    var bladeWavePoint = new TwoDPoint( shapeParam / 2f, 0);
+                    var twoDVector = new TwoDVector(0, bulletShapeParams[1] / 2f);
+                    var dVector = new TwoDVector(0, -bulletShapeParams[1] / 2f);
+                    var twoDPoint = bladeWavePoint.Move(twoDVector).ClockTurnAboutZero(rotate).Move(genVectorByConfig);
+                    var dPoint = bladeWavePoint.Move(dVector).ClockTurnAboutZero(rotate).Move(genVectorByConfig);
+                    return new RectangleWaveRaw(baseBladeWaveRange, 0f, twoDPoint,
+                        dPoint);
 
+
+                case raw_shape.sector:
+                    var y = bulletShapeParams[1];
+                    var r = MathTools.Sqrt(shapeParam * shapeParam + y * y);
+                    var height = r - shapeParam;
+                    var p1 = new TwoDPoint(shapeParam, y).ClockTurnAboutZero(rotate).Move(genVectorByConfig);
+                    var p2 = new TwoDPoint(shapeParam, -y).ClockTurnAboutZero(rotate).Move(genVectorByConfig);
+                    return new RectangleWaveRaw(baseBladeWaveRange, height, p1, p2);
+                case raw_shape.round:
                     var bulletBladeWavePoint = localPoint.GenPointByConfig();
-                    bulletsBase = new Round(bulletBladeWavePoint, shapeParam).GenDicBulletBox();
-                    return;
+                    return new RoundWaveRaw(baseBladeWaveRange, shapeParam, bulletBladeWavePoint);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(rawShape), rawShape, null);
             }
@@ -112,9 +113,7 @@ namespace game_stuff
         private static Dictionary<size, BulletBox> GenBulletShapes(float[] bulletShapeParams, int bulletLocalRotate,
             TwoDVector twoDPoint, raw_shape rawShape)
         {
-            var cos = MathTools.Cos(bulletLocalRotate * 180 / MathTools.Pi());
-            var sin = MathTools.Sin(bulletLocalRotate * 180 / MathTools.Pi());
-            var rotate = new TwoDVector(cos, sin);
+            var rotate = DegreeToTwoDVector(bulletLocalRotate);
             IRawBulletShape rawBulletShape = rawShape switch
             {
                 raw_shape.rectangle => new Rectangle2(bulletShapeParams[0], bulletShapeParams[1], twoDPoint,
@@ -122,11 +121,20 @@ namespace game_stuff
                 raw_shape.sector => new Sector(bulletShapeParams[0], bulletShapeParams[1], twoDPoint, rotate),
                 raw_shape.round => new Round(twoDPoint.ToPt(), bulletShapeParams[0]),
                 raw_shape.line => new TwoDVectorLine(new TwoDPoint(0, 0).Move(twoDPoint),
-                    new TwoDPoint(bulletShapeParams[0], bulletShapeParams[1]).Move(twoDPoint)),
+                    new TwoDPoint(bulletShapeParams[0], bulletShapeParams[1]).ClockTurnAboutZero(rotate)
+                        .Move(twoDPoint)),
                 _ => throw new ArgumentOutOfRangeException()
             };
             return
                 GenDicBulletBox(rawBulletShape);
+        }
+
+        private static TwoDVector DegreeToTwoDVector(int bulletLocalRotate)
+        {
+            var cos = MathTools.Cos(bulletLocalRotate * 180 / MathTools.Pi());
+            var sin = MathTools.Sin(bulletLocalRotate * 180 / MathTools.Pi());
+            var rotate = new TwoDVector(cos, sin);
+            return rotate;
         }
 
         public static bool IsHit(this IHitMedia hitMedia, ICanBeAndNeedHit canBeAndNeedHit)
@@ -161,7 +169,7 @@ namespace game_stuff
             return bulletRdBox;
         }
 
-        private static Dictionary<size, BulletBox> GenDicBulletBox(this IRawBulletShape rawBulletShape)
+        public static Dictionary<size, BulletBox> GenDicBulletBox(this IRawBulletShape rawBulletShape)
         {
             return
                 CommonConfig.Configs.bodys.ToDictionary(pair => pair.Key, pair =>
@@ -174,7 +182,7 @@ namespace game_stuff
             return new TwoDVector(pt.x, pt.y);
         }
 
-        public static TwoDPoint GenPointByConfig(this Point pt)
+        private static TwoDPoint GenPointByConfig(this Point pt)
         {
             return new TwoDPoint(pt.x, pt.y);
         }

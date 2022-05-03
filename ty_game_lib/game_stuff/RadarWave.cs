@@ -83,9 +83,9 @@ namespace game_stuff
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
         public IBattleUnitStatus? Caster { get; set; }
 
-        public void Sign(IBattleUnitStatus characterStatus)
+        public void Sign(IBattleUnitStatus battleStatus)
         {
-            Caster = characterStatus;
+            Caster = battleStatus;
         }
 
         public IRelationMsg? HitSth(ICanBeAndNeedHit canBeAndNeedHit)

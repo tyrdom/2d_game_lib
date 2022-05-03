@@ -37,7 +37,7 @@ namespace lib_test
             RogueLocalConfig.ReLoadP();
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] { weapon_id.test_spear, weapon_id.test_cross_bow },
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] { weapon_id.test_sword, weapon_id.test_cross_bow },
                     size.small,
                     1, new Dictionary<passive_id, uint>
                     {

@@ -8,8 +8,14 @@
 
         public BladeWaveStatus()
         {
-            WaveRange = 0;
-            DamageMulti = 1;
+            WaveRange = 0f;
+            DamageMulti = 0f;
+        }
+
+        public void PassiveEffectChange(float[] vector)
+        {
+            WaveRange = vector[0];
+            DamageMulti = vector[1];
         }
     }
 }

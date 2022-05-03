@@ -6,7 +6,7 @@ namespace game_stuff
     {
         public bool CanGoNextTick();
         public IBattleUnitStatus? Caster { get; set; }
-        void Sign(IBattleUnitStatus characterStatus);
+        void Sign(IBattleUnitStatus battleStatus);
     }
 
     public interface IPosMedia : IEffectMedia

@@ -314,12 +314,14 @@ namespace game_stuff
             if (NowOnTick > 1 && LaunchTickToBullets.TryGetValue(NowOnTick - 1, out var nowWaveBullet))
             {
                 var pms2 = nowWaveBullet.Where(x => x.CanMakeWave())
-                    .Where(x => caster.BladeWaveStatus.WaveRange + x.BaseWaveRange > 0)
                     .Select(bullet1 =>
                     {
+                        // Console.Out.WriteLine($"Gen Blade Wave {bullet1.BulletId}");
                         bullet1.BulletMode = BulletMode.BladeWave;
                         return ActivePosMedia(bullet1);
                     });
+
+
                 bullet.UnionWith(pms2);
             }
 
@@ -407,6 +409,16 @@ namespace game_stuff
         public void TakeChargeValue(uint nowChargeTick)
         {
             ChargeSkillCtrl?.TakeChargeValue(nowChargeTick);
+        }
+
+        public void ReFreshBladeWave(float waveRange)
+        {
+            foreach (var bullet in LaunchTickToBullets.Values.SelectMany(bullets => bullets))
+            {
+                bullet.ReFreshBladeWave(waveRange);
+            }
+
+            throw new NotImplementedException();
         }
     }
 }

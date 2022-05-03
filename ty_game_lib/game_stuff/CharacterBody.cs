@@ -250,13 +250,11 @@ namespace game_stuff
             CharacterStatus.MakeProtect(tick);
         }
 
-        public bool AvoidWave(int getId, bullet_id bulletId)
+        public bool AvoidWave(int key)
         {
 
-            return CharacterStatus.AvoidWave(getId, bulletId);
-          
+            return CharacterStatus.AvoidWave(key);
             
-         
         }
     }
 

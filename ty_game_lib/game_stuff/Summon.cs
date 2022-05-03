@@ -51,9 +51,9 @@ namespace game_stuff
             }
         }
 
-        public void Sign(IBattleUnitStatus characterStatus)
+        public void Sign(IBattleUnitStatus battleStatus)
         {
-            Caster = characterStatus;
+            Caster = battleStatus;
         }
 
         public static Summon GenById(string id)

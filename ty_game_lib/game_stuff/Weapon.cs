@@ -57,18 +57,7 @@ namespace game_stuff
 
         public IMapInteractable? PickedBySomebody(CharacterStatus characterStatus)
         {
-            foreach (var value in from skill in SkillGroups.Values
-                     from variable in skill.Values
-                     from value in variable.Values
-                     select value)
-            {
-                value.PickedBySomeOne(characterStatus);
-            }
-
-            foreach (var keyValuePaiSkill in BlockSkills.Values)
-            {
-                keyValuePaiSkill.PickedBySomeOne(characterStatus);
-            }
+            DoAllWeaponSkill(skill => skill.PickedBySomeOne(characterStatus));
 
             ZoomStepScopes = ZoomStepMulti.Select(x => characterStatus.GetStandardScope().GenNewScope(x))
                 .ToArray();
@@ -85,6 +74,22 @@ namespace game_stuff
             var dropAsIMapInteractable = characterStatusWeapon.DropAsIMapInteractable(characterStatus.GetPos());
             weapons[characterStatusNowWeapon] = this;
             return dropAsIMapInteractable;
+        }
+
+        private void DoAllWeaponSkill(Action<Skill> action)
+        {
+            foreach (var value in from skill in SkillGroups.Values
+                     from variable in skill.Values
+                     from value in variable.Values
+                     select value)
+            {
+                action(value);
+            }
+
+            foreach (var keyValuePaiSkill in BlockSkills.Values)
+            {
+                action(keyValuePaiSkill);
+            }
         }
 
         private static Dictionary<SkillAction, Dictionary<int, Skill>> GenASkillGroup(
@@ -119,8 +124,8 @@ namespace game_stuff
             var aSkillGroup =
                 new Dictionary<SkillAction, Dictionary<int, Skill>>
                 {
-                    {SkillAction.Op1, dictionary}, {SkillAction.Op2, dictionary2}, {SkillAction.Op3, dictionary3},
-                    {SkillAction.Switch, dictionary4}
+                    { SkillAction.Op1, dictionary }, { SkillAction.Op2, dictionary2 }, { SkillAction.Op3, dictionary3 },
+                    { SkillAction.Switch, dictionary4 }
                 };
 
             if (dictionary5.Count > 0)
@@ -271,7 +276,8 @@ namespace game_stuff
                     var picAWeapon = characterStatus.PicAWeapon(this, InWhichMapInteractive?.MapMarkId ?? -1);
                     return picAWeapon == null
                         ? ImmutableArray<IActResult>.Empty
-                        : new IActResult[] {new DropThings(new List<IMapInteractable> {picAWeapon})}.ToImmutableArray();
+                        : new IActResult[] { new DropThings(new List<IMapInteractable> { picAWeapon }) }
+                            .ToImmutableArray();
 
                 default:
                     return ImmutableArray<IActResult>.Empty;
@@ -280,12 +286,18 @@ namespace game_stuff
 
         public int GetId()
         {
-            return (int) WId;
+            return (int)WId;
         }
 
         public int GetNum()
         {
             return 1;
+        }
+
+        public void ReFreshBladeWave(float waveRange)
+        {
+            
+            DoAllWeaponSkill(skill => skill.ReFreshBladeWave(waveRange));
         }
     }
 }

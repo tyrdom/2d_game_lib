@@ -45,9 +45,30 @@ namespace game_stuff
                 passive_type.SpecialDamageAdd => new SpecialDamageAddEffect(passiveParamValues),
                 passive_type.TransRegeneration => new TransRegenerationEffect(passiveParamValues),
                 passive_type.StunFix => new StunFixEffect(passiveParamValues),
+                passive_type.BladeWave => new BladeWaveEffect(passiveParamValues),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+    }
+
+    public class BladeWaveEffect : IPassiveTraitEffect
+    {
+        public BladeWaveEffect(float[] v)
+        {
+            V = v;
+        }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new BladeWaveEffect(ArrayTools.Multiply(level, GetVector()));
+        }
+
+        public float[] GetVector()
+        {
+            return V;
+        }
+
+        private float[] V { get; }
     }
 
     public readonly struct StunFixEffect : IPassiveTraitEffect

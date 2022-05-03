@@ -1164,7 +1164,7 @@ namespace game_stuff
         private void BladeWaveBuffsGoATick()
         {
             var bladeWaveBuffs = BladeWaveBuffs.Where(bladeWaveBuff => bladeWaveBuff.Value.IsFinish())
-                .Select(x => x.Key);
+                .Select(x => x.Key).ToArray();
             foreach (var bladeWaveBuff in bladeWaveBuffs)
             {
                 BladeWaveBuffs.Remove(bladeWaveBuff);
@@ -1329,18 +1329,19 @@ namespace game_stuff
             return CharacterBody.Sight.Aim;
         }
 
-        public Damage GenDamage(float damageMulti, bool b4)
+        public Damage GenDamage(float damageMulti, bool b4, bool wave)
         {
             var makeDamageBuffs = GetAndUseValueBuffs<MakeDamageBuff>(out var dec);
 
             // Console.Out.WriteLine($"make damage buff multi is {makeDamageBuffs}");
-
+            var waveM = wave ? BladeWaveStatus.DamageMulti : 0;
             var f = GetNowProtectMulti();
             var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus(), f);
             var onBreakMulti = DamageMultiStatus.OnBreakMulti;
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
             NowProtectValue = 0;
-            return attackStatus.GenDamage(damageMulti, b4, makeDamageBuffs + totalMulti, dec, onBreakMulti);
+            var damageBuffs = makeDamageBuffs + totalMulti + waveM;
+            return attackStatus.GenDamage(damageMulti, b4, damageBuffs, dec, onBreakMulti);
         }
 
 
@@ -1487,6 +1488,9 @@ namespace game_stuff
 
             switch (passiveTrait.PassiveTraitEffect)
             {
+                case BladeWaveEffect _:
+                    BladeWaveStatusRefresh(vector);
+                    break;
                 case OtherAttrPassiveEffect _:
                     OtherStatusRefresh(vector);
                     NowVehicle?.OtherStatusRefresh(vector);
@@ -1536,6 +1540,22 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void BladeWaveStatusRefresh(float[] vector)
+        {
+            BladeWaveStatus.PassiveEffectChange(vector);
+            RefreshBulletsWave(BladeWaveStatus.WaveRange);
+        }
+
+        private void RefreshBulletsWave(float waveRange)
+        {
+            foreach (var weaponsValue in Weapons.Values)
+            {
+                weaponsValue.ReFreshBladeWave(waveRange);
+            }
+
+            throw new NotImplementedException();
         }
 
         private void StunFixStatusRefresh(float[] vector)
@@ -1653,7 +1673,7 @@ namespace game_stuff
         }
 
         public void AbsorbRangeBullet(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
-            float damageMulti, bool back, bullet_id bulletId)
+            float damageMulti, bool back, bullet_id bulletId, bool b)
         {
             if (NowCastAct is Skill skill && bodyCaster is CharacterStatus characterStatus)
             {
@@ -1670,7 +1690,7 @@ namespace game_stuff
             var valueAdd = (int)(protectValueAdd * (1 + pa));
             AddProtect(valueAdd);
 
-            var genDamage = bodyCaster.GenDamage(damageMulti, back);
+            var genDamage = bodyCaster.GenDamage(damageMulti, back, b);
             var total = genDamage.MainDamage + genDamage.ShardedDamage * genDamage.ShardedNum;
             var times = genDamage.ShardedNum;
 
@@ -1705,7 +1725,7 @@ namespace game_stuff
         }
 
         public DmgShow? BaseBeHitByBulletChange(TwoDPoint pos, int protectValueAdd, IBattleUnitStatus bodyCaster,
-            float damageMulti, bool back, bullet_id bulletId)
+            float damageMulti, bool back, bullet_id bulletId, bool b1)
         {
             ResetSpeed();
             ResetSnipe();
@@ -1726,7 +1746,7 @@ namespace game_stuff
             }
 
 
-            var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back));
+            var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back, b1));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
             if (takeDamage is { IsKill: true } && b)
             {
@@ -2043,10 +2063,9 @@ namespace game_stuff
             return $"{details}\n{s}\n{details1}\n{s1}\n{detail}";
         }
 
-        public bool AvoidWave(int getId, bullet_id bulletId)
+        public bool AvoidWave(int key)
         {
-            var genKey = BladeWaveAvoidBuff.GenKey(getId, bulletId);
-            return BladeWaveBuffs.ContainsKey(genKey);
+            return BladeWaveBuffs.ContainsKey(key);
         }
 
         public void AddBladeWaveBuff(IBattleUnitStatus? caster, bullet_id bulletId)

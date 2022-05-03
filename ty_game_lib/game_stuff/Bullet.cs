@@ -38,8 +38,10 @@ namespace game_stuff
         private int Tough { get; }
         private int StunPower { get; }
 
-        public float BaseWaveRange { get; }
-        public Dictionary<size, BulletBox> SizeToBladeWaveBaseCollision { get; }
+        public IWaveRaw? WaveRaw { get; }
+
+        public Dictionary<size, BulletBox> SizeToBladeWaveCollision { get; set; }
+
         // private TwoDPoint BladeWavePos { get; }
         public BulletMode BulletMode { get; set; }
 
@@ -81,16 +83,27 @@ namespace game_stuff
             return GenById(o, pairKey);
         }
 
-        public void Sign(IBattleUnitStatus characterStatus)
+        public void Sign(IBattleUnitStatus battleStatus)
         {
-            Caster = characterStatus;
+            Caster = battleStatus;
+
+            if (battleStatus is CharacterStatus characterStatus && WaveRaw != null &&
+                WaveRaw.GenRawBulletShape(characterStatus.BladeWaveStatus.WaveRange, out var genRawBulletShape))
+            {
+                var genDicBulletBox = genRawBulletShape.GenDicBulletBox();
+                SizeToBladeWaveCollision = genDicBulletBox;
+            }
+            else
+            {
+                SizeToBladeWaveCollision.Clear();
+            }
 
             foreach (var antiActBuffConfig in SuccessStunBuffConfigToOpponent.Values)
             {
                 if (antiActBuffConfig is CatchStunBuffMaker catchAntiActBuffConfig)
                 {
                     catchAntiActBuffConfig
-                        .PickBySomeOne(characterStatus);
+                        .PickBySomeOne(battleStatus);
                 }
             }
 
@@ -98,7 +111,7 @@ namespace game_stuff
             {
                 if (fValue is CatchStunBuffMaker catchStunBuffMaker)
                 {
-                    catchStunBuffMaker.PickBySomeOne(characterStatus);
+                    catchStunBuffMaker.PickBySomeOne(battleStatus);
                 }
             }
         }
@@ -108,21 +121,14 @@ namespace game_stuff
         {
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
                 bullet.ShapeType);
-            
-            var dictionary2 = new Dictionary<size, BulletBox>();
-            if (bullet.CanMakeBladeWave)
-            {
-                 GameTools.GenBulletBladeWavePoint(bullet.ShapeParams, bullet.LocalRotate,
-                    bullet.LocalPos,
-                    bullet.ShapeType, out dictionary2);
-            }
 
-
+            var waveRaw = bullet.CanMakeBladeWave
+                ? GameTools.GenBulletBladeWaveRaw(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
+                    bullet.ShapeType, bullet.BaseBladeWaveRange)
+                : null;
             var bulletSuccessAntiActBuffConfigToOpponent = bullet.SuccessAntiActBuffConfigToOpponent;
-
-
-            var antiActBuffConfig = GAntiActBuffConfigs(
-                bulletSuccessAntiActBuffConfigToOpponent);
+            var antiActBuffConfig =
+                GAntiActBuffConfigs(bulletSuccessAntiActBuffConfigToOpponent);
 
             var bulletFailActBuffConfigToSelf = bullet.FailActBuffConfigToSelf;
 
@@ -172,8 +178,7 @@ namespace game_stuff
             return new Bullet(dictionary, antiActBuffConfig, antiActBuffConfigs, bullet.PauseToCaster,
                 bullet.PauseToOpponent, objType, tough, bulletSuccessAmmoAdd, bulletDamageMulti, bulletProtectValue,
                 bullet.HitType, bulletIsHAtk, bullet.CanOverBulletBlock, bullet.id, bullet.MaxHitNum,
-                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower, dictionary2,
-                bullet.BaseBladeWaveRange);
+                bullet.SoundWaveRad, playingBuffsMaker, bulletStunPower, waveRaw);
         }
 
         public static Dictionary<size, IStunBuffMaker> GAntiActBuffConfigs(
@@ -197,7 +202,7 @@ namespace game_stuff
             hit_type hitType, bool isHAtk, bool canOverBulletBlock, bullet_id bulletId, int hitLimitNum,
             float soundWaveCast,
             PlayingBuffsMaker playingBuffsMaker, int stunPower,
-            Dictionary<size, BulletBox> sizeToBladeWaveBaseCollision, float baseWaveRange)
+            IWaveRaw? waveRaw)
         {
             Pos = TwoDPoint.Zero();
             Aim = TwoDVector.Zero();
@@ -206,7 +211,6 @@ namespace game_stuff
             SuccessStunBuffConfigToOpponent = successStunBuffConfigToOpponent;
             FailActBuffConfigToSelf = failActBuffConfigToSelf;
             PauseToCaster = (int)pauseToCaster;
-
             PauseToOpponent = (int)pauseToOpponent;
 #if DEBUG
             Console.Out.WriteLine($"{PauseToCaster} ----- {PauseToOpponent}");
@@ -226,11 +230,20 @@ namespace game_stuff
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
             AddBuffToCastWhenHitPass = playingBuffsMaker;
             StunPower = stunPower;
-            // BladeWavePos = bladeWavePos;
-            SizeToBladeWaveBaseCollision = sizeToBladeWaveBaseCollision;
-            BaseWaveRange = baseWaveRange;
+            WaveRaw = waveRaw;
+
             ChargeExtraDamageMulti = 0f;
             BulletMode = BulletMode.Direct;
+
+            if (WaveRaw != null && WaveRaw.GenRawBulletShape(0, out var genRawBulletShape))
+            {
+                var genDicBulletBox = genRawBulletShape.GenDicBulletBox();
+                SizeToBladeWaveCollision = genDicBulletBox;
+            }
+            else
+            {
+                SizeToBladeWaveCollision = new Dictionary<size, BulletBox>();
+            }
         }
 
         private float ChargeExtraDamageMulti { get; set; }
@@ -243,11 +256,6 @@ namespace game_stuff
         public bool CanGoNextTick()
         {
             RestTick -= 1;
-            if (BulletMode == BulletMode.Direct)
-            {
-                BulletMode = BulletMode.BladeWave;
-            }
-
             var canGoNextTick = RestTick > 0;
             if (!canGoNextTick)
             {
@@ -259,25 +267,27 @@ namespace game_stuff
 
         private bool IsWaveHit(ICanBeAndNeedHit canBeAndNeedHit)
         {
-            if (!(Caster is CharacterStatus characterStatus) ||
+            if (!(Caster is CharacterStatus) ||
                 !(canBeAndNeedHit is CharacterBody characterBody))
             {
                 return false;
             }
 
-            if (characterBody.AvoidWave(Caster.GetId(), BulletId))
+            var genKey = BladeWaveAvoidBuff.GenKey(Caster.GetId(), BulletId);
+            if (characterBody.AvoidWave(genKey))
             {
+                // Console.Out.WriteLine($"avoid blade Wave {BulletId}");
                 return false;
             }
 
             var checkAlive = characterBody.CheckCanBeHit();
-            var waveRange = characterStatus.BladeWaveStatus.WaveRange;
-            var baseWaveRange = waveRange + BaseWaveRange;
-            var twoDVector = new TwoDVector(baseWaveRange, 0f);
 
-            return checkAlive && SizeToBladeWaveBaseCollision.TryGetValue(characterBody.GetSize(),
-                                  out var bulletBox)
-                              && bulletBox.IsHit(characterBody.GetAnchor(), Pos, Aim, twoDVector);
+            var tryGetValue = checkAlive
+                              && SizeToBladeWaveCollision.TryGetValue(characterBody.GetSize(), out var bulletBox)
+                              && bulletBox.IsHit(characterBody.GetAnchor(), Pos, Aim);
+
+            // Console.Out.WriteLine($"Blade Wave Collision Hit{characterBody.GetId()} : {tryGetValue}");
+            return tryGetValue;
         }
 
         public bool IsCollisionHit(ICanBeAndNeedHit characterBody, SightMap? blockMap)
@@ -343,7 +353,8 @@ namespace game_stuff
             //目标为trap 直接成功攻击
             caster.BaseBulletAtkOk(PauseToCaster, AmmoAddWhenSuccess, targetTrap);
 
-            var genDamage = caster.GenDamage(DamageMulti + ChargeExtraDamageMulti, true);
+            var genDamage = caster.GenDamage(DamageMulti + ChargeExtraDamageMulti, true,
+                BulletMode == BulletMode.BladeWave);
             var takeDamage = targetTrap.TakeDamage(genDamage);
             return takeDamage;
         }
@@ -503,10 +514,11 @@ namespace game_stuff
 
 
                 // 被击中方基本状态改变 包括伤害
+                var b1 = BulletMode == BulletMode.BladeWave;
                 var dmgShow =
                     targetCharacterStatus.BaseBeHitByBulletChange(Pos, ProtectValueAdd, caster,
                         DamageMulti + ChargeExtraDamageMulti, back,
-                        BulletId);
+                        BulletId, b1);
 
                 //stun buff方面
                 if (b)
@@ -537,19 +549,24 @@ namespace game_stuff
                         switch (HitType)
                         {
                             case hit_type.range:
-                                targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
-                                    DamageMulti + ChargeExtraDamageMulti, back, BulletId);
-                                // targetCharacterStatus.TrickBuffsToBothSide(characterStatus);
-                                if (!IsFAtk)
-                                {
-                                    targetCharacterStatus.TrickBlockSkill(Pos);
-                                }
+                                BulletBeAbsorbed(targetCharacterStatus, characterStatus, back);
 
 
                                 break;
                             case hit_type.melee:
-                                CharMeleeAtkFail(characterStatus, targetCharacterStatus, isActSkill,
-                                    targetCharacterBodyBodySize);
+                                switch (BulletMode)
+                                {
+                                    case BulletMode.Direct:
+                                        CharMeleeAtkFail(characterStatus, targetCharacterStatus, isActSkill,
+                                            targetCharacterBodyBodySize);
+                                        break;
+                                    case BulletMode.BladeWave:
+                                        BulletBeAbsorbed(targetCharacterStatus, characterStatus, back);
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
@@ -579,6 +596,18 @@ namespace game_stuff
                     default:
                         throw new ArgumentOutOfRangeException(nameof(caster));
                 }
+            }
+        }
+
+        private void BulletBeAbsorbed(CharacterStatus targetCharacterStatus, CharacterStatus characterStatus, bool back)
+        {
+            var b = BulletMode == BulletMode.BladeWave;
+            targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
+                DamageMulti + ChargeExtraDamageMulti, back, BulletId, b);
+            // targetCharacterStatus.TrickBuffsToBothSide(characterStatus);
+            if (!IsFAtk)
+            {
+                targetCharacterStatus.TrickBlockSkill(Pos);
             }
         }
 
@@ -732,6 +761,7 @@ namespace game_stuff
 
         public IPosMedia Active(TwoDPoint casterPos, TwoDVector casterAim)
         {
+            RestTick = 1;
             return
                 PosMediaStandard.Active(casterPos, casterAim, this);
         }
@@ -743,9 +773,17 @@ namespace game_stuff
 
         public bool CanMakeWave()
         {
-            return SizeToBladeWaveBaseCollision.Any();
+            return SizeToBladeWaveCollision.Any();
+        }
+
+        public void ReFreshBladeWave(float waveRange)
+        {
+            if (WaveRaw == null || !WaveRaw.GenRawBulletShape(waveRange, out var bulletShape)) return;
+            var genDicBulletBox = bulletShape.GenDicBulletBox();
+            SizeToBladeWaveCollision = genDicBulletBox;
         }
     }
+
 
     internal enum HitCond
     {

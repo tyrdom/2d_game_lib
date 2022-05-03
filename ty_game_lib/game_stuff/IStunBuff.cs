@@ -83,7 +83,7 @@ namespace game_stuff
             var otherConfigHitWallDmgParam = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max,
                 sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
 
-            return Caster.GenDamage(otherConfigHitWallDmgParam, true);
+            return Caster.GenDamage(otherConfigHitWallDmgParam, true, false);
         }
     }
 
@@ -148,7 +148,7 @@ namespace game_stuff
             RestTick = RestTick + 1 + (uint) (sqNorm * StuffLocalConfig.HitWallTickParam);
             var min = MathTools.Min(CommonConfig.OtherConfig.hit_wall_dmg_multi_max,
                 sqNorm * CommonConfig.OtherConfig.hit_wall_dmg_param);
-            return Caster.GenDamage(min, true);
+            return Caster.GenDamage(min, true, false);
         }
     }
 
