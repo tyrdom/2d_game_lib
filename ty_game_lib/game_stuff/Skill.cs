@@ -152,9 +152,10 @@ namespace game_stuff
                 pair =>
                 {
                     var pairValue = pair.Value;
-                    var genByConfig = pairValue.Select(x => Bullet.GenById(x, pair.Key)).ToArray();
+                    var genByConfig = pairValue.Select(x => Bullet.GenById(x, pair.Key, skill.SkillMustTime)).ToArray();
                     return genByConfig;
                 });
+           
 
             var byConfig = LockArea.TryGenById(skill.LockArea, out var area)
                 ? area
@@ -417,8 +418,6 @@ namespace game_stuff
             {
                 bullet.ReFreshBladeWave(waveRange);
             }
-
-            throw new NotImplementedException();
         }
     }
 }

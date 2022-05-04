@@ -67,11 +67,11 @@ namespace game_stuff
 
         private PlayingBuffsMaker AddBuffToCastWhenHitPass { get; }
 
-        public static Bullet GenById(bullet_id id, uint pairKey = 0)
+        public static Bullet GenById(bullet_id id, uint pairKey = 0, uint skillMustTick = 0)
         {
             if (CommonConfig.Configs.bullets.TryGetValue(id, out var bullet))
             {
-                return GenByConfig(bullet, pairKey);
+                return GenByConfig(bullet, pairKey, skillMustTick);
             }
 
             throw new ArgumentOutOfRangeException();
@@ -81,6 +81,12 @@ namespace game_stuff
         {
             var o = (bullet_id)Enum.Parse(typeof(bullet_id), id, true);
             return GenById(o, pairKey);
+        }
+
+        public static Bullet GenById(string id, uint pairKey, uint skillSkillMustTime)
+        {
+            var o = (bullet_id)Enum.Parse(typeof(bullet_id), id, true);
+            return GenById(o, pairKey, skillSkillMustTime);
         }
 
         public void Sign(IBattleUnitStatus battleStatus)
@@ -117,8 +123,13 @@ namespace game_stuff
         }
 
 
-        private static Bullet GenByConfig(bullet bullet, uint pairKey = 0)
+        private static Bullet GenByConfig(bullet bullet, uint pairKey, uint skillMustTick)
         {
+            if (skillMustTick > 0 && bullet.CanMakeBladeWave && pairKey + 1 > skillMustTick)
+            {
+                throw new Exception($"this bullet cant cast blade wave {bullet.id}");
+            }
+
             var dictionary = GameTools.GenBulletShapes(bullet.ShapeParams, bullet.LocalRotate, bullet.LocalPos,
                 bullet.ShapeType);
 
