@@ -83,7 +83,8 @@ namespace game_stuff
                     var dVector = new TwoDVector(0, -bulletShapeParams[1] / 2f);
                     var twoDPoint = bladeWavePoint.Move(twoDVector).ClockTurnAboutZero(rotate).Move(genVectorByConfig);
                     var dPoint = bladeWavePoint.Move(dVector).ClockTurnAboutZero(rotate).Move(genVectorByConfig);
-                    return new RectangleWaveRaw(baseBladeWaveRange, 0f, twoDPoint,
+                    return new RectangleWaveRaw(baseBladeWaveRange, 0f,
+                        twoDPoint,
                         dPoint);
 
 
