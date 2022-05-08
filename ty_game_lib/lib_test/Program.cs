@@ -22,7 +22,7 @@ namespace lib_test
 
 
 #if NET6_0
-                CommonConfig.LoadConfig();
+            CommonConfig.LoadConfig();
 #else
             CommonConfig.LoadConfig(dictionary);
 #endif
@@ -37,7 +37,7 @@ namespace lib_test
             RogueLocalConfig.ReLoadP();
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] { weapon_id.test_sword, weapon_id.test_cross_bow },
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] { weapon_id.test_sword, weapon_id.test_dual_swords },
                     size.small,
                     1, new Dictionary<passive_id, uint>
                     {
