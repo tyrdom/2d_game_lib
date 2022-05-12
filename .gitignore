@@ -369,3 +369,4 @@ ty_game_lib/lib_test/obj/Debug/netcoreapp3.1/lib_test.pdb
 ty_game_lib/lib_test/obj/lib_test.csproj.nuget.g.targets
 ty_game_lib/lib_test/obj/rider.project.restore.info
 ty_game_lib/rogue_game/obj
+ty_game_lib/lib_test/TargetDir.txt

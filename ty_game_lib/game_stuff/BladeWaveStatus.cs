@@ -1,4 +1,6 @@
-﻿namespace game_stuff
+﻿using collision_and_rigid;
+
+namespace game_stuff
 {
     public class BladeWaveStatus
     {
@@ -16,6 +18,11 @@
         {
             WaveRange = vector[0];
             DamageMulti = vector[1];
+        }
+        public string GetDetails()
+        {
+            return
+                $"剑风范围加成:{MathTools.Round(WaveRange,2)} 剑风伤害加成:{MathTools.Round(DamageMulti,2)}";
         }
     }
 }

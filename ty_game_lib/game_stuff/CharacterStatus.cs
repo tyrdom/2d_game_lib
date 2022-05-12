@@ -296,11 +296,11 @@ namespace game_stuff
             NowMapInteractive = null;
             MaxWeaponSlot = maxWeaponNum ?? CommonConfig.OtherConfig.weapon_num;
             RecycleMulti = genBaseAttrById.RecycleMulti;
-           
+
             BladeWaveStatus = new BladeWaveStatus();
             BladeWaveBuffs = new Dictionary<int, BladeWaveAvoidBuff>();
-            
-            
+
+
             StartPassiveInitRefresh();
         }
 
@@ -2061,7 +2061,8 @@ namespace game_stuff
             var details1 = AbsorbStatus.GetDetails();
             var s1 = RegenEffectStatus.GetDetails();
             var detail = StunFixStatus.GetDetail();
-            return $"{details}\n{s}\n{details1}\n{s1}\n{detail}";
+            var details2 = BladeWaveStatus.GetDetails();
+            return $"{details}\n{s}\n{details1}\n{s1}\n{detail}\n{details2}";
         }
 
         public bool AvoidWave(int key)

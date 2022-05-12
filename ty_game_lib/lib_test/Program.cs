@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
 using collision_and_rigid;
 using game_bot;
 using game_config;
@@ -37,26 +38,26 @@ namespace lib_test
             RogueLocalConfig.ReLoadP();
 
             var genPlayerByConfig =
-                CharacterInitData.GenPlayerByConfig(1, 0, new[] { weapon_id.test_sword, weapon_id.test_dual_swords },
+                CharacterInitData.GenPlayerByConfig(1, 0, new[] {weapon_id.test_sword, weapon_id.test_dual_swords},
                     size.small,
                     1, new Dictionary<passive_id, uint>
                     {
-                        { passive_id.revenge, 2 }, { passive_id.absorb_up, 1 }, { passive_id.on_break, 1 }
+                        {passive_id.revenge, 2}, {passive_id.absorb_up, 1}, {passive_id.on_break, 1}
                     });
 
             var characterInitData =
-                CharacterInitData.GenPlayerByConfig(2, 1, new[] { weapon_id.test_sword }, size.small, 1,
+                CharacterInitData.GenPlayerByConfig(2, 1, new[] {weapon_id.test_sword}, size.small, 1,
                     new Dictionary<passive_id, uint>
                     {
-                        { passive_id.main_atk, 10 }, { passive_id.shield_overload, 3 }, { passive_id.energy_armor, 1 }
+                        {passive_id.main_atk, 10}, {passive_id.shield_overload, 3}, {passive_id.energy_armor, 1}
                     });
             var characterInitData2 =
-                CharacterInitData.GenPlayerByConfig(3, 1, new[] { weapon_id.test_sword }, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
             var characterInitData3 =
-                CharacterInitData.GenPlayerByConfig(4, 1, new[] { weapon_id.test_sword }, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(4, 1, new[] {weapon_id.test_sword}, size.small, 1);
 
             var characterInitData4 =
-                CharacterInitData.GenPlayerByConfig(5, 1, new[] { weapon_id.test_sword }, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(5, 1, new[] {weapon_id.test_sword}, size.small, 1);
 
             // var genCharacterBody = genPlayerByConfig.GenCharacterBody(TwoDPoint.Zero());
             // var characterBody = characterInitData.GenCharacterBody(TwoDPoint.Zero());
@@ -64,7 +65,7 @@ namespace lib_test
             // var body1 = characterInitData3.GenCharacterBody(TwoDPoint.Zero());
             // var body2 = characterInitData4.GenCharacterBody(TwoDPoint.Zero());
             var genByConfig =
-                RogueGame.GenByConfig(new HashSet<CharacterInitData> { genPlayerByConfig, characterInitData },
+                RogueGame.GenByConfig(new HashSet<CharacterInitData> {genPlayerByConfig, characterInitData},
                     1, out var gameRespS);
 
             var playerCharacterStatus = genByConfig.NowGamePlayers[1].Player.CharacterStatus;
@@ -94,7 +95,7 @@ namespace lib_test
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1, specialAction: SpecialAction.UseProp);
                 var opDic = new Dictionary<int, Operate>
-                    { { 1, operate }, { 2, operate1 } };
+                    {{1, operate}, {2, operate1}};
                 var rogueGameGoTickResult = genByConfig.GamePlayGoATick(opDic);
 
                 var (beHit, trapBeHit,
@@ -134,7 +135,7 @@ namespace lib_test
                     : new CharacterBody[] { };
                 var firstOrDefault = characterBodies.FirstOrDefault(x => x.GetId() == 1);
 
-                var genTickMsg = (CharTickMsg?)(firstOrDefault?.GenTickMsg() ?? null);
+                var genTickMsg = (CharTickMsg?) (firstOrDefault?.GenTickMsg() ?? null);
 
                 var twoDPoint = firstOrDefault?.GetAnchor();
 #if DEBUG
@@ -178,20 +179,87 @@ namespace lib_test
                 var dVector1 = new TwoDVector(0, 1f);
                 var operate1 = new Operate(aim: dVector1);
                 var opDic = new Dictionary<int, Operate>()
-                    { { 1, operate }, { 2, operate1 } };
+                    {{1, operate}, {2, operate1}};
                 var rogueGameGoTickResult = rogueGame.GamePlayGoATick(opDic);
             }
+
+            CopyFiles();
         }
+
+        private static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite)
+        {
+            // Get information about the source directory
+            var dir = new DirectoryInfo(sourceDir);
+
+            // Check if the source directory exists
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+            // Cache directories before we start copying
+            var dirs = dir.GetDirectories();
+
+            // Create the destination directory
+            Directory.CreateDirectory(destinationDir);
+
+            // Get the files in the source directory and copy to the destination directory
+            foreach (var file in dir.GetFiles())
+            {
+                var targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath, overwrite);
+            }
+
+            // If recursive and copying subdirectories, recursively call this method
+            if (!recursive) return;
+            foreach (var subDir in dirs)
+            {
+                var newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir, true, overwrite);
+            }
+        }
+
+        public static string DotNetStandard20BinDir()
+        {
+            var upDir = CommonConfig.UpDir(Environment.CurrentDirectory, 4);
+            var directorySeparatorChar = Path.DirectorySeparatorChar;
+            var s =
+                $"{upDir}{directorySeparatorChar}rogue_game{directorySeparatorChar}bin{directorySeparatorChar}Release{directorySeparatorChar}netstandard2.0{directorySeparatorChar}";
+            return s;
+        }
+
+        public static string ReadTargetAssetDir()
+        {
+            var directorySeparatorChar = Path.DirectorySeparatorChar;
+            var upDir = CommonConfig.UpDir(Environment.CurrentDirectory, 4);
+            var path = upDir + directorySeparatorChar + "lib_test" + directorySeparatorChar + "TargetDir.txt";
+            var readAllText = File.ReadAllText(path, Encoding.UTF8);
+            var replace = readAllText.Replace('\\', directorySeparatorChar);
+            return replace;
+        }
+
+        public static void CopyFiles()
+        {
+            var directorySeparatorChar = Path.DirectorySeparatorChar;
+
+            var readTargetAssetDir = ReadTargetAssetDir();
+
+            var binDir = readTargetAssetDir + directorySeparatorChar + "Plugins" + directorySeparatorChar;
+
+            var configTxt = readTargetAssetDir + directorySeparatorChar + "Resources" + directorySeparatorChar +
+                            "ConfigJsons" + directorySeparatorChar + "config.txt";
+
+            var configBinStringPath = new FileInfo(CommonConfig.ConfigBinStringPath());
+            configBinStringPath.CopyTo(configTxt, true);
+            var dotNetStandard20BinDir = DotNetStandard20BinDir();
+            CopyDirectory(dotNetStandard20BinDir, binDir, false, true);
+            
+        }
+
 
         private static string GetStringByFile(string s, int ll)
         {
             var directorySeparatorChar = Path.DirectorySeparatorChar;
-            var currentDirectory = Environment.CurrentDirectory;
-            for (var i = 0; i < ll; i++)
-            {
-                var x = currentDirectory.LastIndexOf($"{directorySeparatorChar}", StringComparison.Ordinal);
-                currentDirectory = currentDirectory.Substring(0, x);
-            }
+
+            var upDir = CommonConfig.UpDir(Environment.CurrentDirectory, ll);
 
             //
             //
@@ -199,7 +267,7 @@ namespace lib_test
             //     ? $"{directorySeparatorChar}Users{directorySeparatorChar}tianhao{directorySeparatorChar}Documents{directorySeparatorChar}ty_game{directorySeparatorChar}ty_game_lib"
             //     : $"G:{directorySeparatorChar}workspace{directorySeparatorChar}RiderProjects{directorySeparatorChar}2d_game_lib{directorySeparatorChar}ty_game_lib";
             var p =
-                $"{currentDirectory}{directorySeparatorChar}game_config{directorySeparatorChar}Resources{directorySeparatorChar}{s}_s.json";
+                $"{upDir}{directorySeparatorChar}game_config{directorySeparatorChar}Resources{directorySeparatorChar}{s}_s.json";
 
             Console.Out.WriteLine($"{p}");
 
