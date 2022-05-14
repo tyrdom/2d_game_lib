@@ -173,7 +173,7 @@ namespace game_stuff
 
         public ISeeTickMsg GenTickMsg(int? gid = null)
         {
-            return new TrapTickMsg(Pos, SurvivalStatus?.GenShortStatus() ?? -1f, Owner.GId, (int)TrapId);
+            return new TrapTickMsg(Pos, SurvivalStatus?.GenShortStatus() ?? -1f, Owner.GId, (int) TrapId);
         }
 
         public TwoDPoint GetAnchor()
@@ -249,10 +249,9 @@ namespace game_stuff
         public DmgShow? TakeDamage(Damage genDamage)
         {
             if (SurvivalStatus == null) return null;
-            var survivalStatus = SurvivalStatus;
-            var isDead = survivalStatus.IsDead();
-            survivalStatus.TakeDamage(genDamage);
-            return new DmgShow(!isDead && survivalStatus.IsDead(), genDamage);
+            var isDead = SurvivalStatus.IsDead();
+            SurvivalStatus.TakeDamage(genDamage, out _, out _);
+            return new DmgShow(!isDead && SurvivalStatus.IsDead(), genDamage);
         }
 
         public int MapMarkId { get; set; }

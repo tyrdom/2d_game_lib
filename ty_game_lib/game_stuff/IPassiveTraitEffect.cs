@@ -46,12 +46,33 @@ namespace game_stuff
                 passive_type.TransRegeneration => new TransRegenerationEffect(passiveParamValues),
                 passive_type.StunFix => new StunFixEffect(passiveParamValues),
                 passive_type.BladeWave => new BladeWaveEffect(passiveParamValues),
+                passive_type.TrickRegeneration => new BreakTrickRegenerationEffect(passiveParamValues),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
     }
 
-    public class BladeWaveEffect : IPassiveTraitEffect
+    public readonly struct BreakTrickRegenerationEffect : IPassiveTraitEffect
+    {
+        public BreakTrickRegenerationEffect(float[] passiveParamValues)
+        {
+            V = passiveParamValues;
+        }
+
+        public float[] V { get; }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new BreakTrickRegenerationEffect(ArrayTools.Multiply(level, GetVector()));
+        }
+
+        public float[] GetVector()
+        {
+            return V;
+        }
+    }
+
+    public readonly struct BladeWaveEffect : IPassiveTraitEffect
     {
         public BladeWaveEffect(float[] v)
         {

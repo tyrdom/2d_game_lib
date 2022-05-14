@@ -1494,6 +1494,9 @@ namespace game_stuff
                 case BladeWaveEffect _:
                     BladeWaveStatusRefresh(vector);
                     break;
+                case BreakTrickRegenerationEffect _:
+                    BreakTrickRegenerationRefresh(vector);
+                    break;
                 case OtherAttrPassiveEffect _:
                     OtherStatusRefresh(vector);
                     NowVehicle?.OtherStatusRefresh(vector);
@@ -1543,6 +1546,11 @@ namespace game_stuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void BreakTrickRegenerationRefresh(float[] vector)
+        {
+            TransRegenEffectStatus.BreakTrickRegenerationEffectChange(vector);
         }
 
         private void BladeWaveStatusRefresh(float[] vector)
@@ -1783,8 +1791,8 @@ namespace game_stuff
             if (NowVehicle == null)
             {
                 var isDead = SurvivalStatus.IsDead();
-                SurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus);
-
+                SurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus, out var protectMaxMulti);
+                ProtectMultiChange(protectMaxMulti);
                 var after = SurvivalStatus.IsDead();
 #if DEBUG
                 // Console.Out.WriteLine(
@@ -1794,8 +1802,14 @@ namespace game_stuff
             }
 
             var nowVehicleSurvivalStatus = NowVehicle.SurvivalStatus;
-            nowVehicleSurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus);
+            nowVehicleSurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus, out var pp);
+            ProtectMultiChange(pp);
             return new DmgShow(false, genDamage);
+        }
+
+        private void ProtectMultiChange(float protectMaxMulti)
+        {
+            NowProtectValue = NowProtectValue + (int) (protectMaxMulti * MaxProtectValue);
         }
 
         public bool CheckCanBeHit()
