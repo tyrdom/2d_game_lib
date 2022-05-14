@@ -98,6 +98,21 @@ namespace lib_unit_test
             Assert.Pass(s + b);
         }
 
+
+        [Test]
+        public void GenPassives()
+        {
+            var genManyByPId = PassiveTrait.GenManyById("blade_wave",1);
+            var s = "";
+            foreach (var passiveTrait in genManyByPId)
+            {
+                var s1 = passiveTrait.PassId.ToString();
+                s = s + s1 +" "+ passiveTrait.Level + " ";
+            }
+            Assert.Pass(s);
+            
+        }
+
         [Test]
         public void PathTest2()
         {

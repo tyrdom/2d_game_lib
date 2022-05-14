@@ -19,7 +19,7 @@ namespace game_stuff
         {
             var posInLocal = objPos.GenPosInLocal(bPos, bAim);
 #if DEBUG
-            Console.Out.WriteLine($"gen pos in local {genPosInLocal}");
+            Console.Out.WriteLine($"gen pos in local {bPos}");
 #endif
             if (!Zone.IncludePt(posInLocal)) return false;
 

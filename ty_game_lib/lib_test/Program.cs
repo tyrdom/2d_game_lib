@@ -70,6 +70,7 @@ namespace lib_test
 
             var playerCharacterStatus = genByConfig.NowGamePlayers[1].Player.CharacterStatus;
             var playerCharacterStatus2 = genByConfig.NowGamePlayers[2].Player.CharacterStatus;
+            // playerCharacterStatus.PickAPassive(PassiveTrait.GenById(passive_id.blade_wave,1));
             playerCharacterStatus.PickAProp(Prop.GenById(prop_id.trap));
             playerCharacterStatus.SetPropPoint(100);
             playerCharacterStatus2.PickAProp(Prop.GenById(prop_id.alert));

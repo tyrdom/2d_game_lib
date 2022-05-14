@@ -101,6 +101,13 @@ namespace game_stuff
             var passiveTraits = passive.AddOns.Select(x => GenById(x, level));
             var genById = GenById(eId, level);
             var enumerable = passiveTraits.Append(genById);
+
+            // Console.Out.WriteLine($"gen saleUnit {eId}");
+            // foreach (var passiveTrait in enumerable)
+            // {
+            //     Console.Out.WriteLine($"in saleUnit {passiveTrait.PassId} : {passiveTrait.Level}");
+            // }
+
             return enumerable;
         }
 

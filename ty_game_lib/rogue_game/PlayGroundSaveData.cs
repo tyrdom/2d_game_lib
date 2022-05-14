@@ -66,7 +66,7 @@ namespace rogue_game
             return new SaleStuffSave(containType, id, num);
         }
 
-        public IEnumerable<ISaleStuff> GenStuff()
+        public ISaleStuff GenStuff()
         {
 #if DEBUG
             Console.Out.WriteLine($"load a stuff {ContainType},{Id},{Num}");
@@ -75,24 +75,24 @@ namespace rogue_game
             {
                 case ContainType.PassiveC:
                     var passiveId = (passive_id) Id;
-                    var genManyByPId = PassiveTrait.GenManyByPId(passiveId, (uint) Num).OfType<ISaleStuff>();
+                    var genManyByPId = PassiveTrait.GenById(passiveId, (uint) Num);
                     return genManyByPId;
                 case ContainType.PropC:
                     var propId = (prop_id) Id;
                     var genById = Prop.GenById(propId);
-                    return new ISaleStuff[] {genById};
+                    return genById;
                 case ContainType.WeaponC:
                     var weaponId = (weapon_id) Id;
                     var byId = Weapon.GenById(weaponId);
-                    return new ISaleStuff[] {byId};
+                    return byId;
                 case ContainType.VehicleC:
                     var vehicleId = (vehicle_id) Id;
                     var vehicle = Vehicle.GenById(vehicleId);
-                    return new ISaleStuff[] {vehicle};
+                    return  vehicle;
                 case ContainType.GameItemC:
                     var itemId = (item_id) Id;
                     var gameItem = new GameItem(itemId, Num);
-                    return new ISaleStuff[] {gameItem};
+                    return  gameItem;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -130,7 +130,7 @@ namespace rogue_game
 
         public SaleUnit LoadToSaleUnit()
         {
-            var saleStuffs = Good.SelectMany(x => x.GenStuff()).ToArray();
+            var saleStuffs = Good.Select(x => x.GenStuff()).ToArray();
 
             return new SaleUnit(null, Cost, saleStuffs, Stack, new GameItem[] { }, DoneDictionary);
         }

@@ -1597,6 +1597,7 @@ namespace game_stuff
 
         public void PickAPassive(PassiveTrait passiveTrait)
         {
+            // Console.Out.WriteLine($"gid : {GetId()} get passive {passiveTrait.PassId} : {passiveTrait.Level}");
             var passiveTraitPassId = passiveTrait.PassId;
             if (PassiveTraits.TryGetValue(passiveTraitPassId, out var trait))
             {
