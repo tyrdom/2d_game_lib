@@ -449,54 +449,54 @@ namespace game_stuff
             HpValueRegen(hR);
         }
 
-        public void TakeDamageAndEtc(Damage damage, TransRegenEffectStatus regenEffectStatus, out float protectMulti)
+        public void TakeDamageAndEtc(Damage damage, TransRegenEffectStatus regenEffectStatus, out float protectMulti,out float propMulti)
         {
             GetMainValues(out var lS, out var lA, out var lH);
-            TakeDamage(damage, regenEffectStatus, out protectMulti);
+            TakeDamage(damage, regenEffectStatus, out protectMulti ,out propMulti);
 
             GetMainLost(lS, lA, lH, out var lls, out var lossA, out var lossH);
             regenEffectStatus.GetTransValue(lls, lossA, lossH, out var sR, out var armorR, out var hpR);
             TransRegen(sR, armorR, hpR);
         }
 
-        private void TakeDamage(Damage damage, TransRegenEffectStatus transRegenEffectStatus, out float protectMulti)
+        private void TakeDamage(Damage damage, TransRegenEffectStatus transRegenEffectStatus, out float protectMulti,out float propMulti)
         {
             TakeDamage(damage, out var shieldBreak, out var armorBreak);
             protectMulti = 0f;
+            propMulti = 0f;
             damage.GetOtherMulti(damage.OnBreakMulti);
             if (shieldBreak)
             {
                 TakeDamage(damage, out _, out _);
-                var regenOnShieldBreak = RegenOnShieldBreak(transRegenEffectStatus);
+                var regenOnShieldBreak = RegenOnShieldBreak(transRegenEffectStatus,out var p);
                 protectMulti += regenOnShieldBreak;
+                propMulti += p;
             }
 
             if (!armorBreak) return;
             TakeDamage(damage, out _, out _);
-            var regenOnArmorBreak = RegenOnArmorBreak(transRegenEffectStatus);
+            var regenOnArmorBreak = RegenOnArmorBreak(transRegenEffectStatus,out var ppp);
             protectMulti += regenOnArmorBreak;
+            propMulti += ppp;
         }
 
-        private float RegenOnArmorBreak(TransRegenEffectStatus transRegenEffectStatus)
+        private float RegenOnArmorBreak(TransRegenEffectStatus transRegenEffectStatus,out float pp)
         {
             var armorBreakValue =
-                transRegenEffectStatus.GetArmorBreakValue(out var armorBreakShield, out var armorBreakHp);
+                transRegenEffectStatus.GetArmorBreakValue(out var armorBreakShield, out pp);
             var breakShield = (int) (armorBreakShield * MaxShield);
-            var maxHp = (int) (MaxHp * armorBreakHp);
+          
             ShieldValueRegen(breakShield);
-            HpValueRegen(maxHp);
             return armorBreakValue;
         }
 
-        private float RegenOnShieldBreak(TransRegenEffectStatus transRegenEffectStatus)
+        private float RegenOnShieldBreak(TransRegenEffectStatus transRegenEffectStatus, out float propMulti)
         {
             var shieldBreakValue =
-                transRegenEffectStatus.GetShieldBreakValue(out var shieldBreakArmor, out var shieldHp);
+                transRegenEffectStatus.GetShieldBreakValue(out var shieldBreakArmor, out  propMulti);
             var breakArmor = (int) (shieldBreakArmor * MaxArmor);
-            var maxHp = (int) (MaxHp * shieldHp);
             ArmorValueRegen(breakArmor);
-            HpValueRegen(maxHp);
-            return shieldBreakValue;
+             return shieldBreakValue;
         }
     }
 
