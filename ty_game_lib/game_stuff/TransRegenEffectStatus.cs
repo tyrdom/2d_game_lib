@@ -1,4 +1,8 @@
-﻿namespace game_stuff
+﻿#if DEBUG
+using System;
+#endif
+
+namespace game_stuff
 {
     public class TransRegenEffectStatus
     {
