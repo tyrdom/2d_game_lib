@@ -16,6 +16,16 @@ namespace collision_and_rigid
             B = b;
         }
 
+
+        public float GetRad()
+        {
+            var oa = new TwoDVector(O, A);
+            var ob = new TwoDVector(O, B);
+            var cos = oa.GetCos(ob);
+            var acos = MathTools.Acos(cos);
+            return acos;
+        }
+
         public string Log()
         {
             return $"{A}\\{O}/{B}";
@@ -83,7 +93,7 @@ namespace collision_and_rigid
             var down = MathTools.Min(A.Y, B.Y) - r;
             var right = MathTools.Max(A.X, B.X) + r;
             var left = MathTools.Min(A.X, B.X) - r;
-            var rr = oav.Norm()+r;
+            var rr = oav.Norm() + r;
             var oUp = O.Y + rr;
             var oDown = O.Y - rr;
             var oLeft = O.X - rr;

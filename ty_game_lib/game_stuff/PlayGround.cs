@@ -105,14 +105,14 @@ namespace game_stuff
         }
 
 
-        public static MapInitData GenEmptyByConfig(map_raws mapRaws, float fixRadMulti)
+        public static MapInitData GenEmptyByConfig(map_raws mapRaws)
         {
             var mapRawsWalkRawMap = mapRaws.WalkRawMap;
             var mapRawsSightRawMap = mapRaws.SightRawMap;
             var mapRawsBulletRawMap = mapRaws.BulletRawMap;
             var enumerable = mapRawsWalkRawMap.Select(x => x.GenPoly()).ToArray();
             var walkMap = enumerable.Any()
-                ? enumerable.PloyListCheckOk() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark(), fixRadMulti) :
+                ? enumerable.PloyListCheckOk() ? WalkMap.CreateMapByPolys(enumerable.PloyListMark()) :
                 throw new Exception($"no good walk raw poly in {mapRaws.id} ")
                 : throw new Exception("must have walk map");
             var array = mapRawsSightRawMap.Select(x => x.GenPoly()).ToArray();

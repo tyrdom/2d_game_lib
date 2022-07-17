@@ -136,7 +136,7 @@ namespace game_stuff
 #if DEBUG
                     Console.Out.WriteLine($"now init map {x.Key}");
 #endif
-                    return PlayGround.GenEmptyByConfig(x.Value, 1f);
+                    return PlayGround.GenEmptyByConfig(x.Value);
                 });
 
             var configsOtherConfig = CommonConfig.OtherConfig;

@@ -6,16 +6,51 @@ namespace collision_and_rigid
 {
     public class ClockwiseTurning : IBlockShape
     {
-        public readonly ClockwiseBalanceAngle Aob;
-        public readonly TwoDVectorLine? Last;
-        public readonly TwoDVectorLine? Next;
-        public readonly float R;
+        public ClockwiseBalanceAngle Aob { get; }
+        public TwoDVectorLine? Last { get; }
+        public TwoDVectorLine? Next { get; }
+        public float R { get; }
 
 
         public TwoDVectorLine AsTwoDVectorLine()
         {
             return new TwoDVectorLine(GetStartPt(), GetEndPt());
         }
+
+        public IEnumerable<IBlockShape> CovToShortLines(float radThreshold)
+        {
+            var twoDPoints = new List<TwoDPoint>();
+
+            var f = Aob.GetRad();
+            var rad1 = (uint)(f / radThreshold);
+
+            var rad2 = f / (rad1 + 1);
+
+            var twoDVector = new TwoDVector(MathTools.Cos(rad2), MathTools.Sin(rad2));
+
+            var o = Aob.O;
+            var a = Aob.A;
+            var dVector = new TwoDVector(o, a);
+
+            for (var i = 0; i < rad1; i++)
+            {
+                var clockwiseTurn = dVector.ClockwiseTurn(twoDVector);
+                var twoDPoint = o.Move(clockwiseTurn);
+                twoDPoints.Add(twoDPoint);
+                dVector = clockwiseTurn;
+            }
+
+            var dPoints = new List<TwoDPoint> { a };
+            dPoints.AddRange(twoDPoints);
+
+            var dPoint = Aob.B;
+            twoDPoints.Add(dPoint);
+            var twoDVectorLines = dPoints.Zip(twoDPoints,
+                (x, y) => (IBlockShape)new TwoDVectorLine(x, y));
+            return twoDVectorLines;
+
+        }
+
 
         public List<BlockBox> GenAabbBoxShape()
         {
@@ -185,12 +220,12 @@ namespace collision_and_rigid
 
         public bool CheckAfter(IBlockShape another)
         {
-            return GetEndPt()==another.GetStartPt();
+            return GetEndPt() == another.GetStartPt();
         }
 
         public bool CheckBefore(IBlockShape another)
         {
-            return GetStartPt()==another.GetEndPt();
+            return GetStartPt() == another.GetEndPt();
         }
 
 
@@ -280,10 +315,10 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null && !safe ? Next.Slide(p) :
-                                o.Move(ob.GetVector().Multi(1.01f));
+                            return Next != null && !safe ? Next.Slide(p) : o.Move(ob.GetVector().Multi(1.01f));
                         case Pt2LinePos.On:
-                            return o.Move(ob.GetVector().Multi(1.01f));;
+                            return o.Move(ob.GetVector().Multi(1.01f));
+
                         case Pt2LinePos.Left:
                             var ovr = new TwoDVectorLine(o, p).GetVector().GetUnit().Multi(R + 0.01f);
                             return o.Move(ovr);
@@ -295,13 +330,15 @@ namespace collision_and_rigid
                     switch (obPos)
                     {
                         case Pt2LinePos.Right:
-                            return Next != null && !safe ? Next.Slide(p) : o.Move(ob.GetVector().Multi(1.01f));;
+                            return Next != null && !safe ? Next.Slide(p) : o.Move(ob.GetVector().Multi(1.01f));
+                            ;
                         case Pt2LinePos.On:
                             var twoDVector = new TwoDVectorLine(a, b).GetVector().CounterClockwiseHalfPi().GetUnit()
                                 .Multi(R + 0.01f);
                             return o.Move(twoDVector);
                         case Pt2LinePos.Left:
-                            return o.Move(oa.GetVector().Multi(1.01f));;
+                            return o.Move(oa.GetVector().Multi(1.01f));
+                            ;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }

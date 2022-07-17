@@ -15,7 +15,7 @@ namespace game_stuff
         }
 
 
-        public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp, float fixRadMulti)
+        public static WalkMap CreateMapByPolys(List<(Poly, bool)> lp, float fixRadMulti = 1f)
         {
             var sizeToR = CommonConfig.Configs.bodys;
             var walkBlocks = new Dictionary<size, WalkBlock>();

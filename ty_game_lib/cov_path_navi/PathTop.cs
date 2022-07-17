@@ -69,7 +69,18 @@ namespace cov_path_navi
 
             var blockShapes = walkBlock.QSpace.GetAllIBlocks().ToList();
             var genFromBlocks = GenFromBlocks(blockShapes);
-            var walkAreaBlocks = GenBlockUnits(genFromBlocks, walkBlock.IsBlockIn);
+
+            var enumerable = genFromBlocks.Select(x => x.SelectMany(xx =>
+            {
+                return xx switch
+                {
+                    ClockwiseTurning clockwiseTurning => clockwiseTurning.CovToShortLines(MathTools.Pi() / 3),
+                    TwoDVectorLine twoDVectorLine => new List<IBlockShape> { twoDVectorLine },
+                    _ => throw new ArgumentOutOfRangeException(nameof(xx))
+                };
+            }).ToList()).ToList();
+
+            var walkAreaBlocks = GenBlockUnits(enumerable, walkBlock.IsBlockIn);
             var continuousWalkAreas = walkAreaBlocks.Select(x => x.GenWalkArea());
             var a = -1;
             var pathNodeCovPolygons = continuousWalkAreas.SelectMany(x => x.ToCovPolygons(ref a)).ToList();
@@ -99,6 +110,7 @@ namespace cov_path_navi
             Console.Out.WriteLine($"pathTop Ok have {areaBoxes.Length} area");
 #endif
         }
+
 
         public int? InWhichPoly(TwoDPoint pt)
         {
@@ -360,9 +372,8 @@ namespace cov_path_navi
             return path;
         }
 
-
-        //分割为凸多边形，标记联通关系
         //合并阻挡 去除环结构
+        //分割为凸多边形，标记联通关系
         public static IEnumerable<WalkAreaBlock> GenBlockUnits(List<List<IBlockShape>> bs, bool isBlockIn)
         {
             var firstBlockUnit = isBlockIn
@@ -398,7 +409,6 @@ namespace cov_path_navi
         //找连续阻挡，分组
         public static List<List<IBlockShape>> GenFromBlocks(List<IBlockShape> rawList)
         {
-            //找连续阻挡，分组
             rawList.Sort((x, y) => x.GetStartPt().X.CompareTo(y.GetStartPt().X));
             List<List<IBlockShape>> res = new List<List<IBlockShape>>();
 
