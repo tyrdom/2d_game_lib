@@ -2051,8 +2051,9 @@ namespace game_stuff
         public void NowSkillTryTrickSkill(TwoDPoint twoDPoint)
         {
             if (!(NowCastAct is Skill skill)) return;
+            var canTrickSkill = skill.CanTrickSkill();
             var skillEnemyFailTrickSkill = skill.EnemyFailTrickSkill;
-            if (skillEnemyFailTrickSkill == null)
+            if (skillEnemyFailTrickSkill == null || !canTrickSkill)
             {
                 return;
             }

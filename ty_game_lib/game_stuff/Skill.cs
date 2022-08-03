@@ -22,7 +22,7 @@ namespace game_stuff
 
         public int GetIntId()
         {
-            return (int)SkillId;
+            return (int) SkillId;
         }
 
         public skill_id SkillId { get; }
@@ -38,6 +38,7 @@ namespace game_stuff
         private TwoDVector[] Moves { get; }
 
         public Skill? EnemyFailTrickSkill { get; }
+        private uint TrickSkillBeforeTrick { get; }
         private uint MoveStartTick { get; }
 
         private uint SkillMustTick { get; } //必须播放帧，播放完才能进行下一个技能
@@ -76,7 +77,8 @@ namespace game_stuff
             skill_id skillId, Skill? enemyFailTrickSkill, PlayingBuffsMaker getBuffsWhenAbsorb,
             Dictionary<size, IStunBuffMaker>? setStunBuffsToOpponentWhenAbsorb,
             PlayingBuffsMaker setBuffsToOpponentWhenAbsorb,
-            ImmutableDictionary<uint, play_buff_id[]> immutableDictionary1, ChargeSkillCtrl? chargeSkillCtrl)
+            ImmutableDictionary<uint, play_buff_id[]> immutableDictionary1, ChargeSkillCtrl? chargeSkillCtrl,
+            uint trickSkillBeforeTrick)
         {
             var b1 = 0 < comboInputStartTick;
             var b2 = skillMustTick < totalTick;
@@ -114,6 +116,7 @@ namespace game_stuff
             SetStunBuffsToOpponentWhenAbsorb = setStunBuffsToOpponentWhenAbsorb;
             SetBuffsToOpponentWhenAbsorb = setBuffsToOpponentWhenAbsorb;
             ChargeSkillCtrl = chargeSkillCtrl;
+            TrickSkillBeforeTrick = trickSkillBeforeTrick;
         }
 
 
@@ -130,7 +133,7 @@ namespace game_stuff
 
         public static Skill GenSkillById(string id)
         {
-            var o = (skill_id)Enum.Parse(typeof(skill_id), id, true);
+            var o = (skill_id) Enum.Parse(typeof(skill_id), id, true);
             return GenSkillById(o);
         }
 
@@ -155,13 +158,14 @@ namespace game_stuff
                     var genByConfig = pairValue.Select(x => Bullet.GenById(x, pair.Key, skill.SkillMustTime)).ToArray();
                     return genByConfig;
                 });
-           
+
+            var min = dictionary.Keys.Any() ? dictionary.Keys.Min() : 0;
 
             var byConfig = LockArea.TryGenById(skill.LockArea, out var area)
                 ? area
                 : null;
             var skillBaseTough = skill.BaseTough == 0
-                ? dictionary.Any() ? (int)dictionary.Keys.Min() : 0
+                ? dictionary.Any() ? (int) dictionary.Keys.Min() : 0
                 : skill.BaseTough;
 
             var genSkillById = skill.EnemyFailTrickSkill == "" ? null : GenSkillById(skill.EnemyFailTrickSkill);
@@ -178,7 +182,7 @@ namespace game_stuff
                 x => x.Value
                     .Select
                     (
-                        xx => (play_buff_id)Enum.Parse(typeof(play_buff_id), xx, true)
+                        xx => (play_buff_id) Enum.Parse(typeof(play_buff_id), xx, true)
                     ).ToArray()
             );
 
@@ -196,8 +200,8 @@ namespace game_stuff
                 skill.SkillMustTime, skill.SkillMaxTime,
                 skillBaseTough, skill.ComboInputStartTime, skill.NextCombo, byConfig,
                 skill.BreakSnipeTime,
-                skill.SnipeStepNeed - 1, skill.AmmoCost, (int)skill.CanInputMove, skill.id, genSkillById,
-                immutableDictionary, buffMakers, playingBuffs, immutableDictionary1, charge);
+                skill.SnipeStepNeed - 1, skill.AmmoCost, (int) skill.CanInputMove, skill.id, genSkillById,
+                immutableDictionary, buffMakers, playingBuffs, immutableDictionary1, charge, min);
         }
 
 
@@ -216,7 +220,7 @@ namespace game_stuff
             // 返回连击id
             return NowOnTick >= ComboInputStartTick && NowOnTick < TotalTick
                 ? NextCombo
-                : (int?)null;
+                : (int?) null;
         }
 
         public action_type GetTypeEnum()
@@ -263,7 +267,7 @@ namespace game_stuff
                 move = Moves[moveOnTick];
                 if (limitV != null)
                 {
-                    var movesLengthRest = (float)(Moves.Length - moveOnTick);
+                    var movesLengthRest = (float) (Moves.Length - moveOnTick);
                     var min = MathTools.Min(limitV.X, move.X);
                     var max = MathTools.Max(limitV.Y, move.Y) / movesLengthRest;
 
@@ -350,7 +354,7 @@ namespace game_stuff
         public (IPosMedia[]? posMedia, bool canInputMove) GetSkillStart(TwoDPoint casterPos, TwoDVector casterAim)
         {
             var posMedia = LockArea?.Active(casterPos, casterAim);
-            var posMediaS = posMedia == null ? null : new[] { posMedia };
+            var posMediaS = posMedia == null ? null : new[] {posMedia};
             return (posMediaS, NowOnTick < CanInputMove);
         }
 
@@ -375,7 +379,7 @@ namespace game_stuff
 
             // Console.Out.WriteLine($"Charge Test : skill action is {skillAction}");
 
-            if (ChargeSkillCtrl != null && skillAction != null && (int)skillAction.Value > 5)
+            if (ChargeSkillCtrl != null && skillAction != null && (int) skillAction.Value > 5)
             {
                 ChargeSkillCtrl.StartCharging();
             }
@@ -400,7 +404,7 @@ namespace game_stuff
             var buffMaker =
                 SetStunBuffsToOpponentWhenAbsorb[bodyCaster.CharacterBody.GetSize()];
             Bullet.NoMediaHit(bodyCaster, targetCharacterStatus, bodyCaster.StunBuff, buffMaker,
-                (int)CommonConfig.OtherConfig.absorb_stun_buff_pause,
+                (int) CommonConfig.OtherConfig.absorb_stun_buff_pause,
                 targetCharacterStatus.GetPos(), targetCharacterStatus.GetAim());
 
             targetCharacterStatus.CharEvents.Add(new DirectHit(bodyCaster.GetPos()));
@@ -418,6 +422,11 @@ namespace game_stuff
             {
                 bullet.ReFreshBladeWave(waveRange);
             }
+        }
+
+        public bool CanTrickSkill()
+        {
+            return NowOnTick < TrickSkillBeforeTrick;
         }
     }
 }
