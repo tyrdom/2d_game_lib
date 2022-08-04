@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Security.Cryptography;
 using collision_and_rigid;
 using game_config;
 
@@ -46,7 +44,7 @@ namespace game_stuff
                 throw new IndexOutOfRangeException($"not enough step for this snipe {snipe.id}");
             }
 
-            TrickTick = snipe.TrickTick;
+            TrickTick = (int)snipe.TrickTick;
 
             MaxStep = MathTools.Min(maxStep, snipe.TotalStep) - 1;
             MoveSpeedMulti = snipeMulti.ToDictionary(pair => pair.Key, pair => pair.Value * snipe.MoveMulti)

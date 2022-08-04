@@ -120,6 +120,7 @@ namespace game_stuff
         SnipeOn1,
         SnipeOn2,
         SnipeOn3, //备用
-        SnipeOff
+        SnipeOff,
+        SnipeReset
     }
 }
