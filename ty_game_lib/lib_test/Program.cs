@@ -52,7 +52,7 @@ namespace lib_test
                         {passive_id.main_atk, 10}, {passive_id.shield_overload, 3}, {passive_id.energy_armor, 1}
                     });
             var characterInitData2 =
-                CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_sword}, size.small, 1);
+                CharacterInitData.GenPlayerByConfig(3, 1, new[] {weapon_id.test_axe}, size.small, 1);
             var characterInitData3 =
                 CharacterInitData.GenPlayerByConfig(4, 1, new[] {weapon_id.test_sword}, size.small, 1);
 
