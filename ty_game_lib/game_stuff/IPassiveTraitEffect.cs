@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using game_config;
 
@@ -34,7 +33,7 @@ namespace game_stuff
             return passive.passive_effect_type switch
             {
                 passive_type.Survive => new SurvivalAboutPassiveEffect(passiveParamValues),
-                passive_type.TickAdd => new TickAddEffect(passiveParamValues),
+                passive_type.ProtectAbout => new ProtectAboutEffect(passiveParamValues),
                 passive_type.Other => new OtherAttrPassiveEffect(passiveParamValues),
                 passive_type.HitWinBuff => new HitPass(passiveParamValues),
                 passive_type.Attack => new AtkAboutPassiveEffect(passiveParamValues),
@@ -304,9 +303,9 @@ namespace game_stuff
         }
     }
 
-    public readonly struct TickAddEffect : IPassiveTraitEffect
+    public readonly struct ProtectAboutEffect : IPassiveTraitEffect
     {
-        public TickAddEffect(float[] tickAddMulti)
+        public ProtectAboutEffect(float[] tickAddMulti)
         {
             TickAddMulti = tickAddMulti;
         }
@@ -314,7 +313,7 @@ namespace game_stuff
         public IPassiveTraitEffect GenEffect(uint level)
         {
             var multiply = ArrayTools.Multiply(level, GetVector());
-            return new TickAddEffect(multiply);
+            return new ProtectAboutEffect(multiply);
         }
 
         private float[] TickAddMulti { get; }

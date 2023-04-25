@@ -177,6 +177,8 @@ namespace game_stuff
         }
 
         private float ProtectTickMultiAdd { get; set; }
+        public float AttackProtectMultiAdd { get; set; }
+        public float AttackProtectMultiDecrease { get; set; }
         public int NowProtectTick { get; private set; }
 
         //Passive
@@ -250,6 +252,8 @@ namespace game_stuff
             RegenEffectStatus = RegenEffectStatus.GenBaseByAttr(genBaseAttrById);
             AbsorbStatus = AbsorbStatus.GenBaseByAttr(genBaseAttrById);
             ProtectTickMultiAdd = 0;
+            AttackProtectMultiAdd = 0;
+            AttackProtectMultiDecrease = 0;
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
             MaxTrap = Math.Min(genBaseAttrById.MaxTrapNum, (uint) CommonConfig.OtherConfig.up_trap_max);
@@ -303,6 +307,7 @@ namespace game_stuff
 
             StartPassiveInitRefresh();
         }
+
 
         private void BuffsGoATick()
         {
@@ -1539,8 +1544,8 @@ namespace game_stuff
                     TrapAboutRefresh(vector);
                     NowVehicle?.TrapAboutRefresh(vector);
                     break;
-                case TickAddEffect _:
-                    TickAboutRefresh(vector);
+                case ProtectAboutEffect _:
+                    ProtectAboutRefresh(vector);
                     break;
                 case TransRegenerationEffect _:
                     TransRegenerationEffectRefresh(vector);
@@ -1645,9 +1650,11 @@ namespace game_stuff
             CharEvents.Add(getPassive);
         }
 
-        private void TickAboutRefresh(IReadOnlyList<float> tickAdds)
+        private void ProtectAboutRefresh(IReadOnlyList<float> tickAdds)
         {
             ProtectTickMultiAdd = tickAdds[0];
+            AttackProtectMultiAdd = tickAdds[1];
+            AttackProtectMultiDecrease = tickAdds[2];
         }
 
         private void TrapAboutRefresh(float[] trapAdd)
@@ -1755,6 +1762,11 @@ namespace game_stuff
 
             if (!OnCharging())
             {
+                if (bodyCaster is CharacterStatus characterStatus)
+                {
+                    protectValueAdd = (int) ((1 + characterStatus.AttackProtectMultiAdd) /
+                        (1 + characterStatus.AttackProtectMultiDecrease) * protectValueAdd);
+                }
                 AddProtect(protectValueAdd);
             }
 
