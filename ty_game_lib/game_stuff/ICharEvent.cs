@@ -18,6 +18,22 @@ namespace game_stuff
     }
 
 
+    public class Regen : ICharEvent
+    {
+        public Regen(int hpRegen, int armorRegen, int shieldRegen, int ammoRegen)
+        {
+            HpRegen = hpRegen;
+            ArmorRegen = armorRegen;
+            ShieldRegen = shieldRegen;
+            AmmoRegen = ammoRegen;
+        }
+
+        public int HpRegen { get; }
+        public int ArmorRegen { get; }
+        public int ShieldRegen { get; }
+        public int AmmoRegen { get; }
+    }
+
     public class DirectHit : ICharEvent
     {
         public DirectHit(TwoDPoint targetPos)
@@ -27,6 +43,7 @@ namespace game_stuff
 
         public TwoDPoint TargetPos { get; }
     }
+
     public class LowProp : ICharEvent
     {
         public LowProp()
@@ -186,14 +203,17 @@ namespace game_stuff
 
     public class HitMark : ICharEvent
     {
-        public HitMark(TwoDVector twoDVectorByPt, bullet_id bulletId)
+        public HitMark(TwoDVector twoDVectorByPt, bullet_id bulletId, int[]? harms = null)
         {
             HitDirV = twoDVectorByPt;
             BulletId = bulletId;
+            Harms = harms;
         }
 
         public bullet_id BulletId { get; }
         public TwoDVector HitDirV { get; }
+
+        public int[]? Harms { get; }
     }
 
     public class TickSnipeActionLaunch : ICharEvent

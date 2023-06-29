@@ -23,7 +23,7 @@ namespace game_stuff
         void AttackStatusRefresh(float[] atkAboutPassiveEffects);
         void OtherStatusRefresh(float[] otherAttrPassiveEffects);
         void AddAmmo(int ammoAdd);
-        public void ReloadAmmo(float reloadMulti);
+        public int ReloadAmmo(float reloadMulti);
 
         void PassiveEffectChangeOther(float[] otherAttrPassiveEffects,
             (int MaxAmmo, float MoveMaxSpeed, float MoveMinSpeed, float MoveAddSpeed, int StandardPropMaxStack, float
@@ -34,10 +34,12 @@ namespace game_stuff
 
     public static class BattleUnitMoverStandard
     {
-        public static void ReloadAmmo(IMoveBattleAttrModel model, float reloadMulti)
+        public static int ReloadAmmo(IMoveBattleAttrModel model, float reloadMulti)
         {
+            var lastAmmo = model.NowAmmo;
             model.NowAmmo = (int) MathTools.Min(model.MaxAmmo,
                 model.NowAmmo + model.MaxAmmo * reloadMulti * model.RegenEffectStatus.ReloadEffect);
+            return model.NowAmmo - lastAmmo;
         }
 
         public static void PassiveEffectChangeTrap(float[] trapAdd,

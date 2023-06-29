@@ -13,12 +13,12 @@ namespace game_stuff
 
         public void SetHp(int hp)
         {
-            NowHp = (uint) hp;
+            NowHp = (uint)hp;
         }
 
         public void SetArmor(int armor)
         {
-            NowArmor = (uint) armor;
+            NowArmor = (uint)armor;
         }
 
         public uint NowArmor { get; private set; }
@@ -69,51 +69,77 @@ namespace game_stuff
             return $"装甲防御:{ArmorDefence} 护盾不稳定:{ShieldInstability} 护盾恢复:{ShieldRecover}";
         }
 
+        public void SurvivalValueDetail(out bool shieldExist, out bool armorExist, out float hpLoss,
+            out float armorLoss, out bool hpFull, out bool armorFull, out bool shieldFull, out float extraShield)
+        {
+            shieldExist = NowShield > 0;
+            armorExist = NowArmor > 0;
+            hpLoss = NowHp == 1 ? 1f : MathTools.Max(0, 1f - HpPercent());
+            armorLoss = MathTools.Max(0, 1 - ArmorPercent());
+            hpFull
+                = NowHp >= MaxHp;
+            armorFull = NowArmor >= MaxArmor;
+            shieldFull = NowShield >= MaxShield;
+            extraShield = shieldFull && MaxShield > 0
+                ? (float)NowShield / MaxShield
+                  - 1f
+                : 0;
+        }
+
         public bool IsDead()
         {
             return NowHp <= 0;
         }
 
-        public void TakeDamage(Damage damage, out bool shieldBreak, out bool armorBreak)
+        public int[] TakeDamage(Damage damage, out bool shieldBreak, out bool armorBreak)
         {
+            var ints = new[]
+                {
+                    -1, -1
+                }
+                ;
             NowDelayTick = ShieldDelayTick;
-            TakeOneDamage(damage.MainDamage, out shieldBreak, out armorBreak);
+
+            var takeOneDamage = TakeOneDamage(damage.MainDamage, out shieldBreak, out armorBreak);
+            ints[0] = takeOneDamage;
 #if DEBUG
             // Console.Out.WriteLine($"n shield {NowShield}  delay :{NowDelayTick} {GetHashCode()}");
 #endif
             if (damage.ShardedNum <= 0)
             {
-                return;
+                return ints;
             }
 
-            TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum, out var shieldBreak2, out var armorBreak2);
+            var takeMultiDamage = TakeMultiDamage(damage.ShardedDamage, damage.ShardedNum, out var shieldBreak2,
+                out var armorBreak2);
+            ints[1] = takeMultiDamage;
             shieldBreak = shieldBreak2 || shieldBreak;
             armorBreak = armorBreak2 || armorBreak;
+            return ints;
         }
 
-        private void TakeMultiDamage(uint damage, uint times, out bool shieldBreak, out bool armorBreak)
+        private int TakeMultiDamage(uint damage, uint times, out bool shieldBreak, out bool armorBreak)
         {
-            var restTime = (int) times;
+            var restTime = (int)times;
             shieldBreak = false;
             armorBreak = false;
+            var harm = 0;
             if (NowShield > 0)
             {
                 var shieldInstability = damage + ShieldInstability;
-                if (shieldInstability <= 0)
-                {
-                    return;
-                }
 
-                var instability = shieldInstability * restTime;
-                var nowShield = (int) NowShield - (int) instability;
+                var i = (int)shieldInstability;
+                var instability = i * restTime;
+                var nowShield = (int)NowShield - instability;
                 if (nowShield >= 0)
                 {
-                    NowShield = (uint) nowShield;
-                    return;
+                    NowShield = (uint)nowShield;
+                    return instability;
                 }
 
                 shieldBreak = true;
-                var lossTimes = (int) (NowShield / shieldInstability);
+                harm += (int)NowShield;
+                var lossTimes = (int)(NowShield / shieldInstability);
                 NowShield = 0;
                 restTime -= lossTimes;
             }
@@ -121,56 +147,63 @@ namespace game_stuff
 
             if (NowArmor > 0)
             {
-                var defence = (int) damage - (int) ArmorDefence;
+                var defence = (int)damage - (int)ArmorDefence;
                 if (defence <= 0)
                 {
-                    return;
+                    return harm;
                 }
 
                 var intPtr = defence * restTime;
-                var nowArmor = (int) NowArmor - intPtr;
+                var nowArmor = (int)NowArmor - intPtr;
 
                 if (nowArmor >= 0)
                 {
-                    NowArmor = (uint) nowArmor;
-                    return;
+                    NowArmor = (uint)nowArmor;
+                    harm += intPtr;
+                    return harm;
                 }
 
                 armorBreak = true;
-                var armorDefence = (int) NowArmor / defence;
+                var armorDefence = (int)NowArmor / defence;
+                harm += (int)NowArmor;
                 NowArmor = 0;
                 restTime -= armorDefence;
             }
 
-            if (restTime * damage >= NowHp)
+
+            var time = restTime * (int)damage;
+            harm += time;
+            if (time >= NowHp)
             {
                 NowHp = 0;
-                return;
+                return harm;
             }
 
-            var nowHp = damage * (uint) restTime;
+            var nowHp = damage * (uint)restTime;
             NowHp -= nowHp;
+            return harm;
         }
 
 
-        private void TakeOneDamage(uint damage, out bool shieldBreak, out bool armorBreak)
+        private int TakeOneDamage(uint damage, out bool shieldBreak, out bool armorBreak)
         {
-            var rest = (int) damage;
+            var rest = (int)damage;
             shieldBreak = false;
             armorBreak = false;
-
+            var harm = 0;
             if (NowShield > 0)
             {
-                var shieldInstability = (int) ShieldInstability + rest;
-                var nowShield = (int) NowShield - shieldInstability;
+                var shieldInstability = (int)ShieldInstability + rest;
+                var nowShield = (int)NowShield - shieldInstability;
                 SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
                 if (nowShield > 0)
                 {
-                    NowShield = (uint) nowShield;
+                    NowShield = (uint)nowShield;
 
-                    return;
+                    return shieldInstability;
                 }
 
+                harm += (int)NowShield;
                 shieldBreak = true;
                 NowShield = 0;
                 rest = -nowShield;
@@ -179,67 +212,74 @@ namespace game_stuff
 
             if (NowArmor > 0)
             {
-                var max = MathTools.Max(0, rest - ArmorDefence);
-                var nowArmor = (int) NowArmor - max;
+                var max = (int)MathTools.Max(0, rest - ArmorDefence);
+                var nowArmor = (int)NowArmor - max;
                 SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
                 if (nowArmor > 0)
                 {
-                    NowArmor = (uint) nowArmor;
-                    return;
+                    NowArmor = (uint)nowArmor;
+                    return harm + max;
                 }
 
-                {
-                    armorBreak = true;
-                    NowArmor = 0;
-                    rest = (int) -nowArmor;
-                }
+                harm += (int)NowArmor;
+                armorBreak = true;
+                NowArmor = 0;
+                rest = -nowArmor;
             }
 
             SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
             if (rest >= NowHp)
             {
                 NowHp = 0;
-                return;
+                return harm + rest;
             }
 
-            NowHp -= (uint) rest;
+            NowHp -= (uint)rest;
+            return harm + rest;
         }
 
-        public void GetRegen(Regeneration regeneration, RegenEffectStatus regenEffectStatus)
+        public void GetRegen(Regeneration regeneration, RegenEffectStatus regenEffectStatus, out int heal,
+            out int fixArmor, out int chargeShield)
         {
-            GetHeal(regeneration.HealMulti, regenEffectStatus.HealEffect);
-            FixArmor(regeneration.FixMulti, regenEffectStatus.FixEffect);
-            ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect, regenEffectStatus.ExtraChargeMulti);
+            heal = GetHeal(regeneration.HealMulti, regenEffectStatus.HealEffect);
+            fixArmor = FixArmor(regeneration.FixMulti, regenEffectStatus.FixEffect);
+            chargeShield = ChargeShield(regeneration.ShieldMulti, regenEffectStatus.ChargeEffect,
+                regenEffectStatus.ExtraChargeMulti);
         }
 
-        private void GetHeal(float regenerationHealMulti, float healMulti)
+        private int GetHeal(float regenerationHealMulti, float healMulti)
         {
             if (NowHp >= MaxHp)
             {
-                return;
+                return 0;
             }
 
             SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
-
-            NowHp = (uint) MathTools.Min(NowHp + regenerationHealMulti * MaxHp * healMulti, MaxHp);
+            var lastHp = NowHp;
+            NowHp = (uint)MathTools.Min(NowHp + regenerationHealMulti * MaxHp * healMulti, MaxHp);
+            return (int)NowHp - (int)lastHp;
         }
 
-        private void FixArmor(float regenerationFixMulti, float fixMulti)
+        private int FixArmor(float regenerationFixMulti, float fixMulti)
         {
             if (NowArmor >= MaxArmor)
             {
-                return;
+                return 0;
             }
 
             SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
-            NowArmor = (uint) MathTools.Min(NowArmor + regenerationFixMulti * MaxArmor * fixMulti, MaxArmor);
+            var lastArmor = NowArmor;
+            NowArmor = (uint)MathTools.Min(NowArmor + regenerationFixMulti * MaxArmor * fixMulti, MaxArmor);
+            return (int)NowArmor - (int)lastArmor;
         }
 
-        private void ChargeShield(float regenerationShieldMulti, float chargeMulti, float extraChargeMulti)
+        private int ChargeShield(float regenerationShieldMulti, float chargeMulti, float extraChargeMulti)
         {
             SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
-            var maxShield = (uint) (regenerationShieldMulti * MaxShield * chargeMulti);
-            NowShield = (uint) MathTools.Min(MaxShield * (1 + extraChargeMulti), NowShield + maxShield);
+            var maxShield = (uint)(regenerationShieldMulti * MaxShield * chargeMulti);
+            var lastShield = NowShield;
+            NowShield = (uint)MathTools.Min(MaxShield * (1 + extraChargeMulti), NowShield + maxShield);
+            return (int)NowShield - (int)lastShield;
         }
 
 
@@ -267,11 +307,11 @@ namespace game_stuff
 
         public static SurvivalStatus GenByConfig(base_attribute baseAttribute, float multi = 1f)
         {
-            var baseAttributeMaxHp = (uint) (baseAttribute.MaxHP * multi);
-            var baseAttributeMaxArmor = (uint) (baseAttribute.MaxArmor * multi);
+            var baseAttributeMaxHp = (uint)(baseAttribute.MaxHP * multi);
+            var baseAttributeMaxArmor = (uint)(baseAttribute.MaxArmor * multi);
             var baseAttributeArmorDefence = baseAttribute.ArmorDefence;
-            var baseAttributeMaxShield = (uint) (baseAttribute.MaxShield * multi);
-            var baseAttributeShieldRecover = (uint) Math.Round(baseAttribute.ShieldRecover);
+            var baseAttributeMaxShield = (uint)(baseAttribute.MaxShield * multi);
+            var baseAttributeShieldRecover = (uint)Math.Round(baseAttribute.ShieldRecover);
             var baseAttributeShieldInstability = baseAttribute.ShieldInstability;
             var baseAttributeShieldDelayTime = baseAttribute.ShieldDelayTime;
 
@@ -292,56 +332,64 @@ namespace game_stuff
             //     throw new Exception($"no good array : {aggregate}:: {v.Length}");
             // }
 
-            var lossHp = (int) MaxHp - (int) NowHp;
-            MaxHp = (uint) MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
-            NowHp = (uint) MathTools.Max(1, (int) MaxHp - lossHp);
-            var lossAr = (int) MaxArmor - (int) NowArmor;
-            MaxArmor = (uint) MathTools.Max(0, baseSurvivalStatus.MaxArmor * (1 + v[1]));
-            NowArmor = (uint) MathTools.Max(0, (int) MaxArmor - lossAr);
-            ArmorDefence = (uint) MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
-            MaxShield = (uint) MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
+            var lossHp = (int)MaxHp - (int)NowHp;
+            MaxHp = (uint)MathTools.Max(1, baseSurvivalStatus.MaxHp * (1 + v[0]));
+            NowHp = (uint)MathTools.Max(1, (int)MaxHp - lossHp);
+            var lossAr = (int)MaxArmor - (int)NowArmor;
+            MaxArmor = (uint)MathTools.Max(0, baseSurvivalStatus.MaxArmor * (1 + v[1]));
+            NowArmor = (uint)MathTools.Max(0, (int)MaxArmor - lossAr);
+            ArmorDefence = (uint)MathTools.Max(0, baseSurvivalStatus.ArmorDefence * (1 + v[2]));
+            MaxShield = (uint)MathTools.Max(0, baseSurvivalStatus.MaxShield * (1 + v[3]));
             var shieldRecover = baseSurvivalStatus.ShieldRecover * (1 + v[4]);
-            ShieldRecover = (uint) MathTools.Max(0, shieldRecover);
+            ShieldRecover = (uint)MathTools.Max(0, shieldRecover);
             var shieldInstability = baseSurvivalStatus.ShieldInstability * (1 + v[5]);
-            ShieldInstability = (uint) MathTools.Max(0, shieldInstability);
-            ShieldDelayTick = (uint) (baseSurvivalStatus.ShieldDelayTick / (1 + v[6]));
+            ShieldInstability = (uint)MathTools.Max(0, shieldInstability);
+            ShieldDelayTick = (uint)(baseSurvivalStatus.ShieldDelayTick / (1 + v[6]));
             SurvivalChangeMarks.Add(SurvivalChangeMark.MaxValueChange);
         }
 
         public float GenShortStatus()
         {
-            var nowShield = (NowHp + NowArmor + NowShield) / (float) (MaxArmor + MaxShield + MaxHp);
+            var nowShield = (NowHp + NowArmor + NowShield) / (float)(MaxArmor + MaxShield + MaxHp);
             return nowShield;
         }
 
-        public void AbsorbDamage(uint total, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage,
+        public Regen AbsorbDamage(uint total, uint hit, AbsorbStatus absorbStatus, uint damageShardedDamage,
             float extraChargeMulti)
         {
-            HpAbs(absorbStatus.HpAbs, total);
-            ArmorAbs(absorbStatus.ArmorAbs, total, hit, damageShardedDamage);
-            ShieldAbs(absorbStatus.ShieldAbs, total, hit, extraChargeMulti);
+            var hpAbs = HpAbs(absorbStatus.HpAbs, total);
+            var armorAbs = ArmorAbs(absorbStatus.ArmorAbs, total, hit, damageShardedDamage);
+            var shieldAbs = ShieldAbs(absorbStatus.ShieldAbs, total, hit, extraChargeMulti);
+            var regen = new Regen(hpAbs, armorAbs, shieldAbs, 0);
+            return regen;
         }
 
-        private void ShieldAbs(float absorbStatusShieldAbs, uint damage, uint hit, float extraChargeMulti)
+        private int ShieldAbs(float absorbStatusShieldAbs, uint damage, uint hit, float extraChargeMulti)
         {
             var shieldInstability = damage + hit * ShieldInstability;
-            NowShield = (uint) MathTools.Min(NowShield + MathTools.Max(0, shieldInstability * absorbStatusShieldAbs),
+            var lastShield = NowShield;
+            NowShield = (uint)MathTools.Min(NowShield + MathTools.Max(0, shieldInstability * absorbStatusShieldAbs),
                 MaxShield * (1 + extraChargeMulti));
             SurvivalChangeMarks.Add(SurvivalChangeMark.ShieldChange);
+            return (int)(NowShield - lastShield);
         }
 
-        private void ArmorAbs(float absorbStatusArmorAbs, uint damage, uint hit, uint damageShardedDamage)
+        private int ArmorAbs(float absorbStatusArmorAbs, uint damage, uint hit, uint damageShardedDamage)
         {
             var shieldInstability = Math.Max(0, (damage - hit * Math.Min(ArmorDefence, damageShardedDamage)));
-            NowArmor = (uint) MathTools.Min(MaxArmor,
+            var lastArmor = NowArmor;
+            NowArmor = (uint)MathTools.Min(MaxArmor,
                 NowArmor + MathTools.Max(0, shieldInstability * absorbStatusArmorAbs));
             SurvivalChangeMarks.Add(SurvivalChangeMark.ArmorChange);
+            return (int)(NowArmor - lastArmor);
         }
 
-        private void HpAbs(float absorbStatusHpAbs, uint damage)
+        private int HpAbs(float absorbStatusHpAbs, uint damage)
         {
-            NowHp = (uint) MathTools.Min(MaxHp, NowHp + MathTools.Max(0, damage * absorbStatusHpAbs));
+            var lastHp = NowHp;
+            NowHp = (uint)MathTools.Min(MaxHp, NowHp + MathTools.Max(0, damage * absorbStatusHpAbs));
             SurvivalChangeMarks.Add(SurvivalChangeMark.HpChange);
+            return (int)(NowHp - lastHp);
         }
 
         public NewSurvivalStatus GenNewMsg()
@@ -357,17 +405,17 @@ namespace game_stuff
 
         public float ArmorPercent()
         {
-            return (float) NowArmor / MathTools.Max(1, MaxArmor);
+            return (float)NowArmor / MathTools.Max(1, MaxArmor);
         }
 
         public float HpPercent()
         {
-            return (float) NowHp / MathTools.Max(1, MaxHp);
+            return (float)NowHp / MathTools.Max(1, MaxHp);
         }
 
         public float ShieldPercent()
         {
-            return (float) NowShield / MathTools.Max(1, MaxShield);
+            return (float)NowShield / MathTools.Max(1, MaxShield);
         }
 
         public IEnumerable<ICharEvent> GenSurvivalEvents()
@@ -388,16 +436,16 @@ namespace game_stuff
 
         public void GetMainValues(out int nowShield, out int nowArmor, out int nowHp)
         {
-            nowShield = (int) NowShield;
-            nowArmor = (int) NowArmor;
-            nowHp = (int) NowHp;
+            nowShield = (int)NowShield;
+            nowArmor = (int)NowArmor;
+            nowHp = (int)NowHp;
         }
 
         public void GetMainLost(int lastS, int lastA, int lastH, out int lossS, out int lossA, out int lossH)
         {
-            lossS = MathTools.Max(0, lastS - (int) NowShield);
-            lossA = MathTools.Max(0, lastA - (int) NowArmor);
-            lossH = MathTools.Max(0, lastH - (int) NowHp);
+            lossS = MathTools.Max(0, lastS - (int)NowShield);
+            lossA = MathTools.Max(0, lastA - (int)NowArmor);
+            lossH = MathTools.Max(0, lastH - (int)NowHp);
 #if DEBUG
             Console.Out.WriteLine(
                 $"take damage loss Sd:{lossS},AM {lossA} ,HP {lossH} result: {this}");
@@ -409,7 +457,7 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"regen shield by TransRegen {NowShield} {regen}");
 #endif
-            NowShield = (uint) MathTools.Max(0, (int) NowShield + regen);
+            NowShield = (uint)MathTools.Max(0, (int)NowShield + regen);
 #if DEBUG
             Console.Out.WriteLine($"regen shield by TransRegen {NowShield} ");
 #endif
@@ -420,8 +468,8 @@ namespace game_stuff
 #if DEBUG
             Console.Out.WriteLine($"regen armor by TransRegen {NowArmor} {regen}");
 #endif
-            NowArmor = (uint) MathTools.Max(0,
-                MathTools.Min(MathTools.Max(NowArmor, MaxArmor), (int) NowArmor + regen));
+            NowArmor = (uint)MathTools.Max(0,
+                MathTools.Min(MathTools.Max(NowArmor, MaxArmor), (int)NowArmor + regen));
 #if DEBUG
             Console.Out.WriteLine($"regen armor by TransRegen {NowArmor} ");
 #endif
@@ -435,7 +483,7 @@ namespace game_stuff
                 Console.Out.WriteLine($"regen Hp by TransRegen {NowHp} {regen}");
 #endif
 
-                NowHp = (uint) MathTools.Max(1, MathTools.Min(MathTools.Max(NowHp, MaxHp), (int) NowHp + regen));
+                NowHp = (uint)MathTools.Max(1, MathTools.Min(MathTools.Max(NowHp, MaxHp), (int)NowHp + regen));
 #if DEBUG
                 Console.Out.WriteLine($"regen Hp by TransRegen {NowHp}");
 #endif
@@ -449,43 +497,61 @@ namespace game_stuff
             HpValueRegen(hR);
         }
 
-        public void TakeDamageAndEtc(Damage damage, TransRegenEffectStatus regenEffectStatus, out float protectMulti,out float propMulti)
+        public int[] TakeDamageAndEtc(Damage damage, TransRegenEffectStatus regenEffectStatus,
+            out float protectMulti,
+            out float propMulti)
         {
             GetMainValues(out var lS, out var lA, out var lH);
-            TakeDamage(damage, regenEffectStatus, out protectMulti ,out propMulti);
+            var takeAllDamage = TakeAllDamage(damage, regenEffectStatus, out protectMulti, out propMulti);
 
             GetMainLost(lS, lA, lH, out var lls, out var lossA, out var lossH);
             regenEffectStatus.GetTransValue(lls, lossA, lossH, out var sR, out var armorR, out var hpR);
             TransRegen(sR, armorR, hpR);
+            return takeAllDamage;
         }
 
-        private void TakeDamage(Damage damage, TransRegenEffectStatus transRegenEffectStatus, out float protectMulti,out float propMulti)
+        private int[] TakeAllDamage(Damage damage, TransRegenEffectStatus transRegenEffectStatus,
+            out float protectMulti,
+            out float propMulti)
         {
-            TakeDamage(damage, out var shieldBreak, out var armorBreak);
+            var harms = TakeDamage(damage, out var shieldBreak, out var armorBreak);
             protectMulti = 0f;
             propMulti = 0f;
             damage.GetOtherMulti(damage.OnBreakMulti);
             if (shieldBreak)
             {
-                TakeDamage(damage, out _, out _);
-                var regenOnShieldBreak = RegenOnShieldBreak(transRegenEffectStatus,out var p);
+                var takeDamage = TakeDamage(damage, out _, out _);
+                harms[0] += takeDamage[0];
+                if (takeDamage[1] >= 0)
+                {
+                    harms[1] = Math.Max(0, harms[1]) + takeDamage[1];
+                }
+
+                var regenOnShieldBreak = RegenOnShieldBreak(transRegenEffectStatus, out var p);
                 protectMulti += regenOnShieldBreak;
                 propMulti += p;
             }
 
-            if (!armorBreak) return;
-            TakeDamage(damage, out _, out _);
-            var regenOnArmorBreak = RegenOnArmorBreak(transRegenEffectStatus,out var ppp);
+            if (!armorBreak) return harms;
+            var ints = TakeDamage(damage, out _, out _);
+            harms[0] += ints[0];
+            if (ints[1] >= 0)
+            {
+                harms[1] = Math.Max(0, harms[1]) + ints[1];
+            }
+
+            var regenOnArmorBreak = RegenOnArmorBreak(transRegenEffectStatus, out var ppp);
             protectMulti += regenOnArmorBreak;
             propMulti += ppp;
+            return harms;
         }
 
-        private float RegenOnArmorBreak(TransRegenEffectStatus transRegenEffectStatus,out float pp)
+        private float RegenOnArmorBreak(TransRegenEffectStatus transRegenEffectStatus, out float pp)
         {
             var armorBreakValue =
                 transRegenEffectStatus.GetArmorBreakValue(out var armorBreakShield, out pp);
-            var breakShield = (int) (armorBreakShield * MaxShield);
-          
+            var breakShield = (int)(armorBreakShield * MaxShield);
+
             ShieldValueRegen(breakShield);
             return armorBreakValue;
         }
@@ -493,10 +559,10 @@ namespace game_stuff
         private float RegenOnShieldBreak(TransRegenEffectStatus transRegenEffectStatus, out float propMulti)
         {
             var shieldBreakValue =
-                transRegenEffectStatus.GetShieldBreakValue(out var shieldBreakArmor, out  propMulti);
-            var breakArmor = (int) (shieldBreakArmor * MaxArmor);
+                transRegenEffectStatus.GetShieldBreakValue(out var shieldBreakArmor, out propMulti);
+            var breakArmor = (int)(shieldBreakArmor * MaxArmor);
             ArmorValueRegen(breakArmor);
-             return shieldBreakValue;
+            return shieldBreakValue;
         }
     }
 

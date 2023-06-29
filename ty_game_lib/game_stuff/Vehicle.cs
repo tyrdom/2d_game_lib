@@ -173,9 +173,9 @@ namespace game_stuff
 
         public void SetAmmo(int ammo) => NowAmmo = ammo;
 
-        public void ReloadAmmo(float reloadMulti)
+        public int ReloadAmmo(float reloadMulti)
         {
-            BattleUnitMoverStandard.ReloadAmmo(this, reloadMulti);
+          return  BattleUnitMoverStandard.ReloadAmmo(this, reloadMulti);
         }
 
         public void PassiveEffectChangeOther(float[] otherAttrPassiveEffects,
@@ -337,9 +337,10 @@ namespace game_stuff
         }
 
 
-        public void AbsorbDamage(uint genDamageShardedDamage, uint genDamageShardedNum, uint shardedDamage)
+        public Regen AbsorbDamage(uint genDamageShardedDamage, uint genDamageShardedNum, uint shardedDamage)
         {
-            SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage,RegenEffectStatus.ExtraChargeMulti);
+            var absorbDamage = SurvivalStatus.AbsorbDamage(genDamageShardedDamage, genDamageShardedNum, AbsorbStatus, shardedDamage,RegenEffectStatus.ExtraChargeMulti);
+            return absorbDamage;
         }
 
         public void AbsorbStatusRefresh(float[] vector)

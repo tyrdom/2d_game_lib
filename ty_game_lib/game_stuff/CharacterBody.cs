@@ -252,9 +252,7 @@ namespace game_stuff
 
         public bool AvoidWave(int key)
         {
-
             return CharacterStatus.AvoidWave(key);
-            
         }
     }
 
@@ -278,13 +276,13 @@ namespace game_stuff
 
     public readonly struct DmgShow
     {
-        public DmgShow(bool isKill, Damage damage)
+        public DmgShow(bool isKill, int[] harmResults)
         {
             IsKill = isKill;
-            Damage = damage;
+            HarmResults = harmResults;
         }
 
         public bool IsKill { get; }
-        public Damage Damage { get; }
+        public int[] HarmResults { get; }
     }
 }

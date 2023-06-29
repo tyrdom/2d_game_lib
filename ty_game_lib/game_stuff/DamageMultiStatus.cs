@@ -36,12 +36,10 @@ namespace game_stuff
             ProtectDamageMulti = vector[5];
         }
 
-        public float GetTotalMulti(SurvivalStatus survivalStatus, float pf)
+        public float GetTotalMulti(bool b, bool b1, float lossP1, float lossP2, float pf)
         {
-            var noShieldMulti = survivalStatus.NowShield > 0 ? 0 : NoShieldMulti;
-            var noArmorMulti = survivalStatus.NowArmor > 0 ? 0 : NoArmorMulti;
-            var lossP1 = survivalStatus.NowHp == 1 ? 1f : MathTools.Max(0, 1f - survivalStatus.HpPercent());
-            var lossP2 = MathTools.Max(0, 1 - survivalStatus.ArmorPercent());
+            var noArmorMulti = b1 ? 0 : NoArmorMulti;
+            var noShieldMulti = b ? 0 : NoShieldMulti;
             var survivalStatusMaxHp = lossP1 * LossPercentHpMulti;
             var survivalStatusMaxArmor = lossP2 * LossPercentArmorMulti;
             var protectDamageMulti = ProtectDamageMulti * pf;
@@ -49,6 +47,7 @@ namespace game_stuff
                               protectDamageMulti;
             return statusMaxHp;
         }
+
 
         public string GetDetails()
         {

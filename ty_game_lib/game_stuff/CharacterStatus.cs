@@ -172,7 +172,7 @@ namespace game_stuff
 
         public float GetProtectRate()
         {
-            var nowProtectValue = (float) NowProtectValue / MaxProtectValue;
+            var nowProtectValue = (float)NowProtectValue / MaxProtectValue;
             return nowProtectValue;
         }
 
@@ -197,6 +197,7 @@ namespace game_stuff
         public AttackStatus AttackStatus { get; }
         public DamageMultiStatus DamageMultiStatus { get; }
 
+        public DamageFullMultiStatus DamageFullMultiStatus { get; }
         public StunFixStatus StunFixStatus { get; }
 
         public void AttackStatusRefresh(float[] atkAboutPassiveEffects)
@@ -256,7 +257,7 @@ namespace game_stuff
             AttackProtectMultiDecrease = 0;
             TrapAtkMulti = genBaseAttrById.TrapAtkMulti;
             TrapSurvivalMulti = genBaseAttrById.TrapSurvivalMulti;
-            MaxTrap = Math.Min(genBaseAttrById.MaxTrapNum, (uint) CommonConfig.OtherConfig.up_trap_max);
+            MaxTrap = Math.Min(genBaseAttrById.MaxTrapNum, (uint)CommonConfig.OtherConfig.up_trap_max);
             Traps = new Queue<Trap>();
 
             CharacterBody = null!;
@@ -282,6 +283,7 @@ namespace game_stuff
             BaseAttrId = baseAttrId;
             PlayingItemBag = playingItemBag;
             DamageMultiStatus = new DamageMultiStatus();
+            DamageFullMultiStatus = new DamageFullMultiStatus();
             DefaultTakeOutWeapon = Skill.GenSkillById(CommonConfig.OtherConfig.default_take_out_skill);
             NowMoveSpeed = 0f;
             CharEvents = new HashSet<ICharEvent>();
@@ -637,25 +639,31 @@ namespace game_stuff
             var effectRegenerationBase = selfEffectRegenerationBase.Value;
             if (NowVehicle == null)
             {
-                SurvivalStatus.GetRegen(effectRegenerationBase, RegenEffectStatus);
-                ReloadAmmo(effectRegenerationBase.ReloadMulti);
+                SurvivalStatus.GetRegen(effectRegenerationBase, RegenEffectStatus, out var heal, out var fixArmor,
+                    out var chargeShield);
+                var reloadAmmo = ReloadAmmo(effectRegenerationBase.ReloadMulti);
+                var regen = new Regen(heal, fixArmor, chargeShield, reloadAmmo);
+                CharEvents.Add(regen);
             }
             else
             {
-                NowVehicle.SurvivalStatus.GetRegen(effectRegenerationBase, NowVehicle.RegenEffectStatus);
-                NowVehicle.ReloadAmmo(effectRegenerationBase.ReloadMulti);
+                NowVehicle.SurvivalStatus.GetRegen(effectRegenerationBase, NowVehicle.RegenEffectStatus, out var heal,
+                    out var fixArmor, out var chargeShield);
+                var reloadAmmo = NowVehicle.ReloadAmmo(effectRegenerationBase.ReloadMulti);
+                var regen = new Regen(heal, fixArmor, chargeShield, reloadAmmo);
+                CharEvents.Add(regen);
             }
         }
 
-        public void ReloadAmmo(float reloadMulti)
+        public int ReloadAmmo(float reloadMulti)
         {
-            BattleUnitMoverStandard.ReloadAmmo(this, reloadMulti);
+            return BattleUnitMoverStandard.ReloadAmmo(this, reloadMulti);
         }
 
         private CharGoTickResult GoNowActATick(ICharAct charAct,
             TwoDVector? moveOp, TwoDVector? aim, SkillAction? skillAction)
         {
-            if (charAct is Prop {LockAim: false}) OpChangeAim(aim);
+            if (charAct is Prop { LockAim: false }) OpChangeAim(aim);
 
             var limitV = charAct switch
             {
@@ -734,7 +742,7 @@ namespace game_stuff
         internal void RecycleAProp(Prop prop, int mapMarkId = -1)
         {
             NowPropPoint = Math.Min(MaxPropPoint,
-                (int) (NowPropPoint + prop.RecyclePropStack * (1 + GetRecycleMulti())));
+                (int)(NowPropPoint + prop.RecyclePropStack * (1 + GetRecycleMulti())));
             if (mapMarkId < 0) return;
             var removeMapMark = new RemoveMapMark(mapMarkId);
             CharEvents.Add(removeMapMark);
@@ -843,7 +851,7 @@ namespace game_stuff
             //  检查保护 进入保护
             if (NowProtectValue > MaxProtectValue)
             {
-                NowProtectTick = (int) (StuffLocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
+                NowProtectTick = (int)(StuffLocalConfig.ProtectTick * (1 + ProtectTickMultiAdd));
                 NowProtectValue = 0;
                 var inProtect = new InProtect(NowProtectTick);
                 CharEvents.Add(inProtect);
@@ -888,8 +896,8 @@ namespace game_stuff
 
                     var mapInteractableS = weapons.Select(x => x.DropAsIMapInteractable(GetPos()));
                     var dropThings = new DropThings(mapInteractableS);
-                    var dropThingsList = new[] {dropThings}.OfType<IActResult>().ToImmutableArray();
-                    return new CharGoTickResult(launchBullet: new IPosMedia[] {destroyBullet},
+                    var dropThingsList = new[] { dropThings }.OfType<IActResult>().ToImmutableArray();
+                    return new CharGoTickResult(launchBullet: new IPosMedia[] { destroyBullet },
                         actResults: dropThingsList);
                 }
             }
@@ -1130,7 +1138,10 @@ namespace game_stuff
                             var propPropPointCost = Prop.PropPointCost;
                             NowPropPoint -= propPropPointCost;
                             var propTrans = TransRegenEffectStatus.GetPropTrans(propPropPointCost);
-                            SurvivalStatus.GetRegen(propTrans, RegenEffectStatus);
+                            SurvivalStatus.GetRegen(propTrans, RegenEffectStatus, out var heal, out var fixArmor,
+                                out var chargeShield);
+                            var regen = new Regen(heal, fixArmor, chargeShield, 0);
+                            CharEvents.Add(regen);
                             SetAct(Prop);
                         }
                         else
@@ -1234,7 +1245,7 @@ namespace game_stuff
                 NowVehicle = null;
 
                 var immutableArray =
-                    new[] {(IActResult) new DropThings(new[] {genIMapInteractable})}.ToImmutableArray();
+                    new[] { (IActResult)new DropThings(new[] { genIMapInteractable }) }.ToImmutableArray();
                 return new CharGoTickResult(actResults: immutableArray);
             }
         }
@@ -1343,15 +1354,19 @@ namespace game_stuff
         public Damage GenDamage(float damageMulti, bool b4, bool wave)
         {
             var makeDamageBuffs = GetAndUseValueBuffs<MakeDamageBuff>(out var dec);
-
             // Console.Out.WriteLine($"make damage buff multi is {makeDamageBuffs}");
             var waveM = wave ? BladeWaveStatus.DamageMulti : 0;
             var f = GetNowProtectMulti();
-            var totalMulti = DamageMultiStatus.GetTotalMulti(GetNowSurvivalStatus(), f);
+            var b = NowAmmo >= MaxAmmo;
+            var nowSurvivalStatus = GetNowSurvivalStatus();
+            nowSurvivalStatus.SurvivalValueDetail(out var shieldExist, out var armorExist, out var hpLoss,
+                out var armorLoss, out var hpFull, out var armorFull, out var shieldFull, out var extraShield);
+            var totalMulti = DamageMultiStatus.GetTotalMulti(shieldExist, armorExist, hpLoss, armorLoss, f);
+            var multi = DamageFullMultiStatus.GetTotalMulti(hpFull, armorFull, shieldFull, extraShield, b);
             var onBreakMulti = DamageMultiStatus.OnBreakMulti;
             var attackStatus = NowVehicle?.AttackStatus ?? AttackStatus;
             NowProtectValue = 0;
-            var damageBuffs = makeDamageBuffs + totalMulti + waveM;
+            var damageBuffs = makeDamageBuffs + totalMulti + waveM + multi;
             return attackStatus.GenDamage(damageMulti, b4, damageBuffs, dec, onBreakMulti);
         }
 
@@ -1363,7 +1378,7 @@ namespace game_stuff
                 return 1f;
             }
 
-            var nowProtectValue = (float) NowProtectValue / MaxProtectValue;
+            var nowProtectValue = (float)NowProtectValue / MaxProtectValue;
             return nowProtectValue;
         }
 
@@ -1431,14 +1446,14 @@ namespace game_stuff
         {
             var lossAmmo = MaxAmmo - NowAmmo;
             var (maxAmmo, moveMaxSpeed, _, moveAddSpeed, _, recycleMulti) = otherBaseStatus;
-            MaxAmmo = (int) (maxAmmo * (1f + otherAttrPassiveEffects[0]));
+            MaxAmmo = (int)(maxAmmo * (1f + otherAttrPassiveEffects[0]));
             NowAmmo = Math.Max(0, MaxAmmo - lossAmmo);
             var max = otherAttrPassiveEffects[1];
             MaxMoveSpeed = moveMaxSpeed * (1f + max / (max + 1f));
             var add = otherAttrPassiveEffects[2];
             AddMoveSpeed = moveAddSpeed * (1f + add / (add + 1f));
             var lossP = MaxPropPoint - NowPropPoint;
-            MaxPropPoint = (int) (CommonConfig.OtherConfig.standard_max_prop_stack * (1f + otherAttrPassiveEffects[3]));
+            MaxPropPoint = (int)(CommonConfig.OtherConfig.standard_max_prop_stack * (1f + otherAttrPassiveEffects[3]));
             NowPropPoint = MaxPropPoint - lossP;
             RecycleMulti = recycleMulti * (1f + otherAttrPassiveEffects[4]);
         }
@@ -1516,6 +1531,10 @@ namespace game_stuff
                 case SpecialDamageAddEffect _:
                     SpecialDamageMultiStatusRefresh(vector);
                     break;
+
+                case SpecialFullDamageAddEffect _:
+                    SpecialFullDamageMultiStatusRefresh(vector);
+                    break;
                 case StunFixEffect _:
                     StunFixStatusRefresh(vector);
                     break;
@@ -1531,9 +1550,9 @@ namespace game_stuff
                     NowVehicle?.SurvivalStatusRefresh(vector);
                     break;
                 case AddItem _:
-                    var itemId = (int) vector[0];
-                    var num = (int) vector[1];
-                    var gameItem = new GameItem((item_id) itemId, num);
+                    var itemId = (int)vector[0];
+                    var num = (int)vector[1];
+                    var gameItem = new GameItem((item_id)itemId, num);
                     PickGameItem(gameItem);
                     break;
                 case AbsorbAboutPassiveEffect _:
@@ -1590,20 +1609,24 @@ namespace game_stuff
             DamageMultiStatus.RefreshSurvivalDmgMulti(vector);
         }
 
+        private void SpecialFullDamageMultiStatusRefresh(float[] vector)
+        {
+            DamageFullMultiStatus.RefreshSurvivalDmgMulti(vector);
+        }
 
         private void HitBuffTrickRefresh(float[] vector)
         {
-            var passiveEffect = (int) vector[0];
+            var passiveEffect = (int)vector[0];
             var genById = PlayBuffStandard.GenById(CommonConfig.OtherConfig.atkPassBuffId);
             genById.Stack = passiveEffect;
-            BuffTrick[TrickCond.MyAtkOk] = new HashSet<IPlayingBuff> {genById};
+            BuffTrick[TrickCond.MyAtkOk] = new HashSet<IPlayingBuff> { genById };
 
 
-            var passiveEffect2 = (int) vector[1];
+            var passiveEffect2 = (int)vector[1];
             var genById2 = PlayBuffStandard.GenById(CommonConfig.OtherConfig.defPassBuffId);
             genById2.Stack = passiveEffect2;
 
-            BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> {genById};
+            BuffTrick[TrickCond.OpponentAtkFail] = new HashSet<IPlayingBuff> { genById };
         }
 
         private void AbsorbStatusRefresh(float[] vector)
@@ -1668,7 +1691,7 @@ namespace game_stuff
             if (!CommonConfig.Configs.passives.TryGetValue(passiveTrait.PassId, out var passive)) return;
             var passiveRecycleMoney =
                 passive.recycle_money.Select(x =>
-                    GameItem.GenByConfigGain(new Gain {item = x.item, num = (int) (x.num * (1 + GetRecycleMulti()))}));
+                    GameItem.GenByConfigGain(new Gain { item = x.item, num = (int)(x.num * (1 + GetRecycleMulti())) }));
             foreach (var gameItem in passiveRecycleMoney)
             {
                 PickGameItem(gameItem);
@@ -1680,7 +1703,7 @@ namespace game_stuff
             PlayingItemBag.Gain(gameItem);
 
 
-            var itemChange = new ItemChange(new[] {gameItem.ItemId});
+            var itemChange = new ItemChange(new[] { gameItem.ItemId });
             CharEvents.Add(itemChange);
         }
 
@@ -1707,7 +1730,7 @@ namespace game_stuff
             }
 
             var pa = GetProtectAbsorb();
-            var valueAdd = (int) (protectValueAdd * (1 + pa));
+            var valueAdd = (int)(protectValueAdd * (1 + pa));
             AddProtect(valueAdd);
 
             var genDamage = bodyCaster.GenDamage(damageMulti, back, b);
@@ -1715,11 +1738,17 @@ namespace game_stuff
             var times = genDamage.ShardedNum;
 
             var ammoAbsorb = GetAmmoAbsorb();
-            AddAmmo((int) (total * ammoAbsorb));
+            AddAmmo((int)(total * ammoAbsorb));
             if (NowVehicle != null)
-                NowVehicle.AbsorbDamage(total, times, genDamage.ShardedDamage);
+            {
+                var absorbDamage = NowVehicle.AbsorbDamage(total, times, genDamage.ShardedDamage);
+                CharEvents.Add(absorbDamage);
+            }
             else
-                AbsorbDamage(total, times, genDamage.ShardedDamage);
+            {
+                var absorbDamage = AbsorbDamage(total, times, genDamage.ShardedDamage);
+                CharEvents.Add(absorbDamage);
+            }
         }
 
         private float GetAmmoAbsorb()
@@ -1727,9 +1756,10 @@ namespace game_stuff
             return NowVehicle?.AbsorbStatus.AmmoAbs ?? AbsorbStatus.AmmoAbs;
         }
 
-        private void AbsorbDamage(uint total, uint times, uint shardedDamage)
+        private Regen AbsorbDamage(uint total, uint times, uint shardedDamage)
         {
-            SurvivalStatus.AbsorbDamage(total, times, AbsorbStatus, shardedDamage, RegenEffectStatus.ExtraChargeMulti);
+            return SurvivalStatus.AbsorbDamage(total, times, AbsorbStatus, shardedDamage,
+                RegenEffectStatus.ExtraChargeMulti);
         }
 
         public void DirectStunBuffChange(TwoDPoint pos)
@@ -1751,7 +1781,6 @@ namespace game_stuff
             ResetSnipe();
             ResetSight();
             ResetCastAct();
-            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId);
 
 
             if (CatchingWho != null)
@@ -1764,20 +1793,22 @@ namespace game_stuff
             {
                 if (bodyCaster is CharacterStatus characterStatus)
                 {
-                    protectValueAdd = (int) ((1 + characterStatus.AttackProtectMultiAdd) /
+                    protectValueAdd = (int)((1 + characterStatus.AttackProtectMultiAdd) /
                         (1 + characterStatus.AttackProtectMultiDecrease) * protectValueAdd);
                 }
+
                 AddProtect(protectValueAdd);
             }
 
 
             var takeDamage = TakeDamage(bodyCaster.GenDamage(damageMulti, back, b1));
             var b = bodyCaster.GetFinalCaster().Team != CharacterBody.Team;
-            if (takeDamage is {IsKill: true} && b)
+            if (takeDamage is { IsKill: true } && b)
             {
                 bodyCaster.AddAKillScore(CharacterBody);
             }
 
+            SetHitMark(TwoDVector.TwoDVectorByPt(GetPos(), pos), bulletId, takeDamage?.HarmResults);
             return takeDamage;
         }
 
@@ -1806,7 +1837,8 @@ namespace game_stuff
             if (NowVehicle == null)
             {
                 var isDead = SurvivalStatus.IsDead();
-                SurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus, out var protectMaxMulti,
+                var takeDamageAndEtc = SurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus,
+                    out var protectMaxMulti,
                     out var propMulti1);
                 ProtectMultiChange(protectMaxMulti);
                 MaxPropPointMultiChange(propMulti1);
@@ -1816,26 +1848,26 @@ namespace game_stuff
                 // Console.Out.WriteLine(
                 //     $"{GId} take damage {genDamage.MainDamage}| {genDamage.ShardedDamage}~{genDamage.ShardedNum} Sv {SurvivalStatus} {SurvivalStatus.GetHashCode()}");
 #endif
-                return new DmgShow(!isDead && after, genDamage);
+                return new DmgShow(!isDead && after, takeDamageAndEtc);
             }
 
             var nowVehicleSurvivalStatus = NowVehicle.SurvivalStatus;
-            nowVehicleSurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus, out var pp,
+            var damageAndEtc = nowVehicleSurvivalStatus.TakeDamageAndEtc(genDamage, TransRegenEffectStatus, out var pp,
                 out var propMulti2);
             ProtectMultiChange(pp);
             MaxPropPointMultiChange(propMulti2);
-            return new DmgShow(false, genDamage);
+            return new DmgShow(false, damageAndEtc);
         }
 
         private void MaxPropPointMultiChange(float propMulti1)
         {
-            var maxPropPoint = NowPropPoint + (int) (MaxPropPoint * propMulti1);
+            var maxPropPoint = NowPropPoint + (int)(MaxPropPoint * propMulti1);
             NowPropPoint = MathTools.Min(MaxPropPoint, maxPropPoint);
         }
 
         private void ProtectMultiChange(float protectMaxMulti)
         {
-            NowProtectValue = NowProtectValue + (int) (protectMaxMulti * MaxProtectValue);
+            NowProtectValue = NowProtectValue + (int)(protectMaxMulti * MaxProtectValue);
         }
 
         public bool CheckCanBeHit()
@@ -1955,13 +1987,13 @@ namespace game_stuff
             return NowSnipeStep;
         }
 
-        public void SetHitMark(TwoDVector twoDVectorByPt, bullet_id bulletId)
+        public void SetHitMark(TwoDVector twoDVectorByPt, bullet_id bulletId, int[]? harms = null)
         {
 #if DEBUG
             Console.Out.WriteLine($"gid:{GId} be hit form {twoDVectorByPt}");
 #endif
             var twoDVector = twoDVectorByPt.GetUnit();
-            var hitMark = new HitMark(twoDVector, bulletId);
+            var hitMark = new HitMark(twoDVector, bulletId, harms);
             CharEvents.Add(hitMark);
         }
 
@@ -1994,7 +2026,7 @@ namespace game_stuff
             if (playingItemBagCost)
             {
                 var gameItem = saleUnitCost.ItemId;
-                var itemChange = new ItemChange(new[] {gameItem});
+                var itemChange = new ItemChange(new[] { gameItem });
                 CharEvents.Add(itemChange);
                 return playingItemBagCost;
             }
@@ -2005,7 +2037,7 @@ namespace game_stuff
                 var cost = PlayingItemBag.Cost(saleUnitOrCost);
                 if (!cost) continue;
                 var num = saleUnitOrCost.ItemId;
-                var itemChange = new ItemChange(new[] {num});
+                var itemChange = new ItemChange(new[] { num });
                 CharEvents.Add(itemChange);
                 return true;
             }
@@ -2086,7 +2118,7 @@ namespace game_stuff
         public int GetNowTough()
         {
             var upBuffs = GetAndUseValueBuffs<ToughUpBuff>(out var dec);
-            var toughUpBuffs = (int) MathTools.Max(0, upBuffs - dec);
+            var toughUpBuffs = (int)MathTools.Max(0, upBuffs - dec);
             if (NowCastAct == null)
             {
                 return toughUpBuffs;

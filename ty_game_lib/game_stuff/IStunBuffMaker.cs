@@ -118,7 +118,7 @@ namespace game_stuff
             Console.Out.WriteLine($"pull buff {pullBuff.id}");
 #endif
             var pushAboutVector = pullBuff.FixVector.Any()
-                ? GameTools.GenVectorByConfig(pullBuff.FixVector.First())
+                ? pullBuff.FixVector.First().GenVectorByConfig()
                 : null;
             return new PullStunBuffMaker(pullBuff.LastTime, pullBuff.PushForce, pushAboutVector);
         }

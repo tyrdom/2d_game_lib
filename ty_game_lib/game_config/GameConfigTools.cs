@@ -28,7 +28,10 @@ namespace game_config
 
         string Describe { get; set; }
     }
-
+    public interface IBodyActionConfig
+    {
+     
+    }
     public static class GameConfigTools
 
 

@@ -46,8 +46,29 @@ namespace game_stuff
                 passive_type.StunFix => new StunFixEffect(passiveParamValues),
                 passive_type.BladeWave => new BladeWaveEffect(passiveParamValues),
                 passive_type.TrickRegeneration => new BreakTrickRegenerationEffect(passiveParamValues),
+                passive_type.SpecialFullDamageAdd => new SpecialFullDamageAddEffect(passiveParamValues),
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+    }
+
+    public readonly struct SpecialFullDamageAddEffect : IPassiveTraitEffect
+    {
+        public SpecialFullDamageAddEffect(float[] passiveParamValues)
+        {
+            V = passiveParamValues;
+        }
+
+        public float[] V { get; }
+
+        public IPassiveTraitEffect GenEffect(uint level)
+        {
+            return new SpecialFullDamageAddEffect(ArrayTools.Multiply(level, GetVector()));
+        }
+
+        public float[] GetVector()
+        {
+            return V;
         }
     }
 

@@ -25,7 +25,7 @@ namespace game_stuff
         public TwoDVector Aim { get; set; }
         public Zone RdZone { get; }
         private bool CanOverBulletBlock { get; }
-        private bool IsFAtk { get; }
+        private bool IsFastAtk { get; }
         private int AmmoAddWhenSuccess { get; }
         public float SoundWaveCast { get; }
         public Dictionary<size, BulletBox> SizeToBulletCollision { get; }
@@ -237,7 +237,7 @@ namespace game_stuff
             ProtectValueAdd = protectValueAdd;
             HitType = hitType;
             CanOverBulletBlock = canOverBulletBlock;
-            IsFAtk = !isHAtk;
+            IsFastAtk = !isHAtk;
             RdZone = GameTools.GenRdBox(sizeToBulletCollision);
             AddBuffToCastWhenHitPass = playingBuffsMaker;
             StunPower = stunPower;
@@ -397,7 +397,7 @@ namespace game_stuff
             var b4 = twoDVector.Dot(Aim) >= 0; // 是否从背后攻击
             var tough = targetCharacterStatus.GetNowTough();
             var b = tough < Tough;
-            var b3 = !isActingSkill && IsFAtk && (HitType == hit_type.melee || b); //如果对手不在释放技能，并且是快攻击子弹
+            var b3 = !isActingSkill && IsFastAtk && (HitType == hit_type.melee || b); //如果对手不在释放技能，并且是快攻击子弹
 
 
             var b2 = isActingSkill && b; //如果对手正在释放技能 ，对手坚韧小于攻击坚韧，则成功
@@ -561,8 +561,7 @@ namespace game_stuff
                         {
                             case hit_type.range:
                                 BulletBeAbsorbed(targetCharacterStatus, characterStatus, back);
-
-
+                                
                                 break;
                             case hit_type.melee:
                                 switch (BulletMode)
@@ -612,11 +611,12 @@ namespace game_stuff
 
         private void BulletBeAbsorbed(CharacterStatus targetCharacterStatus, CharacterStatus characterStatus, bool back)
         {
+            characterStatus.ResetProtect();
             var b = BulletMode == BulletMode.BladeWave;
             targetCharacterStatus.AbsorbRangeBullet(Pos, ProtectValueAdd, characterStatus,
                 DamageMulti + ChargeExtraDamageMulti, back, BulletId, b);
             // targetCharacterStatus.TrickBuffsToBothSide(characterStatus);
-            if (!IsFAtk)
+            if (!IsFastAtk)
             {
                 targetCharacterStatus.TrickBlockSkill(Pos);
             }
