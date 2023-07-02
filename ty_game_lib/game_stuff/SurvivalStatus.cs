@@ -520,6 +520,7 @@ namespace game_stuff
             damage.GetOtherMulti(damage.OnBreakMulti);
             if (shieldBreak)
             {
+                var regenOnShieldBreak = RegenOnShieldBreak(transRegenEffectStatus, out var p);
                 var takeDamage = TakeDamage(damage, out _, out _);
                 harms[0] += takeDamage[0];
                 if (takeDamage[1] >= 0)
@@ -527,12 +528,13 @@ namespace game_stuff
                     harms[1] = Math.Max(0, harms[1]) + takeDamage[1];
                 }
 
-                var regenOnShieldBreak = RegenOnShieldBreak(transRegenEffectStatus, out var p);
                 protectMulti += regenOnShieldBreak;
                 propMulti += p;
             }
 
             if (!armorBreak) return harms;
+            var regenOnArmorBreak = RegenOnArmorBreak(transRegenEffectStatus, out var ppp);
+
             var ints = TakeDamage(damage, out _, out _);
             harms[0] += ints[0];
             if (ints[1] >= 0)
@@ -540,7 +542,6 @@ namespace game_stuff
                 harms[1] = Math.Max(0, harms[1]) + ints[1];
             }
 
-            var regenOnArmorBreak = RegenOnArmorBreak(transRegenEffectStatus, out var ppp);
             protectMulti += regenOnArmorBreak;
             propMulti += ppp;
             return harms;

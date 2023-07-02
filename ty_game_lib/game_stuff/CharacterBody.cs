@@ -140,7 +140,7 @@ namespace game_stuff
             }
 
             var (isHitWall, pt) =
-                walkBlock.PushOutToPt(LastPos, NowPos);
+                walkBlock.PushOutToPt(LastPos, NowPos, out var dVector);
 
 #if DEBUG
             // Console.Out.WriteLine(
@@ -167,7 +167,7 @@ namespace game_stuff
             {
                 return (pt, null);
             }
-
+            
             var hitWall = characterStatusStunBuff.HitWall();
 
             var takeDamage = CharacterStatus.TakeDamage(hitWall);
@@ -176,8 +176,12 @@ namespace game_stuff
                 return (pt, null);
             }
 
+            var dmgShow = takeDamage.Value;
+            var dmgShowHarmResults = dmgShow.HarmResults;
+            var hitMark = new HitMark(dVector, bullet_id.default_block_1, dmgShowHarmResults);
+            CharacterStatus.CharEvents.Add(hitMark);
             var buffDmgMsg = new BuffDmgMsg(characterStatusStunBuff.Caster.GetFinalCaster().CharacterStatus,
-                takeDamage.Value, this);
+                dmgShow, this);
             return (pt, buffDmgMsg);
         }
 

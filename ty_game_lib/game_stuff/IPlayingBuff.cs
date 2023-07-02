@@ -196,6 +196,7 @@ namespace game_stuff
 #endif
             var playBuff = GetBuffConfig(idBuffId);
             var playBuffStackMode = playBuff.StackMode;
+            var playBuffMaxStack = playBuff.MaxStack;
             if (playingBuffsDictionary.TryGetValue(idBuffId, out var playingBuff))
             {
                 switch (playBuffStackMode)
@@ -211,6 +212,11 @@ namespace game_stuff
                     case stack_mode.Stack:
                         playingBuff.RestTick = aPlayBuff.RestTick;
                         playingBuff.Stack += aPlayBuff.Stack;
+                        if (playBuffMaxStack > 0)
+                        {
+                            playingBuff.Stack = Math.Min(playBuffMaxStack, playingBuff.Stack);
+                        }
+
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

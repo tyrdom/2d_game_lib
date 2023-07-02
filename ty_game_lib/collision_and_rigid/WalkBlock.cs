@@ -36,11 +36,11 @@ namespace collision_and_rigid
         }
 
         public (bool isHitWall, TwoDPoint pt)
-            PushOutToPt(TwoDPoint lastP, TwoDPoint nowP) //null表示不需要被动移动
+            PushOutToPt(TwoDPoint lastP, TwoDPoint nowP, out TwoDVector vector) //null表示不需要被动移动
         {
             var inLine = new TwoDVectorLine(lastP, nowP);
             var apt = QSpace.GetSlidePoint(inLine);
-
+            vector = new TwoDVector(lastP, nowP);
             // if (safe)
             return (apt != null, apt ?? nowP);
 
